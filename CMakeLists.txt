@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(Tear LANGUAGES CXX)
+project(Hel LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -10,21 +10,21 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
-file(GLOB_RECURSE TEAR_SOURCES CONFIGURE_DEPENDS
+file(GLOB_RECURSE HEL_SOURCES CONFIGURE_DEPENDS
 	"${CMAKE_SOURCE_DIR}/src/*.cpp"
 )
-add_executable(tear ${TEAR_SOURCES})
-target_include_directories(tear PRIVATE
+add_executable(hel ${HEL_SOURCES})
+target_include_directories(hel PRIVATE
 	${CMAKE_SOURCE_DIR}/src
 )
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU|AppleClang")
-	target_compile_options(tear PRIVATE
+	target_compile_options(hel PRIVATE
 		$<$<CONFIG:Debug>:-Wall -Wextra -g -O0>
 		$<$<CONFIG:Release>:-Wall -Wextra -O3>
 	)
 elseif (MSVC)
-	target_compile_options(tear PRIVATE
+	target_compile_options(hel PRIVATE
 		$<$<CONFIG:Debug>:/W4 /Zi /Od>
 		$<$<CONFIG:Release>:/W4 /O2>
 	)
@@ -32,7 +32,7 @@ endif()
 
 find_package(Vulkan REQUIRED)
 find_package(glfw3 REQUIRED)
-target_link_libraries(tear PRIVATE
+target_link_libraries(hel PRIVATE
 	Vulkan::Vulkan
 	glfw
 )
@@ -66,7 +66,7 @@ foreach(shader ${SHADERS})
 	list(APPEND SPV_FILES ${SPV_FILE})
 endforeach()
 add_custom_target(compile_shaders ALL DEPENDS ${SPV_FILES})
-add_dependencies(tear compile_shaders)
+add_dependencies(hel compile_shaders)
 
 set(MODELS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/assets/models")
 set(MODELS_DEST_DIR "${CMAKE_BINARY_DIR}/assets/models")
@@ -75,11 +75,11 @@ add_custom_target(copy_models ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${MODELS_SOURCE_DIR} ${MODELS_DEST_DIR}
 	COMMENT "Copying models to assets/models"
 )
-add_dependencies(tear copy_models)
+add_dependencies(hel copy_models)
 
 
 
-install(TARGETS tear
+install(TARGETS hel
 	RUNTIME DESTINATION .
 )
 

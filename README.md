@@ -1,6 +1,6 @@
-# Tear Engine
+# Hel Engine
 
-Tear Engine is a simple rendering engine made by hle-hena.
+Hel Engine is a simple rendering engine made by hle-hena.
 
 ## STATUS - UPDATE
 
