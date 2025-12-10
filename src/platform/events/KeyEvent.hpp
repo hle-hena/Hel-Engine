@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 17:15:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 17:38:15                                        */
+/*  Last Modified: 2025/12/10 20:05:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,7 +21,7 @@
 
 namespace	hel {
 
-void	keyEventCallback(GLFWwindow *window, int key, int scanCode,
+void	keyEventCallback(GLFWwindow *glfwWindow, int key, int scanCode,
 						int action, int modifier);
 
 }

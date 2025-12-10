@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 18:12:31                                        */
+/*  Last Modified: 2025/12/10 20:09:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,8 +17,6 @@
 #include "platform/window/Window.hpp"
 #include "platform/window/GLFW.hpp"
 #include "platform/events/KeyEvent.hpp"
-
-#include <stdexcept>
 
 namespace	hel {
 

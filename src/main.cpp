@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/09 17:10:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 17:48:55                                        */
+/*  Last Modified: 2025/12/10 20:05:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,8 +18,6 @@
 
 int	main(void) {
 	hel::Application	app;
-	if (!app.isAvailable())
-		return (1);
 	app.run();
 	return (0);
 }

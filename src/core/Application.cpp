@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 18:06:21                                        */
+/*  Last Modified: 2025/12/10 20:07:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,31 +16,30 @@
 
 #include "core/Application.hpp"
 
+#include <iostream>
+
 namespace hel {
 
 Application::Application(void)
-	:	_helWindows{} {
-	Window::windowPtr window = Window::createWindow(800, 600, "Hel Engine", *this);
-	if (!window) {
+	:	_appWindows{} {
+	addNewWindow(800, 600, "Hel Engine");
+	if (_appWindows.size() == 0)
 		_available = false;
-		return ;
-	}
-	_helWindows.push_back(std::move(window));
 }
 
 Application::~Application(void) {
 }
 
 void	Application::run(void) {
-	while (_helWindows.size() > 0 && _available) {
+	while (_appWindows.size() > 0 && _available) {
 		glfwPollEvents();
 
-		size_t	windowCount = _helWindows.size();
-		for (size_t i = 0; i < windowCount; i++) {
-			if (_helWindows[i]->shouldClose()) {
-				_helWindows.erase(_helWindows.begin() + i);
+		size_t	windowsCount = _appWindows.size();
+		for (size_t i = 0; i < windowsCount; i++) {
+			if (_appWindows[i]->shouldClose()) {
+				_appWindows.erase(_appWindows.begin() + i);
 				i--;
-				windowCount--;
+				windowsCount--;
 			}
 		}
 	}
@@ -49,9 +48,10 @@ void	Application::run(void) {
 void	Application::addNewWindow(int width, int height, const std::string &windowName) {
 	Window::windowPtr window = Window::createWindow(width, height, windowName, *this);
 	if (!window) {
+		std::cerr << "Failed to create a new window." << std::endl;
 		return ;
 	}
-	_helWindows.push_back(std::move(window));
+	_appWindows.push_back(std::move(window));
 }
 
 }

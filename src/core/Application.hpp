@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Hel.hpp                                                             */
+/*  File: Application.hpp                                                     */
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:12 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 17:55:13                                        */
+/*  Last Modified: 2025/12/10 20:03:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -40,7 +40,7 @@ class	Application {
 		Application(const Application &other) = delete;
 		Application	&operator=(const Application &other) = delete;
 
-		std::vector<Window::windowPtr>	_helWindows;
+		std::vector<Window::windowPtr>	_appWindows;
 		bool							_available{true};
 };
 
