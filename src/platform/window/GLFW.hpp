@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: main.cpp                                                            */
+/*  File: GLFW.hpp                                                            */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2025/12/09 17:10:41 by hle-hena                                  */
+/*  Created: 2025/12/10 12:04:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 20:05:53                                        */
+/*  Last Modified: 2025/12/10 20:09:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,10 +14,40 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "core/Application.hpp"
+#pragma once
 
-int	main(void) {
-	hel::Application	app;
-	app.run();
-	return (0);
+# define GLFW_INCLUDE_VULKAN
+# include <GLFW/glfw3.h>
+# include <iostream>
+
+namespace	hel {
+
+class	GLFW {
+	private:
+		~GLFW(void) = delete;
+		static inline uint32_t	_instanceCount = 0;
+		static inline uint32_t	_maxInstanceCount = 10;
+
+	public:
+		static bool	acquire(void) {
+			if (_instanceCount == _maxInstanceCount) {
+				std::cerr << "The max number of window has been reached." << std::endl;
+				return (false);
+			}
+			if (_instanceCount == 0) {
+				if (!glfwInit())
+					return (false);
+			}
+			_instanceCount++;
+			return (true);
+		}
+		static void	release(void) {
+			if (_instanceCount == 0)
+				return ;
+			_instanceCount--;
+			if (_instanceCount == 0)
+				glfwTerminate();
+		}
+};
+
 }
