@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:12 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 16:26:55                                        */
+/*  Last Modified: 2025/12/10 17:55:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,10 @@
 /* *************************************************************************  */
 
 #pragma once
+
+# include <vector>
+# include <memory>
+# include <string>
 
 # include "platform/window/Window.hpp"
 
@@ -28,15 +32,16 @@ class	Application {
 		Application	&operator=(Application &&other) = default;
 
 		void	run(void);
+		void	addNewWindow(int width, int height, const std::string &windowName);
 
-		bool	isUnavailable(void) const { return (_unavailable); }
+		bool	isAvailable(void) const { return (_available); }
 
-		private:
+	private:
 		Application(const Application &other) = delete;
 		Application	&operator=(const Application &other) = delete;
 
-		Window::windowPtr	_helWindow;
-		bool				_unavailable{false};
+		std::vector<Window::windowPtr>	_helWindows;
+		bool							_available{true};
 };
 
 }

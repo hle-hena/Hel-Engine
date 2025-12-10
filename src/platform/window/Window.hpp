@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 15:57:44                                        */
+/*  Last Modified: 2025/12/10 17:46:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,11 +18,13 @@
 
 # define GLFW_INCLUDE_VULKAN
 # include <GLFW/glfw3.h>
-
 # include <string>
 # include <memory>
 
+
 namespace	hel {
+
+class	Application;
 
 class	Window {
 	public:
@@ -33,7 +35,8 @@ class	Window {
 		~Window(void);
 
 		static windowPtr	createWindow(int width, int height,
-										const std::string &windowName) noexcept;
+										const std::string &windowName,
+										Application &app) noexcept;
 		void				createWindowSurface(VkInstance instance,
 												VkSurfaceKHR *surface);
 
@@ -49,6 +52,12 @@ class	Window {
 		GLFWwindow	*getWindow(void) const {
 			return (_windowPtr);
 		}
+		Application	&getApp(void) const {
+			return (_app);
+		}
+		std::string	getWindowName(void) const {
+			return (_windowName);
+		}
 		VkExtent2D	getExtent(void) const {
 			return {
 				static_cast<uint32_t>(_width), 
@@ -58,22 +67,23 @@ class	Window {
 
 
 	private:
-		Window(int width, int height, const std::string &windowName);
-
+		Window(int width, int height, const std::string &windowName,
+			Application &app);
 		Window(const Window &other) = delete;
 		Window	&operator=(const Window &other) = delete;
 
-		static void	frameBufferResizedCallback(GLFWwindow *window, int width,
-											int height);
 		void		initWindow(void);
 		void		deleteWindow(void);
+		static void	frameBufferResizedCallback(GLFWwindow *window, int width,
+											int height);
+		
 
 		int			_width;
 		int			_height;
 		bool		_frameBufferResized{false};
 		std::string	_windowName;
-
 		GLFWwindow	*_windowPtr;
+		Application	&_app;
 };
 
 }

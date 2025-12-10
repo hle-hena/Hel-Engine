@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:04:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 15:59:57                                        */
+/*  Last Modified: 2025/12/10 18:05:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,7 +25,7 @@ class	GLFW {
 	private:
 		~GLFW(void) = delete;
 		static inline uint32_t	_instanceCount = 0;
-		static inline uint32_t	_maxInstanceCount = 1;
+		static inline uint32_t	_maxInstanceCount = 10;
 
 	public:
 		static bool	acquire(void) {

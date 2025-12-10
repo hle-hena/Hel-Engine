@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 16:10:47                                        */
+/*  Last Modified: 2025/12/10 18:12:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,29 +16,32 @@
 
 #include "platform/window/Window.hpp"
 #include "platform/window/GLFW.hpp"
+#include "platform/events/KeyEvent.hpp"
 
 #include <stdexcept>
 
 namespace	hel {
 
 Window::windowPtr	Window::createWindow(int width, int height,
-										const std::string &windowName) noexcept {
+										const std::string &windowName,
+										Application &app) noexcept {
 	if (!GLFW::acquire())
 		return (nullptr);
 	try {
-		return (Window::windowPtr(new Window(width, height, windowName)));
+		return (Window::windowPtr(new Window(width, height, windowName, app)));
 	} catch (...) {
 		GLFW::release();
 		return (nullptr);
 	}
 }
 
-Window::Window(int width, int height,
-							const std::string &windowName)
+Window::Window(int width, int height, const std::string &windowName,
+			Application &app)
 	:	_width(width),
 		_height(height),
 		_windowName(windowName),
-		_windowPtr(nullptr) {
+		_windowPtr(nullptr),
+		_app{app} {
 	initWindow();
 }
 
@@ -49,6 +52,7 @@ void	Window::initWindow(void) {
 	_windowPtr = glfwCreateWindow(_width, _height, _windowName.c_str(),
 								nullptr, nullptr);
 	glfwSetWindowUserPointer(_windowPtr, this);
+	glfwSetKeyCallback(_windowPtr, keyEventCallback);
 	// glfwSetFramebufferSizeCallback(_windowPtr, frameBufferResizedCallback);
 }
 
