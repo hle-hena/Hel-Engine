@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/11 10:10:31 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/12 18:47:23                                        */
+/*  Last Modified: 2025/12/12 22:40:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,7 +18,6 @@
 #include "render/vulkan/vulkanHelper.hpp"
 
 #include <iostream>
-#include <cstring>
 
 namespace	hel {
 
@@ -39,26 +38,24 @@ Device::~Device(void) {
 }
 
 void	Device::createInstance() {
-	if (Device::enableValidationLayers && !checkValidationLayerSupport()) {
-		_healthy = false;
-		_reason = "Missing support for a validation layer";//TODO -> make this message clearer.
-		return ;
+	uint32_t	glfwExtensionsCount = 0;
+	const char	**glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionsCount);
+	std::vector<const char *>	reqExt(glfwExtensions, glfwExtensions + glfwExtensionsCount);
+	if (enableValidationLayers) {
+		reqExt.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 	}
+
+	if (!checkAllSupport(reqExt))//Ensure that this works
+		return ;
 
 	VkApplicationInfo	appInfo{VK_STRUCTURE_TYPE_APPLICATION_INFO,
 		nullptr, "Hel", VK_MAKE_VERSION(0, 0, 0),
 		"Hel Engine", VK_MAKE_VERSION(0, 0, 0), VK_API_VERSION_1_2
 	};
-	std::vector<const char *>	extensions = getExtensions();
-	if (Device::enableValidationLayers && !checkExtensionSupport(extensions)) {
-		_healthy = false;
-		_reason = "Missing support for a extension";//TODO -> make this message clearer.
-		return ;
-	}
 
 	VkInstanceCreateInfo	createInfo{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
 		nullptr, 0, &appInfo, 0, nullptr,
-		static_cast<uint32_t>(extensions.size()), extensions.data()
+		static_cast<uint32_t>(reqExt.size()), reqExt.data()
 	};
 	VkDebugUtilsMessengerCreateInfoEXT	debugInfo{};
 	if (enableValidationLayers) {
@@ -76,17 +73,25 @@ void	Device::createInstance() {
 	}
 }
 
-std::vector<const char *>	Device::getExtensions(void) {
-	uint32_t	glfwExtensionsCount = 0;
-	const char	**glfwExtensions;
-	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionsCount);
+bool	Device::checkAllSupport(std::vector<const char *> &reqExt) {
+	uint32_t	avExtCount = 0;
+	vkEnumerateInstanceExtensionProperties(nullptr, &avExtCount, nullptr);
+	std::vector<VkExtensionProperties>	avExt(avExtCount);
+	vkEnumerateInstanceExtensionProperties(nullptr, &avExtCount, avExt.data());
+	if (!checkSupport("extension", reqExt, avExt,
+					[](const VkExtensionProperties &p){ return (p.extensionName); }))
+		return (false);
 
-	std::vector<const char *>	extensions(glfwExtensions,
-										glfwExtensions + glfwExtensionsCount);
 	if (enableValidationLayers) {
-		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+		uint32_t	layerCount = 0;
+		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+		std::vector<VkLayerProperties>	availableLayers(layerCount);
+		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+		if (!checkSupport("validation layer", _validationLayers, availableLayers,
+						[](const VkLayerProperties &p){ return (p.layerName); }))
+			return (false);
 	}
-	return (extensions);
+	return (true);
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL	debugCallback(
@@ -121,54 +126,6 @@ void	Device::setupDebugMessenger(void) {
 		_healthy = false;
 		_reason = "Failed to create the messenger";
 	}
-}
-
-bool	Device::checkValidationLayerSupport(void) {
-	uint32_t	layerCount = 0;
-	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-	std::vector<VkLayerProperties>	availableLayers(layerCount);
-	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
-	for (const char *layerName: _validationLayers) {
-		bool	layerFound = false;
-		for (const VkLayerProperties &availableLayer: availableLayers) {
-			if (std::strcmp(layerName, availableLayer.layerName) == 0) {
-				layerFound = true;
-				break ;
-			}
-		}
-		if (!layerFound)
-			return (false);
-	}
-	std::cout << "All validation layers have been found" << std::endl;
-	return (true);
-}
-
-bool	Device::checkExtensionSupport(std::vector<const char *> &extensions) {
-	uint32_t	extensionsCount = 0;
-	vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, nullptr);
-	std::vector<VkExtensionProperties>	availableExtensions(extensionsCount);
-	vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount,
-										availableExtensions.data());
-
-	for (const char *extensionName: extensions) {
-		bool	extensionFound = false;
-		for (const VkExtensionProperties &availableExtensions: availableExtensions) {
-			if (std::strcmp(extensionName, availableExtensions.extensionName) == 0) {
-				extensionFound = true;
-				break ;
-			}
-		}
-		if (!extensionFound)
-			return (false);
-	}
-	std::cout << "All extensions have been found" << std::endl;
-	std::cout << "Available extensions:" << std::endl;
-	for (const auto &extension: availableExtensions) {
-		std::cout << "\t" << extension.extensionName << ":"
-			<< extension.specVersion << std::endl;
-	}
-	return (true);
 }
 
 }

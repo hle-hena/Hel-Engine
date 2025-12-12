@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/11 10:10:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/12 18:13:14                                        */
+/*  Last Modified: 2025/12/12 22:39:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,6 +19,8 @@
 # include "platform/window/Window.hpp"
 
 # include <vector>
+# include <iostream>
+# include <cstring>
 
 namespace	hel {
 
@@ -44,10 +46,30 @@ class	Device {
 		}
 
 	private:
+		template <typename T, typename Extractor>
+		bool	checkSupport(const std::string &type, const std::vector<const char *> &required,
+							std::vector<T> &available, Extractor extractName) {
+			for (const char *reqName: required) {
+				bool	found = false;
+				for (const T &value: available) {
+					if (std::strcmp(reqName, extractName(value)) == 0) {
+						found = true;
+						break ;
+					}
+				}
+				if (!found) {
+					_healthy = false;
+					_reason = "Missing support for a(n) " + type + ": \"" + reqName + "\"";
+					return (false);
+				}
+			}
+			std::cout << "All " << type << " have been found" << std::endl;
+			return (true);
+		}
+
 		void						createInstance(void);
-		std::vector<const char *>	getExtensions(void);
-		bool						checkExtensionSupport(std::vector<const char *> &extensions);
-		bool						checkValidationLayerSupport(void);
+		bool						checkAllSupport(std::vector<const char *> &reqExt);
+
 		void						populateMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
 		void						setupDebugMessenger(void);
 
