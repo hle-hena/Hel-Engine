@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/11 10:10:31 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/12 16:13:27                                        */
+/*  Last Modified: 2025/12/12 18:47:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,33 +15,12 @@
 /* *************************************************************************  */
 
 #include "render/vulkan/Device.hpp"
+#include "render/vulkan/vulkanHelper.hpp"
 
 #include <iostream>
 #include <cstring>
 
 namespace	hel {
-
-VkResult	CreateDebugUtilsMessengerEXT(VkInstance instance,
-								const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
-								const VkAllocationCallbacks *pAllocator,
-								VkDebugUtilsMessengerEXT *pMessenger) {
-	auto	func = (PFN_vkCreateDebugUtilsMessengerEXT)
-						vkGetInstanceProcAddr(instance,
-										"vkCreateDebugUtilsMessengerEXT");
-	if (func != nullptr)
-		return (func(instance, pCreateInfo, pAllocator, pMessenger));
-	return (VK_ERROR_EXTENSION_NOT_PRESENT);
-}
-
-void	DestroyDebugUtilsMessengerEXT(VkInstance instance,
-									VkDebugUtilsMessengerEXT messenger,
-									const VkAllocationCallbacks *pAllocator) {
-	auto	func = (PFN_vkDestroyDebugUtilsMessengerEXT)
-						vkGetInstanceProcAddr(instance,
-										"vkDestroyDebugUtilsMessengerEXT");
-	if (func != nullptr)
-		return (func(instance, messenger, pAllocator));
-}
 
 Device::Device(void) {
 	createInstance();
@@ -52,9 +31,10 @@ Device::Device(void) {
 
 Device::~Device(void) {
 	if (!_healthy)
-		return ;
+		return ;//TODO -> diagnostic what went wrong ? Maybe there are some things to free I think ?
 	if (enableValidationLayers)
-		DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
+		CALL_VKINSTANCE_FUNC_VOID(_instance, vkDestroyDebugUtilsMessengerEXT,
+								_debugMessenger, nullptr);
 	vkDestroyInstance(_instance, nullptr);
 }
 
@@ -134,7 +114,10 @@ void	Device::populateMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &cre
 void	Device::setupDebugMessenger(void) {
 	VkDebugUtilsMessengerCreateInfoEXT	createInfo{};
 	populateMessengerCreateInfo(createInfo);
-	if (CreateDebugUtilsMessengerEXT(_instance, &createInfo, nullptr, &_debugMessenger) != VK_SUCCESS) {
+	VkResult	res = VK_SUCCESS;
+	CALL_VKINSTANCE_FUNC_VKRESULT(res, _instance, vkCreateDebugUtilsMessengerEXT,
+									&createInfo, nullptr, &_debugMessenger);
+	if (res != VK_SUCCESS) {
 		_healthy = false;
 		_reason = "Failed to create the messenger";
 	}

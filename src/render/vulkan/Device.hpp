@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/11 10:10:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/12 16:02:56                                        */
+/*  Last Modified: 2025/12/12 18:13:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -46,10 +46,10 @@ class	Device {
 	private:
 		void						createInstance(void);
 		std::vector<const char *>	getExtensions(void);
+		bool						checkExtensionSupport(std::vector<const char *> &extensions);
+		bool						checkValidationLayerSupport(void);
 		void						populateMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
 		void						setupDebugMessenger(void);
-		bool						checkValidationLayerSupport(void);
-		bool						checkExtensionSupport(std::vector<const char *> &extensions);
 
 		bool						_healthy{true};
 		std::string					_reason{""};
