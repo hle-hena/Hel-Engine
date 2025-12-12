@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 20:07:36                                        */
+/*  Last Modified: 2025/12/12 15:41:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,16 +22,21 @@ namespace hel {
 
 Application::Application(void)
 	:	_appWindows{} {
-	addNewWindow(800, 600, "Hel Engine");
+	if (!_appDevice.isHealthy()) {
+		_healthy = false;
+		std::cerr << _appDevice.getReason() << std::endl;
+		return ;
+	}
+	addNewWindow(Window::WIDTH, Window::HEIGHT, "Hel Engine");
 	if (_appWindows.size() == 0)
-		_available = false;
+		_healthy = false;
 }
 
 Application::~Application(void) {
 }
 
 void	Application::run(void) {
-	while (_appWindows.size() > 0 && _available) {
+	while (_appWindows.size() > 0 && _healthy) {
 		glfwPollEvents();
 
 		size_t	windowsCount = _appWindows.size();

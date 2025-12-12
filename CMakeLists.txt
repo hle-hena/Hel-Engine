@@ -17,6 +17,9 @@ add_executable(hel ${HEL_SOURCES})
 target_include_directories(hel PRIVATE
 	${CMAKE_SOURCE_DIR}/src
 )
+target_compile_definitions(hel PRIVATE 
+	$<$<CONFIG:Debug>:VALIDATION_LAYERS>
+)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU|AppleClang")
 	target_compile_options(hel PRIVATE

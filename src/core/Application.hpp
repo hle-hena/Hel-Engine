@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:12 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 20:03:20                                        */
+/*  Last Modified: 2025/12/11 10:54:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,7 @@
 # include <string>
 
 # include "platform/window/Window.hpp"
+# include "render/vulkan/Device.hpp"
 
 namespace	hel {
 
@@ -34,14 +35,15 @@ class	Application {
 		void	run(void);
 		void	addNewWindow(int width, int height, const std::string &windowName);
 
-		bool	isAvailable(void) const { return (_available); }
+		bool	isHealthy(void) const { return (_healthy); }
 
 	private:
 		Application(const Application &other) = delete;
 		Application	&operator=(const Application &other) = delete;
 
+		bool							_healthy{true};
 		std::vector<Window::windowPtr>	_appWindows;
-		bool							_available{true};
+		Device							_appDevice;
 };
 
 }
