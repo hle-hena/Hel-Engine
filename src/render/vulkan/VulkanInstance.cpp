@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Device.cpp                                                          */
+/*  File: VulkanInstance.cpp                                                  */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2025/12/11 10:10:31 by hle-hena                                  */
+/*  Created: 2025/12/15 10:33:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/12 22:40:23                                        */
+/*  Last Modified: 2025/12/15 11:27:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,43 +14,28 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "render/vulkan/Device.hpp"
+#include "render/vulkan/VulkanInstance.hpp"
 #include "render/vulkan/vulkanHelper.hpp"
-
-#include <iostream>
 
 namespace	hel {
 
-Device::Device(void) {
-	createInstance();
-	if (!_healthy)
-		return ;
-	setupDebugMessenger();
-}
-
-Device::~Device(void) {
+VulkanInstance::~VulkanInstance(void) {
 	if (!_healthy)
 		return ;//TODO -> diagnostic what went wrong ? Maybe there are some things to free I think ?
-	if (enableValidationLayers)
+	if (_enableValidationLayers)
 		CALL_VKINSTANCE_FUNC_VOID(_instance, vkDestroyDebugUtilsMessengerEXT,
 								_debugMessenger, nullptr);
 	vkDestroyInstance(_instance, nullptr);
 }
 
-void	Device::createInstance() {
-	uint32_t	glfwExtensionsCount = 0;
-	const char	**glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionsCount);
-	std::vector<const char *>	reqExt(glfwExtensions, glfwExtensions + glfwExtensionsCount);
-	if (enableValidationLayers) {
-		reqExt.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-	}
-
-	if (!checkAllSupport(reqExt))//Ensure that this works
-		return ;
+bool	VulkanInstance::createInstance() {
+	std::vector<const char *>	reqExt = getExtensions();
+	if (!checkAllSupport(reqExt))
+		return (true);
 
 	VkApplicationInfo	appInfo{VK_STRUCTURE_TYPE_APPLICATION_INFO,
 		nullptr, "Hel", VK_MAKE_VERSION(0, 0, 0),
-		"Hel Engine", VK_MAKE_VERSION(0, 0, 0), VK_API_VERSION_1_2
+		"Hel Engine", VK_MAKE_VERSION(0, 0, 0), VK_API_VERSION_1_0
 	};
 
 	VkInstanceCreateInfo	createInfo{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
@@ -58,7 +43,7 @@ void	Device::createInstance() {
 		static_cast<uint32_t>(reqExt.size()), reqExt.data()
 	};
 	VkDebugUtilsMessengerCreateInfoEXT	debugInfo{};
-	if (enableValidationLayers) {
+	if (_enableValidationLayers) {
 		createInfo.enabledLayerCount = static_cast<uint32_t>(_validationLayers.size());
 		createInfo.ppEnabledLayerNames = _validationLayers.data();
 
@@ -69,11 +54,22 @@ void	Device::createInstance() {
 	if (vkCreateInstance(&createInfo, nullptr, &_instance) != VK_SUCCESS) {
 		_healthy = false;
 		_reason = "Failded to create an instance of vulkan";
-		return ;
+		return (true);
 	}
+	return (setupDebugMessenger());
 }
 
-bool	Device::checkAllSupport(std::vector<const char *> &reqExt) {
+std::vector<const char *>	VulkanInstance::getExtensions(void) {
+	uint32_t	glfwExtensionsCount = 0;
+	const char	**glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionsCount);
+	std::vector<const char *>	reqExt(glfwExtensions, glfwExtensions + glfwExtensionsCount);
+	if (_enableValidationLayers) {
+		reqExt.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+	}
+	return (reqExt);
+}
+
+bool	VulkanInstance::checkAllSupport(std::vector<const char *> &reqExt) {
 	uint32_t	avExtCount = 0;
 	vkEnumerateInstanceExtensionProperties(nullptr, &avExtCount, nullptr);
 	std::vector<VkExtensionProperties>	avExt(avExtCount);
@@ -82,7 +78,7 @@ bool	Device::checkAllSupport(std::vector<const char *> &reqExt) {
 					[](const VkExtensionProperties &p){ return (p.extensionName); }))
 		return (false);
 
-	if (enableValidationLayers) {
+	if (_enableValidationLayers) {
 		uint32_t	layerCount = 0;
 		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 		std::vector<VkLayerProperties>	availableLayers(layerCount);
@@ -103,7 +99,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL	debugCallback(
 	return VK_FALSE;
 }
 
-void	Device::populateMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo) {
+void	VulkanInstance::populateMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo) {
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 	createInfo.pNext = nullptr;
 	createInfo.flags = 0;
@@ -116,7 +112,9 @@ void	Device::populateMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &cre
 	createInfo.pUserData = nullptr;
 }
 
-void	Device::setupDebugMessenger(void) {
+bool	VulkanInstance::setupDebugMessenger(void) {
+	if (!_enableValidationLayers)
+		return (false);
 	VkDebugUtilsMessengerCreateInfoEXT	createInfo{};
 	populateMessengerCreateInfo(createInfo);
 	VkResult	res = VK_SUCCESS;
@@ -125,7 +123,9 @@ void	Device::setupDebugMessenger(void) {
 	if (res != VK_SUCCESS) {
 		_healthy = false;
 		_reason = "Failed to create the messenger";
+		return (true);
 	}
+	return (false);
 }
 
 }

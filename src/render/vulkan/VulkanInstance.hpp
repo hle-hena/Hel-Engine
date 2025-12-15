@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Device.hpp                                                          */
+/*  File: VulkanInstance.hpp                                                  */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2025/12/11 10:10:23 by hle-hena                                  */
+/*  Created: 2025/12/15 10:33:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/12 22:39:54                                        */
+/*  Last Modified: 2025/12/15 11:27:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,36 +16,43 @@
 
 #pragma once
 
-# include "platform/window/Window.hpp"
-
+# define GLFW_INCLUDE_VULKAN
+# include <GLFW/glfw3.h>
+# include <string>
+# include <cstring>
 # include <vector>
 # include <iostream>
-# include <cstring>
 
-namespace	hel {
+namespace hel {
 
-class	Device {
+class	VulkanInstance {
 	public:
-		#ifdef VALIDATION_LAYERS
-			static constexpr bool enableValidationLayers = true;
-		#else
-			static constexpr bool enableValidationLayers = false;
-		#endif
+		VulkanInstance(void) = default;
+		~VulkanInstance(void);
+		VulkanInstance(const VulkanInstance &other) = delete;
+		VulkanInstance	&operator=(const VulkanInstance &other) = delete;
+		VulkanInstance(VulkanInstance &&other) = default;
+		VulkanInstance	&operator=(VulkanInstance &&other) = default;
 
-		Device(void);
-		~Device(void);
-		Device(const Device &other) = delete;
-		Device	&operator=(const Device &other) = delete;
-		Device(Device &&other) = default;
-		Device	&operator=(Device &&other) = default;
-
-		std::string					getReason(void) const { return (_reason); }
-
-		bool	isHealthy(void) const {
+		std::string		getReason(void) const {
+			return (_reason);
+		}
+		bool			isHealthy(void) const {
 			return (_healthy);
 		}
+		VkInstance		&getVkInstance(void) {
+			return (_instance);
+		}
+
+		bool			createInstance(void);
 
 	private:
+		#ifdef VALIDATION_LAYERS
+			static constexpr bool _enableValidationLayers = true;
+		#else
+			static constexpr bool _enableValidationLayers = false;
+		#endif
+
 		template <typename T, typename Extractor>
 		bool	checkSupport(const std::string &type, const std::vector<const char *> &required,
 							std::vector<T> &available, Extractor extractName) {
@@ -67,16 +74,16 @@ class	Device {
 			return (true);
 		}
 
-		void						createInstance(void);
+		std::vector<const char *>	getExtensions(void);
 		bool						checkAllSupport(std::vector<const char *> &reqExt);
 
+		bool						setupDebugMessenger(void);
 		void						populateMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
-		void						setupDebugMessenger(void);
 
-		bool						_healthy{true};
-		std::string					_reason{""};
-		VkInstance					_instance;
-		VkDebugUtilsMessengerEXT	_debugMessenger;
+		bool							_healthy{true};
+		std::string						_reason{""};
+		VkInstance						_instance;
+		VkDebugUtilsMessengerEXT		_debugMessenger;
 
 		const std::vector<const char *>	_validationLayers = { "VK_LAYER_KHRONOS_validation" };
 };

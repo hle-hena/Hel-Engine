@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Application.hpp                                                     */
+/*  File: VulkanContext.cpp                                                   */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2025/12/10 14:49:12 by hle-hena                                  */
+/*  Created: 2025/12/15 10:32:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/15 11:21:41                                        */
+/*  Last Modified: 2025/12/15 11:27:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,36 +14,20 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#pragma once
-
-# include <vector>
-# include <memory>
-# include <string>
-
-# include "platform/window/Window.hpp"
-# include "render/vulkan/VulkanContext.hpp"
+#include "render/vulkan/VulkanContext.hpp"
 
 namespace	hel {
 
-class	Application {
-	public:
-		Application(void);
-		~Application(void);
-		Application(Application &&other) = default;
-		Application	&operator=(Application &&other) = default;
-
-		void	run(void);
-		void	addNewWindow(int width, int height, const std::string &windowName);
-
-		bool	isHealthy(void) const { return (_healthy); }
-
-	private:
-		Application(const Application &other) = delete;
-		Application	&operator=(const Application &other) = delete;
-
-		bool							_healthy{true};
-		std::vector<Window::windowPtr>	_appWindows;
-		VulkanContext					_vkContext;
-};
+VulkanContext::VulkanContext(void)
+	:	_physicalDevice{_instance} {
+	if (_instance.createInstance()) {
+		_healthy = false;
+		_reason = _instance.getReason();
+	}
+	if (_physicalDevice.pickPhysicalDevice()) {
+		_healthy = false;
+		_reason = _physicalDevice.getReason();
+	}
+}
 
 }

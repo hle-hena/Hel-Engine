@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/12 15:41:24                                        */
+/*  Last Modified: 2025/12/15 11:22:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,9 +22,9 @@ namespace hel {
 
 Application::Application(void)
 	:	_appWindows{} {
-	if (!_appDevice.isHealthy()) {
+	if (!_vkContext.isHealthy()) {
 		_healthy = false;
-		std::cerr << _appDevice.getReason() << std::endl;
+		std::cerr << _vkContext.getReason() << std::endl;
 		return ;
 	}
 	addNewWindow(Window::WIDTH, Window::HEIGHT, "Hel Engine");
