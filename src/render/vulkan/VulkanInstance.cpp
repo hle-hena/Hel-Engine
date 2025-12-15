@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:33:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/15 11:27:42                                        */
+/*  Last Modified: 2025/12/15 15:09:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "render/vulkan/VulkanInstance.hpp"
+#include "render/vulkan/validationLayer.hpp"
 #include "render/vulkan/vulkanHelper.hpp"
 
 namespace	hel {
@@ -22,9 +23,7 @@ namespace	hel {
 VulkanInstance::~VulkanInstance(void) {
 	if (!_healthy)
 		return ;//TODO -> diagnostic what went wrong ? Maybe there are some things to free I think ?
-	if (_enableValidationLayers)
-		CALL_VKINSTANCE_FUNC_VOID(_instance, vkDestroyDebugUtilsMessengerEXT,
-								_debugMessenger, nullptr);
+	DESTROY_DEBUG_MESSENGER();
 	vkDestroyInstance(_instance, nullptr);
 }
 
@@ -43,50 +42,33 @@ bool	VulkanInstance::createInstance() {
 		static_cast<uint32_t>(reqExt.size()), reqExt.data()
 	};
 	VkDebugUtilsMessengerCreateInfoEXT	debugInfo{};
-	if (_enableValidationLayers) {
-		createInfo.enabledLayerCount = static_cast<uint32_t>(_validationLayers.size());
-		createInfo.ppEnabledLayerNames = _validationLayers.data();
-
-		populateMessengerCreateInfo(debugInfo);
-		createInfo.pNext = &debugInfo;
-	}
+	ADD_VALIDATION_LAYERS();
 
 	if (vkCreateInstance(&createInfo, nullptr, &_instance) != VK_SUCCESS) {
 		_healthy = false;
 		_reason = "Failded to create an instance of vulkan";
 		return (true);
 	}
-	return (setupDebugMessenger());
+	return (SETUP_VALIDATION_LAYER());
 }
 
 std::vector<const char *>	VulkanInstance::getExtensions(void) {
 	uint32_t	glfwExtensionsCount = 0;
 	const char	**glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionsCount);
 	std::vector<const char *>	reqExt(glfwExtensions, glfwExtensions + glfwExtensionsCount);
-	if (_enableValidationLayers) {
-		reqExt.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-	}
+	ADD_VALIDATION_LAYER_SUPPORT();
 	return (reqExt);
 }
 
 bool	VulkanInstance::checkAllSupport(std::vector<const char *> &reqExt) {
-	uint32_t	avExtCount = 0;
-	vkEnumerateInstanceExtensionProperties(nullptr, &avExtCount, nullptr);
-	std::vector<VkExtensionProperties>	avExt(avExtCount);
-	vkEnumerateInstanceExtensionProperties(nullptr, &avExtCount, avExt.data());
-	if (!checkSupport("extension", reqExt, avExt,
+	auto	availableExt = enumerate<VkExtensionProperties>(
+		ENUMERATE_WRAP(vkEnumerateInstanceExtensionProperties, nullptr)
+	);
+	if (!checkSupport("extension", reqExt, availableExt,
 					[](const VkExtensionProperties &p){ return (p.extensionName); }))
 		return (false);
 
-	if (_enableValidationLayers) {
-		uint32_t	layerCount = 0;
-		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-		std::vector<VkLayerProperties>	availableLayers(layerCount);
-		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-		if (!checkSupport("validation layer", _validationLayers, availableLayers,
-						[](const VkLayerProperties &p){ return (p.layerName); }))
-			return (false);
-	}
+	CHECK_SUPPORT_VALIDATION_LAYER();
 	return (true);
 }
 
@@ -113,8 +95,6 @@ void	VulkanInstance::populateMessengerCreateInfo(VkDebugUtilsMessengerCreateInfo
 }
 
 bool	VulkanInstance::setupDebugMessenger(void) {
-	if (!_enableValidationLayers)
-		return (false);
 	VkDebugUtilsMessengerCreateInfoEXT	createInfo{};
 	populateMessengerCreateInfo(createInfo);
 	VkResult	res = VK_SUCCESS;

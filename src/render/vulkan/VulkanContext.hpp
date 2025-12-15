@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:31:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/15 11:23:37                                        */
+/*  Last Modified: 2025/12/15 15:08:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,7 +17,7 @@
 #pragma once
 
 # include "render/vulkan/VulkanInstance.hpp"
-# include "render/vulkan/PhysicalDevice.hpp"
+# include "render/vulkan/Device.hpp"
 
 namespace	hel {
 
@@ -41,7 +41,7 @@ class	VulkanContext {
 		bool			_healthy{true};
 		std::string		_reason{""};
 		VulkanInstance	_instance;
-		PhysicalDevice	_physicalDevice;
+		Device			_physicalDevice;
 };
 
 }

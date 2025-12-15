@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: PhysicalDevice.hpp                                                  */
+/*  File: Device.hpp                                                          */
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:22 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/15 11:20:00                                        */
+/*  Last Modified: 2025/12/15 15:08:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,14 +20,14 @@
 
 namespace	hel {
 
-class	PhysicalDevice {
+class	Device {
 	public:
-		PhysicalDevice(VulkanInstance	&instance);
-		~PhysicalDevice(void) = default;
-		PhysicalDevice(const PhysicalDevice &other) = delete;
-		PhysicalDevice	&operator=(const PhysicalDevice &other) = delete;
-		PhysicalDevice(PhysicalDevice &&other) = default;
-		PhysicalDevice	&operator=(PhysicalDevice &&other) = default;
+		Device(VulkanInstance	&instance);
+		~Device(void) = default;
+		Device(const Device &other) = delete;
+		Device	&operator=(const Device &other) = delete;
+		Device(Device &&other) = default;
+		Device	&operator=(Device &&other) = default;
 
 		std::string		getReason(void) const {
 			return (_reason);

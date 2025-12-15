@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: PhysicalDevice.cpp                                                  */
+/*  File: Device.cpp                                                          */
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/15 11:18:38                                        */
+/*  Last Modified: 2025/12/15 15:08:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,15 +14,16 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "render/vulkan/PhysicalDevice.hpp"
+
+#include "render/vulkan/Device.hpp"
 
 namespace	hel {
 
-PhysicalDevice::PhysicalDevice(VulkanInstance &instance)
+Device::Device(VulkanInstance &instance)
 	:	_instance{instance} {
 }
 
-bool	PhysicalDevice::pickPhysicalDevice(void) {
+bool	Device::pickPhysicalDevice(void) {
 	uint32_t	physDeviceCount = 0;
 	vkEnumeratePhysicalDevices(_instance.getVkInstance(), &physDeviceCount, nullptr);
 	if (physDeviceCount == 0) {
@@ -47,7 +48,7 @@ bool	PhysicalDevice::pickPhysicalDevice(void) {
 	return (false);
 }
 
-bool	PhysicalDevice::isDeviceSuitable(VkPhysicalDevice device) {
+bool	Device::isDeviceSuitable(VkPhysicalDevice device) {
 	return (true);
 }
 

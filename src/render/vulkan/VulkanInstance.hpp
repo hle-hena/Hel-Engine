@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:33:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/15 11:27:34                                        */
+/*  Last Modified: 2025/12/15 13:54:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -47,15 +47,9 @@ class	VulkanInstance {
 		bool			createInstance(void);
 
 	private:
-		#ifdef VALIDATION_LAYERS
-			static constexpr bool _enableValidationLayers = true;
-		#else
-			static constexpr bool _enableValidationLayers = false;
-		#endif
-
 		template <typename T, typename Extractor>
 		bool	checkSupport(const std::string &type, const std::vector<const char *> &required,
-							std::vector<T> &available, Extractor extractName) {
+							std::vector<T> &available, Extractor &&extractName) {
 			for (const char *reqName: required) {
 				bool	found = false;
 				for (const T &value: available) {
