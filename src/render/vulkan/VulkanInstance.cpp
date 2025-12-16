@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:33:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/15 16:03:52                                        */
+/*  Last Modified: 2025/12/16 20:17:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,10 +21,10 @@
 namespace	hel {
 
 VulkanInstance::~VulkanInstance(void) {
-	if (!_healthy)
-		return ;//TODO -> diagnostic what went wrong ? Maybe there are some things to free I think ?
-	DESTROY_DEBUG_MESSENGER();
-	vkDestroyInstance(_instance, nullptr);
+	if (_debugMessenger != VK_NULL_HANDLE)
+		DESTROY_DEBUG_MESSENGER();
+	if (_instance != VK_NULL_HANDLE)
+		vkDestroyInstance(_instance, nullptr);
 }
 
 bool	VulkanInstance::createInstance() {
@@ -36,7 +36,6 @@ bool	VulkanInstance::createInstance() {
 		nullptr, "Hel", VK_MAKE_VERSION(0, 0, 0),
 		"Hel Engine", VK_MAKE_VERSION(0, 0, 0), VK_API_VERSION_1_0
 	};
-
 	VkInstanceCreateInfo	createInfo{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
 		nullptr, 0, &appInfo, 0, nullptr,
 		static_cast<uint32_t>(reqExt.size()), reqExt.data()
@@ -44,11 +43,8 @@ bool	VulkanInstance::createInstance() {
 	VkDebugUtilsMessengerCreateInfoEXT	debugInfo{};
 	ADD_VALIDATION_LAYERS();
 
-	if (vkCreateInstance(&createInfo, nullptr, &_instance) != VK_SUCCESS) {
-		_healthy = false;
-		_reason = "Failded to create an instance of vulkan";
-		return (true);
-	}
+	if (vkCreateInstance(&createInfo, nullptr, &_instance) != VK_SUCCESS)
+		RETURN_SET_UNHEALTHY("Failed to create an instance of vulkan", true);
 	return (SETUP_VALIDATION_LAYER());
 }
 
@@ -77,7 +73,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL	debugCallback(
 		VkDebugUtilsMessageTypeFlagsEXT messageType,
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 		void* pUserData) {
-	std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+	std::cerr << pCallbackData->pMessage << std::endl;
 	return VK_FALSE;
 }
 
@@ -100,11 +96,8 @@ bool	VulkanInstance::setupDebugMessenger(void) {
 	VkResult	res = VK_SUCCESS;
 	CALL_VKINSTANCE_FUNC_VKRESULT(res, _instance, vkCreateDebugUtilsMessengerEXT,
 									&createInfo, nullptr, &_debugMessenger);
-	if (res != VK_SUCCESS) {
-		_healthy = false;
-		_reason = "Failed to create the messenger";
-		return (true);
-	}
+	if (res != VK_SUCCESS)
+		RETURN_SET_UNHEALTHY("Failed to create the debug messenger.", true);
 	return (false);
 }
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/15 16:09:04                                        */
+/*  Last Modified: 2025/12/16 20:14:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,9 +14,9 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-
 #include "render/vulkan/Device.hpp"
 #include "render/vulkan/vulkanHelper.hpp"
+#include "utils/healthHelper.hpp"
 
 namespace	hel {
 
@@ -25,21 +25,16 @@ Device::Device(VulkanInstance &instance)
 }
 
 Device::~Device(void) {
-	if (!_healthy)
-		return ;
-	vkDestroyDevice(_device, nullptr);
+	if (_device != VK_NULL_HANDLE)
+		vkDestroyDevice(_device, nullptr);
 }
 
 bool	Device::pickPhysicalDevice(void) {
-	uint32_t	physDeviceCount = 0;
-	vkEnumeratePhysicalDevices(_instance.getVkInstance(), &physDeviceCount, nullptr);
-	if (physDeviceCount == 0) {
-		_healthy = false;
-		_reason = "Couldn't find a GPU to pair with vulkan";
-		return (true);
-	}
-	std::vector<VkPhysicalDevice>	physDevices(physDeviceCount);
-	vkEnumeratePhysicalDevices(_instance.getVkInstance(), &physDeviceCount, physDevices.data());
+	auto	physDevices = enumerate<VkPhysicalDevice>(
+		ENUMERATE_WRAP(vkEnumeratePhysicalDevices, _instance.getVkInstance())
+	);
+	if (physDevices.size() == 0)
+		RETURN_SET_UNHEALTHY("Couldn't find a GPU to pair with vulkan", true);
 
 	for (const auto &device: physDevices) {
 		if (isDeviceSuitable(device)) {
@@ -47,11 +42,8 @@ bool	Device::pickPhysicalDevice(void) {
 			break ;
 		}
 	}
-	if (_physicalDevice == VK_NULL_HANDLE) {
-		_healthy = false;
-		_reason = "Couldn't find a suitable physical device.";
-		return (true);
-	}
+	if (_physicalDevice == VK_NULL_HANDLE)
+		RETURN_SET_UNHEALTHY("Couldn't find a suitable physical device.", true);
 	return (createLogicalDevice());
 }
 
@@ -85,12 +77,10 @@ bool	Device::createLogicalDevice(void) {
 	VkPhysicalDeviceFeatures	features{};
 	VkDeviceCreateInfo	createInfo{VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO, nullptr, 0,
 		1, &queueCreateInfo, 0, nullptr, 0, nullptr, &features};
-	if (vkCreateDevice(_physicalDevice, &createInfo, nullptr, &_device) != VK_SUCCESS) {
-		_healthy = false;
-		_reason = "Couldn't create a logical device";
-		return (true);
-	}
+	if (vkCreateDevice(_physicalDevice, &createInfo, nullptr, &_device) != VK_SUCCESS)
+		RETURN_SET_UNHEALTHY("Couldn't create a logical device", true);
 	vkGetDeviceQueue(_device, indices.graphicsFamily.value(), 0, &_graphicQueue);
+	std::cout << "Created the logical device" << std::endl;
 	return (false);
 }
 

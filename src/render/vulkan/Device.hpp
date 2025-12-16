@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:22 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/15 16:00:18                                        */
+/*  Last Modified: 2025/12/16 20:16:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -31,7 +31,6 @@ struct	QueuesFamilyIndices {
 
 class	Device {
 	public:
-
 		Device(VulkanInstance	&instance);
 		~Device(void);
 		Device(const Device &other) = delete;
@@ -53,7 +52,7 @@ class	Device {
 		std::string			_reason{""};
 		VulkanInstance		&_instance;
 		VkPhysicalDevice	_physicalDevice{VK_NULL_HANDLE};
-		VkDevice			_device;
+		VkDevice			_device{VK_NULL_HANDLE};
 		VkQueue				_graphicQueue;
 
 		bool				isDeviceSuitable(VkPhysicalDevice device);

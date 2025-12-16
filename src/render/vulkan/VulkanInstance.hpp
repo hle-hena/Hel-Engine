@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:33:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/15 13:54:17                                        */
+/*  Last Modified: 2025/12/16 18:58:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,6 +22,8 @@
 # include <cstring>
 # include <vector>
 # include <iostream>
+
+# include "utils/healthHelper.hpp"
 
 namespace hel {
 
@@ -58,11 +60,11 @@ class	VulkanInstance {
 						break ;
 					}
 				}
-				if (!found) {
-					_healthy = false;
-					_reason = "Missing support for a(n) " + type + ": \"" + reqName + "\"";
-					return (false);
-				}
+				if (!found)
+					RETURN_SET_UNHEALTHY(
+						"Missing support for a(n) " + type + ": \"" + reqName + "\"",
+						false
+					);
 			}
 			std::cout << "All " << type << " have been found" << std::endl;
 			return (true);
@@ -76,8 +78,8 @@ class	VulkanInstance {
 
 		bool							_healthy{true};
 		std::string						_reason{""};
-		VkInstance						_instance;
-		VkDebugUtilsMessengerEXT		_debugMessenger;
+		VkInstance						_instance{VK_NULL_HANDLE};
+		VkDebugUtilsMessengerEXT		_debugMessenger{VK_NULL_HANDLE};
 
 		const std::vector<const char *>	_validationLayers = { "VK_LAYER_KHRONOS_validation" };
 };
