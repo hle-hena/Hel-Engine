@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:12 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/15 11:21:41                                        */
+/*  Last Modified: 2025/12/16 20:24:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,13 +35,19 @@ class	Application {
 		void	run(void);
 		void	addNewWindow(int width, int height, const std::string &windowName);
 
-		bool	isHealthy(void) const { return (_healthy); }
+		std::string		getReason(void) const {
+			return (_reason);
+		}
+		bool			isHealthy(void) const {
+			return (_healthy);
+		}
 
 	private:
 		Application(const Application &other) = delete;
 		Application	&operator=(const Application &other) = delete;
 
 		bool							_healthy{true};
+		std::string						_reason{""};
 		std::vector<Window::windowPtr>	_appWindows;
 		VulkanContext					_vkContext;
 };

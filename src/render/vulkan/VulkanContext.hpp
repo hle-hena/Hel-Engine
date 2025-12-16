@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:31:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/15 16:08:32                                        */
+/*  Last Modified: 2025/12/16 20:21:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,6 +36,8 @@ class	VulkanContext {
 		bool			isHealthy(void) const {
 			return (_healthy);
 		}
+
+		bool	initiateVulkan(void);
 
 	private:
 		bool			_healthy{true};
