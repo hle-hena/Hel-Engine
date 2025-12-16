@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:22 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/15 15:08:16                                        */
+/*  Last Modified: 2025/12/15 16:00:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,13 +17,23 @@
 #pragma once
 
 # include "render/vulkan/VulkanInstance.hpp"
+# include <optional>
 
 namespace	hel {
 
+struct	QueuesFamilyIndices {
+	std::optional<uint32_t>	graphicsFamily;
+
+	bool	isComplete() const {
+		return (graphicsFamily.has_value());
+	}
+};
+
 class	Device {
 	public:
+
 		Device(VulkanInstance	&instance);
-		~Device(void) = default;
+		~Device(void);
 		Device(const Device &other) = delete;
 		Device	&operator=(const Device &other) = delete;
 		Device(Device &&other) = default;
@@ -42,9 +52,14 @@ class	Device {
 		bool				_healthy{true};
 		std::string			_reason{""};
 		VulkanInstance		&_instance;
-		VkPhysicalDevice	_device{VK_NULL_HANDLE};
+		VkPhysicalDevice	_physicalDevice{VK_NULL_HANDLE};
+		VkDevice			_device;
+		VkQueue				_graphicQueue;
 
-		bool	isDeviceSuitable(VkPhysicalDevice device);
+		bool				isDeviceSuitable(VkPhysicalDevice device);
+		QueuesFamilyIndices	findQueueFamilies(VkPhysicalDevice device);
+
+		bool				createLogicalDevice(void);
 };
 
 }

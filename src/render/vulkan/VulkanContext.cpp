@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:32:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/15 13:26:29                                        */
+/*  Last Modified: 2025/12/15 16:08:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,15 +19,16 @@
 namespace	hel {
 
 VulkanContext::VulkanContext(void)
-	:	_physicalDevice{_instance} {
+	:	_device{_instance} {
 	if (_instance.createInstance()) {
 		_healthy = false;
 		_reason = _instance.getReason();
 		return ;
 	}
-	if (_physicalDevice.pickPhysicalDevice()) {
+	if (_device.pickPhysicalDevice()) {
 		_healthy = false;
-		_reason = _physicalDevice.getReason();
+		_reason = _device.getReason();
+		return ;
 	}
 }
 
