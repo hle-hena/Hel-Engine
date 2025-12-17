@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Application.hpp                                                     */
+/*  File: Device.hpp                                                          */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2025/12/10 14:49:12 by hle-hena                                  */
+/*  Created: 2025/12/15 10:35:22 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/16 20:24:54                                        */
+/*  Last Modified: 2025/12/16 20:16:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,24 +16,27 @@
 
 #pragma once
 
-# include <vector>
-# include <memory>
-# include <string>
-
-# include "platform/window/Window.hpp"
-# include "render/vulkan/VulkanContext.hpp"
+# include "render/vulkan/VulkanInstance.hpp"
+# include <optional>
 
 namespace	hel {
 
-class	Application {
-	public:
-		Application(void);
-		~Application(void);
-		Application(Application &&other) = default;
-		Application	&operator=(Application &&other) = default;
+struct	QueuesFamilyIndices {
+	std::optional<uint32_t>	graphicsFamily;
 
-		void	run(void);
-		void	addNewWindow(int width, int height, const std::string &windowName);
+	bool	isComplete() const {
+		return (graphicsFamily.has_value());
+	}
+};
+
+class	Device {
+	public:
+		Device(VulkanInstance	&instance);
+		~Device(void);
+		Device(const Device &other) = delete;
+		Device	&operator=(const Device &other) = delete;
+		Device(Device &&other) = default;
+		Device	&operator=(Device &&other) = default;
 
 		std::string		getReason(void) const {
 			return (_reason);
@@ -42,14 +45,20 @@ class	Application {
 			return (_healthy);
 		}
 
-	private:
-		Application(const Application &other) = delete;
-		Application	&operator=(const Application &other) = delete;
+		bool	pickPhysicalDevice(void);
 
-		bool							_healthy{true};
-		std::string						_reason{""};
-		std::vector<Window::windowPtr>	_appWindows;
-		VulkanContext					_vkContext;
+	private:
+		bool				_healthy{true};
+		std::string			_reason{""};
+		VulkanInstance		&_instance;
+		VkPhysicalDevice	_physicalDevice{VK_NULL_HANDLE};
+		VkDevice			_device{VK_NULL_HANDLE};
+		VkQueue				_graphicQueue;
+
+		bool				isDeviceSuitable(VkPhysicalDevice device);
+		QueuesFamilyIndices	findQueueFamilies(VkPhysicalDevice device);
+
+		bool				createLogicalDevice(void);
 };
 
 }
