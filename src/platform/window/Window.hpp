@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 17:46:35                                        */
+/*  Last Modified: 2025/12/11 10:04:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,6 +28,8 @@ class	Application;
 
 class	Window {
 	public:
+		static constexpr int	WIDTH = 800;
+		static constexpr int	HEIGHT = 600;
 		using windowPtr = std::unique_ptr<Window>;
 
 		Window(Window &&other) = default;

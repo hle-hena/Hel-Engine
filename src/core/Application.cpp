@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 20:07:36                                        */
+/*  Last Modified: 2025/12/17 10:15:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "core/Application.hpp"
+#include "utils/healthHelper.hpp"
 
 #include <iostream>
 
@@ -22,16 +23,18 @@ namespace hel {
 
 Application::Application(void)
 	:	_appWindows{} {
-	addNewWindow(800, 600, "Hel Engine");
+	if (_vkContext.initiateVulkan())
+		RETURN_SET_UNHEALTHY(_vkContext.getReason());
+	addNewWindow(Window::WIDTH, Window::HEIGHT, "Hel");
 	if (_appWindows.size() == 0)
-		_available = false;
+		_healthy = false;
 }
 
 Application::~Application(void) {
 }
 
 void	Application::run(void) {
-	while (_appWindows.size() > 0 && _available) {
+	while (_appWindows.size() > 0 && _healthy) {
 		glfwPollEvents();
 
 		size_t	windowsCount = _appWindows.size();
@@ -43,6 +46,8 @@ void	Application::run(void) {
 			}
 		}
 	}
+	if (!_healthy)
+		std::cerr << _reason << std::endl;
 }
 
 void	Application::addNewWindow(int width, int height, const std::string &windowName) {
