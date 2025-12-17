@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:33:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/16 20:17:29                                        */
+/*  Last Modified: 2025/12/17 11:26:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,15 +21,14 @@
 namespace	hel {
 
 VulkanInstance::~VulkanInstance(void) {
-	if (_debugMessenger != VK_NULL_HANDLE)
-		DESTROY_DEBUG_MESSENGER();
+	DESTROY_DEBUG_MESSENGER();
 	if (_instance != VK_NULL_HANDLE)
 		vkDestroyInstance(_instance, nullptr);
 }
 
 bool	VulkanInstance::createInstance() {
 	std::vector<const char *>	reqExt = getExtensions();
-	if (!checkAllSupport(reqExt))
+	if (checkAllSupport(reqExt))
 		return (true);
 
 	VkApplicationInfo	appInfo{VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -45,7 +44,7 @@ bool	VulkanInstance::createInstance() {
 
 	if (vkCreateInstance(&createInfo, nullptr, &_instance) != VK_SUCCESS)
 		RETURN_SET_UNHEALTHY("Failed to create an instance of vulkan", true);
-	return (SETUP_VALIDATION_LAYER());
+	return (SETUP_DEBUG_MESSENGER());
 }
 
 std::vector<const char *>	VulkanInstance::getExtensions(void) {
@@ -60,12 +59,12 @@ bool	VulkanInstance::checkAllSupport(std::vector<const char *> &reqExt) {
 	auto	availableExt = enumerate<VkExtensionProperties>(
 		ENUMERATE_WRAP(vkEnumerateInstanceExtensionProperties, nullptr)
 	);
-	if (!checkSupport("extension", reqExt, availableExt,
+	if (checkSupport("extension", reqExt, availableExt,
 					[](const VkExtensionProperties &p){ return (p.extensionName); }))
-		return (false);
+		return (true);
 
 	CHECK_SUPPORT_VALIDATION_LAYER();
-	return (true);
+	return (false);
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL	debugCallback(

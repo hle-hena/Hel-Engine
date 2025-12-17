@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 13:53:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/16 20:15:54                                        */
+/*  Last Modified: 2025/12/17 11:26:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,19 +24,20 @@
 
 	#define CHECK_SUPPORT_VALIDATION_LAYER()
 
-	#define SETUP_VALIDATION_LAYER() false
+	#define SETUP_DEBUG_MESSENGER() false
 
 	#define ADD_VALIDATION_LAYERS()
 
 #else
 
-	#define DESTROY_DEBUG_MESSENGER()			\
-		CALL_VKINSTANCE_FUNC_VOID(				\
-			_instance,							\
-			vkDestroyDebugUtilsMessengerEXT,	\
-			_debugMessenger,					\
-			nullptr								\
-		);
+	#define DESTROY_DEBUG_MESSENGER()				\
+		if (_debugMessenger != VK_NULL_HANDLE)		\
+			CALL_VKINSTANCE_FUNC_VOID(				\
+				_instance,							\
+				vkDestroyDebugUtilsMessengerEXT,	\
+				_debugMessenger,					\
+				nullptr								\
+			);
 
 	#define ADD_VALIDATION_LAYER_SUPPORT()		\
 		reqExt.push_back(						\
@@ -47,15 +48,15 @@
 		auto	availableLayers = enumerate<VkLayerProperties>(		\
 			ENUMERATE_WRAP(vkEnumerateInstanceLayerProperties)		\
 		);															\
-		if (!checkSupport("validation layer",						\
+		if (checkSupport("validation layer",						\
 						_validationLayers,							\
 						availableLayers,							\
 						[](const VkLayerProperties &p){				\
 							return (p.layerName);					\
 						}))											\
-			return (false);
+			return (true);
 	
-	#define SETUP_VALIDATION_LAYER() setupDebugMessenger()
+	#define SETUP_DEBUG_MESSENGER() setupDebugMessenger()
 
 	#define ADD_VALIDATION_LAYERS()								\
 		createInfo.enabledLayerCount =							\

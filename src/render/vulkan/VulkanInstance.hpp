@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:33:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/16 18:58:16                                        */
+/*  Last Modified: 2025/12/17 11:27:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -63,11 +63,11 @@ class	VulkanInstance {
 				if (!found)
 					RETURN_SET_UNHEALTHY(
 						"Missing support for a(n) " + type + ": \"" + reqName + "\"",
-						false
+						true
 					);
 			}
 			std::cout << "All " << type << " have been found" << std::endl;
-			return (true);
+			return (false);
 		}
 
 		std::vector<const char *>	getExtensions(void);
