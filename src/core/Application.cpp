@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/16 20:27:31                                        */
+/*  Last Modified: 2025/12/17 10:15:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,7 +25,7 @@ Application::Application(void)
 	:	_appWindows{} {
 	if (_vkContext.initiateVulkan())
 		RETURN_SET_UNHEALTHY(_vkContext.getReason());
-	addNewWindow(Window::WIDTH, Window::HEIGHT, "Hel Engine");
+	addNewWindow(Window::WIDTH, Window::HEIGHT, "Hel");
 	if (_appWindows.size() == 0)
 		_healthy = false;
 }
