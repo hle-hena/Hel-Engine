@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 20:09:33                                        */
+/*  Last Modified: 2026/01/05 16:24:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,11 +22,16 @@ namespace	hel {
 
 Window::windowPtr	Window::createWindow(int width, int height,
 										const std::string &windowName,
-										Application &app) noexcept {
+										Application &app, VkInstance &instance) noexcept {
 	if (!GLFW::acquire())
 		return (nullptr);
 	try {
-		return (Window::windowPtr(new Window(width, height, windowName, app)));
+		Window::windowPtr	window = Window::windowPtr(new Window(width, height,
+																windowName, app, instance));
+		if (glfwCreateWindowSurface(instance, window->getWindow(),
+									nullptr, &window->_surface) != VK_SUCCESS)
+			return (nullptr);//returns here while it shouldn't ??
+		return (window);
 	} catch (...) {
 		GLFW::release();
 		return (nullptr);
@@ -34,12 +39,13 @@ Window::windowPtr	Window::createWindow(int width, int height,
 }
 
 Window::Window(int width, int height, const std::string &windowName,
-			Application &app)
+			Application &app, VkInstance &instance)
 	:	_width(width),
 		_height(height),
 		_windowName(windowName),
 		_windowPtr(nullptr),
-		_app{app} {
+		_app{app},
+		_instance{instance} {
 	initWindow();
 }
 
@@ -59,6 +65,8 @@ Window::~Window(void) {
 }
 
 void	Window::deleteWindow(void) {
+	if (_surface != VK_NULL_HANDLE)
+		vkDestroySurfaceKHR(_instance, _surface, nullptr);
 	glfwDestroyWindow(_windowPtr);
 	GLFW::release();
 }
@@ -69,12 +77,6 @@ void	Window::deleteWindow(void) {
 // 	_rtWindow->_frameBufferResized = true;
 // 	_rtWindow->_width = width;
 // 	_rtWindow->_height = height;
-// }
-
-// void	Window::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface)
-// {
-// 	if (glfwCreateWindowSurface(instance, _windowPtr, nullptr, surface) != VK_SUCCESS)
-// 		throw std::runtime_error("Failed to create a window surface.");
 // }
 
 }

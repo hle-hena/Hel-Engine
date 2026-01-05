@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:22 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/16 20:16:57                                        */
+/*  Last Modified: 2026/01/05 16:48:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,15 +17,17 @@
 #pragma once
 
 # include "render/vulkan/VulkanInstance.hpp"
+# include "platform/window/Window.hpp"
 # include <optional>
 
 namespace	hel {
 
 struct	QueuesFamilyIndices {
 	std::optional<uint32_t>	graphicsFamily;
+	std::optional<uint32_t>	presentFamily;
 
 	bool	isComplete() const {
-		return (graphicsFamily.has_value());
+		return (graphicsFamily.has_value() && presentFamily.has_value());
 	}
 };
 
@@ -45,7 +47,8 @@ class	Device {
 			return (_healthy);
 		}
 
-		bool	pickPhysicalDevice(void);
+		bool	pickPhysicalDevice(Window::windowPtr &bootstrapWindow);
+		bool	supportSurface(Window::windowPtr &window);
 
 	private:
 		bool				_healthy{true};
@@ -53,12 +56,14 @@ class	Device {
 		VulkanInstance		&_instance;
 		VkPhysicalDevice	_physicalDevice{VK_NULL_HANDLE};
 		VkDevice			_device{VK_NULL_HANDLE};
+		QueuesFamilyIndices	_indices;
 		VkQueue				_graphicQueue;
+		VkQueue				_presentQueue;
 
-		bool				isDeviceSuitable(VkPhysicalDevice device);
-		QueuesFamilyIndices	findQueueFamilies(VkPhysicalDevice device);
+		bool				isDeviceSuitable(VkPhysicalDevice device, Window::windowPtr &bootstrapWindow);
+		QueuesFamilyIndices	findQueueFamilies(VkPhysicalDevice device, Window::windowPtr &bootstrapWindow);
 
-		bool				createLogicalDevice(void);
+		bool				createLogicalDevice();
 };
 
 }
