@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/05 16:19:23                                        */
+/*  Last Modified: 2026/01/06 16:18:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,8 @@
 # include <GLFW/glfw3.h>
 # include <string>
 # include <memory>
+
+# include "render/vulkan/SwapChain.hpp"
 
 
 namespace	hel {
@@ -39,7 +41,16 @@ class	Window {
 		static windowPtr	createWindow(int width, int height,
 										const std::string &windowName,
 										Application &app, VkInstance &instance) noexcept;
+		static windowPtr		createBootstrap(int width, int height,
+										const std::string &windowName,
+										Application &app, VkInstance &instance) noexcept;
 
+		std::string		getReason(void) const {
+			return (_reason);
+		}
+		bool			isHealthy(void) const {
+			return (_healthy);
+		}
 		bool			shouldClose(void) const {
 			return (glfwWindowShouldClose(_windowPtr));
 		}
@@ -80,13 +91,15 @@ class	Window {
 		static void	frameBufferResizedCallback(GLFWwindow *window, int width,
 											int height);
 
-
+		bool			_healthy{true};
+		std::string		_reason{""};
 		int				_width;
 		int				_height;
 		bool			_frameBufferResized{false};
 		std::string		_windowName;
 		GLFWwindow		*_windowPtr;
 		VkSurfaceKHR	_surface{VK_NULL_HANDLE};
+		SwapChain		_swapChain;
 		Application		&_app;
 		VkInstance		&_instance;
 };

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/05 16:47:14                                        */
+/*  Last Modified: 2026/01/06 16:29:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,6 +16,7 @@
 
 #include "core/Application.hpp"
 #include "utils/healthHelper.hpp"
+#include "platform/window/GLFW.hpp"
 
 #include <iostream>
 
@@ -24,11 +25,16 @@ namespace hel {
 Application::Application(void)
 	:	_appWindows{},
 		_vkContext{*this} {
-	if (_vkContext.initiateVulkan())
+	if (!GLFW::acquire())
+		RETURN_SET_UNHEALTHY("Couldn't init glfw.");
+	if (_vkContext.initiateVulkan()) {
+		GLFW::release();
 		RETURN_SET_UNHEALTHY(_vkContext.getReason());
+	}
 	addNewWindow(Window::WIDTH, Window::HEIGHT, "Hel");
 	if (_appWindows.size() == 0)
 		_healthy = false;
+	GLFW::release();
 }
 
 Application::~Application(void) {
@@ -58,7 +64,7 @@ void	Application::addNewWindow(int width, int height, const std::string &windowN
 		std::cerr << "Failed to create a new window." << std::endl;
 		return ;
 	}
-	if (!_vkContext.getDevice().supportSurface(window)) {
+	if (!_vkContext.getDevice().supportSurface(*window.get())) {
 		std::cerr << "The window surface is not supported." << std::endl;
 		return ;
 	}

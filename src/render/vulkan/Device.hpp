@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:22 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/05 16:48:14                                        */
+/*  Last Modified: 2026/01/06 16:00:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -46,11 +46,26 @@ class	Device {
 		bool			isHealthy(void) const {
 			return (_healthy);
 		}
+		VkPhysicalDevice	&getPhysical(void) {
+			return (_physicalDevice);
+		}
+		VkDevice			getLogical(void) {
+			return (_device);
+		}
+		QueuesFamilyIndices	&getQueueFamily(void) {
+			return (_indices);
+		}
 
-		bool	pickPhysicalDevice(Window::windowPtr &bootstrapWindow);
-		bool	supportSurface(Window::windowPtr &window);
+		bool	pickPhysicalDevice(Window &bootstrapWindow);
+		bool	supportSurface(Window &window);
 
 	private:
+		bool				isDeviceSuitable(VkPhysicalDevice device, Window &bootstrapWindow);
+		bool				checkDeviceExtensionSupport(VkPhysicalDevice device);
+		QueuesFamilyIndices	findQueueFamilies(VkPhysicalDevice device, Window &bootstrapWindow);
+
+		bool				createLogicalDevice();
+
 		bool				_healthy{true};
 		std::string			_reason{""};
 		VulkanInstance		&_instance;
@@ -60,10 +75,7 @@ class	Device {
 		VkQueue				_graphicQueue;
 		VkQueue				_presentQueue;
 
-		bool				isDeviceSuitable(VkPhysicalDevice device, Window::windowPtr &bootstrapWindow);
-		QueuesFamilyIndices	findQueueFamilies(VkPhysicalDevice device, Window::windowPtr &bootstrapWindow);
-
-		bool				createLogicalDevice();
+		const std::vector<const char *>	_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 };
 
 }

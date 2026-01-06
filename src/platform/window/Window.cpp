@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/05 16:24:24                                        */
+/*  Last Modified: 2026/01/06 16:25:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,7 @@
 #include "platform/window/Window.hpp"
 #include "platform/window/GLFW.hpp"
 #include "platform/events/KeyEvent.hpp"
+#include "core/Application.hpp"
 
 namespace	hel {
 
@@ -30,7 +31,27 @@ Window::windowPtr	Window::createWindow(int width, int height,
 																windowName, app, instance));
 		if (glfwCreateWindowSurface(instance, window->getWindow(),
 									nullptr, &window->_surface) != VK_SUCCESS)
-			return (nullptr);//returns here while it shouldn't ??
+			return (nullptr);
+		if (window->_swapChain.initiateSwapChain(*window))
+			return (nullptr);
+		return (window);
+	} catch (...) {
+		GLFW::release();
+		return (nullptr);
+	}
+}
+
+Window::windowPtr	Window::createBootstrap(int width, int height,
+										const std::string &windowName,
+										Application &app, VkInstance &instance) noexcept {
+	if (!GLFW::acquire())
+		return (nullptr);
+	try {
+		Window::windowPtr	window = Window::windowPtr(new Window(width, height,
+																windowName, app, instance));
+		if (glfwCreateWindowSurface(instance, window->getWindow(),
+									nullptr, &window->_surface) != VK_SUCCESS)
+			return (nullptr);
 		return (window);
 	} catch (...) {
 		GLFW::release();
@@ -44,6 +65,7 @@ Window::Window(int width, int height, const std::string &windowName,
 		_height(height),
 		_windowName(windowName),
 		_windowPtr(nullptr),
+		_swapChain{app.getVkContext().getDevice()},
 		_app{app},
 		_instance{instance} {
 	initWindow();
@@ -65,6 +87,7 @@ Window::~Window(void) {
 }
 
 void	Window::deleteWindow(void) {
+	_swapChain.deleteSwapChain();
 	if (_surface != VK_NULL_HANDLE)
 		vkDestroySurfaceKHR(_instance, _surface, nullptr);
 	glfwDestroyWindow(_windowPtr);

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/05 16:57:01                                        */
+/*  Last Modified: 2026/01/06 16:01:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "render/vulkan/Device.hpp"
+#include "render/vulkan/SwapChain.hpp"
 #include "render/vulkan/vulkanHelper.hpp"
 #include "utils/healthHelper.hpp"
 #include <set>
@@ -30,7 +31,7 @@ Device::~Device(void) {
 		vkDestroyDevice(_device, nullptr);
 }
 
-bool	Device::pickPhysicalDevice(Window::windowPtr &bootstrapWindow) {
+bool	Device::pickPhysicalDevice(Window &bootstrapWindow) {
 	auto	physDevices = enumerate<VkPhysicalDevice>(
 		ENUMERATE_WRAP(vkEnumeratePhysicalDevices, _instance.getVkInstance())
 	);
@@ -48,17 +49,34 @@ bool	Device::pickPhysicalDevice(Window::windowPtr &bootstrapWindow) {
 	return (createLogicalDevice());
 }
 
-bool	Device::isDeviceSuitable(VkPhysicalDevice device, Window::windowPtr &bootstrapWindow) {
+bool	Device::isDeviceSuitable(VkPhysicalDevice device, Window &bootstrapWindow) {
 	QueuesFamilyIndices	indices = findQueueFamilies(device, bootstrapWindow);
+	bool				extensionsSupported = checkDeviceExtensionSupport(device);
+	bool				swapChainAdequate = false;
 
-	if (indices.isComplete()) {
+	if (indices.isComplete() && extensionsSupported) {
+		SwapChain::SupportDetails	details = SwapChain::querySwapChainSupport(device, bootstrapWindow.getSurface());
+		swapChainAdequate = !details.formats.empty() && !details.presents.empty();
+		if (!swapChainAdequate)
+			return (false);
 		_indices = indices;
 		return (true);
 	}
 	return (false);
 }
 
-QueuesFamilyIndices	Device::findQueueFamilies(VkPhysicalDevice device, Window::windowPtr &bootstrapWindow) {
+bool	Device::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+	auto				availableExtensions = enumerate<VkExtensionProperties>(
+		ENUMERATE_WRAP(vkEnumerateDeviceExtensionProperties, device, nullptr)
+	);
+	std::set<std::string>	reqExtensions(_deviceExtensions.begin(), _deviceExtensions.end());
+	for (const auto &extension: availableExtensions) {
+		reqExtensions.erase(extension.extensionName);
+	}
+	return (reqExtensions.empty());
+}
+
+QueuesFamilyIndices	Device::findQueueFamilies(VkPhysicalDevice device, Window &bootstrapWindow) {
 	QueuesFamilyIndices	indices;
 	auto	queueFamilies = enumerate<VkQueueFamilyProperties>(
 		ENUMERATE_WRAP(vkGetPhysicalDeviceQueueFamilyProperties, device)
@@ -68,7 +86,7 @@ QueuesFamilyIndices	Device::findQueueFamilies(VkPhysicalDevice device, Window::w
 		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
 			indices.graphicsFamily = i;
 		VkBool32	presentSupport;
-		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, bootstrapWindow->getSurface(), &presentSupport);
+		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, bootstrapWindow.getSurface(), &presentSupport);
 		if (presentSupport)
 			indices.presentFamily = i;
 		if (indices.isComplete())
@@ -90,7 +108,8 @@ bool	Device::createLogicalDevice() {
 	}
 	VkPhysicalDeviceFeatures	features{};
 	VkDeviceCreateInfo	createInfo{VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO, nullptr, 0,
-		queueCreateInfos.size(), queueCreateInfos.data(), 0, nullptr, 0, nullptr, &features};
+		static_cast<uint32_t>(queueCreateInfos.size()), queueCreateInfos.data(),
+		0, nullptr, static_cast<uint32_t>(_deviceExtensions.size()), _deviceExtensions.data(), &features};
 	if (vkCreateDevice(_physicalDevice, &createInfo, nullptr, &_device) != VK_SUCCESS)
 		RETURN_SET_UNHEALTHY("Couldn't create a logical device", true);
 	vkGetDeviceQueue(_device, _indices.graphicsFamily.value(), 0, &_graphicQueue);
@@ -99,9 +118,9 @@ bool	Device::createLogicalDevice() {
 	return (false);
 }
 
-bool	Device::supportSurface(Window::windowPtr &window) {
+bool	Device::supportSurface(Window &window) {
 	VkBool32	presentSupport;
-	vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice, _indices.presentFamily.value(), window->getSurface(), &presentSupport);
+	vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice, _indices.presentFamily.value(), window.getSurface(), &presentSupport);
 
 	return (presentSupport);
 }

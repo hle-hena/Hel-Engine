@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:12 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/16 20:24:54                                        */
+/*  Last Modified: 2026/01/06 15:34:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -40,6 +40,9 @@ class	Application {
 		}
 		bool			isHealthy(void) const {
 			return (_healthy);
+		}
+		VulkanContext	&getVkContext(void) {
+			return (_vkContext);
 		}
 
 	private:
