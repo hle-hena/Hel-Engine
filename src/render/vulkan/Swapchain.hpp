@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: SwapChain.hpp                                                       */
+/*  File: Swapchain.hpp                                                       */
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/06 16:34:37                                        */
+/*  Last Modified: 2026/01/06 17:52:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,7 +27,7 @@ class	Device;
 class	Window;
 
 
-class	SwapChain
+class	Swapchain
 {
 	public:
 		struct	SupportDetails {
@@ -36,12 +36,12 @@ class	SwapChain
 			std::vector<VkPresentModeKHR>	presents;
 		};
 
-		SwapChain(Device &device);
-		~SwapChain(void);
-		SwapChain(const SwapChain &other) = delete;
-		SwapChain	&operator=(const SwapChain &other) = delete;
-		SwapChain(SwapChain &&other) = default;
-		SwapChain	&operator=(SwapChain &&other) = default;
+		Swapchain(Device &device);
+		~Swapchain(void);
+		Swapchain(const Swapchain &other) = delete;
+		Swapchain	&operator=(const Swapchain &other) = delete;
+		Swapchain(Swapchain &&other) = default;
+		Swapchain	&operator=(Swapchain &&other) = default;
 
 		std::string		getReason(void) const {
 			return (_reason);
@@ -62,13 +62,16 @@ class	SwapChain
 		VkExtent2D			selectSwapExtent(const VkSurfaceCapabilitiesKHR &presents,
 													GLFWwindow *window);
 
-		bool					_healthy{true};
-		std::string				_reason{""};
-		Device					&_device;
-		VkSwapchainKHR			_swapChain{VK_NULL_HANDLE};
-		std::vector<VkImage>	_images;
-		VkFormat				_format;
-		VkExtent2D				_extent;
+		bool				createImagesView(void);
+
+		bool						_healthy{true};
+		std::string					_reason{""};
+		Device						&_device;
+		VkSwapchainKHR				_swapchain{VK_NULL_HANDLE};
+		std::vector<VkImage>		_images;
+		std::vector<VkImageView>	_imagesView;
+		VkFormat					_format;
+		VkExtent2D					_extent;
 };
 
 }

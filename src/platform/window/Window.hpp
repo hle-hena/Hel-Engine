@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/06 16:18:48                                        */
+/*  Last Modified: 2026/01/06 17:51:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,7 +21,7 @@
 # include <string>
 # include <memory>
 
-# include "render/vulkan/SwapChain.hpp"
+# include "render/vulkan/Swapchain.hpp"
 
 
 namespace	hel {
@@ -99,7 +99,7 @@ class	Window {
 		std::string		_windowName;
 		GLFWwindow		*_windowPtr;
 		VkSurfaceKHR	_surface{VK_NULL_HANDLE};
-		SwapChain		_swapChain;
+		Swapchain		_swapchain;
 		Application		&_app;
 		VkInstance		&_instance;
 };

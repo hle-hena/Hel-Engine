@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: SwapChain.cpp                                                       */
+/*  File: Swapchain.cpp                                                       */
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/06 16:35:05                                        */
+/*  Last Modified: 2026/01/06 17:52:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,26 +14,26 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "render/vulkan/SwapChain.hpp"
+#include "render/vulkan/Swapchain.hpp"
 #include "platform/window/Window.hpp"
 #include "render/vulkan/Device.hpp"
 #include <limits>
 
 namespace	hel {
 
-SwapChain::SwapChain(Device &device)
+Swapchain::Swapchain(Device &device)
 	:	_device{device} {
 }
 
-SwapChain::~SwapChain(void) {
+Swapchain::~Swapchain(void) {
 }
 
-void	SwapChain::deleteSwapChain(void) {
-	if (_swapChain != VK_NULL_HANDLE)
-		vkDestroySwapchainKHR(_device.getLogical(), _swapChain, nullptr);
+void	Swapchain::deleteSwapChain(void) {
+	if (_swapchain != VK_NULL_HANDLE)
+		vkDestroySwapchainKHR(_device.getLogical(), _swapchain, nullptr);
 }
 
-SwapChain::SupportDetails	SwapChain::querySwapChainSupport(VkPhysicalDevice &device,
+Swapchain::SupportDetails	Swapchain::querySwapChainSupport(VkPhysicalDevice &device,
 															VkSurfaceKHR surface) {
 	SupportDetails	details;
 
@@ -53,8 +53,8 @@ SwapChain::SupportDetails	SwapChain::querySwapChainSupport(VkPhysicalDevice &dev
 	return (details);
 }
 
-bool	SwapChain::initiateSwapChain(Window &window) {
-	SwapChain::SupportDetails	details = querySwapChainSupport(_device.getPhysical(), window.getSurface());
+bool	Swapchain::initiateSwapChain(Window &window) {
+	Swapchain::SupportDetails	details = querySwapChainSupport(_device.getPhysical(), window.getSurface());
 
 	VkSurfaceFormatKHR	format = selectSwapSurfaceFormat(details.formats);
 	VkPresentModeKHR	present = selectSwapPresent(details.presents);
@@ -89,17 +89,17 @@ bool	SwapChain::initiateSwapChain(Window &window) {
 	createInfo.presentMode = present;
 	createInfo.clipped = VK_TRUE;
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
-	if (vkCreateSwapchainKHR(_device.getLogical(), &createInfo, nullptr, &_swapChain) != VK_SUCCESS)
+	if (vkCreateSwapchainKHR(_device.getLogical(), &createInfo, nullptr, &_swapchain) != VK_SUCCESS)
 		RETURN_SET_UNHEALTHY("Couldn't create the swap chain", true);
-	vkGetSwapchainImagesKHR(_device.getLogical(), _swapChain, &imageCount, nullptr);
+	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, nullptr);
 	_images.resize(imageCount);
-	vkGetSwapchainImagesKHR(_device.getLogical(), _swapChain, &imageCount, _images.data());
+	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, _images.data());
 	_format = format.format;
 	_extent = extent;
 	return (false);
 }
 
-VkSurfaceFormatKHR	SwapChain::selectSwapSurfaceFormat(std::vector<VkSurfaceFormatKHR> &formats) {
+VkSurfaceFormatKHR	Swapchain::selectSwapSurfaceFormat(std::vector<VkSurfaceFormatKHR> &formats) {
 	for (const auto &format: formats) {
 		if (format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
 			&& format.format == VK_FORMAT_B8G8R8A8_SRGB)
@@ -108,7 +108,7 @@ VkSurfaceFormatKHR	SwapChain::selectSwapSurfaceFormat(std::vector<VkSurfaceForma
 	return (formats[0]);
 }
 
-VkPresentModeKHR	SwapChain::selectSwapPresent(std::vector<VkPresentModeKHR> &presents) {
+VkPresentModeKHR	Swapchain::selectSwapPresent(std::vector<VkPresentModeKHR> &presents) {
 	for (const auto &present: presents) {
 		if (present == VK_PRESENT_MODE_MAILBOX_KHR)
 			return (present);
@@ -116,7 +116,7 @@ VkPresentModeKHR	SwapChain::selectSwapPresent(std::vector<VkPresentModeKHR> &pre
 	return (VK_PRESENT_MODE_FIFO_KHR);
 }
 
-VkExtent2D	SwapChain::selectSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities, GLFWwindow *window) {
+VkExtent2D	Swapchain::selectSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities, GLFWwindow *window) {
 	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
 		return (capabilities.currentExtent);
 	int	width, height;
@@ -131,6 +131,10 @@ VkExtent2D	SwapChain::selectSwapExtent(const VkSurfaceCapabilitiesKHR &capabilit
 	extent.height = std::clamp(extent.height, capabilities.minImageExtent.height,
 							capabilities.maxImageExtent.height);
 	return (extent);
+}
+
+bool	Swapchain::createImagesView(void) {
+	return (false);
 }
 
 }

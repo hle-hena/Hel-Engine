@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/06 16:01:11                                        */
+/*  Last Modified: 2026/01/06 17:50:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,7 +15,7 @@
 /* *************************************************************************  */
 
 #include "render/vulkan/Device.hpp"
-#include "render/vulkan/SwapChain.hpp"
+#include "render/vulkan/Swapchain.hpp"
 #include "render/vulkan/vulkanHelper.hpp"
 #include "utils/healthHelper.hpp"
 #include <set>
@@ -55,7 +55,7 @@ bool	Device::isDeviceSuitable(VkPhysicalDevice device, Window &bootstrapWindow) 
 	bool				swapChainAdequate = false;
 
 	if (indices.isComplete() && extensionsSupported) {
-		SwapChain::SupportDetails	details = SwapChain::querySwapChainSupport(device, bootstrapWindow.getSurface());
+		Swapchain::SupportDetails	details = Swapchain::querySwapChainSupport(device, bootstrapWindow.getSurface());
 		swapChainAdequate = !details.formats.empty() && !details.presents.empty();
 		if (!swapChainAdequate)
 			return (false);

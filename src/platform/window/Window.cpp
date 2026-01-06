@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/06 16:25:39                                        */
+/*  Last Modified: 2026/01/06 17:51:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -32,7 +32,7 @@ Window::windowPtr	Window::createWindow(int width, int height,
 		if (glfwCreateWindowSurface(instance, window->getWindow(),
 									nullptr, &window->_surface) != VK_SUCCESS)
 			return (nullptr);
-		if (window->_swapChain.initiateSwapChain(*window))
+		if (window->_swapchain.initiateSwapChain(*window))
 			return (nullptr);
 		return (window);
 	} catch (...) {
@@ -65,7 +65,7 @@ Window::Window(int width, int height, const std::string &windowName,
 		_height(height),
 		_windowName(windowName),
 		_windowPtr(nullptr),
-		_swapChain{app.getVkContext().getDevice()},
+		_swapchain{app.getVkContext().getDevice()},
 		_app{app},
 		_instance{instance} {
 	initWindow();
@@ -87,7 +87,7 @@ Window::~Window(void) {
 }
 
 void	Window::deleteWindow(void) {
-	_swapChain.deleteSwapChain();
+	_swapchain.deleteSwapChain();
 	if (_surface != VK_NULL_HANDLE)
 		vkDestroySurfaceKHR(_instance, _surface, nullptr);
 	glfwDestroyWindow(_windowPtr);
