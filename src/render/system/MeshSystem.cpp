@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:30:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 16:17:26                                        */
+/*  Last Modified: 2026/01/15 19:35:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -125,14 +125,52 @@ MeshSystem::MeshSystem(Device& device, std::string vertShaderPath, std::string f
 MeshSystem::~MeshSystem(void) {
 }
 
-void	MeshSystem::render(VkCommandBuffer commandBuffer, Window &window) {
+void	MeshSystem::render(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex) {
 	MeshSystemPipeline	*pipeline = getPipelineForFormat(window.getFormat());
-	if (pipeline == nullptr)
+	if (pipeline == nullptr || commandBuffer == VK_NULL_HANDLE)
 		return ;
-	if (commandBuffer == VK_NULL_HANDLE)
-		return ;
+	beginRenderPass(commandBuffer, pipeline, window, imageIndex);
+
 	pipeline->bind(commandBuffer);
-	// vkCmdDraw(commandBuffer, 3, 1, 0, 0); // Example draw call
+	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+
+	endRenderPass(commandBuffer);
+}
+
+void	MeshSystem::beginRenderPass(VkCommandBuffer commandBuffer, MeshSystemPipeline *pipeline,
+									Window &window, uint32_t imageIndex) {
+	Swapchain	&swapchain = window.getSwapchain();
+	VkExtent2D	extent = swapchain.getExtent();
+
+	VkRenderPassBeginInfo	renderPassInfo{};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassInfo.renderPass = pipeline->_renderPass;
+	renderPassInfo.framebuffer = swapchain.getFrameBuffer(imageIndex, pipeline->_renderPass);
+	renderPassInfo.renderArea.offset = {0, 0};
+	renderPassInfo.renderArea.extent = extent;
+	VkClearValue	clearColor = {{{0., 0., 0., 1.}}};
+	renderPassInfo.clearValueCount = 1;
+	renderPassInfo.pClearValues = &clearColor;
+
+	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+	VkViewport	viewport{};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = static_cast<float>(extent.width);
+	viewport.height = static_cast<float>(extent.height);
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+	VkRect2D	scissor{};
+	scissor.offset = {0, 0};
+	scissor.extent = extent;
+	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+}
+
+void	MeshSystem::endRenderPass(VkCommandBuffer commandBuffer) {
+	vkCmdEndRenderPass(commandBuffer);
 }
 
 MeshSystemPipeline	*MeshSystem::getPipelineForFormat(VkFormat format) {

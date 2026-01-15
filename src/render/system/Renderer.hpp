@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 16:35:00 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 18:44:53                                        */
+/*  Last Modified: 2026/01/15 19:35:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,11 +45,14 @@ class	Renderer {
 		}
 
 		bool	init(void);
-		void	drawFrame(Window &window);
+		void	drawFrame(VkCommandBuffer commandBuffer, uint32_t imageIndex, Window &window);
 
 	private:
 		bool	createCommandPool(void);
 		bool	createCommandBuffers(void);
+
+		bool	beginFrame(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+		bool	endFrame(VkCommandBuffer commandBuffer);
 
 		bool							_healthy{true};
 		std::string						_reason{""};

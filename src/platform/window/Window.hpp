@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 12:18:36                                        */
+/*  Last Modified: 2026/01/15 19:10:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -68,6 +68,9 @@ class	Window {
 		}
 		Application	&getApp(void) const {
 			return (_app);
+		}
+		Swapchain	&getSwapchain(void) {
+			return (_swapchain);
 		}
 		std::string		getWindowName(void) const {
 			return (_windowName);

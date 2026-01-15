@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 16:35:00 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 18:57:43                                        */
+/*  Last Modified: 2026/01/15 19:35:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -67,9 +67,27 @@ bool	Renderer::createCommandBuffers(void) {
 	return (false);
 }
 
-void	Renderer::drawFrame(Window &window) {
-	VkCommandBuffer	commandBuffer = VK_NULL_HANDLE;
-	_meshSystem.render(commandBuffer, window);
+bool	Renderer::beginFrame(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+	VkCommandBufferBeginInfo	beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
+		return (true);
+	return (false);
+}
+
+bool	Renderer::endFrame(VkCommandBuffer commandBuffer) {
+	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
+		return (true);
+	return (false);
+}
+
+void	Renderer::drawFrame(VkCommandBuffer commandBuffer, uint32_t imageIndex, Window &window) {
+	beginFrame(commandBuffer, imageIndex);
+
+	_meshSystem.render(commandBuffer, window, imageIndex);
+
+	endFrame(commandBuffer);
 }
 
 }

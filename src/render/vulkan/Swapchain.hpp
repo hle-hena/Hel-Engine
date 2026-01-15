@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 18:25:52                                        */
+/*  Last Modified: 2026/01/15 19:21:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -54,6 +54,9 @@ class	Swapchain
 		}
 		VkFormat		getFormat(void) const {
 			return (_format);
+		}
+		VkExtent2D		getExtent(void) const {
+			return (_extent);
 		}
 
 		static SupportDetails		querySwapChainSupport(VkPhysicalDevice &device,

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:30:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 15:15:43                                        */
+/*  Last Modified: 2026/01/15 19:30:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -55,6 +55,8 @@ struct	MeshSystemPipeline {
 		Pipeline			_pipeline;
 		VkPipelineLayout	_pipelineLayout{VK_NULL_HANDLE};
 		VkRenderPass		_renderPass{VK_NULL_HANDLE};
+
+	friend class MeshSystem;
 };
 
 class	MeshSystem {
@@ -65,7 +67,7 @@ class	MeshSystem {
 		MeshSystem(const MeshSystem &) = delete;
 		MeshSystem	&operator=(const MeshSystem &) = delete;
 
-		void	render(VkCommandBuffer commandBuffer, Window &window);
+		void	render(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex);
 
 	private:
 		using pipelineMap = std::unordered_map<VkFormat, std::unique_ptr<MeshSystemPipeline>>;
@@ -78,6 +80,10 @@ class	MeshSystem {
 		pipelineMap		_pipelines;
 
 		MeshSystemPipeline	*getPipelineForFormat(VkFormat format);
+
+		void	beginRenderPass(VkCommandBuffer commandBuffer, MeshSystemPipeline *pipeline,
+									Window &window, uint32_t imageIndex);
+		void	endRenderPass(VkCommandBuffer commandBuffer);
 };
 
 }
