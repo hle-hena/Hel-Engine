@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/06 17:50:37                                        */
+/*  Last Modified: 2026/01/15 12:12:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,8 @@
 #include "render/vulkan/Device.hpp"
 #include "render/vulkan/Swapchain.hpp"
 #include "render/vulkan/vulkanHelper.hpp"
+#include "render/vulkan/VulkanInstance.hpp"
+#include "platform/window/Window.hpp"
 #include "utils/healthHelper.hpp"
 #include <set>
 

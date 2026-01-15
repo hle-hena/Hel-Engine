@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/06 17:52:24                                        */
+/*  Last Modified: 2026/01/15 12:16:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,8 @@
 #include "render/vulkan/Swapchain.hpp"
 #include "platform/window/Window.hpp"
 #include "render/vulkan/Device.hpp"
+#include "utils/healthHelper.hpp"
+
 #include <limits>
 
 namespace	hel {
@@ -29,6 +31,9 @@ Swapchain::~Swapchain(void) {
 }
 
 void	Swapchain::deleteSwapChain(void) {
+    for (auto imageView : _imagesView) {
+        vkDestroyImageView(_device.getLogical(), imageView, nullptr);
+    }
 	if (_swapchain != VK_NULL_HANDLE)
 		vkDestroySwapchainKHR(_device.getLogical(), _swapchain, nullptr);
 }
@@ -134,6 +139,28 @@ VkExtent2D	Swapchain::selectSwapExtent(const VkSurfaceCapabilitiesKHR &capabilit
 }
 
 bool	Swapchain::createImagesView(void) {
+	_imagesView.resize(_images.size());
+	for (size_t i = 0; i < _images.size(); i++) {
+		VkImageViewCreateInfo	createInfo;
+		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		createInfo.pNext = nullptr;
+		createInfo.flags = 0;
+		createInfo.image = _images[i];
+		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		createInfo.format = _format;
+		createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		createInfo.subresourceRange.baseMipLevel = 0;
+		createInfo.subresourceRange.levelCount = 1;
+		createInfo.subresourceRange.baseArrayLayer = 0;
+		createInfo.subresourceRange.layerCount = 1;
+		if (vkCreateImageView(_device.getLogical(), &createInfo, nullptr,
+								&_imagesView[i]) != VK_SUCCESS)
+			RETURN_SET_UNHEALTHY("Couldn't create an image view", true);
+	}
 	return (false);
 }
 

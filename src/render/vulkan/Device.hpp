@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:22 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/06 16:00:27                                        */
+/*  Last Modified: 2026/01/15 12:11:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,11 +16,12 @@
 
 #pragma once
 
-# include "render/vulkan/VulkanInstance.hpp"
-# include "platform/window/Window.hpp"
 # include <optional>
 
 namespace	hel {
+
+class	Window;
+class	VulkanInstance;
 
 struct	QueuesFamilyIndices {
 	std::optional<uint32_t>	graphicsFamily;

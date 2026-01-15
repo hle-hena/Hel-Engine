@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/06 17:51:58                                        */
+/*  Last Modified: 2026/01/15 12:18:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -77,6 +77,9 @@ class	Window {
 				static_cast<uint32_t>(_width), 
 				static_cast<uint32_t>(_height)
 			};
+		}
+		VkFormat		getFormat(void) const {
+			return (_swapchain.getFormat());
 		}
 
 
