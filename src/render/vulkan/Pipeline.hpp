@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 12:10:55                                        */
+/*  Last Modified: 2026/01/15 15:05:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,9 +29,6 @@ struct	PipelineConfigInfo {
 	PipelineConfigInfo() = default;
 	PipelineConfigInfo(const PipelineConfigInfo &) = delete;
 	PipelineConfigInfo	&operator=(const PipelineConfigInfo&) = delete;
-};
-
-struct PipelineConfigInfo {
 
 	VkPipelineViewportStateCreateInfo		viewportInfo;
 	VkPipelineInputAssemblyStateCreateInfo	inputAssemblyInfo;
@@ -47,13 +44,13 @@ struct PipelineConfigInfo {
 	uint32_t								subpass = 0;
 };
 
-class Pipeline {
+class	Pipeline {
 	public:
-		Pipeline(Device& device);
-		~Pipeline();
+		Pipeline(Device &device);
+		~Pipeline(void);
 
 		Pipeline(const Pipeline&) = delete;
-		Pipeline& operator=(const Pipeline&) = delete;
+		Pipeline	&operator=(const Pipeline&) = delete;
 
 		std::string		getReason(void) const {
 			return (_reason);
@@ -62,15 +59,16 @@ class Pipeline {
 			return (_healthy);
 		}
 
-		void bind(VkCommandBuffer commandBuffer);
+		void	bind(VkCommandBuffer commandBuffer);
 		bool	createGraphicsPipeline(const std::string &vertPath,
 									const std::string &fragPath,
 									const PipelineConfigInfo &configInfo);
+		void	deleteGraphicsPipeline(void);
 
-		static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
+		static void	defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
 
 	private:
-		static std::vector<char> readFile(const std::string& filepath);
+		std::vector<char>	readFile(const std::string& filepath);
 
 		bool	createShaderModule(const std::vector<char>& code,
 								VkShaderModule* shaderModule);

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 12:14:26                                        */
+/*  Last Modified: 2026/01/15 15:19:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,6 +30,9 @@ Pipeline::Pipeline(Device& device)
 }
 
 Pipeline::~Pipeline() {
+}
+
+void	Pipeline::deleteGraphicsPipeline(void) {
 	if (_vertShaderModule != VK_NULL_HANDLE)
 		vkDestroyShaderModule(_device.getLogical(), _vertShaderModule, nullptr);
 	if (_fragShaderModule != VK_NULL_HANDLE)
@@ -45,9 +48,8 @@ void Pipeline::bind(VkCommandBuffer commandBuffer) {
 std::vector<char> Pipeline::readFile(const std::string& filepath) {
 	std::ifstream file(filepath, std::ios::ate | std::ios::binary);
 
-	if (!file.is_open()) {
-		throw std::runtime_error("failed to open file: " + filepath);
-	}
+	if (!file.is_open())
+		return (std::vector<char>(0));
 
 	size_t fileSize = (size_t)file.tellg();
 	std::vector<char> buffer(fileSize);
@@ -68,7 +70,11 @@ bool	Pipeline::createGraphicsPipeline(const std::string &vertPath,
 		RETURN_SET_UNHEALTHY("Missing render pass for pipeline creation", true);
 
 	auto	vertCode = readFile(vertPath);
+	if (vertCode.size() == 0)
+		RETURN_SET_UNHEALTHY("Failed to open file: " + vertPath, true);
 	auto	fragCode = readFile(fragPath);
+	if (fragCode.size() == 0)
+		RETURN_SET_UNHEALTHY("Failed to open file: " + fragPath, true);
 	if (createShaderModule(vertCode, &_vertShaderModule) ||
 		createShaderModule(fragCode, &_fragShaderModule))
 		return (true);
@@ -78,14 +84,14 @@ bool	Pipeline::createGraphicsPipeline(const std::string &vertPath,
 	stageInfo[0].pNext = nullptr;
 	stageInfo[0].flags = 0;
 	stageInfo[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-	stageInfo[0].module;
+	stageInfo[0].module = _vertShaderModule;
 	stageInfo[0].pName = "main";
 	stageInfo[0].pSpecializationInfo = nullptr;
 	stageInfo[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	stageInfo[1].pNext = nullptr;
 	stageInfo[1].flags = 0;
 	stageInfo[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	stageInfo[1].module;
+	stageInfo[1].module = _fragShaderModule;
 	stageInfo[1].pName = "main";
 	stageInfo[1].pSpecializationInfo = nullptr;
 

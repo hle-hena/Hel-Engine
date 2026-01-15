@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:30:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 12:25:38                                        */
+/*  Last Modified: 2026/01/15 15:22:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,31 +22,35 @@
 #include <stdexcept>
 #include <cassert>
 #include <array>
+#include <iostream>
 
 namespace hel {
 
-MeshSystem::MeshSystem(Device& device, Window &window)
-	:	_device{device},
-		_window{window},
+MeshSystemPipeline::MeshSystemPipeline(Device& device, std::string vertShaderPath,
+									std::string fragShaderPath, const VkFormat &format)
+	:	_vertShaderPath{vertShaderPath},
+		_fragShaderPath{fragShaderPath},
+		_device{device},
+		_format{format},
 		_pipeline{device} {
 }
 
-MeshSystem::~MeshSystem() {
+MeshSystemPipeline::~MeshSystemPipeline(void) {
+	_pipeline.deleteGraphicsPipeline();
 	if (_pipelineLayout != VK_NULL_HANDLE)
 		vkDestroyPipelineLayout(_device.getLogical(), _pipelineLayout, nullptr);
 	if (_renderPass != VK_NULL_HANDLE)
 		vkDestroyRenderPass(_device.getLogical(), _renderPass, nullptr);
 }
 
-bool	MeshSystem::initMeshSystem() {
+bool	MeshSystemPipeline::init(void) {
 	return (createRenderPass() || createPipelineLayout() || createGraphicsPipeline());
 }
 
-bool	MeshSystem::createRenderPass(void) {
+bool	MeshSystemPipeline::createRenderPass(void) {
 	VkAttachmentDescription	colorAttachment{};
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	colorAttachment.format = _window.getFormat();
-	//This assumes that every window after the first one will have the same format.
+	colorAttachment.format = _format;
 	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -74,7 +78,7 @@ bool	MeshSystem::createRenderPass(void) {
 	return (false);
 }
 
-bool	MeshSystem::createPipelineLayout() {
+bool	MeshSystemPipeline::createPipelineLayout(void) {
 	VkPipelineLayoutCreateInfo	pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipelineLayoutInfo.setLayoutCount = 0;
@@ -88,7 +92,7 @@ bool	MeshSystem::createPipelineLayout() {
 	return (false);
 }
 
-bool	MeshSystem::createGraphicsPipeline() {
+bool	MeshSystemPipeline::createGraphicsPipeline(void) {
 	if (_pipelineLayout == VK_NULL_HANDLE)
 		RETURN_SET_UNHEALTHY("Cannot create a graphics pipeline before the pipeline layout", true);
 	if (_renderPass == VK_NULL_HANDLE)
@@ -100,16 +104,51 @@ bool	MeshSystem::createGraphicsPipeline() {
 	pipelineConfig.renderPass = _renderPass;
 	pipelineConfig.pipelineLayout = _pipelineLayout;
 
-	if (_pipeline.createGraphicsPipeline("shaders/simple_shader.vert.spv",
-										"shaders/simple_shader.frag.spv",
+	if (_pipeline.createGraphicsPipeline(_vertShaderPath, _fragShaderPath,
 										pipelineConfig))
 		RETURN_SET_UNHEALTHY(_pipeline.getReason(), true);
 	return (false);
 }
 
-void MeshSystem::render(VkCommandBuffer commandBuffer) {
+void	MeshSystemPipeline::bind(VkCommandBuffer commandBuffer) {
 	_pipeline.bind(commandBuffer);
+}
+
+
+
+MeshSystem::MeshSystem(Device& device, std::string vertShaderPath, std::string fragShaderPath)
+	:	_vertShaderPath{vertShaderPath},
+		_fragShaderPath{fragShaderPath},
+		_device{device} {
+}
+
+MeshSystem::~MeshSystem(void) {
+}
+
+void	MeshSystem::render(VkCommandBuffer commandBuffer, Window &window) {
+	MeshSystemPipeline	*pipeline = getPipelineForFormat(window.getFormat());
+	if (pipeline == nullptr)
+		return ;
+	if (commandBuffer == VK_NULL_HANDLE)
+		return ;
+	pipeline->bind(commandBuffer);
 	// vkCmdDraw(commandBuffer, 3, 1, 0, 0); // Example draw call
+}
+
+MeshSystemPipeline	*MeshSystem::getPipelineForFormat(VkFormat format) {
+	auto		it = _pipelines.find(format);
+	if (it != _pipelines.end())
+		return (it->second.get());
+	auto	pipeline = std::make_unique<MeshSystemPipeline>(_device, _vertShaderPath, _fragShaderPath, format);
+	if (pipeline->init()) {
+		std::cerr << "Failed to create a new mesh system pipeline for the following reason:\n"
+			<< pipeline->getReason() << std::endl;
+		return (nullptr);
+	}
+	std::cout << "Created a new pipeline for the mesh System" << std::endl;
+	MeshSystemPipeline	*ptr = pipeline.get();
+	_pipelines[format] = std::move(pipeline);
+	return (ptr);
 }
 
 }

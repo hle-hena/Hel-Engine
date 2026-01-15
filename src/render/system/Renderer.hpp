@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 16:35:00 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 12:16:31                                        */
+/*  Last Modified: 2026/01/15 15:01:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,8 @@
 #include <memory>
 #include <cassert>
 
+#include "render/system/MeshSystem.hpp"
+
 namespace hel {
 
 class	Window;
@@ -28,33 +30,18 @@ class	Device;
 
 class	Renderer {
 	public:
-		Renderer(Window &window, Device &device);
+		Renderer(Device &device);
 		~Renderer();
 
 		Renderer(const Renderer &) = delete;
 		Renderer &operator=(const Renderer &) = delete;
 
-		VkCommandBuffer	beginFrame(void);
-		void			endFrame(void);
-		void			beginSwapChainRenderPass(VkCommandBuffer commandBuffer);
-		void			endSwapChainRenderPass(VkCommandBuffer commandBuffer);
-
-		bool			isFrameInProgress(void) const { return _isFrameStarted; }
-		VkCommandBuffer	getCurrentCommandBuffer(void) const;
-		int				getFrameIndex(void) const;
+		void	render(Window &window);
 
 	private:
-		Window			&_window;
 		Device			&_device;
-		// Add command buffers, semaphores, and fences here
-		// std::vector<VkCommandBuffer> _commandBuffers;
-		uint32_t		_currentImageIndex;
-		int				_currentFrameIndex;
-		bool			_isFrameStarted;
+		MeshSystem		_meshSystem;
 
-		void	createCommandBuffers(void);
-		void	freeCommandBuffers(void);
-		void	recreateSwapChain(void);
 };
 
 }

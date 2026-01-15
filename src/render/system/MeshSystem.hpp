@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:30:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 12:14:49                                        */
+/*  Last Modified: 2026/01/15 15:15:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,20 +16,30 @@
 
 #pragma once
 
-#include "render/vulkan/Pipeline.hpp"
+# include <memory>
+# include <unordered_map>
+
+# include "render/vulkan/Pipeline.hpp"
 
 namespace hel {
 
-class	MeshSystem {
+class	Window;
+
+struct	MeshSystemPipeline {
 	public:
-		MeshSystem(Device& device, Window &window);
-		~MeshSystem();
+		MeshSystemPipeline(Device& device, std::string vertShaderPath, std::string fragShaderPath, const VkFormat &format);
+		~MeshSystemPipeline(void);
 
-		MeshSystem(const MeshSystem &) = delete;
-		MeshSystem	&operator=(const MeshSystem &) = delete;
+		std::string		getReason(void) const {
+			return (_reason);
+		}
+		bool			isHealthy(void) const {
+			return (_healthy);
+		}
 
-		void	render(VkCommandBuffer commandBuffer);
-		bool	initMeshSystem();
+		bool	init(void);
+		void	bind(VkCommandBuffer commandBuffer);
+		
 
 	private:
 		bool	createRenderPass(void);
@@ -38,11 +48,36 @@ class	MeshSystem {
 
 		bool				_healthy{true};
 		std::string			_reason{""};
+		std::string			_vertShaderPath;
+		std::string			_fragShaderPath;
 		Device				&_device;
-		Window				&_window;
+		VkFormat			_format;
 		Pipeline			_pipeline;
 		VkPipelineLayout	_pipelineLayout{VK_NULL_HANDLE};
 		VkRenderPass		_renderPass{VK_NULL_HANDLE};
+};
+
+class	MeshSystem {
+	public:
+		MeshSystem(Device& device, std::string vertShaderPath, std::string fragShaderPath);
+		~MeshSystem();
+
+		MeshSystem(const MeshSystem &) = delete;
+		MeshSystem	&operator=(const MeshSystem &) = delete;
+
+		void	render(VkCommandBuffer commandBuffer, Window &window);
+
+	private:
+		using pipelineMap = std::unordered_map<VkFormat, std::unique_ptr<MeshSystemPipeline>>;
+
+		bool			_healthy{true};
+		std::string		_reason{""};
+		std::string		_vertShaderPath;
+		std::string		_fragShaderPath;
+		Device			&_device;
+		pipelineMap		_pipelines;
+
+		MeshSystemPipeline	*getPipelineForFormat(VkFormat format);
 };
 
 }
