@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 12:17:59                                        */
+/*  Last Modified: 2026/01/15 18:25:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,7 @@
 # include <GLFW/glfw3.h>
 # include <vector>
 # include <string>
+# include <unordered_map>
 
 namespace	hel {
 
@@ -30,6 +31,8 @@ class	Window;
 class	Swapchain
 {
 	public:
+		static constexpr int	MAX_FRAMES_IN_FLIGHT = 2;
+
 		struct	SupportDetails {
 			VkSurfaceCapabilitiesKHR		capabilities;
 			std::vector<VkSurfaceFormatKHR>	formats;
@@ -56,16 +59,20 @@ class	Swapchain
 		static SupportDetails		querySwapChainSupport(VkPhysicalDevice &device,
 														VkSurfaceKHR surface);
 
-		bool	initiateSwapChain(Window &window);
-		void	deleteSwapChain(void);
+		bool			initiateSwapChain(Window &window);
+		VkFramebuffer	getFrameBuffer(uint32_t imageIndex, VkRenderPass renderPass);
+		void			deleteSwapChain(void);
 
 	private:
+		using framebuffersMap = std::unordered_map<VkRenderPass, std::vector<VkFramebuffer>>;
+
 		VkSurfaceFormatKHR	selectSwapSurfaceFormat(std::vector<VkSurfaceFormatKHR> &formats);
 		VkPresentModeKHR	selectSwapPresent(std::vector<VkPresentModeKHR> &presents);
 		VkExtent2D			selectSwapExtent(const VkSurfaceCapabilitiesKHR &presents,
 													GLFWwindow *window);
 
 		bool				createImagesView(void);
+		bool				createFramebuffersForRenderPass(VkRenderPass renderPass);
 
 		bool						_healthy{true};
 		std::string					_reason{""};
@@ -73,6 +80,7 @@ class	Swapchain
 		VkSwapchainKHR				_swapchain{VK_NULL_HANDLE};
 		std::vector<VkImage>		_images;
 		std::vector<VkImageView>	_imagesView;
+		framebuffersMap				_frameBufferCache;
 		VkFormat					_format;
 		VkExtent2D					_extent;
 };

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 15:20:51                                        */
+/*  Last Modified: 2026/01/15 18:55:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,9 +33,11 @@ Application::Application(void)
 		RETURN_SET_UNHEALTHY(_vkContext.getReason());
 	}
 	addNewWindow(Window::WIDTH, Window::HEIGHT, "Hel");
-	if (_appWindows.size() == 0)
-		_healthy = false;
 	GLFW::release();
+	if (_appWindows.size() == 0)
+		RETURN_SET_UNHEALTHY("Couldn't even create one window");
+	if (_renderer.init())
+		RETURN_SET_UNHEALTHY(_renderer.getReason());
 }
 
 Application::~Application(void) {
@@ -53,7 +55,7 @@ void	Application::run(void) {
 				windowsCount--;
 				continue ;
 			}
-			_renderer.render(*_appWindows[i]);
+			_renderer.drawFrame(*_appWindows[i]);
 		}
 	}
 	if (!_healthy)

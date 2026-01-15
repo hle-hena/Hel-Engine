@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 12:16:02                                        */
+/*  Last Modified: 2026/01/15 18:11:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -31,9 +31,14 @@ Swapchain::~Swapchain(void) {
 }
 
 void	Swapchain::deleteSwapChain(void) {
-    for (auto imageView : _imagesView) {
-        vkDestroyImageView(_device.getLogical(), imageView, nullptr);
-    }
+	for (auto it : _frameBufferCache) {
+		for (auto frameBuffer : it.second) {
+			vkDestroyFramebuffer(_device.getLogical(), frameBuffer, nullptr);
+		}
+	}
+	for (auto imageView : _imagesView) {
+		vkDestroyImageView(_device.getLogical(), imageView, nullptr);
+	}
 	if (_swapchain != VK_NULL_HANDLE)
 		vkDestroySwapchainKHR(_device.getLogical(), _swapchain, nullptr);
 }
@@ -101,7 +106,7 @@ bool	Swapchain::initiateSwapChain(Window &window) {
 	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, _images.data());
 	_format = format.format;
 	_extent = extent;
-	return (false);
+	return (createImagesView());
 }
 
 VkSurfaceFormatKHR	Swapchain::selectSwapSurfaceFormat(std::vector<VkSurfaceFormatKHR> &formats) {
@@ -160,6 +165,34 @@ bool	Swapchain::createImagesView(void) {
 		if (vkCreateImageView(_device.getLogical(), &createInfo, nullptr,
 								&_imagesView[i]) != VK_SUCCESS)
 			RETURN_SET_UNHEALTHY("Couldn't create an image view", true);
+	}
+	return (false);
+}
+
+VkFramebuffer	Swapchain::getFrameBuffer(uint32_t imageIndex, VkRenderPass renderPass) {
+	if (_frameBufferCache.find(renderPass) == _frameBufferCache.end() &&
+		createFramebuffersForRenderPass(renderPass))
+		return (VK_NULL_HANDLE);
+	return (_frameBufferCache[renderPass][imageIndex]);
+}
+
+bool	Swapchain::createFramebuffersForRenderPass(VkRenderPass renderPass) {
+	_frameBufferCache[renderPass] = std::vector<VkFramebuffer>(_imagesView.size());
+	for (size_t i = 0; i < _imagesView.size(); i++) {
+		VkImageView	attachments[] = {_imagesView[i]};
+		VkFramebufferCreateInfo	framebufferInfo{};
+		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.renderPass = renderPass;
+		framebufferInfo.attachmentCount = 1;
+		framebufferInfo.pAttachments = attachments;
+		framebufferInfo.width = _extent.width;
+		framebufferInfo.height = _extent.height;
+		framebufferInfo.layers = 1;
+
+		if (vkCreateFramebuffer(_device.getLogical(), &framebufferInfo,
+								nullptr, &_frameBufferCache[renderPass][i])
+								!= VK_SUCCESS)
+			return (true);
 	}
 	return (false);
 }
