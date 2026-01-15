@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 19:40:13                                        */
+/*  Last Modified: 2026/01/15 22:08:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -44,22 +44,23 @@ Application::~Application(void) {
 }
 
 void	Application::run(void) {
-	while (_appWindows.size() > 0 && _healthy) {
+	uint32_t	currentFrame = 0;
+
+	while (!_appWindows.empty() && _healthy) {
 		glfwPollEvents();
 
-		size_t	windowsCount = _appWindows.size();
-		for (size_t i = 0; i < windowsCount; i++) {
+		for (size_t i = 0; i < _appWindows.size(); i++) {
 			if (_appWindows[i]->shouldClose()) {
 				_appWindows.erase(_appWindows.begin() + i);
 				i--;
-				windowsCount--;
 				continue ;
 			}
-			VkCommandBuffer commandBuffer = VK_NULL_HANDLE;//PLACEHOLDER, REMOVE THIS.
-			uint32_t		imageIndex = 0;//PLACEHOLDER, REMOVE THIS.
-			_renderer.drawFrame(commandBuffer, imageIndex, *_appWindows[i]);
+			_renderer.drawFrame(*_appWindows[i], currentFrame);
 		}
+
+		currentFrame = (currentFrame + 1) % Swapchain::MAX_FRAMES_IN_FLIGHT;
 	}
+	vkDeviceWaitIdle(_vkContext.getDevice().getLogical());
 	if (!_healthy)
 		std::cerr << _reason << std::endl;
 }

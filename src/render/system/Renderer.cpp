@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 16:35:00 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 19:35:51                                        */
+/*  Last Modified: 2026/01/15 22:33:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,7 @@
 #include "render/vulkan/Device.hpp"
 #include "utils/healthHelper.hpp"
 #include "render/vulkan/Swapchain.hpp"
+#include "platform/window/Window.hpp"
 
 #include <stdexcept>
 #include <array>
@@ -38,7 +39,7 @@ Renderer::~Renderer(void) {
 }
 
 bool	Renderer::init(void) {
-	return (createCommandPool() || createCommandBuffers());
+	return (createCommandPool());
 }
 
 bool	Renderer::createCommandPool(void) {
@@ -49,21 +50,6 @@ bool	Renderer::createCommandPool(void) {
 
 	if (vkCreateCommandPool(_device.getLogical(), &commandPoolInfo, nullptr, &_commandPool) != VK_SUCCESS)
 		RETURN_SET_UNHEALTHY("Couldn't create the command pool.", true);
-	return (false);
-}
-
-bool	Renderer::createCommandBuffers(void) {
-	_commandBuffers.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
-
-	VkCommandBufferAllocateInfo	allocateInfo{};
-	allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocateInfo.commandBufferCount = Swapchain::MAX_FRAMES_IN_FLIGHT;
-	allocateInfo.commandPool = _commandPool;
-	allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-
-	if (vkAllocateCommandBuffers(_device.getLogical(), &allocateInfo, _commandBuffers.data()) != VK_SUCCESS)
-		RETURN_SET_UNHEALTHY("Couldn't allocate the command buffers", true);
-	std::cout << "Created the command buffers" << std::endl;
 	return (false);
 }
 
@@ -82,12 +68,38 @@ bool	Renderer::endFrame(VkCommandBuffer commandBuffer) {
 	return (false);
 }
 
-void	Renderer::drawFrame(VkCommandBuffer commandBuffer, uint32_t imageIndex, Window &window) {
-	beginFrame(commandBuffer, imageIndex);
+VkCommandBuffer Renderer::getCommandBuffer(Window& window, uint32_t currentFrame) {
+	if (_perWindowCommandBuffers.find(&window) == _perWindowCommandBuffers.end()) {
+		VkCommandBufferAllocateInfo	allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocInfo.commandPool = _commandPool;
+		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocInfo.commandBufferCount = Swapchain::MAX_FRAMES_IN_FLIGHT;
 
-	_meshSystem.render(commandBuffer, window, imageIndex);
+		WindowCmdBuffers newBuffers;
+		if (vkAllocateCommandBuffers(_device.getLogical(), &allocInfo, newBuffers.data()) != VK_SUCCESS)
+			return (VK_NULL_HANDLE);
+		_perWindowCommandBuffers[&window] = newBuffers;
+	}
+	return _perWindowCommandBuffers[&window][currentFrame];
+}
 
-	endFrame(commandBuffer);
+void	Renderer::drawFrame(Window &window, uint32_t currentFrame) {
+	Swapchain	&swapchain = window.getSwapchain();
+
+	uint32_t	imageIndex = swapchain.acquireNextImage(currentFrame);
+
+	VkCommandBuffer	cmd = getCommandBuffer(window, currentFrame);
+	if (cmd == VK_NULL_HANDLE)
+		return ;
+	vkResetCommandBuffer(cmd, 0);
+
+	beginFrame(cmd, imageIndex);
+	_meshSystem.render(cmd, window, imageIndex);
+	endFrame(cmd);
+
+	swapchain.submitCommandBuffer(&cmd, imageIndex, currentFrame);
+	swapchain.present(imageIndex, currentFrame);
 }
 
 }
