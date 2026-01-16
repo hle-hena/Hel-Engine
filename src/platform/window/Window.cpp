@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/06 17:51:51                                        */
+/*  Last Modified: 2026/01/16 15:15:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -32,8 +32,10 @@ Window::windowPtr	Window::createWindow(int width, int height,
 		if (glfwCreateWindowSurface(instance, window->getWindow(),
 									nullptr, &window->_surface) != VK_SUCCESS)
 			return (nullptr);
-		if (window->_swapchain.initiateSwapChain(*window))
+		if (window->_swapchain.initiateSwapChain(*window)) {
+			std::cout << "Yep" << std::endl;	
 			return (nullptr);
+		}
 		return (window);
 	} catch (...) {
 		GLFW::release();
@@ -73,13 +75,12 @@ Window::Window(int width, int height, const std::string &windowName,
 
 void	Window::initWindow(void) {
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	// glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	_windowPtr = glfwCreateWindow(_width, _height, _windowName.c_str(),
 								nullptr, nullptr);
 	glfwSetWindowUserPointer(_windowPtr, this);
 	glfwSetKeyCallback(_windowPtr, keyEventCallback);
-	// glfwSetFramebufferSizeCallback(_windowPtr, frameBufferResizedCallback);
+	glfwSetFramebufferSizeCallback(_windowPtr, frameBufferResizedCallback);
 }
 
 Window::~Window(void) {
@@ -94,12 +95,10 @@ void	Window::deleteWindow(void) {
 	GLFW::release();
 }
 
-// void	Window::frameBufferResizedCallback(GLFWwindow *window,
-// 												int width, int height) {
-// 	auto _rtWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
-// 	_rtWindow->_frameBufferResized = true;
-// 	_rtWindow->_width = width;
-// 	_rtWindow->_height = height;
-// }
+void	Window::frameBufferResizedCallback(GLFWwindow *window,
+												int width, int height) {
+	auto _rtWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+	_rtWindow->getSwapchain()._frameBufferResized = true;
+}
 
 }

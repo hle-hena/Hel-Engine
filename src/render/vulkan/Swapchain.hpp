@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 22:02:39                                        */
+/*  Last Modified: 2026/01/16 15:14:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -64,13 +64,16 @@ class	Swapchain
 														VkSurfaceKHR surface);
 
 		bool			initiateSwapChain(Window &window);
+		bool			recreateSwapChain(Window &window);
 		VkFramebuffer	getFrameBuffer(uint32_t imageIndex, VkRenderPass renderPass);
 		void			deleteSwapChain(void);
 
-		uint32_t		acquireNextImage(uint32_t currentFrame);
+		bool			acquireNextImage(Window &window, uint32_t currentFrame, uint32_t *imageIndex);
 		bool			submitCommandBuffer(VkCommandBuffer *commandBuffer,
 									uint32_t imageIndex, uint32_t currentFrame);
-		void			present(uint32_t imageIndex, uint32_t currentFrame);
+		bool			present(Window &window, uint32_t imageIndex, uint32_t currentFrame);
+
+		bool	_frameBufferResized{false};
 
 	private:
 		using framebuffersMap = std::unordered_map<VkRenderPass, std::vector<VkFramebuffer>>;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 16:35:00 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 22:33:25                                        */
+/*  Last Modified: 2026/01/16 15:09:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -87,7 +87,9 @@ VkCommandBuffer Renderer::getCommandBuffer(Window& window, uint32_t currentFrame
 void	Renderer::drawFrame(Window &window, uint32_t currentFrame) {
 	Swapchain	&swapchain = window.getSwapchain();
 
-	uint32_t	imageIndex = swapchain.acquireNextImage(currentFrame);
+	uint32_t	imageIndex;
+	if (swapchain.acquireNextImage(window, currentFrame, &imageIndex))
+		return ;
 
 	VkCommandBuffer	cmd = getCommandBuffer(window, currentFrame);
 	if (cmd == VK_NULL_HANDLE)
@@ -99,7 +101,8 @@ void	Renderer::drawFrame(Window &window, uint32_t currentFrame) {
 	endFrame(cmd);
 
 	swapchain.submitCommandBuffer(&cmd, imageIndex, currentFrame);
-	swapchain.present(imageIndex, currentFrame);
+	if (swapchain.present(window, imageIndex, currentFrame))
+		return ;
 }
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 22:24:34                                        */
+/*  Last Modified: 2026/01/16 15:20:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,7 @@
 #include "utils/healthHelper.hpp"
 
 #include <limits>
+#include <iostream>
 
 namespace	hel {
 
@@ -37,9 +38,11 @@ void	Swapchain::deleteSwapChain(void) {
 			vkDestroyFramebuffer(_device.getLogical(), frameBuffer, nullptr);
 		}
 	}
+	_frameBufferCache.clear();
 	for (auto imageView : _imagesView) {
 		vkDestroyImageView(_device.getLogical(), imageView, nullptr);
 	}
+	_imagesView.clear();
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		if (_renderFinished[i] != VK_NULL_HANDLE)
 			vkDestroySemaphore(_device.getLogical(), _renderFinished[i], nullptr);
@@ -48,6 +51,9 @@ void	Swapchain::deleteSwapChain(void) {
 		if (_inFlightFences[i] != VK_NULL_HANDLE)
 			vkDestroyFence(_device.getLogical(), _inFlightFences[i], nullptr);
 	}
+	_renderFinished.fill(VK_NULL_HANDLE);
+	_imageAvailable.fill(VK_NULL_HANDLE);
+	_inFlightFences.fill(VK_NULL_HANDLE);
 	if (_swapchain != VK_NULL_HANDLE)
 		vkDestroySwapchainKHR(_device.getLogical(), _swapchain, nullptr);
 }
@@ -116,6 +122,15 @@ bool	Swapchain::initiateSwapChain(Window &window) {
 	_format = format.format;
 	_extent = extent;
 	return (createImagesView() || createSyncObjects());
+}
+
+bool	Swapchain::recreateSwapChain(Window &window) {
+	vkDeviceWaitIdle(_device.getLogical());
+
+	deleteSwapChain();
+	std::cout << "Recreating the swap chain" << std::endl;
+
+	return (initiateSwapChain(window));
 }
 
 VkSurfaceFormatKHR	Swapchain::selectSwapSurfaceFormat(std::vector<VkSurfaceFormatKHR> &formats) {
@@ -224,16 +239,24 @@ bool	Swapchain::createSyncObjects(void) {
 	return (false);
 }
 
-uint32_t	Swapchain::acquireNextImage(uint32_t currentFrame) {
+bool	Swapchain::acquireNextImage(Window &window, uint32_t currentFrame, uint32_t *imageIndex) {
 	vkWaitForFences(_device.getLogical(), 1, &_inFlightFences[currentFrame],
 					VK_TRUE, UINT64_MAX);
 
-	uint32_t	imageIndex;
 	VkResult	result = vkAcquireNextImageKHR(_device.getLogical(), _swapchain,
 												UINT64_MAX, _imageAvailable[currentFrame],
-												VK_NULL_HANDLE, &imageIndex);
+												VK_NULL_HANDLE, imageIndex);
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || _frameBufferResized) {
+		recreateSwapChain(window);
+		_frameBufferResized = false;
+		return (true);
+	}
+	else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+		std::cerr << "Failed to acquire a swapchain image" << std::endl;
+		return (true);
+	}
 	vkResetFences(_device.getLogical(), 1, &_inFlightFences[currentFrame]);
-	return (imageIndex);
+	return (false);
 }
 
 bool	Swapchain::submitCommandBuffer(VkCommandBuffer *commandBuffer,
@@ -261,7 +284,7 @@ bool	Swapchain::submitCommandBuffer(VkCommandBuffer *commandBuffer,
 	return (false);
 }
 
-void	Swapchain::present(uint32_t imageIndex, uint32_t currentFrame) {
+bool	Swapchain::present(Window &window, uint32_t imageIndex, uint32_t currentFrame) {
 	VkPresentInfoKHR	presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
@@ -273,7 +296,17 @@ void	Swapchain::present(uint32_t imageIndex, uint32_t currentFrame) {
 	presentInfo.pSwapchains = swapChains;
 	presentInfo.pImageIndices = &imageIndex;
 
-	vkQueuePresentKHR(_device.getPresentQueue(), &presentInfo);
+	VkResult	result = vkQueuePresentKHR(_device.getPresentQueue(), &presentInfo);
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _frameBufferResized) {
+		recreateSwapChain(window);
+		_frameBufferResized = false;
+		return (true);
+	}
+	else if (result != VK_SUCCESS) {
+		std::cerr << "Failed to present swap chain image" << std::endl;
+		return (true);
+	}
+	return (false);
 }
 
 }
