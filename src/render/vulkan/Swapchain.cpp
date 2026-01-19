@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/16 15:20:44                                        */
+/*  Last Modified: 2026/01/19 12:35:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -128,7 +128,6 @@ bool	Swapchain::recreateSwapChain(Window &window) {
 	vkDeviceWaitIdle(_device.getLogical());
 
 	deleteSwapChain();
-	std::cout << "Recreating the swap chain" << std::endl;
 
 	return (initiateSwapChain(window));
 }
