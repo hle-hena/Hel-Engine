@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/11 10:04:22                                        */
+/*  Last Modified: 2026/01/20 18:29:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,8 @@
 # include <GLFW/glfw3.h>
 # include <string>
 # include <memory>
+
+# include "render/vulkan/Swapchain.hpp"
 
 
 namespace	hel {
@@ -38,39 +40,43 @@ class	Window {
 
 		static windowPtr	createWindow(int width, int height,
 										const std::string &windowName,
-										Application &app) noexcept;
-		void				createWindowSurface(VkInstance instance,
-												VkSurfaceKHR *surface);
+										Application &app, VkInstance &instance) noexcept;
+		static windowPtr	createBootstrap(int width, int height,
+										const std::string &windowName,
+										Application &app, VkInstance &instance) noexcept;
 
-		bool		shouldClose(void) const {
+		std::string		getReason(void) const {
+			return (_reason);
+		}
+		bool			isHealthy(void) const {
+			return (_healthy);
+		}
+		bool			shouldClose(void) const {
 			return (glfwWindowShouldClose(_windowPtr));
 		}
-		bool		wasResized(void) const {
-			return (_frameBufferResized);
-		}
-		void		resetWindowResizedFlag() {
-			_frameBufferResized = false;
-		}
-		GLFWwindow	*getWindow(void) const {
+		GLFWwindow		*getWindow(void) const {
 			return (_windowPtr);
 		}
-		Application	&getApp(void) const {
+		VkSurfaceKHR	&getSurface(void) {
+			return (_surface);
+		}
+		Application		&getApp(void) const {
 			return (_app);
 		}
-		std::string	getWindowName(void) const {
+		Swapchain		&getSwapchain(void) {
+			return (_swapchain);
+		}
+		std::string		getWindowName(void) const {
 			return (_windowName);
 		}
-		VkExtent2D	getExtent(void) const {
-			return {
-				static_cast<uint32_t>(_width), 
-				static_cast<uint32_t>(_height)
-			};
+		VkFormat		getFormat(void) const {
+			return (_swapchain.getFormat());
 		}
 
 
 	private:
 		Window(int width, int height, const std::string &windowName,
-			Application &app);
+			Application &app, VkInstance &instance);
 		Window(const Window &other) = delete;
 		Window	&operator=(const Window &other) = delete;
 
@@ -78,14 +84,18 @@ class	Window {
 		void		deleteWindow(void);
 		static void	frameBufferResizedCallback(GLFWwindow *window, int width,
 											int height);
-		
 
-		int			_width;
-		int			_height;
-		bool		_frameBufferResized{false};
-		std::string	_windowName;
-		GLFWwindow	*_windowPtr;
-		Application	&_app;
+		bool			_healthy{true};
+		std::string		_reason{""};
+		int				_width;
+		int				_height;
+		bool			_frameBufferResized{false};
+		std::string		_windowName;
+		GLFWwindow		*_windowPtr;
+		VkSurfaceKHR	_surface{VK_NULL_HANDLE};
+		Swapchain		_swapchain;
+		Application		&_app;
+		VkInstance		&_instance;
 };
 
 }
