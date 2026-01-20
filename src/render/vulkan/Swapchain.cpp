@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/19 12:35:31                                        */
+/*  Last Modified: 2026/01/20 18:32:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -277,9 +277,10 @@ bool	Swapchain::submitCommandBuffer(VkCommandBuffer *commandBuffer,
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
 	if (vkQueueSubmit(_device.getGraphicsQueue(), 1, &submitInfo,
-				_inFlightFences[currentFrame]) != VK_SUCCESS)
-		// throw std::runtime_error("failed to submit draw command buffer!");
+				_inFlightFences[currentFrame]) != VK_SUCCESS) {
+		std::cerr << "Failed to submit the command buffer" << std::endl;
 		return (true);
+	}
 	return (false);
 }
 

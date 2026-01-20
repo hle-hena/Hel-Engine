@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:31:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/06 15:45:05                                        */
+/*  Last Modified: 2026/01/19 17:26:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -52,7 +52,6 @@ class	VulkanContext {
 		std::string		_reason{""};
 		VulkanInstance	_instance;
 		Device			_device;
-
 		Application		&_app;
 };
 

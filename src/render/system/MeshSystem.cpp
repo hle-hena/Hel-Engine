@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:30:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 19:35:44                                        */
+/*  Last Modified: 2026/01/19 17:36:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -116,7 +116,7 @@ void	MeshSystemPipeline::bind(VkCommandBuffer commandBuffer) {
 
 
 
-MeshSystem::MeshSystem(Device& device, std::string vertShaderPath, std::string fragShaderPath)
+MeshSystem::MeshSystem(Device &device, std::string vertShaderPath, std::string fragShaderPath)
 	:	_vertShaderPath{vertShaderPath},
 		_fragShaderPath{fragShaderPath},
 		_device{device} {

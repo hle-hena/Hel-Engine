@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/16 15:15:46                                        */
+/*  Last Modified: 2026/01/19 16:59:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,7 +33,6 @@ Window::windowPtr	Window::createWindow(int width, int height,
 									nullptr, &window->_surface) != VK_SUCCESS)
 			return (nullptr);
 		if (window->_swapchain.initiateSwapChain(*window)) {
-			std::cout << "Yep" << std::endl;	
 			return (nullptr);
 		}
 		return (window);

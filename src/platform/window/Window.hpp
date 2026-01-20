@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 19:10:18                                        */
+/*  Last Modified: 2026/01/20 18:29:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -41,7 +41,7 @@ class	Window {
 		static windowPtr	createWindow(int width, int height,
 										const std::string &windowName,
 										Application &app, VkInstance &instance) noexcept;
-		static windowPtr		createBootstrap(int width, int height,
+		static windowPtr	createBootstrap(int width, int height,
 										const std::string &windowName,
 										Application &app, VkInstance &instance) noexcept;
 
@@ -54,32 +54,20 @@ class	Window {
 		bool			shouldClose(void) const {
 			return (glfwWindowShouldClose(_windowPtr));
 		}
-		bool			wasResized(void) const {
-			return (_frameBufferResized);
-		}
-		void			resetWindowResizedFlag() {
-			_frameBufferResized = false;
-		}
 		GLFWwindow		*getWindow(void) const {
 			return (_windowPtr);
 		}
 		VkSurfaceKHR	&getSurface(void) {
 			return (_surface);
 		}
-		Application	&getApp(void) const {
+		Application		&getApp(void) const {
 			return (_app);
 		}
-		Swapchain	&getSwapchain(void) {
+		Swapchain		&getSwapchain(void) {
 			return (_swapchain);
 		}
 		std::string		getWindowName(void) const {
 			return (_windowName);
-		}
-		VkExtent2D		getExtent(void) const {
-			return {
-				static_cast<uint32_t>(_width), 
-				static_cast<uint32_t>(_height)
-			};
 		}
 		VkFormat		getFormat(void) const {
 			return (_swapchain.getFormat());
