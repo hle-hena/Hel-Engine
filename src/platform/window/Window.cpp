@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 20:09:33                                        */
+/*  Last Modified: 2026/01/19 16:59:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,16 +17,43 @@
 #include "platform/window/Window.hpp"
 #include "platform/window/GLFW.hpp"
 #include "platform/events/KeyEvent.hpp"
+#include "core/Application.hpp"
 
 namespace	hel {
 
 Window::windowPtr	Window::createWindow(int width, int height,
 										const std::string &windowName,
-										Application &app) noexcept {
+										Application &app, VkInstance &instance) noexcept {
 	if (!GLFW::acquire())
 		return (nullptr);
 	try {
-		return (Window::windowPtr(new Window(width, height, windowName, app)));
+		Window::windowPtr	window = Window::windowPtr(new Window(width, height,
+																windowName, app, instance));
+		if (glfwCreateWindowSurface(instance, window->getWindow(),
+									nullptr, &window->_surface) != VK_SUCCESS)
+			return (nullptr);
+		if (window->_swapchain.initiateSwapChain(*window)) {
+			return (nullptr);
+		}
+		return (window);
+	} catch (...) {
+		GLFW::release();
+		return (nullptr);
+	}
+}
+
+Window::windowPtr	Window::createBootstrap(int width, int height,
+										const std::string &windowName,
+										Application &app, VkInstance &instance) noexcept {
+	if (!GLFW::acquire())
+		return (nullptr);
+	try {
+		Window::windowPtr	window = Window::windowPtr(new Window(width, height,
+																windowName, app, instance));
+		if (glfwCreateWindowSurface(instance, window->getWindow(),
+									nullptr, &window->_surface) != VK_SUCCESS)
+			return (nullptr);
+		return (window);
 	} catch (...) {
 		GLFW::release();
 		return (nullptr);
@@ -34,24 +61,25 @@ Window::windowPtr	Window::createWindow(int width, int height,
 }
 
 Window::Window(int width, int height, const std::string &windowName,
-			Application &app)
+			Application &app, VkInstance &instance)
 	:	_width(width),
 		_height(height),
 		_windowName(windowName),
 		_windowPtr(nullptr),
-		_app{app} {
+		_swapchain{app.getVkContext().getDevice()},
+		_app{app},
+		_instance{instance} {
 	initWindow();
 }
 
 void	Window::initWindow(void) {
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	// glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	_windowPtr = glfwCreateWindow(_width, _height, _windowName.c_str(),
 								nullptr, nullptr);
 	glfwSetWindowUserPointer(_windowPtr, this);
 	glfwSetKeyCallback(_windowPtr, keyEventCallback);
-	// glfwSetFramebufferSizeCallback(_windowPtr, frameBufferResizedCallback);
+	glfwSetFramebufferSizeCallback(_windowPtr, frameBufferResizedCallback);
 }
 
 Window::~Window(void) {
@@ -59,22 +87,17 @@ Window::~Window(void) {
 }
 
 void	Window::deleteWindow(void) {
+	_swapchain.deleteSwapChain();
+	if (_surface != VK_NULL_HANDLE)
+		vkDestroySurfaceKHR(_instance, _surface, nullptr);
 	glfwDestroyWindow(_windowPtr);
 	GLFW::release();
 }
 
-// void	Window::frameBufferResizedCallback(GLFWwindow *window,
-// 												int width, int height) {
-// 	auto _rtWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
-// 	_rtWindow->_frameBufferResized = true;
-// 	_rtWindow->_width = width;
-// 	_rtWindow->_height = height;
-// }
-
-// void	Window::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface)
-// {
-// 	if (glfwCreateWindowSurface(instance, _windowPtr, nullptr, surface) != VK_SUCCESS)
-// 		throw std::runtime_error("Failed to create a window surface.");
-// }
+void	Window::frameBufferResizedCallback(GLFWwindow *window,
+												int width, int height) {
+	auto _rtWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+	_rtWindow->getSwapchain()._frameBufferResized = true;
+}
 
 }

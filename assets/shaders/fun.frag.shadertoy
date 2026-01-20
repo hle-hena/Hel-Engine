@@ -1,0 +1,151 @@
+vec2 wallPoints[] = vec2[](
+    vec2(0.7, 0.4),
+    vec2(0.7, 0.6),
+    vec2(0.9, 0.6)
+);
+vec3 wallColor[] = vec3[](
+    vec3(0., 1., 0.),
+    vec3(0., 1., 0.)
+);
+
+vec2 lightPoints[] = vec2[](
+    vec2(0.3, 0.7),
+    vec2(0.7, 0.7),
+    vec2(1.7, 0.7)
+);
+vec3 lightColor[] = vec3[](
+    vec3(0., 1., 1.),
+    vec3(1., 0., 0.),
+    vec3(1., 0., 0.)
+);
+
+
+
+float distToSegment(vec2 p, vec2 a, vec2 b) {
+    vec2 pa = p - a;
+    vec2 ba = b - a;
+
+    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+
+    return length(pa - ba * h);
+}
+
+bool isWall(vec2 point, inout vec3 col) {
+    for (int i = 0; i < wallPoints.length() - 1; i++) {
+        if (distToSegment(point, wallPoints[i], wallPoints[i + 1]) < 0.01) {
+            col = wallColor[i];
+            return (true);
+        }
+    }
+    return (false);
+}
+
+float distBetweenSegments(vec2 p1, vec2 p2, vec2 a, vec2 b) {
+    vec2 d1 = p2 - p1;
+    vec2 d2 = b - a;
+    vec2 d12 = a - p1;
+
+    float D1 = dot(d1, d1);
+    float D2 = dot(d2, d2);
+    float S1 = dot(d1, d12);
+    float S2 = dot(d2, d12);
+    float R = dot(d1, d2);
+    float den = D1 * D2 - R * R;
+
+    float t, u;
+
+    if (den != 0.0) {
+        t = clamp((S1 * D2 - S2 * R) / den, 0.0, 1.0);
+    } else {
+        t = 0.0;
+    }
+
+    u = clamp((t * R - S2) / D2, 0.0, 1.0);
+    t = clamp((u * R + S1) / D1, 0.0, 1.0);
+
+    vec2 closestPointP = p1 + t * d1;
+    vec2 closestPointW = a + u * d2;
+
+    return distance(closestPointP, closestPointW);
+}
+
+bool isObstructed(vec2 point, vec2 lightSource) {
+    float wallThickness = 0.01;
+    for (int i = 0; i < wallPoints.length() - 1; i++) {
+        if (distBetweenSegments(point, lightSource, wallPoints[i], wallPoints[i+1]) < wallThickness)
+            return true;
+    }
+    return false;
+}
+
+float getLightIntensity(vec2 point,
+                        vec2 lightSource,
+                        float lightSize,
+                        float lightIntensity) {
+    if (isObstructed(point, lightSource)) {
+        return (0.);
+    }
+    float realDist = distance(point, lightSource);
+    float dist = max(0., realDist - lightSize);
+    float fallof = dist * (1. / lightIntensity);
+    return (1. / (1. + (fallof * fallof)));
+}
+
+vec2 rotate(vec2 p, vec2 center, float angle) {
+    float s = sin(angle);
+    float c = cos(angle);
+    vec2 pivot = p - center;
+    return vec2(
+        pivot.x * c - pivot.y * s,
+        pivot.x * s + pivot.y * c
+    ) + center;
+}
+
+void moveWalls() {
+    float offsetX = (sin(iTime * 0.7) * 0.15) + (cos(iTime * 1.3) * 0.05);
+    float offsetY = (cos(iTime * 0.5) * 0.10) + (sin(iTime * 2.1) * 0.03);
+    
+    vec2 center = (wallPoints[0] + wallPoints[1]) * 0.5;
+    
+    float angle = sin(iTime * 0.8) * 0.5;
+
+    for (int i = 0; i < wallPoints.length(); i++) {
+        wallPoints[i].x += offsetX;
+        wallPoints[i].y += offsetY;
+
+        wallPoints[i] = rotate(wallPoints[i], center + vec2(offsetX, offsetY), angle);
+    }
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    float ratio = min(iResolution.x, iResolution.y);
+    vec2 point = fragCoord / ratio;
+
+    vec3 col = vec3(0);
+
+    float DIST_TO_MOUSE = 0.1;
+    float LIGHT_SIZE = 0.01;
+    float LIGHT_INTENSITY = 0.1;
+    vec3 LIGHT_COLOR = vec3(0., 1., 0.);
+    bool OTHER_LIGHT_CONTRIBUTION = true;
+
+    moveWalls();
+    if (!isWall(point, col)) {
+        vec2 mouse_light = iMouse.xy / ratio;
+        //mouse_light += vec2(cos(iTime), sin(iTime)) * DIST_TO_MOUSE;
+        float mouseEnergy = getLightIntensity(point, mouse_light, LIGHT_SIZE, LIGHT_INTENSITY);
+        vec3 mouseLinColor = pow(LIGHT_COLOR, vec3(2.2));
+        col += mouseLinColor * mouseEnergy;
+        for (int i = 0; i < lightPoints.length() && OTHER_LIGHT_CONTRIBUTION; i++) {
+            float energy = getLightIntensity(point, lightPoints[i], 0.01, 0.1);
+
+            vec3 linColor = pow(lightColor[i], vec3(2.2));
+            col += linColor * energy;
+        }
+    }
+
+    col = col / (col + vec3(1.0));
+    col = pow(col, vec3(1.0 / 2.2));
+    fragColor = vec4(col,1.0);
+}

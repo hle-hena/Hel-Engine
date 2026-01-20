@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 17:37:36 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 20:05:16                                        */
+/*  Last Modified: 2026/01/19 17:07:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,8 +30,7 @@ void	keyEventCallback(GLFWwindow *glfwWindow, int key, int scanCode,
 		glfwSetWindowShouldClose(glfwWindow, true);
 	else if (key == GLFW_KEY_N && action == GLFW_PRESS
 			&& mod == GLFW_MOD_CONTROL) {
-		VkExtent2D	extent = window->getExtent();
-		app.addNewWindow(extent.width, extent.height, window->getWindowName() + "_copy");
+		app.addNewWindow(Window::WIDTH, Window::HEIGHT, window->getWindowName() + "_copy");
 	}
 }
 

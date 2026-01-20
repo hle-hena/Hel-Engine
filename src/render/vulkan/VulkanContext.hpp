@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:31:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/16 20:21:58                                        */
+/*  Last Modified: 2026/01/19 17:26:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,15 +21,23 @@
 
 namespace	hel {
 
+class	Application;
+
 class	VulkanContext {
 	public:
-		VulkanContext(void);
+		VulkanContext(Application &app);
 		~VulkanContext(void) = default;
 		VulkanContext(const VulkanContext &other) = delete;
 		VulkanContext	&operator=(const VulkanContext &other) = delete;
 		VulkanContext(VulkanContext &&other) = default;
 		VulkanContext	&operator=(VulkanContext &&other) = default;
 
+		VulkanInstance	&getInstance(void) {
+			return (_instance);
+		}
+		Device			&getDevice(void) {
+			return (_device);
+		}
 		std::string		getReason(void) const {
 			return (_reason);
 		}
@@ -44,6 +52,7 @@ class	VulkanContext {
 		std::string		_reason{""};
 		VulkanInstance	_instance;
 		Device			_device;
+		Application		&_app;
 };
 
 }
