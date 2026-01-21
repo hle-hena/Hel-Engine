@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: MeshSystem.cpp                                                      */
+/*  File: TriangleSystem.cpp                                                  */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/13 19:30:51 by hle-hena                                  */
+/*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/21 11:40:26                                        */
+/*  Last Modified: 2026/01/21 18:03:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,10 +14,12 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/system/MeshSystem.hpp"
+#include "ecs/system/TriangleSystem.hpp"
 #include "api/vulkan/Device.hpp"
 #include "platform/window/Window.hpp"
 #include "utils/healthHelper.hpp"
+#include "ecs/Registry.hpp"
+#include "ecs/Component.hpp"
 
 #include <stdexcept>
 #include <cassert>
@@ -26,8 +28,8 @@
 
 namespace hel {
 
-MeshSystemPipeline::MeshSystemPipeline(Device& device, std::string vertShaderPath,
-									std::string fragShaderPath, const VkFormat &format)
+TriangleSystemPipeline::TriangleSystemPipeline(Device& device, std::string vertShaderPath,
+										std::string fragShaderPath, const VkFormat &format)
 	:	_vertShaderPath{vertShaderPath},
 		_fragShaderPath{fragShaderPath},
 		_device{device},
@@ -35,7 +37,7 @@ MeshSystemPipeline::MeshSystemPipeline(Device& device, std::string vertShaderPat
 		_pipeline{device} {
 }
 
-MeshSystemPipeline::~MeshSystemPipeline(void) {
+TriangleSystemPipeline::~TriangleSystemPipeline(void) {
 	_pipeline.deleteGraphicsPipeline();
 	if (_pipelineLayout != VK_NULL_HANDLE)
 		vkDestroyPipelineLayout(_device.getLogical(), _pipelineLayout, nullptr);
@@ -43,11 +45,11 @@ MeshSystemPipeline::~MeshSystemPipeline(void) {
 		vkDestroyRenderPass(_device.getLogical(), _renderPass, nullptr);
 }
 
-bool	MeshSystemPipeline::init(void) {
+bool	TriangleSystemPipeline::init(void) {
 	return (createRenderPass() || createPipelineLayout() || createGraphicsPipeline());
 }
 
-bool	MeshSystemPipeline::createRenderPass(void) {
+bool	TriangleSystemPipeline::createRenderPass(void) {
 	VkAttachmentDescription	colorAttachment{};
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	colorAttachment.format = _format;
@@ -78,7 +80,7 @@ bool	MeshSystemPipeline::createRenderPass(void) {
 	return (false);
 }
 
-bool	MeshSystemPipeline::createPipelineLayout(void) {
+bool	TriangleSystemPipeline::createPipelineLayout(void) {
 	VkPipelineLayoutCreateInfo	pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipelineLayoutInfo.setLayoutCount = 0;
@@ -92,7 +94,7 @@ bool	MeshSystemPipeline::createPipelineLayout(void) {
 	return (false);
 }
 
-bool	MeshSystemPipeline::createGraphicsPipeline(void) {
+bool	TriangleSystemPipeline::createGraphicsPipeline(void) {
 	if (_pipelineLayout == VK_NULL_HANDLE)
 		RETURN_SET_UNHEALTHY("Cannot create a graphics pipeline before the pipeline layout", true);
 	if (_renderPass == VK_NULL_HANDLE)
@@ -110,34 +112,40 @@ bool	MeshSystemPipeline::createGraphicsPipeline(void) {
 	return (false);
 }
 
-void	MeshSystemPipeline::bind(VkCommandBuffer commandBuffer) {
+void	TriangleSystemPipeline::bind(VkCommandBuffer commandBuffer) {
 	_pipeline.bind(commandBuffer);
 }
 
 
 
-MeshSystem::MeshSystem(Device &device, std::string vertShaderPath, std::string fragShaderPath)
+TriangleSystem::TriangleSystem(Device &device, Registry &registry, std::string vertShaderPath, std::string fragShaderPath)
 	:	_vertShaderPath{vertShaderPath},
 		_fragShaderPath{fragShaderPath},
-		_device{device} {
+		_device{device},
+		_registry{registry} {
 }
 
-MeshSystem::~MeshSystem(void) {
+TriangleSystem::~TriangleSystem(void) {
 }
 
-void	MeshSystem::render(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex) {
-	MeshSystemPipeline	*pipeline = getPipelineForFormat(window.getFormat());
+void	TriangleSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex) {
+	TriangleSystemPipeline	*pipeline = getPipelineForFormat(window.getFormat());
 	if (pipeline == nullptr || commandBuffer == VK_NULL_HANDLE)
 		return ;
 	beginRenderPass(commandBuffer, pipeline, window, imageIndex);
 
-	pipeline->bind(commandBuffer);
-	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+	Pool<Name>	&pool = _registry.getPool<Name>();
+	int i = 0;
+	for (auto &entity: pool.denseArray) {
+		std::cout << "Triangle " << i++ << ", with name " << entity.name << "." << std::endl;
+		pipeline->bind(commandBuffer);
+		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+	}
 
 	endRenderPass(commandBuffer);
 }
 
-void	MeshSystem::beginRenderPass(VkCommandBuffer commandBuffer, MeshSystemPipeline *pipeline,
+void	TriangleSystem::beginRenderPass(VkCommandBuffer commandBuffer, TriangleSystemPipeline *pipeline,
 									Window &window, uint32_t imageIndex) {
 	Swapchain	&swapchain = window.getSwapchain();
 	VkExtent2D	extent = swapchain.getExtent();
@@ -169,22 +177,22 @@ void	MeshSystem::beginRenderPass(VkCommandBuffer commandBuffer, MeshSystemPipeli
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
-void	MeshSystem::endRenderPass(VkCommandBuffer commandBuffer) {
+void	TriangleSystem::endRenderPass(VkCommandBuffer commandBuffer) {
 	vkCmdEndRenderPass(commandBuffer);
 }
 
-MeshSystemPipeline	*MeshSystem::getPipelineForFormat(VkFormat format) {
+TriangleSystemPipeline	*TriangleSystem::getPipelineForFormat(VkFormat format) {
 	auto		it = _pipelines.find(format);
 	if (it != _pipelines.end())
 		return (it->second.get());
-	auto	pipeline = std::make_unique<MeshSystemPipeline>(_device, _vertShaderPath, _fragShaderPath, format);
+	auto	pipeline = std::make_unique<TriangleSystemPipeline>(_device, _vertShaderPath, _fragShaderPath, format);
 	if (pipeline->init()) {
 		std::cerr << "Failed to create a new mesh system pipeline for the following reason:\n"
 			<< pipeline->getReason() << std::endl;
 		return (nullptr);
 	}
 	std::cout << "Created a new pipeline for the mesh System" << std::endl;
-	MeshSystemPipeline	*ptr = pipeline.get();
+	TriangleSystemPipeline	*ptr = pipeline.get();
 	_pipelines[format] = std::move(pipeline);
 	return (ptr);
 }

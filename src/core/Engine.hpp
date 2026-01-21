@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/21 11:42:10                                        */
+/*  Last Modified: 2026/01/21 16:10:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,17 +21,18 @@
 #include <memory>
 #include <cassert>
 
-#include "ecs/system/MeshSystem.hpp"
+#include "ecs/system/TriangleSystem.hpp"
 #include "api/vulkan/Swapchain.hpp"
 
 namespace hel {
 
 class	Window;
 class	Device;
+class	Registry;
 
 class	Engine {
 	public:
-		Engine(Device &device);
+		Engine(Device &device, Registry &registry);
 		~Engine();
 
 		Engine(const Engine &) = delete;
@@ -45,12 +46,11 @@ class	Engine {
 		}
 
 		bool	init(void);
-		void	drawFrame(Window &window, uint32_t currentFrame);
+		void	runFrame(Window &window, uint32_t currentFrame);
 
 	private:
 		using WindowCmdBuffers = std::array<VkCommandBuffer, Swapchain::MAX_FRAMES_IN_FLIGHT>;
 		bool	createCommandPool(void);
-		bool	createCommandBuffers(void);
 
 		bool			beginFrame(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 		bool			endFrame(VkCommandBuffer commandBuffer);
@@ -59,9 +59,10 @@ class	Engine {
 		bool											_healthy{true};
 		std::string										_reason{""};
 		Device											&_device;
+		Registry										&_registry;
 		VkCommandPool									_commandPool{VK_NULL_HANDLE};
 		std::unordered_map<Window*, WindowCmdBuffers>	_perWindowCommandBuffers;
-		MeshSystem										_meshSystem;
+		TriangleSystem									_triangleSystem;
 		uint32_t										_currentFrameIndex{0};
 
 };

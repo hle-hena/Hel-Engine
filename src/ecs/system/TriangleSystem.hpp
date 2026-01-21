@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: MeshSystem.hpp                                                      */
+/*  File: TriangleSystem.hpp                                                  */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/13 19:30:59 by hle-hena                                  */
+/*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/21 11:40:01                                        */
+/*  Last Modified: 2026/01/21 16:13:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,11 +24,12 @@
 namespace hel {
 
 class	Window;
+class	Registry;
 
-struct	MeshSystemPipeline {
+struct	TriangleSystemPipeline {
 	public:
-		MeshSystemPipeline(Device& device, std::string vertShaderPath, std::string fragShaderPath, const VkFormat &format);
-		~MeshSystemPipeline(void);
+		TriangleSystemPipeline(Device& device, std::string vertShaderPath, std::string fragShaderPath, const VkFormat &format);
+		~TriangleSystemPipeline(void);
 
 		std::string		getReason(void) const {
 			return (_reason);
@@ -56,32 +57,33 @@ struct	MeshSystemPipeline {
 		VkPipelineLayout	_pipelineLayout{VK_NULL_HANDLE};
 		VkRenderPass		_renderPass{VK_NULL_HANDLE};
 
-	friend class MeshSystem;
+	friend class TriangleSystem;
 };
 
-class	MeshSystem {
+class	TriangleSystem {
 	public:
-		MeshSystem(Device& device, std::string vertShaderPath, std::string fragShaderPath);
-		~MeshSystem();
+		TriangleSystem(Device& device, Registry &registry, std::string vertShaderPath, std::string fragShaderPath);
+		~TriangleSystem();
 
-		MeshSystem(const MeshSystem &) = delete;
-		MeshSystem	&operator=(const MeshSystem &) = delete;
+		TriangleSystem(const TriangleSystem &) = delete;
+		TriangleSystem	&operator=(const TriangleSystem &) = delete;
 
-		void	render(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex);
+		void	update(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex);
 
 	private:
-		using pipelineMap = std::unordered_map<VkFormat, std::unique_ptr<MeshSystemPipeline>>;
+		using pipelineMap = std::unordered_map<VkFormat, std::unique_ptr<TriangleSystemPipeline>>;
 
 		bool			_healthy{true};
 		std::string		_reason{""};
 		std::string		_vertShaderPath;
 		std::string		_fragShaderPath;
 		Device			&_device;
+		Registry		&_registry;
 		pipelineMap		_pipelines;
 
-		MeshSystemPipeline	*getPipelineForFormat(VkFormat format);
+		TriangleSystemPipeline	*getPipelineForFormat(VkFormat format);
 
-		void	beginRenderPass(VkCommandBuffer commandBuffer, MeshSystemPipeline *pipeline,
+		void	beginRenderPass(VkCommandBuffer commandBuffer, TriangleSystemPipeline *pipeline,
 									Window &window, uint32_t imageIndex);
 		void	endRenderPass(VkCommandBuffer commandBuffer);
 };

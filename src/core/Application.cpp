@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 22:08:22                                        */
+/*  Last Modified: 2026/01/21 18:11:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,7 @@
 #include "core/Application.hpp"
 #include "utils/healthHelper.hpp"
 #include "platform/window/GLFW.hpp"
+#include "ecs/Component.hpp"
 
 #include <iostream>
 
@@ -25,7 +26,7 @@ namespace hel {
 Application::Application(void)
 	:	_appWindows{},
 		_vkContext{*this},
-		_renderer{_vkContext.getDevice()} {
+		_engine{_vkContext.getDevice(), _registry} {
 	if (!GLFW::acquire())
 		RETURN_SET_UNHEALTHY("Couldn't init glfw.");
 	if (_vkContext.initiateVulkan()) {
@@ -36,8 +37,11 @@ Application::Application(void)
 	GLFW::release();
 	if (_appWindows.size() == 0)
 		RETURN_SET_UNHEALTHY("Couldn't even create one window");
-	if (_renderer.init())
-		RETURN_SET_UNHEALTHY(_renderer.getReason());
+	if (_engine.init())
+		RETURN_SET_UNHEALTHY(_engine.getReason());
+
+	_registry.addComponent<Name>(0).name = "Test";
+	_registry.getComponent<Name>(0).name = "sfujhgd";
 }
 
 Application::~Application(void) {
@@ -55,7 +59,7 @@ void	Application::run(void) {
 				i--;
 				continue ;
 			}
-			_renderer.drawFrame(*_appWindows[i], currentFrame);
+			_engine.runFrame(*_appWindows[i], currentFrame);
 		}
 
 		currentFrame = (currentFrame + 1) % Swapchain::MAX_FRAMES_IN_FLIGHT;

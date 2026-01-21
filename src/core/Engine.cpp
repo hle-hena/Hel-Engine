@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/21 11:42:24                                        */
+/*  Last Modified: 2026/01/21 16:23:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,9 +26,10 @@
 
 namespace hel {
 
-Engine::Engine(Device &device)
+Engine::Engine(Device &device, Registry &registry)
 	:	_device{device},
-		_meshSystem{device,
+		_registry{registry},
+		_triangleSystem{device, registry,
 					"assets/shaders/triangle.vert.spv",
 					"assets/shaders/triangle.frag.spv"} {
 }
@@ -84,7 +85,7 @@ VkCommandBuffer Engine::getCommandBuffer(Window& window, uint32_t currentFrame) 
 	return _perWindowCommandBuffers[&window][currentFrame];
 }
 
-void	Engine::drawFrame(Window &window, uint32_t currentFrame) {
+void	Engine::runFrame(Window &window, uint32_t currentFrame) {
 	Swapchain	&swapchain = window.getSwapchain();
 
 	uint32_t	imageIndex;
@@ -97,7 +98,7 @@ void	Engine::drawFrame(Window &window, uint32_t currentFrame) {
 	vkResetCommandBuffer(cmd, 0);
 
 	beginFrame(cmd, imageIndex);
-	_meshSystem.render(cmd, window, imageIndex);
+	_triangleSystem.update(cmd, window, imageIndex);
 	endFrame(cmd);
 
 	swapchain.submitCommandBuffer(&cmd, imageIndex, currentFrame);
