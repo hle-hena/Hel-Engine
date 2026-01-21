@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Renderer.hpp                                                        */
+/*  File: Engine.hpp                                                          */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/06 16:35:00 by hle-hena                                  */
+/*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 22:29:55                                        */
+/*  Last Modified: 2026/01/21 11:42:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,21 +21,21 @@
 #include <memory>
 #include <cassert>
 
-#include "render/system/MeshSystem.hpp"
-#include "render/vulkan/Swapchain.hpp"
+#include "ecs/system/MeshSystem.hpp"
+#include "api/vulkan/Swapchain.hpp"
 
 namespace hel {
 
 class	Window;
 class	Device;
 
-class	Renderer {
+class	Engine {
 	public:
-		Renderer(Device &device);
-		~Renderer();
+		Engine(Device &device);
+		~Engine();
 
-		Renderer(const Renderer &) = delete;
-		Renderer &operator=(const Renderer &) = delete;
+		Engine(const Engine &) = delete;
+		Engine &operator=(const Engine &) = delete;
 
 		std::string		getReason(void) const {
 			return (_reason);

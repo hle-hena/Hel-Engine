@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:30:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/19 17:36:34                                        */
+/*  Last Modified: 2026/01/21 11:40:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,8 +14,8 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "render/system/MeshSystem.hpp"
-#include "render/vulkan/Device.hpp"
+#include "ecs/system/MeshSystem.hpp"
+#include "api/vulkan/Device.hpp"
 #include "platform/window/Window.hpp"
 #include "utils/healthHelper.hpp"
 

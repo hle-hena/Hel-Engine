@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:12 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 22:17:12                                        */
+/*  Last Modified: 2026/01/21 11:42:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,8 +21,8 @@
 # include <string>
 
 # include "platform/window/Window.hpp"
-# include "render/vulkan/VulkanContext.hpp"
-# include "render/system/Renderer.hpp"
+# include "api/vulkan/VulkanContext.hpp"
+# include "core/Engine.hpp"
 
 namespace	hel {
 
@@ -54,7 +54,7 @@ class	Application {
 		std::string						_reason{""};
 		std::vector<Window::windowPtr>	_appWindows;
 		VulkanContext					_vkContext;
-		Renderer						_renderer;
+		Engine						_renderer;
 };
 
 }

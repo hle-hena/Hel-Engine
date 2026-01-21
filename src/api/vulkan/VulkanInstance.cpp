@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:33:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/17 11:26:41                                        */
+/*  Last Modified: 2026/01/21 11:40:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,9 +14,9 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "render/vulkan/VulkanInstance.hpp"
-#include "render/vulkan/validationLayer.hpp"
-#include "render/vulkan/vulkanHelper.hpp"
+#include "api/vulkan/VulkanInstance.hpp"
+#include "api/vulkan/validationLayer.hpp"
+#include "api/vulkan/vulkanHelper.hpp"
 
 namespace	hel {
 

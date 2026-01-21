@@ -1,0 +1,20 @@
+Main Loop:
+	Engine Starts Frame: Acquires the Vulkan command buffer.
+	Logic/Physics Systems: Systems look at the Registry, update positions, or run compute shaders.
+	Resource System: (Optional but good) Looks for any MeshComponent where the MeshAsset* is null, asks the Asset Manager to load it, and sets the pointer.
+	Render System: Loops through the Registry’s dense array of meshes. Since the pointers are now valid, it just sends the data to the GPU via vkCmdDraw.
+	Engine Ends Frame: Submits the commands and presents the image.
+
+
+Adding a Component:
+	entity.addComponent<Mesh>("tree.obj"):
+	Registry creates a slot in the Dense Array for that entity.
+	The MeshComponent is initialized with the string "tree.obj" and a nullptr for the resource.
+	The Sparse Array is updated so the Entity ID knows where its Mesh data is.
+
+Removing a Component:
+	entity.removeComponent<Mesh>():
+	Registry identifies the index in the Dense Array.
+	Swap-and-Pop: The last mesh in the array moves into the removed spot.
+	Sparse Update: The entity that was "at the end" gets its index updated so it points to its new location.
+	Clean Up: The vector size shrinks by one. No holes in memory.
