@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/21 18:11:56                                        */
+/*  Last Modified: 2026/01/22 14:55:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -40,8 +40,8 @@ Application::Application(void)
 	if (_engine.init())
 		RETURN_SET_UNHEALTHY(_engine.getReason());
 
-	_registry.addComponent<Name>(0).name = "Test";
-	_registry.getComponent<Name>(0).name = "sfujhgd";
+	_registry.tryAddComponent<Name>(0).name = "Test";//TEMPORARY, it is here to make sure the ECS work.
+	_registry.getComponent<Name>(0).name = "sfujhgd";//TEMPORARY, it is here to make sure the ECS work.
 }
 
 Application::~Application(void) {
@@ -55,6 +55,7 @@ void	Application::run(void) {
 
 		for (size_t i = 0; i < _appWindows.size(); i++) {
 			if (_appWindows[i]->shouldClose()) {
+				_registry.removeEntity(_appWindows.size() - 1);//TEMPORARY, it is here to make sure the ECS work.
 				_appWindows.erase(_appWindows.begin() + i);
 				i--;
 				continue ;
@@ -81,6 +82,7 @@ void	Application::addNewWindow(int width, int height, const std::string &windowN
 		return ;
 	}
 	_appWindows.push_back(std::move(window));
+	_registry.tryAddComponent<Name>(_appWindows.size() - 1).name = windowName;//TEMPORARY, it is here to make sure the ECS work.
 }
 
 }

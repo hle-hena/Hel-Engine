@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/21 18:16:36                                        */
+/*  Last Modified: 2026/01/22 14:53:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,7 @@
 # include <typeinfo>
 # include <unordered_map>
 # include <vector>
+# include <memory>
 
 namespace	hel {
 
@@ -28,21 +29,26 @@ class	AssetManager {
 };
 
 using EntityId = uint32_t;
+static constexpr uint32_t NOT_REGISTERED = 0xFFFFFFFF;
 
 struct	IPool {
 	virtual ~IPool(void) = default;
+	virtual void	tryRemoveEntity(EntityId entity) = 0;
+	virtual void	removeEntity(EntityId entity) = 0;
 };
 
 template <typename Component>
 struct	Pool : IPool {
-	std::vector<EntityId>	sparseArray{};
-	std::vector<Component>	denseArray{};
+	std::vector<uint32_t>	entityToIndex{};
+	std::vector<EntityId>	indexToEntity{};
+	std::vector<Component>	components{};
+
+	void	tryRemoveEntity(EntityId entity) override;
+	void	removeEntity(EntityId entity) override;
 };
 
 class	Registry {
 	public:
-		static constexpr uint32_t NOT_REGISTERED = 0xFFFFFFFF;
-
 		Registry(void) = default;
 		~Registry(void) = default;
 		Registry(const Registry &) = delete;
@@ -50,10 +56,19 @@ class	Registry {
 
 		template <typename Component, typename... Args>
 		Component	&addComponent(EntityId entity, Args&&... args);
+		template <typename Component, typename... Args>
+		Component	&tryAddComponent(EntityId entity, Args&&... args);
 		template <typename Component>
 		Component	&getComponent(EntityId entity);
 		template <typename Component>
 		Component	*tryGetComponent(EntityId entity);
+
+		template <typename Component>
+		void		removeComponent(EntityId entity);
+		template <typename Component>
+		void		tryRemoveComponent(EntityId entity);
+		void		removeEntity(EntityId entity);
+
 		template <typename Component>
 		Pool<Component>	&getPool();
 

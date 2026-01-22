@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/21 18:17:08                                        */
+/*  Last Modified: 2026/01/22 14:31:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,19 +19,65 @@
 
 namespace	hel {
 
+template <typename Component>
+void	Pool<Component>::tryRemoveEntity(EntityId entity) {
+	if (entity >= entityToIndex.size() || entityToIndex[entity] == NOT_REGISTERED)
+		return;
+	uint32_t		lastIndex = components.size() - 1;
+	uint32_t		removedIndex = entityToIndex[entity];
+	if (entityToIndex[entity] != lastIndex) {
+		components[removedIndex] = std::move(components[lastIndex]);
+		EntityId	lastEntity = indexToEntity[lastIndex];
+		entityToIndex[lastEntity] = removedIndex;
+		indexToEntity[removedIndex] = indexToEntity[lastIndex];
+	}
+	components.resize(lastIndex);
+	indexToEntity.resize(lastIndex);
+	entityToIndex[entity] = NOT_REGISTERED;
+}
+
+template <typename Component>
+void	Pool<Component>::removeEntity(EntityId entity) {
+	uint32_t		lastIndex = components.size() - 1;
+	uint32_t		removedIndex = entityToIndex[entity];
+	if (entityToIndex[entity] != lastIndex) {
+		components[removedIndex] = std::move(components[lastIndex]);
+		EntityId	lastEntity = indexToEntity[lastIndex];
+		entityToIndex[lastEntity] = removedIndex;
+		indexToEntity[removedIndex] = indexToEntity[lastIndex];
+	}
+	components.resize(lastIndex);
+	indexToEntity.resize(lastIndex);
+	entityToIndex[entity] = NOT_REGISTERED;
+}
+
 template <typename Component, typename... Args>
 Component	&Registry::addComponent(EntityId entity, Args&&... args) {
 	Pool<Component>	&pool = getPool<Component>();
-	if (pool.sparseArray.size() <= entity) {
-		pool.sparseArray.resize(entity + 1, NOT_REGISTERED);
+	if (pool.entityToIndex.size() <= entity) {
+		pool.entityToIndex.resize(entity + 1, NOT_REGISTERED);
 	}
-	if (pool.sparseArray[entity] != NOT_REGISTERED) {
+	Component	&component = pool.components.emplace_back(std::forward<Args>(args)...);
+	pool.indexToEntity.push_back(entity);
+	pool.entityToIndex[entity] = pool.components.size() - 1;
+	prepareComponent(component);
+	return (component);
+}
+
+template <typename Component, typename... Args>
+Component	&Registry::tryAddComponent(EntityId entity, Args&&... args) {
+	Pool<Component>	&pool = getPool<Component>();
+	if (pool.entityToIndex.size() <= entity) {
+		pool.entityToIndex.resize(entity + 1, NOT_REGISTERED);
+	}
+	if (pool.entityToIndex[entity] != NOT_REGISTERED) {
 		std::cout << "Cannot add a component when one already exists. " <<
-			"Use getComponent for that." << std::endl;
-		return (pool.denseArray[pool.sparseArray[entity]]);
+			"Use tryGetComponent for that." << std::endl;
+		return (pool.components[pool.entityToIndex[entity]]);
 	}
-	Component	&component = pool.denseArray.emplace_back(std::forward<Args>(args)...);
-	pool.sparseArray[entity] = pool.denseArray.size() - 1;
+	Component	&component = pool.components.emplace_back(std::forward<Args>(args)...);
+	pool.indexToEntity.push_back(entity);
+	pool.entityToIndex[entity] = pool.components.size() - 1;
 	prepareComponent(component);
 	return (component);
 }
@@ -39,15 +85,27 @@ Component	&Registry::addComponent(EntityId entity, Args&&... args) {
 template <typename Component>
 Component	&Registry::getComponent(EntityId entity) {
 	Pool<Component>	&pool = getPool<Component>();
-	return (pool.denseArray[pool.sparseArray[entity]]);
+	return (pool.components[pool.entityToIndex[entity]]);
 }
 
 template <typename Component>
 Component	*Registry::tryGetComponent(EntityId entity) {
 	Pool<Component>	&pool = getPool<Component>();
-	if (pool.sparseArray.size <= entity || pool.sparseArray[entity] == NOT_REGISTERED)
+	if (pool.entityToIndex.size() <= entity || pool.entityToIndex[entity] == NOT_REGISTERED)
 		return (nullptr);
-	return (&pool.denseArray[pool.sparseArray[entity]]);
+	return (&pool.components[pool.entityToIndex[entity]]);
+}
+
+template <typename Component>
+void	Registry::removeComponent(EntityId entity) {
+	Pool<Component>	&pool = getPool<Component>();
+	pool.removeEntity(entity);
+}
+
+template <typename Component>
+void	Registry::tryRemoveComponent(EntityId entity) {
+	Pool<Component>	&pool = getPool<Component>();
+	pool.tryRemoveEntity(entity);
 }
 
 template <typename Component>
