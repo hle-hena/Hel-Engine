@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/22 15:39:35                                        */
+/*  Last Modified: 2026/01/22 20:02:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -134,13 +134,13 @@ void	TriangleSystem::update(VkCommandBuffer commandBuffer, Window &window, uint3
 		return ;
 	beginRenderPass(commandBuffer, pipeline, window, imageIndex);
 
-	Pool<Name>	&pool = _registry.getPool<Name>();
-	int i = 0;
-	for (auto &entity: pool.components) {
+	auto	entities = _registry.view<Name, Transform>();
+	for (auto entity: entities) {
+		auto	&name = entities.get<Name>(entity);
+		std::cout << "Triangle " << name.name << std::endl;
 		pipeline->bind(commandBuffer);
 		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 	}
-
 	endRenderPass(commandBuffer);
 }
 

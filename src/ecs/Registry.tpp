@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/22 15:39:10                                        */
+/*  Last Modified: 2026/01/22 19:55:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -137,6 +137,11 @@ Pool<Component>	&Registry::getPool() {
 		return (static_cast<Pool<Component>&>(*_pools[typeKey]));
 	}
 	return (static_cast<Pool<Component>&>(*pool->second));
+}
+
+template <typename... Components>
+View<Components...> Registry::view() {
+    return View<Components...>(*this);
 }
 
 template<typename Component>

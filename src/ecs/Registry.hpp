@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/22 15:38:47                                        */
+/*  Last Modified: 2026/01/22 19:55:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,6 +28,9 @@ namespace	hel {
 class	AssetManager {
 };
 
+template <typename... Components>
+class View;
+
 using EntityId = uint32_t;
 static constexpr uint32_t NOT_REGISTERED = 0xFFFFFFFF;
 
@@ -43,8 +46,8 @@ struct	Pool : IPool {
 	std::vector<EntityId>	indexToEntity{};
 	std::vector<Component>	components{};
 
-	void	removeEntity(EntityId entity) override;
 	void	tryRemoveEntity(EntityId entity) override;
+	void	removeEntity(EntityId entity) override;
 };
 
 class	Registry {
@@ -74,7 +77,9 @@ class	Registry {
 		void		removeEntity(EntityId entity);
 
 		template <typename Component>
-		Pool<Component>	&getPool();
+		Pool<Component>			&getPool();
+		template <typename... Components>
+		View<Components...>		view();
 
 	private:
 		template<typename Component>
@@ -86,4 +91,5 @@ class	Registry {
 
 }
 
+# include "ecs/View.hpp"
 # include "ecs/Registry.tpp"

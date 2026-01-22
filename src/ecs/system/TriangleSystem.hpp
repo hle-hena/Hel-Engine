@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/21 16:13:48                                        */
+/*  Last Modified: 2026/01/22 17:38:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,11 +20,11 @@
 # include <unordered_map>
 
 # include "api/vulkan/Pipeline.hpp"
+# include "ecs/Registry.hpp"
 
 namespace hel {
 
 class	Window;
-class	Registry;
 
 struct	TriangleSystemPipeline {
 	public:
