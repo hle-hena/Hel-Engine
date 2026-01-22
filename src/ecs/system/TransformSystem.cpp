@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Component.hpp                                                       */
+/*  File: TransformSystem.cpp                                                 */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
+/*  Created: 2026/01/22 15:06:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/22 15:06:44                                        */
+/*  Last Modified: 2026/01/22 15:34:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,30 +14,32 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#pragma once
-
-# define GLM_FORCE_RADIANS
-# define GLM_FORCE_DEPTH_ZERO_TO_ONE
-# include <glm/glm.hpp>
-# include <glm/gtc/quaternion.hpp>
-# include <glm/gtc/constants.hpp>
-# include <string>
+#include "ecs/system/TransformSystem.hpp"
+#include "ecs/Registry.hpp"
+#include "ecs/Component.hpp"
 
 namespace	hel {
 
-struct	Name {
-	std::string	name;
-};
+TransformSystem::TransformSystem(Registry &registry)
+	:	_registry{registry} {
+}
 
-struct	Transform {
-	glm::vec3	position{0.f};
-	glm::quat	rotation{1.f, 0.f, 0.f, 0.f};
-	glm::vec3	scale{1.f};
+TransformSystem::~TransformSystem(void) {
+}
 
-	glm::mat4	transform{1.f};
+void	TransformSystem::update(void) {
+	Pool<Transform>	&pool = _registry.getPool<Transform>();
 
-	bool		isDirty{true};
-};
-
+	for (auto &transform: pool.components) {
+		if (!transform.isDirty)
+			continue ;
+		glm::mat4	T = glm::translate(glm::mat4(1.f), transform.position);
+		glm::mat4	R = glm::mat4_cast(transform.rotation);
+		glm::mat4	S = glm::scale(glm::mat4(1.f), transform.scale);
+		transform.transform = T * R * S;
+		transform.isDirty = false;
+		std::cout << "Updated a transform" << std::endl;
+	}
+}
 
 }

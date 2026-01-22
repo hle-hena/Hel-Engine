@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/22 14:53:49                                        */
+/*  Last Modified: 2026/01/22 15:38:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -43,8 +43,8 @@ struct	Pool : IPool {
 	std::vector<EntityId>	indexToEntity{};
 	std::vector<Component>	components{};
 
-	void	tryRemoveEntity(EntityId entity) override;
 	void	removeEntity(EntityId entity) override;
+	void	tryRemoveEntity(EntityId entity) override;
 };
 
 class	Registry {
@@ -62,6 +62,10 @@ class	Registry {
 		Component	&getComponent(EntityId entity);
 		template <typename Component>
 		Component	*tryGetComponent(EntityId entity);
+		template <typename Component, typename Func>
+		void		patch(EntityId entity, Func&& func);
+		template <typename Component, typename Func>
+		void		patch(Component &comp, Func&& func);
 
 		template <typename Component>
 		void		removeComponent(EntityId entity);

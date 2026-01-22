@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/22 14:31:25                                        */
+/*  Last Modified: 2026/01/22 15:39:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,21 @@
 #include <iostream>
 
 namespace	hel {
+
+template <typename Component>
+void	Pool<Component>::removeEntity(EntityId entity) {
+	uint32_t		lastIndex = components.size() - 1;
+	uint32_t		removedIndex = entityToIndex[entity];
+	if (entityToIndex[entity] != lastIndex) {
+		components[removedIndex] = std::move(components[lastIndex]);
+		EntityId	lastEntity = indexToEntity[lastIndex];
+		entityToIndex[lastEntity] = removedIndex;
+		indexToEntity[removedIndex] = indexToEntity[lastIndex];
+	}
+	components.resize(lastIndex);
+	indexToEntity.resize(lastIndex);
+	entityToIndex[entity] = NOT_REGISTERED;
+}
 
 template <typename Component>
 void	Pool<Component>::tryRemoveEntity(EntityId entity) {
@@ -36,20 +51,7 @@ void	Pool<Component>::tryRemoveEntity(EntityId entity) {
 	entityToIndex[entity] = NOT_REGISTERED;
 }
 
-template <typename Component>
-void	Pool<Component>::removeEntity(EntityId entity) {
-	uint32_t		lastIndex = components.size() - 1;
-	uint32_t		removedIndex = entityToIndex[entity];
-	if (entityToIndex[entity] != lastIndex) {
-		components[removedIndex] = std::move(components[lastIndex]);
-		EntityId	lastEntity = indexToEntity[lastIndex];
-		entityToIndex[lastEntity] = removedIndex;
-		indexToEntity[removedIndex] = indexToEntity[lastIndex];
-	}
-	components.resize(lastIndex);
-	indexToEntity.resize(lastIndex);
-	entityToIndex[entity] = NOT_REGISTERED;
-}
+
 
 template <typename Component, typename... Args>
 Component	&Registry::addComponent(EntityId entity, Args&&... args) {
@@ -96,6 +98,22 @@ Component	*Registry::tryGetComponent(EntityId entity) {
 	return (&pool.components[pool.entityToIndex[entity]]);
 }
 
+template <typename Component, typename Func>
+void	Registry::patch(EntityId entity, Func &&func) {
+	Component	&comp = tryGetComponent<Component>(entity);
+	func(comp);
+	if constexpr (requires { comp.isDirty = true; })
+		comp.isDirty = true;
+}
+
+template <typename Component, typename Func>
+void	Registry::patch(Component &comp, Func &&func) {
+	func(comp);
+	if constexpr (requires { comp.isDirty = true; })
+		comp.isDirty = true;
+}
+
+
 template <typename Component>
 void	Registry::removeComponent(EntityId entity) {
 	Pool<Component>	&pool = getPool<Component>();
@@ -107,6 +125,7 @@ void	Registry::tryRemoveComponent(EntityId entity) {
 	Pool<Component>	&pool = getPool<Component>();
 	pool.tryRemoveEntity(entity);
 }
+
 
 template <typename Component>
 Pool<Component>	&Registry::getPool() {

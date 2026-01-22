@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/22 14:55:12                                        */
+/*  Last Modified: 2026/01/22 15:38:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -42,6 +42,10 @@ Application::Application(void)
 
 	_registry.tryAddComponent<Name>(0).name = "Test";//TEMPORARY, it is here to make sure the ECS work.
 	_registry.getComponent<Name>(0).name = "sfujhgd";//TEMPORARY, it is here to make sure the ECS work.
+	_registry.patch(_registry.addComponent<Transform>(0), [](Transform &t){
+		t.position = {1.f, 10.f, -1.f};
+		t.scale = {2.f, 1.f, 1.f};
+	});
 }
 
 Application::~Application(void) {

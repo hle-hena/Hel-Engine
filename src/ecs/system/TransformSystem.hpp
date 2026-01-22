@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Component.hpp                                                       */
+/*  File: TransformSystem.hpp                                                 */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
+/*  Created: 2026/01/22 15:07:06 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/22 15:06:44                                        */
+/*  Last Modified: 2026/01/22 15:13:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,28 +16,21 @@
 
 #pragma once
 
-# define GLM_FORCE_RADIANS
-# define GLM_FORCE_DEPTH_ZERO_TO_ONE
-# include <glm/glm.hpp>
-# include <glm/gtc/quaternion.hpp>
-# include <glm/gtc/constants.hpp>
-# include <string>
-
 namespace	hel {
 
-struct	Name {
-	std::string	name;
+class	Registry;
+
+class	TransformSystem {
+	public:
+		TransformSystem(Registry &registry);
+		~TransformSystem(void);
+		TransformSystem(const TransformSystem &) = delete;
+		TransformSystem	&operator=(const TransformSystem &) = delete;
+
+		void	update(void);
+
+	private:
+		Registry	&_registry;
 };
-
-struct	Transform {
-	glm::vec3	position{0.f};
-	glm::quat	rotation{1.f, 0.f, 0.f, 0.f};
-	glm::vec3	scale{1.f};
-
-	glm::mat4	transform{1.f};
-
-	bool		isDirty{true};
-};
-
 
 }
