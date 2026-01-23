@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/22 20:02:51                                        */
+/*  Last Modified: 2026/01/23 18:44:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -137,7 +137,7 @@ void	TriangleSystem::update(VkCommandBuffer commandBuffer, Window &window, uint3
 	auto	entities = _registry.view<Name, Transform>();
 	for (auto entity: entities) {
 		auto	&name = entities.get<Name>(entity);
-		std::cout << "Triangle " << name.name << std::endl;
+		std::cout << "\rTriangle " << name.name;
 		pipeline->bind(commandBuffer);
 		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 	}
@@ -186,11 +186,11 @@ TriangleSystemPipeline	*TriangleSystem::getPipelineForFormat(VkFormat format) {
 		return (it->second.get());
 	auto	pipeline = std::make_unique<TriangleSystemPipeline>(_device, _vertShaderPath, _fragShaderPath, format);
 	if (pipeline->init()) {
-		std::cerr << "Failed to create a new mesh system pipeline for the following reason:\n"
+		std::cerr << "Failed to create a new triangle system pipeline for the following reason:\n"
 			<< pipeline->getReason() << std::endl;
 		return (nullptr);
 	}
-	std::cout << "Created a new pipeline for the mesh System" << std::endl;
+	std::cout << "Created a new pipeline for the triangle system" << std::endl;
 	TriangleSystemPipeline	*ptr = pipeline.get();
 	_pipelines[format] = std::move(pipeline);
 	return (ptr);

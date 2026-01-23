@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/22 19:55:58                                        */
+/*  Last Modified: 2026/01/23 18:52:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,95 +22,118 @@ namespace	hel {
 template <typename Component>
 void	Pool<Component>::removeEntity(EntityId entity) {
 	uint32_t		lastIndex = components.size() - 1;
-	uint32_t		removedIndex = entityToIndex[entity];
-	if (entityToIndex[entity] != lastIndex) {
+	uint32_t		removedIndex = indices[entity];
+	if (indices[entity] != lastIndex) {
 		components[removedIndex] = std::move(components[lastIndex]);
-		EntityId	lastEntity = indexToEntity[lastIndex];
-		entityToIndex[lastEntity] = removedIndex;
-		indexToEntity[removedIndex] = indexToEntity[lastIndex];
+		indices[entities[lastIndex]] = removedIndex;
+		entities[removedIndex] = entities[lastIndex];
 	}
 	components.resize(lastIndex);
-	indexToEntity.resize(lastIndex);
-	entityToIndex[entity] = NOT_REGISTERED;
+	entities.resize(lastIndex);
+	indices[entity] = NOT_REGISTERED;
 }
 
 template <typename Component>
 void	Pool<Component>::tryRemoveEntity(EntityId entity) {
-	if (entity >= entityToIndex.size() || entityToIndex[entity] == NOT_REGISTERED)
+	if (entity >= indices.size() || indices[entity] == NOT_REGISTERED)
 		return;
+	std::cout << "\r\033[31mRemoving an entity\033[0m\n" << std::endl;
 	uint32_t		lastIndex = components.size() - 1;
-	uint32_t		removedIndex = entityToIndex[entity];
-	if (entityToIndex[entity] != lastIndex) {
+	uint32_t		removedIndex = indices[entity];
+	if (indices[entity] != lastIndex) {
 		components[removedIndex] = std::move(components[lastIndex]);
-		EntityId	lastEntity = indexToEntity[lastIndex];
-		entityToIndex[lastEntity] = removedIndex;
-		indexToEntity[removedIndex] = indexToEntity[lastIndex];
+		indices[entities[lastIndex]] = removedIndex;
+		entities[removedIndex] = entities[lastIndex];
 	}
 	components.resize(lastIndex);
-	indexToEntity.resize(lastIndex);
-	entityToIndex[entity] = NOT_REGISTERED;
+	entities.resize(lastIndex);
+	indices[entity] = NOT_REGISTERED;
 }
 
 
 
 template <typename Component, typename... Args>
-Component	&Registry::addComponent(EntityId entity, Args&&... args) {
+const Component	&Registry::addComponent(EntityId entity, Args&&... args) {
 	Pool<Component>	&pool = getPool<Component>();
-	if (pool.entityToIndex.size() <= entity) {
-		pool.entityToIndex.resize(entity + 1, NOT_REGISTERED);
+	if (pool.indices.size() <= entity) {
+		pool.indices.resize(entity + 1, NOT_REGISTERED);
 	}
 	Component	&component = pool.components.emplace_back(std::forward<Args>(args)...);
-	pool.indexToEntity.push_back(entity);
-	pool.entityToIndex[entity] = pool.components.size() - 1;
+	pool.entities.push_back(entity);
+	pool.indices[entity] = pool.components.size() - 1;
 	prepareComponent(component);
 	return (component);
 }
 
 template <typename Component, typename... Args>
-Component	&Registry::tryAddComponent(EntityId entity, Args&&... args) {
+const Component	&Registry::tryAddComponent(EntityId entity, Args&&... args) {
 	Pool<Component>	&pool = getPool<Component>();
-	if (pool.entityToIndex.size() <= entity) {
-		pool.entityToIndex.resize(entity + 1, NOT_REGISTERED);
+	if (pool.indices.size() <= entity) {
+		pool.indices.resize(entity + 1, NOT_REGISTERED);
 	}
-	if (pool.entityToIndex[entity] != NOT_REGISTERED) {
+	if (pool.indices[entity] != NOT_REGISTERED) {
 		std::cout << "Cannot add a component when one already exists. " <<
 			"Use tryGetComponent for that." << std::endl;
-		return (pool.components[pool.entityToIndex[entity]]);
+		return (pool.components[pool.indices[entity]]);
 	}
 	Component	&component = pool.components.emplace_back(std::forward<Args>(args)...);
-	pool.indexToEntity.push_back(entity);
-	pool.entityToIndex[entity] = pool.components.size() - 1;
+	pool.entities.push_back(entity);
+	pool.indices[entity] = pool.components.size() - 1;
 	prepareComponent(component);
 	return (component);
 }
 
 template <typename Component>
-Component	&Registry::getComponent(EntityId entity) {
+const Component	&Registry::getComponent(EntityId entity) {
 	Pool<Component>	&pool = getPool<Component>();
-	return (pool.components[pool.entityToIndex[entity]]);
+	return (pool.components[pool.indices[entity]]);
 }
 
 template <typename Component>
-Component	*Registry::tryGetComponent(EntityId entity) {
+const Component	*Registry::tryGetComponent(EntityId entity) {
 	Pool<Component>	&pool = getPool<Component>();
-	if (pool.entityToIndex.size() <= entity || pool.entityToIndex[entity] == NOT_REGISTERED)
+	if (pool.indices.size() <= entity || pool.indices[entity] == NOT_REGISTERED)
 		return (nullptr);
-	return (&pool.components[pool.entityToIndex[entity]]);
+	return (&pool.components[pool.indices[entity]]);
 }
+
 
 template <typename Component, typename Func>
 void	Registry::patch(EntityId entity, Func &&func) {
-	Component	&comp = tryGetComponent<Component>(entity);
-	func(comp);
-	if constexpr (requires { comp.isDirty = true; })
-		comp.isDirty = true;
+	const Component	*comp = tryGetComponent<Component>(entity);
+	if (!comp)
+		return ;
+	Component		&mutableComp = const_cast<Component &>(*comp);
+	func(mutableComp);
+	if constexpr (requires { mutableComp.isDirty = true; })
+		mutableComp.isDirty = true;
 }
 
 template <typename Component, typename Func>
-void	Registry::patch(Component &comp, Func &&func) {
-	func(comp);
-	if constexpr (requires { comp.isDirty = true; })
-		comp.isDirty = true;
+void	Registry::patch(const Component &comp, Func &&func) {
+	Component	&mutableComp = const_cast<Component &>(comp);
+	func(mutableComp);
+	if constexpr (requires { mutableComp.isDirty = true; })
+		mutableComp.isDirty = true;
+}
+
+template <typename Component, typename Func>
+void	Registry::update(EntityId entity, Func &&func) {
+	const Component	*comp = tryGetComponent<Component>(entity);
+	if (!comp)
+		return ;
+	Component		&mutableComp = const_cast<Component &>(*comp);
+	func(mutableComp);
+	if constexpr (requires { mutableComp.isDirty = false; })
+		mutableComp.isDirty = false;
+}
+
+template <typename Component, typename Func>
+void	Registry::update(const Component &comp, Func &&func) {
+	Component	&mutableComp = const_cast<Component &>(comp);
+	func(mutableComp);
+	if constexpr (requires { mutableComp.isDirty = false; })
+		mutableComp.isDirty = false;
 }
 
 
@@ -141,7 +164,9 @@ Pool<Component>	&Registry::getPool() {
 
 template <typename... Components>
 View<Components...> Registry::view() {
-    return View<Components...>(*this);
+	static_assert(sizeof...(Components) > 0, "Cannot create an empty View. Please provide at least one component");
+    static_assert(is_unique<Components...>::value, "View contains duplicate component types");
+	return (View<Components...>(*this));
 }
 
 template<typename Component>

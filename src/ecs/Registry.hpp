@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/22 19:55:53                                        */
+/*  Last Modified: 2026/01/23 18:51:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,6 +26,7 @@
 namespace	hel {
 
 class	AssetManager {
+	//TODO -> Implement an actual asset manager, but probably in another file.
 };
 
 template <typename... Components>
@@ -33,6 +34,17 @@ class View;
 
 using EntityId = uint32_t;
 static constexpr uint32_t NOT_REGISTERED = 0xFFFFFFFF;
+
+template <typename... T>
+struct	is_unique;
+
+template <>
+struct	is_unique<> : std::true_type {};
+
+template <typename T, typename... Rest>
+struct	is_unique<T, Rest...> : std::bool_constant<
+	(!std::is_same_v<T, Rest> && ...) && is_unique<Rest...>::value
+> {};
 
 struct	IPool {
 	virtual ~IPool(void) = default;
@@ -42,8 +54,8 @@ struct	IPool {
 
 template <typename Component>
 struct	Pool : IPool {
-	std::vector<uint32_t>	entityToIndex{};
-	std::vector<EntityId>	indexToEntity{};
+	std::vector<uint32_t>	indices{};
+	std::vector<EntityId>	entities{};
 	std::vector<Component>	components{};
 
 	void	tryRemoveEntity(EntityId entity) override;
@@ -58,17 +70,22 @@ class	Registry {
 		Registry	&operator=(const Registry &) = delete;
 
 		template <typename Component, typename... Args>
-		Component	&addComponent(EntityId entity, Args&&... args);
+		const Component	&addComponent(EntityId entity, Args&&... args);
 		template <typename Component, typename... Args>
-		Component	&tryAddComponent(EntityId entity, Args&&... args);
+		const Component	&tryAddComponent(EntityId entity, Args&&... args);
 		template <typename Component>
-		Component	&getComponent(EntityId entity);
+		const Component	&getComponent(EntityId entity);
 		template <typename Component>
-		Component	*tryGetComponent(EntityId entity);
+		const Component	*tryGetComponent(EntityId entity);
+
 		template <typename Component, typename Func>
 		void		patch(EntityId entity, Func&& func);
 		template <typename Component, typename Func>
-		void		patch(Component &comp, Func&& func);
+		void		patch(const Component &comp, Func&& func);
+		template <typename Component, typename Func>
+		void		update(EntityId entity, Func&& func);
+		template <typename Component, typename Func>
+		void		update(const Component &comp, Func&& func);
 
 		template <typename Component>
 		void		removeComponent(EntityId entity);
@@ -76,17 +93,20 @@ class	Registry {
 		void		tryRemoveComponent(EntityId entity);
 		void		removeEntity(EntityId entity);
 
-		template <typename Component>
-		Pool<Component>			&getPool();
 		template <typename... Components>
 		View<Components...>		view();
 
 	private:
 		template<typename Component>
 		void	prepareComponent(Component &component);
+		template <typename Component>
+		Pool<Component>			&getPool();
 
 		std::unordered_map<std::type_index, std::unique_ptr<IPool>>	_pools;
 		AssetManager							_assetManager;
+
+	template <typename... Components>
+	friend class View;
 };
 
 }

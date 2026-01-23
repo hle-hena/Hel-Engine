@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/22 15:06:44                                        */
+/*  Last Modified: 2026/01/23 18:44:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,7 +34,7 @@ struct	Transform {
 	glm::quat	rotation{1.f, 0.f, 0.f, 0.f};
 	glm::vec3	scale{1.f};
 
-	glm::mat4	transform{1.f};
+	glm::mat4	worldMatrix{1.f};
 
 	bool		isDirty{true};
 };

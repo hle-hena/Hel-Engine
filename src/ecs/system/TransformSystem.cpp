@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 15:06:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/23 14:57:34                                        */
+/*  Last Modified: 2026/01/23 18:48:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,8 +37,7 @@ void	TransformSystem::update(void) {
 		glm::mat4	T = glm::translate(glm::mat4(1.f), transform.position);
 		glm::mat4	R = glm::mat4_cast(transform.rotation);
 		glm::mat4	S = glm::scale(glm::mat4(1.f), transform.scale);
-		transform.transform = T * R * S;
-		transform.isDirty = false;
+		_registry.update(transform, [&](Transform &t){t.worldMatrix = T * R * S;});
 		std::cout << "Updated a transform" << std::endl;
 	}
 }

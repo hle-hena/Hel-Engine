@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 16:09:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/22 20:11:41                                        */
+/*  Last Modified: 2026/01/23 18:52:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,17 +20,19 @@ namespace	hel {
 
 template <typename... Components>
 View<Components...>::View(Registry &registry)
-	:	_registry{registry} {
+	:	_registry{registry},
+		_maxEntities{0} {
 	_pools = std::make_tuple(&_registry.getPool<Components>()...);
 	_leadEntityList = findSmallestPool();
-	_maxEntities = _leadEntityList->size();
+	if (_leadEntityList)
+		_maxEntities = _leadEntityList->size();
 }
 
 template <typename... Components>
 template <typename Component>
-Component	&View<Components...>::get(EntityId entity) const {
-	auto* pool = std::get<Pool<Component>*>(_pools);
-	return pool->components[pool->entityToIndex[entity]];
+const Component	&View<Components...>::get(EntityId entity) const {
+	auto	*pool = std::get<Pool<Component>*>(_pools);
+	return pool->components[pool->indices[entity]];
 }
 
 template <typename... Components>
@@ -40,9 +42,9 @@ std::vector<EntityId>	*View<Components...>::findSmallestPool(void) {
 
 	std::apply([&](auto*... pools){
 		auto	check = [&](auto *pool){
-			if (pool->indexToEntity.size() < minSize) {
-				minSize = pool->indexToEntity.size();
-				smallestPool = &pool->indexToEntity;
+			if (pool->entities.size() < minSize) {
+				minSize = pool->entities.size();
+				smallestPool = &pool->entities;
 			}
 		};
 		(check(pools), ...);
@@ -63,8 +65,8 @@ void	View<Components...>::Iterator::moveNext(void) {
 template <typename... Components>
 bool		View<Components...>::Iterator::isValid(EntityId entity) {
 	return (std::apply([entity](auto*... pools){
-		return (... && (entity < pools->entityToIndex.size() &&
-						pools->entityToIndex[entity] != NOT_REGISTERED));
+		return (... && (entity < pools->indices.size() &&
+						pools->indices[entity] != NOT_REGISTERED));
 	}, view._pools));
 }
 
