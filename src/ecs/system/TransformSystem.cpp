@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 15:06:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/22 15:34:09                                        */
+/*  Last Modified: 2026/01/23 14:57:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,9 +28,10 @@ TransformSystem::~TransformSystem(void) {
 }
 
 void	TransformSystem::update(void) {
-	Pool<Transform>	&pool = _registry.getPool<Transform>();
+	auto	entities = _registry.view<Transform>();
 
-	for (auto &transform: pool.components) {
+	for (auto entity: entities) {
+		auto	&transform = entities.get<Transform>(entity);
 		if (!transform.isDirty)
 			continue ;
 		glm::mat4	T = glm::translate(glm::mat4(1.f), transform.position);
