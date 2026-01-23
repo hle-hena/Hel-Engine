@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Renderer.cpp                                                        */
+/*  File: Engine.cpp                                                          */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/06 16:35:00 by hle-hena                                  */
+/*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/16 15:09:30                                        */
+/*  Last Modified: 2026/01/22 15:40:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,10 +14,10 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "render/system/Renderer.hpp"
-#include "render/vulkan/Device.hpp"
+#include "core/Engine.hpp"
+#include "api/vulkan/Device.hpp"
 #include "utils/healthHelper.hpp"
-#include "render/vulkan/Swapchain.hpp"
+#include "api/vulkan/Swapchain.hpp"
 #include "platform/window/Window.hpp"
 
 #include <stdexcept>
@@ -26,23 +26,25 @@
 
 namespace hel {
 
-Renderer::Renderer(Device &device)
+Engine::Engine(Device &device, Registry &registry)
 	:	_device{device},
-		_meshSystem{device,
+		_registry{registry},
+		_triangleSystem{device, registry,
 					"assets/shaders/triangle.vert.spv",
-					"assets/shaders/triangle.frag.spv"} {
+					"assets/shaders/triangle.frag.spv"},
+		_transformSystem{registry} {
 }
 
-Renderer::~Renderer(void) {
+Engine::~Engine(void) {
 	if (_commandPool != VK_NULL_HANDLE)
 		vkDestroyCommandPool(_device.getLogical(), _commandPool, nullptr);
 }
 
-bool	Renderer::init(void) {
+bool	Engine::init(void) {
 	return (createCommandPool());
 }
 
-bool	Renderer::createCommandPool(void) {
+bool	Engine::createCommandPool(void) {
 	VkCommandPoolCreateInfo	commandPoolInfo{};
 	commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
@@ -53,7 +55,7 @@ bool	Renderer::createCommandPool(void) {
 	return (false);
 }
 
-bool	Renderer::beginFrame(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+bool	Engine::beginFrame(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
 	VkCommandBufferBeginInfo	beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -62,13 +64,13 @@ bool	Renderer::beginFrame(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
 	return (false);
 }
 
-bool	Renderer::endFrame(VkCommandBuffer commandBuffer) {
+bool	Engine::endFrame(VkCommandBuffer commandBuffer) {
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
 		return (true);
 	return (false);
 }
 
-VkCommandBuffer Renderer::getCommandBuffer(Window& window, uint32_t currentFrame) {
+VkCommandBuffer Engine::getCommandBuffer(Window& window, uint32_t currentFrame) {
 	if (_perWindowCommandBuffers.find(&window) == _perWindowCommandBuffers.end()) {
 		VkCommandBufferAllocateInfo	allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -84,7 +86,7 @@ VkCommandBuffer Renderer::getCommandBuffer(Window& window, uint32_t currentFrame
 	return _perWindowCommandBuffers[&window][currentFrame];
 }
 
-void	Renderer::drawFrame(Window &window, uint32_t currentFrame) {
+void	Engine::runFrame(Window &window, uint32_t currentFrame) {
 	Swapchain	&swapchain = window.getSwapchain();
 
 	uint32_t	imageIndex;
@@ -97,7 +99,8 @@ void	Renderer::drawFrame(Window &window, uint32_t currentFrame) {
 	vkResetCommandBuffer(cmd, 0);
 
 	beginFrame(cmd, imageIndex);
-	_meshSystem.render(cmd, window, imageIndex);
+	_triangleSystem.update(cmd, window, imageIndex);
+	_transformSystem.update();
 	endFrame(cmd);
 
 	swapchain.submitCommandBuffer(&cmd, imageIndex, currentFrame);

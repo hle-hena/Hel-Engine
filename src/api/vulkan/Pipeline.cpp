@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 19:25:34                                        */
+/*  Last Modified: 2026/01/21 11:40:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,8 +14,8 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "render/vulkan/Pipeline.hpp"
-#include "render/vulkan/Device.hpp"
+#include "api/vulkan/Pipeline.hpp"
+#include "api/vulkan/Device.hpp"
 #include "utils/healthHelper.hpp"
 
 #include <fstream>
