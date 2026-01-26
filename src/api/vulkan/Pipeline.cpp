@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/26 16:39:48                                        */
+/*  Last Modified: 2026/01/26 18:24:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -61,7 +61,7 @@ bool	Pipeline::createGraphicsPipeline(const PipelineConfigInfo &configInfo,
 		stageInfo[i].pNext = nullptr;
 		stageInfo[i].flags = 0;
 		stageInfo[i].stage = shader->_stage;
-		stageInfo[i].module = shader->_module;
+		stageInfo[i].module = shader->_shaderModule;
 		stageInfo[i].pName = "main";
 		stageInfo[i].pSpecializationInfo = nullptr;
 		i++;
