@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: TriangleSystem.cpp                                                  */
+/*  File: DefNotTriangleSystem.cpp                                            */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
+/*  Created: 2026/01/26 16:58:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/26 16:46:15                                        */
+/*  Last Modified: 2026/01/26 16:59:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,7 +14,7 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/system/TriangleSystem.hpp"
+#include "ecs/system/DefNotTriangleSystem.hpp"
 #include "api/vulkan/Device.hpp"
 #include "platform/window/Window.hpp"
 #include "utils/healthHelper.hpp"
@@ -28,7 +28,7 @@
 
 namespace hel {
 
-TriangleSystemPipeline::TriangleSystemPipeline(Device& device, AssetManager &assetManager, std::string vertShaderPath,
+DefNotTriangleSystemPipeline::DefNotTriangleSystemPipeline(Device& device, AssetManager &assetManager, std::string vertShaderPath,
 										std::string fragShaderPath, const VkFormat &format)
 	:	_vertShaderPath{vertShaderPath},
 		_fragShaderPath{fragShaderPath},
@@ -37,7 +37,7 @@ TriangleSystemPipeline::TriangleSystemPipeline(Device& device, AssetManager &ass
 		_pipeline{device, assetManager} {
 }
 
-TriangleSystemPipeline::~TriangleSystemPipeline(void) {
+DefNotTriangleSystemPipeline::~DefNotTriangleSystemPipeline(void) {
 	_pipeline.deleteGraphicsPipeline();
 	if (_pipelineLayout != VK_NULL_HANDLE)
 		vkDestroyPipelineLayout(_device.getLogical(), _pipelineLayout, nullptr);
@@ -45,11 +45,11 @@ TriangleSystemPipeline::~TriangleSystemPipeline(void) {
 		vkDestroyRenderPass(_device.getLogical(), _renderPass, nullptr);
 }
 
-bool	TriangleSystemPipeline::init(void) {
+bool	DefNotTriangleSystemPipeline::init(void) {
 	return (createRenderPass() || createPipelineLayout() || createGraphicsPipeline());
 }
 
-bool	TriangleSystemPipeline::createRenderPass(void) {
+bool	DefNotTriangleSystemPipeline::createRenderPass(void) {
 	VkAttachmentDescription	colorAttachment{};
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	colorAttachment.format = _format;
@@ -80,7 +80,7 @@ bool	TriangleSystemPipeline::createRenderPass(void) {
 	return (false);
 }
 
-bool	TriangleSystemPipeline::createPipelineLayout(void) {
+bool	DefNotTriangleSystemPipeline::createPipelineLayout(void) {
 	VkPipelineLayoutCreateInfo	pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipelineLayoutInfo.setLayoutCount = 0;
@@ -94,7 +94,7 @@ bool	TriangleSystemPipeline::createPipelineLayout(void) {
 	return (false);
 }
 
-bool	TriangleSystemPipeline::createGraphicsPipeline(void) {
+bool	DefNotTriangleSystemPipeline::createGraphicsPipeline(void) {
 	if (_pipelineLayout == VK_NULL_HANDLE)
 		RETURN_SET_UNHEALTHY("Cannot create a graphics pipeline before the pipeline layout", true);
 	if (_renderPass == VK_NULL_HANDLE)
@@ -111,24 +111,24 @@ bool	TriangleSystemPipeline::createGraphicsPipeline(void) {
 	return (false);
 }
 
-void	TriangleSystemPipeline::bind(VkCommandBuffer commandBuffer) {
+void	DefNotTriangleSystemPipeline::bind(VkCommandBuffer commandBuffer) {
 	_pipeline.bind(commandBuffer);
 }
 
 
 
-TriangleSystem::TriangleSystem(Device &device, Registry &registry, std::string vertShaderPath, std::string fragShaderPath)
+DefNotTriangleSystem::DefNotTriangleSystem(Device &device, Registry &registry, std::string vertShaderPath, std::string fragShaderPath)
 	:	_vertShaderPath{vertShaderPath},
 		_fragShaderPath{fragShaderPath},
 		_device{device},
 		_registry{registry} {
 }
 
-TriangleSystem::~TriangleSystem(void) {
+DefNotTriangleSystem::~DefNotTriangleSystem(void) {
 }
 
-void	TriangleSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex) {
-	TriangleSystemPipeline	*pipeline = getPipelineForFormat(window.getFormat());
+void	DefNotTriangleSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex) {
+	DefNotTriangleSystemPipeline	*pipeline = getPipelineForFormat(window.getFormat());
 	if (pipeline == nullptr || commandBuffer == VK_NULL_HANDLE)
 		return ;
 	beginRenderPass(commandBuffer, pipeline, window, imageIndex);
@@ -143,7 +143,7 @@ void	TriangleSystem::update(VkCommandBuffer commandBuffer, Window &window, uint3
 	endRenderPass(commandBuffer);
 }
 
-void	TriangleSystem::beginRenderPass(VkCommandBuffer commandBuffer, TriangleSystemPipeline *pipeline,
+void	DefNotTriangleSystem::beginRenderPass(VkCommandBuffer commandBuffer, DefNotTriangleSystemPipeline *pipeline,
 									Window &window, uint32_t imageIndex) {
 	Swapchain	&swapchain = window.getSwapchain();
 	VkExtent2D	extent = swapchain.getExtent();
@@ -175,22 +175,22 @@ void	TriangleSystem::beginRenderPass(VkCommandBuffer commandBuffer, TriangleSyst
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
-void	TriangleSystem::endRenderPass(VkCommandBuffer commandBuffer) {
+void	DefNotTriangleSystem::endRenderPass(VkCommandBuffer commandBuffer) {
 	vkCmdEndRenderPass(commandBuffer);
 }
 
-TriangleSystemPipeline	*TriangleSystem::getPipelineForFormat(VkFormat format) {
+DefNotTriangleSystemPipeline	*DefNotTriangleSystem::getPipelineForFormat(VkFormat format) {
 	auto		it = _pipelines.find(format);
 	if (it != _pipelines.end())
 		return (it->second.get());
-	auto	pipeline = std::make_unique<TriangleSystemPipeline>(_device, _registry.getAssetManager(), _vertShaderPath, _fragShaderPath, format);
+	auto	pipeline = std::make_unique<DefNotTriangleSystemPipeline>(_device, _registry.getAssetManager(), _vertShaderPath, _fragShaderPath, format);
 	if (pipeline->init()) {
-		std::cerr << "Failed to create a new triangle system pipeline for the following reason:\n"
+		std::cerr << "Failed to create a new NOT triangle system pipeline for the following reason:\n"
 			<< pipeline->getReason() << std::endl;
 		return (nullptr);
 	}
-	std::cout << "Created a new pipeline for the triangle system" << std::endl;
-	TriangleSystemPipeline	*ptr = pipeline.get();
+	std::cout << "Created a new pipeline for the NOT triangle system" << std::endl;
+	DefNotTriangleSystemPipeline	*ptr = pipeline.get();
 	_pipelines[format] = std::move(pipeline);
 	return (ptr);
 }

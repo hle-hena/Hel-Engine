@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/23 18:51:48                                        */
+/*  Last Modified: 2026/01/26 16:48:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,12 +25,9 @@
 
 namespace	hel {
 
-class	AssetManager {
-	//TODO -> Implement an actual asset manager, but probably in another file.
-};
-
+class	AssetManager;
 template <typename... Components>
-class View;
+class	View;
 
 using EntityId = uint32_t;
 static constexpr uint32_t NOT_REGISTERED = 0xFFFFFFFF;
@@ -64,10 +61,14 @@ struct	Pool : IPool {
 
 class	Registry {
 	public:
-		Registry(void) = default;
+		Registry(AssetManager &assetManager);
 		~Registry(void) = default;
 		Registry(const Registry &) = delete;
 		Registry	&operator=(const Registry &) = delete;
+
+		AssetManager	&getAssetManager(void) const {
+			return (_assetManager);
+		}
 
 		template <typename Component, typename... Args>
 		const Component	&addComponent(EntityId entity, Args&&... args);
@@ -103,7 +104,7 @@ class	Registry {
 		Pool<Component>			&getPool();
 
 		std::unordered_map<std::type_index, std::unique_ptr<IPool>>	_pools;
-		AssetManager							_assetManager;
+		AssetManager												&_assetManager;
 
 	template <typename... Components>
 	friend class View;

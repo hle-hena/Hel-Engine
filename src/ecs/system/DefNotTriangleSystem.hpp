@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: TriangleSystem.hpp                                                  */
+/*  File: DefNotTriangleSystem.hpp                                            */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
+/*  Created: 2026/01/26 16:58:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/26 16:44:54                                        */
+/*  Last Modified: 2026/01/26 16:59:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,10 +27,10 @@ namespace hel {
 class	Window;
 class	AssetManager;
 
-struct	TriangleSystemPipeline {
+struct	DefNotTriangleSystemPipeline {
 	public:
-		TriangleSystemPipeline(Device& device, AssetManager &assetManager, std::string vertShaderPath, std::string fragShaderPath, const VkFormat &format);
-		~TriangleSystemPipeline(void);
+		DefNotTriangleSystemPipeline(Device& device, AssetManager &assetManager, std::string vertShaderPath, std::string fragShaderPath, const VkFormat &format);
+		~DefNotTriangleSystemPipeline(void);
 
 		std::string		getReason(void) const {
 			return (_reason);
@@ -58,21 +58,21 @@ struct	TriangleSystemPipeline {
 		VkPipelineLayout	_pipelineLayout{VK_NULL_HANDLE};
 		VkRenderPass		_renderPass{VK_NULL_HANDLE};
 
-	friend class TriangleSystem;
+	friend class DefNotTriangleSystem;
 };
 
-class	TriangleSystem {
+class	DefNotTriangleSystem {
 	public:
-		TriangleSystem(Device& device, Registry &registry, std::string vertShaderPath, std::string fragShaderPath);
-		~TriangleSystem();
+		DefNotTriangleSystem(Device& device, Registry &registry, std::string vertShaderPath, std::string fragShaderPath);
+		~DefNotTriangleSystem();
 
-		TriangleSystem(const TriangleSystem &) = delete;
-		TriangleSystem	&operator=(const TriangleSystem &) = delete;
+		DefNotTriangleSystem(const DefNotTriangleSystem &) = delete;
+		DefNotTriangleSystem	&operator=(const DefNotTriangleSystem &) = delete;
 
 		void	update(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex);
 
 	private:
-		using pipelineMap = std::unordered_map<VkFormat, std::unique_ptr<TriangleSystemPipeline>>;
+		using pipelineMap = std::unordered_map<VkFormat, std::unique_ptr<DefNotTriangleSystemPipeline>>;
 
 		bool			_healthy{true};
 		std::string		_reason{""};
@@ -82,9 +82,9 @@ class	TriangleSystem {
 		Registry		&_registry;
 		pipelineMap		_pipelines;
 
-		TriangleSystemPipeline	*getPipelineForFormat(VkFormat format);
+		DefNotTriangleSystemPipeline	*getPipelineForFormat(VkFormat format);
 
-		void	beginRenderPass(VkCommandBuffer commandBuffer, TriangleSystemPipeline *pipeline,
+		void	beginRenderPass(VkCommandBuffer commandBuffer, DefNotTriangleSystemPipeline *pipeline,
 									Window &window, uint32_t imageIndex);
 		void	endRenderPass(VkCommandBuffer commandBuffer);
 };

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/22 15:40:27                                        */
+/*  Last Modified: 2026/01/26 17:00:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,6 +22,7 @@
 #include <cassert>
 
 #include "ecs/system/TriangleSystem.hpp"
+#include "ecs/system/DefNotTriangleSystem.hpp"
 #include "ecs/system/TransformSystem.hpp"
 #include "api/vulkan/Swapchain.hpp"
 
@@ -64,6 +65,7 @@ class	Engine {
 		VkCommandPool									_commandPool{VK_NULL_HANDLE};
 		std::unordered_map<Window*, WindowCmdBuffers>	_perWindowCommandBuffers;
 		TriangleSystem									_triangleSystem;
+		DefNotTriangleSystem							_notTriangleSystem;
 		TransformSystem									_transformSystem;
 		uint32_t										_currentFrameIndex{0};
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:12 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/21 16:09:01                                        */
+/*  Last Modified: 2026/01/26 16:24:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,6 +24,7 @@
 # include "api/vulkan/VulkanContext.hpp"
 # include "core/Engine.hpp"
 # include "ecs/Registry.hpp"
+# include "ecs/AssetManager.hpp"
 
 namespace	hel {
 
@@ -57,6 +58,7 @@ class	Application {
 		VulkanContext					_vkContext;
 		Engine							_engine;
 		Registry						_registry;
+		AssetManager					_assetManager;
 };
 
 }

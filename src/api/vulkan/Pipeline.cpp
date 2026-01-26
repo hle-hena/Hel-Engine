@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/21 11:40:01                                        */
+/*  Last Modified: 2026/01/26 16:39:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,26 +17,25 @@
 #include "api/vulkan/Pipeline.hpp"
 #include "api/vulkan/Device.hpp"
 #include "utils/healthHelper.hpp"
+#include "ecs/AssetManager.hpp"
 
 #include <fstream>
 #include <stdexcept>
 #include <iostream>
 #include <cassert>
+#include <memory>
 
 namespace hel {
 
-Pipeline::Pipeline(Device& device)
-	: _device{device} {
+Pipeline::Pipeline(Device& device, AssetManager &assetManager)
+	:	_device{device},
+		_assetManager{assetManager} {
 }
 
 Pipeline::~Pipeline() {
 }
 
 void	Pipeline::deleteGraphicsPipeline(void) {
-	if (_vertShaderModule != VK_NULL_HANDLE)
-		vkDestroyShaderModule(_device.getLogical(), _vertShaderModule, nullptr);
-	if (_fragShaderModule != VK_NULL_HANDLE)
-		vkDestroyShaderModule(_device.getLogical(), _fragShaderModule, nullptr);
 	if (_graphicsPipeline != VK_NULL_HANDLE)
 		vkDestroyPipeline(_device.getLogical(), _graphicsPipeline, nullptr);
 }
@@ -45,55 +44,28 @@ void Pipeline::bind(VkCommandBuffer commandBuffer) {
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _graphicsPipeline);
 }
 
-std::vector<char> Pipeline::readFile(const std::string& filepath) {
-	std::ifstream file(filepath, std::ios::ate | std::ios::binary);
-
-	if (!file.is_open())
-		return (std::vector<char>(0));
-
-	size_t fileSize = (size_t)file.tellg();
-	std::vector<char> buffer(fileSize);
-
-	file.seekg(0);
-	file.read(buffer.data(), fileSize);
-	file.close();
-
-	return buffer;
-}
-
-bool	Pipeline::createGraphicsPipeline(const std::string &vertPath,
-										const std::string &fragPath,
-										const PipelineConfigInfo &configInfo) {
+bool	Pipeline::createGraphicsPipeline(const PipelineConfigInfo &configInfo,
+										std::vector<std::string> shaderPaths) {
 	if (configInfo.pipelineLayout == VK_NULL_HANDLE)
 		RETURN_SET_UNHEALTHY("Missing pipeline layout for pipeline creation", true);
 	if (configInfo.renderPass == VK_NULL_HANDLE)
 		RETURN_SET_UNHEALTHY("Missing render pass for pipeline creation", true);
 
-	auto	vertCode = readFile(vertPath);
-	if (vertCode.size() == 0)
-		RETURN_SET_UNHEALTHY("Failed to open file: " + vertPath, true);
-	auto	fragCode = readFile(fragPath);
-	if (fragCode.size() == 0)
-		RETURN_SET_UNHEALTHY("Failed to open file: " + fragPath, true);
-	if (createShaderModule(vertCode, &_vertShaderModule) ||
-		createShaderModule(fragCode, &_fragShaderModule))
-		return (true);
-
-	VkPipelineShaderStageCreateInfo	stageInfo[2];
-	stageInfo[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	stageInfo[0].pNext = nullptr;
-	stageInfo[0].flags = 0;
-	stageInfo[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-	stageInfo[0].module = _vertShaderModule;
-	stageInfo[0].pName = "main";
-	stageInfo[0].pSpecializationInfo = nullptr;
-	stageInfo[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	stageInfo[1].pNext = nullptr;
-	stageInfo[1].flags = 0;
-	stageInfo[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	stageInfo[1].module = _fragShaderModule;
-	stageInfo[1].pName = "main";
-	stageInfo[1].pSpecializationInfo = nullptr;
+	std::vector<VkPipelineShaderStageCreateInfo>	stageInfo(shaderPaths.size());
+	uint32_t	i = 0;
+	for (auto &path: shaderPaths) {
+		std::shared_ptr<Shader>	shader = _assetManager.get<Shader>(path);
+		if (!shader)
+			RETURN_SET_UNHEALTHY("Couldn't load the shader \"" + path + "\".", true);
+		stageInfo[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		stageInfo[i].pNext = nullptr;
+		stageInfo[i].flags = 0;
+		stageInfo[i].stage = shader->_stage;
+		stageInfo[i].module = shader->_module;
+		stageInfo[i].pName = "main";
+		stageInfo[i].pSpecializationInfo = nullptr;
+		i++;
+	}
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -105,8 +77,8 @@ bool	Pipeline::createGraphicsPipeline(const std::string &vertPath,
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineInfo.pNext = nullptr;
 	pipelineInfo.flags = 0;
-	pipelineInfo.stageCount = 2;
-	pipelineInfo.pStages = stageInfo;
+	pipelineInfo.stageCount = shaderPaths.size();
+	pipelineInfo.pStages = stageInfo.data();
 	pipelineInfo.pVertexInputState = &vertexInputInfo;
 	pipelineInfo.pInputAssemblyState = &configInfo.inputAssemblyInfo;
 	pipelineInfo.pTessellationState = nullptr;
@@ -125,21 +97,6 @@ bool	Pipeline::createGraphicsPipeline(const std::string &vertPath,
 	if (vkCreateGraphicsPipelines(_device.getLogical(), VK_NULL_HANDLE, 1,
 								&pipelineInfo, nullptr, &_graphicsPipeline) != VK_SUCCESS)
 		RETURN_SET_UNHEALTHY("Failed to create a pipeline", true);
-	return (false);
-}
-
-bool	Pipeline::createShaderModule(const std::vector<char>& code,
-									VkShaderModule* shaderModule) {
-	VkShaderModuleCreateInfo	shaderModuleInfo;
-	shaderModuleInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    shaderModuleInfo.pNext = nullptr;
-    shaderModuleInfo.flags = 0;
-    shaderModuleInfo.codeSize = code.size();
-    shaderModuleInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
-
-	if (vkCreateShaderModule(_device.getLogical(), &shaderModuleInfo, nullptr,
-							shaderModule) != VK_SUCCESS)
-		RETURN_SET_UNHEALTHY("Failed to create a shader module", true);
 	return (false);
 }
 

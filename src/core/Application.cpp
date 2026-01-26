@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/23 18:53:48                                        */
+/*  Last Modified: 2026/01/26 16:57:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,7 +26,9 @@ namespace hel {
 Application::Application(void)
 	:	_appWindows{},
 		_vkContext{*this},
-		_engine{_vkContext.getDevice(), _registry} {
+		_engine{_vkContext.getDevice(), _registry},
+		_registry{_assetManager},
+		_assetManager{_vkContext.getDevice()} {
 	if (!GLFW::acquire())
 		RETURN_SET_UNHEALTHY("Couldn't init glfw.");
 	if (_vkContext.initiateVulkan()) {
@@ -39,6 +41,8 @@ Application::Application(void)
 		RETURN_SET_UNHEALTHY("Couldn't even create one window");
 	if (_engine.init())
 		RETURN_SET_UNHEALTHY(_engine.getReason());
+	_registry.addComponent<Transform>(0);
+	_registry.patch(_registry.addComponent<Name>(0), [&](Name &name){name.name = "Oui";});
 }
 
 Application::~Application(void) {
