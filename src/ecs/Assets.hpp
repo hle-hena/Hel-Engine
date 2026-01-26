@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Registry.cpp                                                        */
+/*  File: Assets.hpp                                                          */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/22 12:07:24 by hle-hena                                  */
+/*  Created: 2026/01/26 15:35:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/26 16:48:32                                        */
+/*  Last Modified: 2026/01/26 18:23:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,19 +14,17 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "Registry.hpp"
+#pragma once
+
+# include <string>
+# include <vulkan/vulkan.h>
 
 namespace	hel {
 
-Registry::Registry(AssetManager &assetManager)
-	:	_assetManager{assetManager} {
-	
-}
-
-void	Registry::removeEntity(EntityId entity) {
-	for (auto &pool: _pools) {
-		pool.second->tryRemoveEntity(entity);
-	}
-}
+struct	Shader {
+	std::string				_path;
+	VkShaderModule			_shaderModule {VK_NULL_HANDLE};
+	VkShaderStageFlagBits	_stage;
+};
 
 }

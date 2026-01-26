@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/22 17:38:41                                        */
+/*  Last Modified: 2026/01/26 16:44:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,10 +25,11 @@
 namespace hel {
 
 class	Window;
+class	AssetManager;
 
 struct	TriangleSystemPipeline {
 	public:
-		TriangleSystemPipeline(Device& device, std::string vertShaderPath, std::string fragShaderPath, const VkFormat &format);
+		TriangleSystemPipeline(Device& device, AssetManager &assetManager, std::string vertShaderPath, std::string fragShaderPath, const VkFormat &format);
 		~TriangleSystemPipeline(void);
 
 		std::string		getReason(void) const {
