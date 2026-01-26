@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/26 14:40:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/26 17:02:20                                        */
+/*  Last Modified: 2026/01/26 17:16:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,9 +27,9 @@ std::shared_ptr<Component>	AssetManager::get(const std::string &path) {
 	assetGroup	&group = _assets[typeid(Component)];
 	if (group.find(path) != group.end())
 		return (std::static_pointer_cast<Component>(group[path]));
-	std::cout << "\n\nCreating a new onneeeeeeeeee\n\n" << std::endl;
 	std::shared_ptr<Component>	ptr = load<Component>(path);
-	group[path] = ptr;
+	if (ptr)
+		group[path] = ptr;
 	return (ptr);
 }
 
@@ -59,9 +59,10 @@ inline std::shared_ptr<Shader>	AssetManager::load(const std::string &path) {
 		return (nullptr);//TODO -> give a fallback asset.
 	return (std::shared_ptr<Shader>(
 		new Shader{path, module, stage},
-		[&](Shader *s){
+		[this](Shader *s){
 			if (s->_module != VK_NULL_HANDLE)
 				vkDestroyShaderModule(_device.getLogical(), s->_module, nullptr);
+			delete s;
 		}
 	));
 }

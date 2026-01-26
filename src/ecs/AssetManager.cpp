@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/26 15:19:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/26 15:55:27                                        */
+/*  Last Modified: 2026/01/26 17:10:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,7 +29,7 @@ std::vector<char>	AssetManager::readFile(const std::string& filepath) {
 	if (!file.is_open())
 		return (std::vector<char>(0));
 
-	size_t				fileSize = (size_t)file.tellg();
+	size_t				fileSize = static_cast<size_t>(file.tellg());
 	std::vector<char>	buffer(fileSize);
 
 	file.seekg(0);
