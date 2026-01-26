@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 19:25:23                                        */
+/*  Last Modified: 2026/01/26 16:40:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,9 +21,12 @@
 # include <string>
 # include <vector>
 
+# include "ecs/Assets.hpp"
+
 namespace hel {
 
 class	Device;
+class	AssetManager;
 
 struct	PipelineConfigInfo {
 	PipelineConfigInfo() = default;
@@ -46,7 +49,7 @@ struct	PipelineConfigInfo {
 
 class	Pipeline {
 	public:
-		Pipeline(Device &device);
+		Pipeline(Device &device, AssetManager &assetManager);
 		~Pipeline(void);
 
 		Pipeline(const Pipeline&) = delete;
@@ -60,25 +63,18 @@ class	Pipeline {
 		}
 
 		void	bind(VkCommandBuffer commandBuffer);
-		bool	createGraphicsPipeline(const std::string &vertPath,
-									const std::string &fragPath,
-									const PipelineConfigInfo &configInfo);
+		bool	createGraphicsPipeline(const PipelineConfigInfo &configInfo,
+									std::vector<std::string> shaderPaths);
 		void	deleteGraphicsPipeline(void);
 
 		static void	defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
 
 	private:
-		std::vector<char>	readFile(const std::string& filepath);
-
-		bool	createShaderModule(const std::vector<char>& code,
-								VkShaderModule* shaderModule);
-
-		bool			_healthy{true};
-		std::string		_reason{""};
-		Device&			_device;
-		VkPipeline		_graphicsPipeline{VK_NULL_HANDLE};
-		VkShaderModule	_vertShaderModule{VK_NULL_HANDLE};
-		VkShaderModule	_fragShaderModule{VK_NULL_HANDLE};
+		bool				_healthy{true};
+		std::string			_reason{""};
+		Device				&_device;
+		AssetManager		&_assetManager;
+		VkPipeline			_graphicsPipeline{VK_NULL_HANDLE};
 };
 
 }

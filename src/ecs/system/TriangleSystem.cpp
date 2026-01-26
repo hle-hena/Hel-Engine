@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/23 18:44:39                                        */
+/*  Last Modified: 2026/01/26 16:46:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,13 +28,13 @@
 
 namespace hel {
 
-TriangleSystemPipeline::TriangleSystemPipeline(Device& device, std::string vertShaderPath,
+TriangleSystemPipeline::TriangleSystemPipeline(Device& device, AssetManager &assetManager, std::string vertShaderPath,
 										std::string fragShaderPath, const VkFormat &format)
 	:	_vertShaderPath{vertShaderPath},
 		_fragShaderPath{fragShaderPath},
 		_device{device},
 		_format{format},
-		_pipeline{device} {
+		_pipeline{device, assetManager} {
 }
 
 TriangleSystemPipeline::~TriangleSystemPipeline(void) {
@@ -106,8 +106,7 @@ bool	TriangleSystemPipeline::createGraphicsPipeline(void) {
 	pipelineConfig.renderPass = _renderPass;
 	pipelineConfig.pipelineLayout = _pipelineLayout;
 
-	if (_pipeline.createGraphicsPipeline(_vertShaderPath, _fragShaderPath,
-										pipelineConfig))
+	if (_pipeline.createGraphicsPipeline(pipelineConfig, {_vertShaderPath, _fragShaderPath}))
 		RETURN_SET_UNHEALTHY(_pipeline.getReason(), true);
 	return (false);
 }
@@ -184,7 +183,7 @@ TriangleSystemPipeline	*TriangleSystem::getPipelineForFormat(VkFormat format) {
 	auto		it = _pipelines.find(format);
 	if (it != _pipelines.end())
 		return (it->second.get());
-	auto	pipeline = std::make_unique<TriangleSystemPipeline>(_device, _vertShaderPath, _fragShaderPath, format);
+	auto	pipeline = std::make_unique<TriangleSystemPipeline>(_device, _registry.getAssetManager(), _vertShaderPath, _fragShaderPath, format);
 	if (pipeline->init()) {
 		std::cerr << "Failed to create a new triangle system pipeline for the following reason:\n"
 			<< pipeline->getReason() << std::endl;
