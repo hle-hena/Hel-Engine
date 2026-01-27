@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/26 17:15:05                                        */
+/*  Last Modified: 2026/01/27 17:48:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -32,6 +32,9 @@ Engine::Engine(Device &device, Registry &registry)
 		_triangleSystem{device, registry,
 					"assets/shaders/triangle.vert.spv",
 					"assets/shaders/triangle.frag.spv"},
+		// _renderSystem{device, registry,
+		// 			"assets/shaders/triangle.vert.spv",
+		// 			"assets/shaders/triangle.frag.spv"},
 		_transformSystem{registry} {
 }
 
@@ -100,6 +103,7 @@ void	Engine::runFrame(Window &window, uint32_t currentFrame) {
 
 	beginFrame(cmd, imageIndex);
 	_triangleSystem.update(cmd, window, imageIndex);
+	// _renderSystem.update(cmd, window, imageIndex);
 	_transformSystem.update();
 	endFrame(cmd);
 

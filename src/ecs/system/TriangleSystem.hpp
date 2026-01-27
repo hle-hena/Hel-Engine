@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/26 16:44:54                                        */
+/*  Last Modified: 2026/01/27 18:33:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -53,6 +53,7 @@ struct	TriangleSystemPipeline {
 		std::string			_vertShaderPath;
 		std::string			_fragShaderPath;
 		Device				&_device;
+		AssetManager		&_assetManager;
 		VkFormat			_format;
 		Pipeline			_pipeline;
 		VkPipelineLayout	_pipelineLayout{VK_NULL_HANDLE};

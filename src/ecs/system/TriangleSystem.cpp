@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/26 16:46:15                                        */
+/*  Last Modified: 2026/01/27 18:35:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,7 @@
 #include "utils/healthHelper.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
+#include "ecs/AssetManager.hpp"
 
 #include <stdexcept>
 #include <cassert>
@@ -33,8 +34,9 @@ TriangleSystemPipeline::TriangleSystemPipeline(Device& device, AssetManager &ass
 	:	_vertShaderPath{vertShaderPath},
 		_fragShaderPath{fragShaderPath},
 		_device{device},
+		_assetManager{assetManager},
 		_format{format},
-		_pipeline{device, assetManager} {
+		_pipeline{device} {
 }
 
 TriangleSystemPipeline::~TriangleSystemPipeline(void) {
@@ -106,7 +108,12 @@ bool	TriangleSystemPipeline::createGraphicsPipeline(void) {
 	pipelineConfig.renderPass = _renderPass;
 	pipelineConfig.pipelineLayout = _pipelineLayout;
 
-	if (_pipeline.createGraphicsPipeline(pipelineConfig, {_vertShaderPath, _fragShaderPath}))
+	auto	vert = _assetManager.get<Shader>(_vertShaderPath);
+	auto	frag = _assetManager.get<Shader>(_fragShaderPath);
+	if (!vert || !frag)
+		RETURN_SET_UNHEALTHY("Couldn't load the shaders.", true);
+
+	if (_pipeline.createGraphicsPipeline(pipelineConfig, {vert->getStageInfo(), frag->getStageInfo()}))
 		RETURN_SET_UNHEALTHY(_pipeline.getReason(), true);
 	return (false);
 }

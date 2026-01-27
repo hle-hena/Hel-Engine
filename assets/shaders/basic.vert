@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Assets.hpp                                                          */
+/*  File: basic.vert                                                          */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/26 15:35:20 by hle-hena                                  */
+/*  Created: 2026/01/27 17:07:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/27 18:25:36                                        */
+/*  Last Modified: 2026/01/27 17:09:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,26 +14,15 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#pragma once
+#version 450
 
-# include <string>
-# include <vulkan/vulkan.h>
+layout(location = 0) out vec3 fragColor;
 
-namespace	hel {
+layout (location = 0) in vec2 inPos;
+layout (location = 1) in vec3 inColor;
 
-struct	Shader {
-	std::string				_path;
-	VkShaderModule			_shaderModule {VK_NULL_HANDLE};
-	VkShaderStageFlagBits	_stage;
 
-	VkPipelineShaderStageCreateInfo	getStageInfo(void) const {
-		VkPipelineShaderStageCreateInfo	info{};
-		info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		info.stage = _stage;
-		info.module = _shaderModule;
-		info.pName = "main";
-		return (info);
-	}
-};
-
+void	main() {
+	gl_Position = vec4(inPos, 0.0, 1.0);
+	fragColor = inColor;
 }

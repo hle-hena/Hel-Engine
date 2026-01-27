@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Assets.hpp                                                          */
+/*  File: basic.frag                                                          */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/26 15:35:20 by hle-hena                                  */
+/*  Created: 2026/01/27 17:07:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/27 18:25:36                                        */
+/*  Last Modified: 2026/01/27 17:25:04                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,26 +14,12 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#pragma once
+#version 450
 
-# include <string>
-# include <vulkan/vulkan.h>
+layout(location = 0) in vec3 fragColor;
 
-namespace	hel {
+layout(location = 0) out vec4 outColor;
 
-struct	Shader {
-	std::string				_path;
-	VkShaderModule			_shaderModule {VK_NULL_HANDLE};
-	VkShaderStageFlagBits	_stage;
-
-	VkPipelineShaderStageCreateInfo	getStageInfo(void) const {
-		VkPipelineShaderStageCreateInfo	info{};
-		info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		info.stage = _stage;
-		info.module = _shaderModule;
-		info.pName = "main";
-		return (info);
-	}
-};
-
+void	main() {
+	outColor = vec4(fragColor, 1.0);
 }
