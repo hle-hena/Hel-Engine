@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/28 19:00:11                                        */
+/*  Last Modified: 2026/01/29 11:49:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -87,7 +87,7 @@ RenderSystem::SystemPipeline	*RenderSystem::getPipelineForFormat(VkFormat format
 	if (pipeline->init())
 		return (nullptr);
 	_pipelines[format] = std::move(pipeline);
-	return (pipeline.get());
+	return (_pipelines[format].get());
 }
 
 RenderSystem::SystemPipeline::SystemPipeline(RenderSystem &system, VkFormat format)
@@ -148,9 +148,8 @@ bool	RenderSystem::SystemPipeline::createRenderPass(void) {
 	renderPassInfo.pSubpasses = &subpass;
 
 	if (vkCreateRenderPass(_system._device.getLogical(), &renderPassInfo,
-							nullptr, &_renderPass)) {
+							nullptr, &_renderPass))
 		return (true);
-	}
 	return (false);
 }
 

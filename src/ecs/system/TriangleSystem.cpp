@@ -3,9 +3,9 @@
 /*                                                                            */
 /*  File: TriangleSystem.cpp                                                  */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
+/*  Created: 2026/01/28 19:01:02 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/27 18:35:27                                        */
+/*  Last Modified: 2026/01/29 11:53:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,43 +15,114 @@
 /* *************************************************************************  */
 
 #include "ecs/system/TriangleSystem.hpp"
-#include "api/vulkan/Device.hpp"
 #include "platform/window/Window.hpp"
-#include "utils/healthHelper.hpp"
+#include "api/vulkan/Device.hpp"
 #include "ecs/Registry.hpp"
-#include "ecs/Component.hpp"
 #include "ecs/AssetManager.hpp"
+#include "ecs/Assets.hpp"
 
-#include <stdexcept>
-#include <cassert>
-#include <array>
-#include <iostream>
+namespace	hel {
 
-namespace hel {
-
-TriangleSystemPipeline::TriangleSystemPipeline(Device& device, AssetManager &assetManager, std::string vertShaderPath,
-										std::string fragShaderPath, const VkFormat &format)
-	:	_vertShaderPath{vertShaderPath},
-		_fragShaderPath{fragShaderPath},
-		_device{device},
-		_assetManager{assetManager},
-		_format{format},
-		_pipeline{device} {
+TriangleSystem::TriangleSystem(Device &device, Registry &registry)
+	:	_device{device},
+		_registry{registry},
+		_assetManager{registry.getAssetManager()} {
 }
 
-TriangleSystemPipeline::~TriangleSystemPipeline(void) {
-	_pipeline.deleteGraphicsPipeline();
+TriangleSystem::~TriangleSystem(void) {
 	if (_pipelineLayout != VK_NULL_HANDLE)
 		vkDestroyPipelineLayout(_device.getLogical(), _pipelineLayout, nullptr);
+}
+
+void	TriangleSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex) {
+	auto	pipeline = getPipelineForFormat(window.getFormat());
+	if (pipeline == nullptr || commandBuffer == VK_NULL_HANDLE)
+		return ;
+
+	beginRenderPass(commandBuffer, window, imageIndex, pipeline);
+
+	pipeline->_pipeline.bind(commandBuffer);
+	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+
+	endRenderPass(commandBuffer);
+}
+
+void	TriangleSystem::beginRenderPass(VkCommandBuffer commandBuffer, Window &window,
+									uint32_t imageIndex, SystemPipeline *pipeline) {
+	Swapchain	&swapchain = window.getSwapchain();
+	VkExtent2D	extent = swapchain.getExtent();
+
+	VkRenderPassBeginInfo	renderPassBegin{};
+	renderPassBegin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassBegin.renderPass = pipeline->_renderPass;
+	renderPassBegin.framebuffer = swapchain.getFrameBuffer(imageIndex, pipeline->_renderPass);
+	renderPassBegin.renderArea.extent = extent;
+	renderPassBegin.renderArea.offset = {0, 0};
+	VkClearValue	clearColor{{0., 0., 0., 1.}};
+	renderPassBegin.clearValueCount = 1;
+	renderPassBegin.pClearValues = &clearColor;
+	vkCmdBeginRenderPass(commandBuffer, &renderPassBegin, VK_SUBPASS_CONTENTS_INLINE);
+
+	VkViewport	viewport{};
+	viewport.height = static_cast<float>(extent.height);
+	viewport.width = static_cast<float>(extent.width);
+	viewport.maxDepth = 1.f;
+	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+	VkRect2D	scissor{};
+	scissor.extent = extent;
+	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+}
+
+void	TriangleSystem::endRenderPass(VkCommandBuffer commandBuffer) {
+	vkCmdEndRenderPass(commandBuffer);
+}
+
+
+
+TriangleSystem::SystemPipeline	*TriangleSystem::getPipelineForFormat(VkFormat format) {
+	if (_pipelines.find(format) != _pipelines.end())
+		return (_pipelines[format].get());
+	auto	pipeline = std::make_unique<SystemPipeline>(*this, format);
+	if (pipeline->init())
+		return (nullptr);
+	_pipelines[format] = std::move(pipeline);
+	return (_pipelines[format].get());
+}
+
+TriangleSystem::SystemPipeline::SystemPipeline(TriangleSystem &system, VkFormat format)
+	:	_format{format},
+		_pipeline{system._device},
+		_system{system} {
+}
+
+TriangleSystem::SystemPipeline::~SystemPipeline(void) {
+	_pipeline.deleteGraphicsPipeline();
 	if (_renderPass != VK_NULL_HANDLE)
-		vkDestroyRenderPass(_device.getLogical(), _renderPass, nullptr);
+		vkDestroyRenderPass(_system._device.getLogical(), _renderPass, nullptr);
 }
 
-bool	TriangleSystemPipeline::init(void) {
-	return (createRenderPass() || createPipelineLayout() || createGraphicsPipeline());
+bool	TriangleSystem::SystemPipeline::init(void) {
+	return (createRenderPass() || createPipeline());
 }
 
-bool	TriangleSystemPipeline::createRenderPass(void) {
+VkPipelineLayout	*TriangleSystem::getPipelineLayout(void) {
+	if (_pipelineLayout != VK_NULL_HANDLE)
+		return (&_pipelineLayout);
+
+	VkPipelineLayoutCreateInfo	layoutInfo{};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	layoutInfo.setLayoutCount = 0;
+	layoutInfo.pSetLayouts = nullptr;
+	layoutInfo.pushConstantRangeCount = 0;
+	layoutInfo.pPushConstantRanges = nullptr;
+
+	if (vkCreatePipelineLayout(_device.getLogical(), &layoutInfo, nullptr, &_pipelineLayout))
+		return (nullptr);
+	return (&_pipelineLayout);
+}
+
+bool	TriangleSystem::SystemPipeline::createRenderPass(void) {
 	VkAttachmentDescription	colorAttachment{};
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	colorAttachment.format = _format;
@@ -76,130 +147,29 @@ bool	TriangleSystemPipeline::createRenderPass(void) {
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
 
-	if (vkCreateRenderPass(_device.getLogical(), &renderPassInfo, nullptr,
-							&_renderPass) != VK_SUCCESS)
-		RETURN_SET_UNHEALTHY("Couldn't create a render pass", true);
+	if (vkCreateRenderPass(_system._device.getLogical(), &renderPassInfo,
+							nullptr, &_renderPass))
+		return (true);
 	return (false);
 }
 
-bool	TriangleSystemPipeline::createPipelineLayout(void) {
-	VkPipelineLayoutCreateInfo	pipelineLayoutInfo{};
-	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 0;
-	pipelineLayoutInfo.pSetLayouts = nullptr;
-	pipelineLayoutInfo.pushConstantRangeCount = 0;
-	pipelineLayoutInfo.pPushConstantRanges = nullptr;
+bool	TriangleSystem::SystemPipeline::createPipeline(void) {
+	auto	pipelineLayout = _system.getPipelineLayout();
+	if (pipelineLayout == nullptr)
+		return (true);
+	hel::PipelineConfigInfo	configInfo{};
+	Pipeline::defaultPipelineConfigInfo(configInfo);
 
-	if (vkCreatePipelineLayout(_device.getLogical(), &pipelineLayoutInfo,
-								nullptr, &_pipelineLayout) != VK_SUCCESS)
-		RETURN_SET_UNHEALTHY("Failed to create the pipeline layout", true);
-	return (false);
-}
+	configInfo.renderPass = _renderPass;
+	configInfo.pipelineLayout = *pipelineLayout;
 
-bool	TriangleSystemPipeline::createGraphicsPipeline(void) {
-	if (_pipelineLayout == VK_NULL_HANDLE)
-		RETURN_SET_UNHEALTHY("Cannot create a graphics pipeline before the pipeline layout", true);
-	if (_renderPass == VK_NULL_HANDLE)
-		RETURN_SET_UNHEALTHY("Cannot create a graphics pipeline without a render pass", true);
-
-	PipelineConfigInfo pipelineConfig{};
-	Pipeline::defaultPipelineConfigInfo(pipelineConfig);
-
-	pipelineConfig.renderPass = _renderPass;
-	pipelineConfig.pipelineLayout = _pipelineLayout;
-
-	auto	vert = _assetManager.get<Shader>(_vertShaderPath);
-	auto	frag = _assetManager.get<Shader>(_fragShaderPath);
+	auto	vert = _system._assetManager.get<Shader>(_system._vertPath);
+	auto	frag = _system._assetManager.get<Shader>(_system._fragPath);
 	if (!vert || !frag)
-		RETURN_SET_UNHEALTHY("Couldn't load the shaders.", true);
-
-	if (_pipeline.createGraphicsPipeline(pipelineConfig, {vert->getStageInfo(), frag->getStageInfo()}))
-		RETURN_SET_UNHEALTHY(_pipeline.getReason(), true);
+		return (true);
+	if (_pipeline.createGraphicsPipeline(configInfo, {vert->getStageInfo(), frag->getStageInfo()}))
+		return (true);
 	return (false);
-}
-
-void	TriangleSystemPipeline::bind(VkCommandBuffer commandBuffer) {
-	_pipeline.bind(commandBuffer);
-}
-
-
-
-TriangleSystem::TriangleSystem(Device &device, Registry &registry, std::string vertShaderPath, std::string fragShaderPath)
-	:	_vertShaderPath{vertShaderPath},
-		_fragShaderPath{fragShaderPath},
-		_device{device},
-		_registry{registry} {
-}
-
-TriangleSystem::~TriangleSystem(void) {
-}
-
-void	TriangleSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex) {
-	TriangleSystemPipeline	*pipeline = getPipelineForFormat(window.getFormat());
-	if (pipeline == nullptr || commandBuffer == VK_NULL_HANDLE)
-		return ;
-	beginRenderPass(commandBuffer, pipeline, window, imageIndex);
-
-	auto	entities = _registry.view<Name, Transform>();
-	for (auto entity: entities) {
-		auto	&name = entities.get<Name>(entity);
-		std::cout << "\rTriangle " << name.name;
-		pipeline->bind(commandBuffer);
-		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-	}
-	endRenderPass(commandBuffer);
-}
-
-void	TriangleSystem::beginRenderPass(VkCommandBuffer commandBuffer, TriangleSystemPipeline *pipeline,
-									Window &window, uint32_t imageIndex) {
-	Swapchain	&swapchain = window.getSwapchain();
-	VkExtent2D	extent = swapchain.getExtent();
-
-	VkRenderPassBeginInfo	renderPassInfo{};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = pipeline->_renderPass;
-	renderPassInfo.framebuffer = swapchain.getFrameBuffer(imageIndex, pipeline->_renderPass);
-	renderPassInfo.renderArea.offset = {0, 0};
-	renderPassInfo.renderArea.extent = extent;
-	VkClearValue	clearColor = {{{0., 0., 0., 1.}}};
-	renderPassInfo.clearValueCount = 1;
-	renderPassInfo.pClearValues = &clearColor;
-
-	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-	VkViewport	viewport{};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(extent.width);
-	viewport.height = static_cast<float>(extent.height);
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-	VkRect2D	scissor{};
-	scissor.offset = {0, 0};
-	scissor.extent = extent;
-	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-}
-
-void	TriangleSystem::endRenderPass(VkCommandBuffer commandBuffer) {
-	vkCmdEndRenderPass(commandBuffer);
-}
-
-TriangleSystemPipeline	*TriangleSystem::getPipelineForFormat(VkFormat format) {
-	auto		it = _pipelines.find(format);
-	if (it != _pipelines.end())
-		return (it->second.get());
-	auto	pipeline = std::make_unique<TriangleSystemPipeline>(_device, _registry.getAssetManager(), _vertShaderPath, _fragShaderPath, format);
-	if (pipeline->init()) {
-		std::cerr << "Failed to create a new triangle system pipeline for the following reason:\n"
-			<< pipeline->getReason() << std::endl;
-		return (nullptr);
-	}
-	std::cout << "Created a new pipeline for the triangle system" << std::endl;
-	TriangleSystemPipeline	*ptr = pipeline.get();
-	_pipelines[format] = std::move(pipeline);
-	return (ptr);
 }
 
 }

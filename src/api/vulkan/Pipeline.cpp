@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/27 18:33:02                                        */
+/*  Last Modified: 2026/01/29 11:26:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -51,9 +51,10 @@ bool	Pipeline::createGraphicsPipeline(const PipelineConfigInfo &configInfo,
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	// TODO: Add vertex binding descriptions and attribute descriptions here
-	vertexInputInfo.vertexAttributeDescriptionCount = 0;
-	vertexInputInfo.vertexBindingDescriptionCount = 0;
+	vertexInputInfo.pVertexAttributeDescriptions = configInfo.attributeDescription.data();
+	vertexInputInfo.pVertexBindingDescriptions = configInfo.bindingDescription.data();
+	vertexInputInfo.vertexAttributeDescriptionCount = configInfo.attributeDescription.size();
+	vertexInputInfo.vertexBindingDescriptionCount = configInfo.bindingDescription.size();
 
 	VkGraphicsPipelineCreateInfo	pipelineInfo;
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;

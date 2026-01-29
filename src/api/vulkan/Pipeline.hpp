@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/27 18:32:50                                        */
+/*  Last Modified: 2026/01/29 11:24:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,18 +30,20 @@ struct	PipelineConfigInfo {
 	PipelineConfigInfo(const PipelineConfigInfo &) = delete;
 	PipelineConfigInfo	&operator=(const PipelineConfigInfo&) = delete;
 
-	VkPipelineViewportStateCreateInfo		viewportInfo;
-	VkPipelineInputAssemblyStateCreateInfo	inputAssemblyInfo;
-	VkPipelineRasterizationStateCreateInfo	rasterizationInfo;
-	VkPipelineMultisampleStateCreateInfo	multisampleInfo;
-	VkPipelineColorBlendAttachmentState		colorBlendAttachment;
-	VkPipelineColorBlendStateCreateInfo		colorBlendInfo;
-	VkPipelineDepthStencilStateCreateInfo	depthStencilInfo;
-	std::vector<VkDynamicState>				dynamicStateEnables;
-	VkPipelineDynamicStateCreateInfo		dynamicStateInfo;
-	VkPipelineLayout						pipelineLayout = nullptr;
-	VkRenderPass							renderPass = nullptr;
-	uint32_t								subpass = 0;
+	std::vector<VkVertexInputAttributeDescription>	attributeDescription{};
+	std::vector<VkVertexInputBindingDescription>	bindingDescription{};
+	VkPipelineViewportStateCreateInfo				viewportInfo;
+	VkPipelineInputAssemblyStateCreateInfo			inputAssemblyInfo;
+	VkPipelineRasterizationStateCreateInfo			rasterizationInfo;
+	VkPipelineMultisampleStateCreateInfo			multisampleInfo;
+	VkPipelineColorBlendAttachmentState				colorBlendAttachment;
+	VkPipelineColorBlendStateCreateInfo				colorBlendInfo;
+	VkPipelineDepthStencilStateCreateInfo			depthStencilInfo;
+	std::vector<VkDynamicState>						dynamicStateEnables;
+	VkPipelineDynamicStateCreateInfo				dynamicStateInfo;
+	VkPipelineLayout								pipelineLayout{nullptr};
+	VkRenderPass									renderPass{nullptr};
+	uint32_t										subpass{0};
 };
 
 class	Pipeline {

@@ -3,9 +3,9 @@
 /*                                                                            */
 /*  File: TriangleSystem.hpp                                                  */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
+/*  Created: 2026/01/27 14:24:57 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/27 18:33:45                                        */
+/*  Last Modified: 2026/01/29 11:52:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,78 +16,58 @@
 
 #pragma once
 
-# include <memory>
+# include <vulkan/vulkan.h>
 # include <unordered_map>
+# include <memory>
+# include <string>
 
 # include "api/vulkan/Pipeline.hpp"
-# include "ecs/Registry.hpp"
 
-namespace hel {
+namespace	hel {
 
 class	Window;
+class	Device;
+class	Registry;
 class	AssetManager;
-
-struct	TriangleSystemPipeline {
-	public:
-		TriangleSystemPipeline(Device& device, AssetManager &assetManager, std::string vertShaderPath, std::string fragShaderPath, const VkFormat &format);
-		~TriangleSystemPipeline(void);
-
-		std::string		getReason(void) const {
-			return (_reason);
-		}
-		bool			isHealthy(void) const {
-			return (_healthy);
-		}
-
-		bool	init(void);
-		void	bind(VkCommandBuffer commandBuffer);
-		
-
-	private:
-		bool	createRenderPass(void);
-		bool	createPipelineLayout(void);
-		bool	createGraphicsPipeline(void);
-
-		bool				_healthy{true};
-		std::string			_reason{""};
-		std::string			_vertShaderPath;
-		std::string			_fragShaderPath;
-		Device				&_device;
-		AssetManager		&_assetManager;
-		VkFormat			_format;
-		Pipeline			_pipeline;
-		VkPipelineLayout	_pipelineLayout{VK_NULL_HANDLE};
-		VkRenderPass		_renderPass{VK_NULL_HANDLE};
-
-	friend class TriangleSystem;
-};
 
 class	TriangleSystem {
 	public:
-		TriangleSystem(Device& device, Registry &registry, std::string vertShaderPath, std::string fragShaderPath);
-		~TriangleSystem();
-
-		TriangleSystem(const TriangleSystem &) = delete;
-		TriangleSystem	&operator=(const TriangleSystem &) = delete;
+		TriangleSystem(Device &device, Registry &registry);
+		~TriangleSystem(void);
 
 		void	update(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex);
 
 	private:
-		using pipelineMap = std::unordered_map<VkFormat, std::unique_ptr<TriangleSystemPipeline>>;
+		struct	SystemPipeline {
+			SystemPipeline(TriangleSystem &system, VkFormat format);
+			~SystemPipeline(void);
 
-		bool			_healthy{true};
-		std::string		_reason{""};
-		std::string		_vertShaderPath;
-		std::string		_fragShaderPath;
-		Device			&_device;
-		Registry		&_registry;
-		pipelineMap		_pipelines;
+			bool	init(void);
+			bool	createRenderPass(void);
+			bool	createPipeline(void);
 
-		TriangleSystemPipeline	*getPipelineForFormat(VkFormat format);
+			VkFormat		_format;
+			Pipeline		_pipeline;
+			VkRenderPass	_renderPass;
+			TriangleSystem	&_system;
+		};
+		using pipelineMap = std::unordered_map<VkFormat, std::unique_ptr<SystemPipeline>>;
 
-		void	beginRenderPass(VkCommandBuffer commandBuffer, TriangleSystemPipeline *pipeline,
-									Window &window, uint32_t imageIndex);
-		void	endRenderPass(VkCommandBuffer commandBuffer);
+		SystemPipeline		*getPipelineForFormat(VkFormat format);
+		VkPipelineLayout	*getPipelineLayout(void);
+
+		void				beginRenderPass(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex, SystemPipeline *pipeline);
+		void				endRenderPass(VkCommandBuffer commandBuffer);
+
+		bool				_healthy{true};
+		std::string			_reason{""};
+		std::string			_vertPath{"assets/shaders/triangle.vert.spv"};
+		std::string			_fragPath{"assets/shaders/triangle.frag.spv"};
+		Device				&_device;
+		Registry			&_registry;
+		AssetManager		&_assetManager;
+		pipelineMap			_pipelines;
+		VkPipelineLayout	_pipelineLayout{VK_NULL_HANDLE};
 };
 
 }
