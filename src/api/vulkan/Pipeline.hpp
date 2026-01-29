@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/29 11:24:46                                        */
+/*  Last Modified: 2026/01/29 17:23:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -66,7 +66,9 @@ class	Pipeline {
 					const std::vector<VkPipelineShaderStageCreateInfo> &stageInfo);
 		void	deleteGraphicsPipeline(void);
 
-		static void	defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
+		static void	defaultPipelineConfigInfo(PipelineConfigInfo &configInfo);
+		template <typename VertexType>
+		static void	setVertexInputDescriptions(PipelineConfigInfo &configInfo);
 
 	private:
 		bool				_healthy{true};
@@ -76,3 +78,5 @@ class	Pipeline {
 };
 
 }
+
+# include "api/vulkan/Pipeline.tpp"

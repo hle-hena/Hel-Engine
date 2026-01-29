@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 14:24:57 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/29 11:52:41                                        */
+/*  Last Modified: 2026/01/29 16:06:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,6 +34,9 @@ class	TriangleSystem {
 	public:
 		TriangleSystem(Device &device, Registry &registry);
 		~TriangleSystem(void);
+
+		TriangleSystem(const TriangleSystem &) = delete;
+		TriangleSystem	operator=(const TriangleSystem &) = delete;
 
 		void	update(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex);
 

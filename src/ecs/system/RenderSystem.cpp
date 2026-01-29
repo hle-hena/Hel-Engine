@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/29 11:49:33                                        */
+/*  Last Modified: 2026/01/29 17:34:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,6 +22,24 @@
 #include "ecs/Assets.hpp"
 
 namespace	hel {
+
+std::vector<VkVertexInputBindingDescription>	RenderSystem::Vertex::getBindingDescriptions(void) {
+	std::vector<VkVertexInputBindingDescription>	bindingDescriptions(1);
+	bindingDescriptions[0].binding = 0;
+	bindingDescriptions[0].stride = sizeof(Vertex);
+	bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+	return (bindingDescriptions);
+}
+
+std::vector<VkVertexInputAttributeDescription>		RenderSystem::Vertex::getAttributeDescriptions(void)
+{
+	std::vector<VkVertexInputAttributeDescription>	attributeDescriptions{};
+
+	attributeDescriptions.push_back({0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)});
+	attributeDescriptions.push_back({1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)});
+
+	return (attributeDescriptions);
+}
 
 RenderSystem::RenderSystem(Device &device, Registry &registry)
 	:	_device{device},
@@ -42,6 +60,22 @@ void	RenderSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_
 	beginRenderPass(commandBuffer, window, imageIndex, pipeline);
 
 	pipeline->_pipeline.bind(commandBuffer);
+
+	if (_tempVertexBuffer == nullptr) {
+		std::vector<Vertex> vertices = {
+			{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+			{{0.5f, 0.5f}, {0.0f, 1.0f, 1.0f}},
+			{{-0.5f, 0.5f}, {1.0f, 0.0f, 1.0f}}
+		};
+
+		_tempVertexBuffer = std::make_unique<Buffer>(_device, sizeof(vertices[0]) * vertices.size(),
+					VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+						VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		_tempVertexBuffer->writeToBuffer(static_cast<void *>(vertices.data()));
+	}
+	VkBuffer	buffers[] = {_tempVertexBuffer->getBuffer()};
+	VkDeviceSize	offset[] = {0};
+	vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offset);
 	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 
 	endRenderPass(commandBuffer);
@@ -159,6 +193,8 @@ bool	RenderSystem::SystemPipeline::createPipeline(void) {
 		return (true);
 	hel::PipelineConfigInfo	configInfo{};
 	Pipeline::defaultPipelineConfigInfo(configInfo);
+	Pipeline::setVertexInputDescriptions<Vertex>(configInfo);
+
 
 	configInfo.renderPass = _renderPass;
 	configInfo.pipelineLayout = *pipelineLayout;

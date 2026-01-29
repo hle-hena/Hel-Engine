@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/29 11:26:42                                        */
+/*  Last Modified: 2026/01/29 12:22:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -82,7 +82,7 @@ bool	Pipeline::createGraphicsPipeline(const PipelineConfigInfo &configInfo,
 	return (false);
 }
 
-void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo) {
+void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo &configInfo) {
 	configInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	configInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	configInfo.inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
