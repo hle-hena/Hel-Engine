@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:27:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 15:58:59                                        */
+/*  Last Modified: 2026/01/30 16:32:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,6 +30,13 @@ class	Entity {
 		static constexpr uint32_t	VERSION_MASK = ~INDEX_MASK;
 		static constexpr uint32_t	NOT_REGISTERED = 0xFFFFFFFF;
 
+		static uint32_t	getIndex(Entity::id handle) {
+			return (handle & INDEX_MASK);
+		}
+
+	private:
+		~Entity(void) = delete;
+
 		static Entity::id	acquire(void) {
 			if (!_freeId.empty()) {
 				id	returnId = _freeId.back();
@@ -47,14 +54,10 @@ class	Entity {
 			_freeId.push_back(id | (version << INDEX_BITS));
 		}
 
-		static uint32_t	getIndex(Entity::id handle) {
-			return (handle & INDEX_MASK);
-		}
-
-	private:
-		~Entity(void) = delete;
 		static inline id				_maxIdGiven = 0;
 		static inline std::vector<id>	_freeId{};
+
+	friend class	Registry;
 };
 
 }
