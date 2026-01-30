@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/29 16:04:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 12:35:51                                        */
+/*  Last Modified: 2026/01/30 13:09:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -107,9 +107,9 @@ void	Buffer::writeToBuffer(void* data, VkDeviceSize size, VkDeviceSize offset) {
 	if (size == VK_WHOLE_SIZE)	{ size = _size; }
 
 	bool	notMapped = (_mapped == nullptr);
-	if (notMapped)	map();
+	if (notMapped)	{ map(); }
 	std::memcpy(static_cast<char *>(_mapped) + offset, data, size);
-	if (notMapped)	unmap();
+	if (notMapped)	{ unmap(); }
 }
 
 }
