@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/26 16:40:38                                        */
+/*  Last Modified: 2026/01/29 17:23:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,35 +21,34 @@
 # include <string>
 # include <vector>
 
-# include "ecs/Assets.hpp"
-
 namespace hel {
 
 class	Device;
-class	AssetManager;
 
 struct	PipelineConfigInfo {
 	PipelineConfigInfo() = default;
 	PipelineConfigInfo(const PipelineConfigInfo &) = delete;
 	PipelineConfigInfo	&operator=(const PipelineConfigInfo&) = delete;
 
-	VkPipelineViewportStateCreateInfo		viewportInfo;
-	VkPipelineInputAssemblyStateCreateInfo	inputAssemblyInfo;
-	VkPipelineRasterizationStateCreateInfo	rasterizationInfo;
-	VkPipelineMultisampleStateCreateInfo	multisampleInfo;
-	VkPipelineColorBlendAttachmentState		colorBlendAttachment;
-	VkPipelineColorBlendStateCreateInfo		colorBlendInfo;
-	VkPipelineDepthStencilStateCreateInfo	depthStencilInfo;
-	std::vector<VkDynamicState>				dynamicStateEnables;
-	VkPipelineDynamicStateCreateInfo		dynamicStateInfo;
-	VkPipelineLayout						pipelineLayout = nullptr;
-	VkRenderPass							renderPass = nullptr;
-	uint32_t								subpass = 0;
+	std::vector<VkVertexInputAttributeDescription>	attributeDescription{};
+	std::vector<VkVertexInputBindingDescription>	bindingDescription{};
+	VkPipelineViewportStateCreateInfo				viewportInfo;
+	VkPipelineInputAssemblyStateCreateInfo			inputAssemblyInfo;
+	VkPipelineRasterizationStateCreateInfo			rasterizationInfo;
+	VkPipelineMultisampleStateCreateInfo			multisampleInfo;
+	VkPipelineColorBlendAttachmentState				colorBlendAttachment;
+	VkPipelineColorBlendStateCreateInfo				colorBlendInfo;
+	VkPipelineDepthStencilStateCreateInfo			depthStencilInfo;
+	std::vector<VkDynamicState>						dynamicStateEnables;
+	VkPipelineDynamicStateCreateInfo				dynamicStateInfo;
+	VkPipelineLayout								pipelineLayout{nullptr};
+	VkRenderPass									renderPass{nullptr};
+	uint32_t										subpass{0};
 };
 
 class	Pipeline {
 	public:
-		Pipeline(Device &device, AssetManager &assetManager);
+		Pipeline(Device &device);
 		~Pipeline(void);
 
 		Pipeline(const Pipeline&) = delete;
@@ -64,17 +63,20 @@ class	Pipeline {
 
 		void	bind(VkCommandBuffer commandBuffer);
 		bool	createGraphicsPipeline(const PipelineConfigInfo &configInfo,
-									std::vector<std::string> shaderPaths);
+					const std::vector<VkPipelineShaderStageCreateInfo> &stageInfo);
 		void	deleteGraphicsPipeline(void);
 
-		static void	defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
+		static void	defaultPipelineConfigInfo(PipelineConfigInfo &configInfo);
+		template <typename VertexType>
+		static void	setVertexInputDescriptions(PipelineConfigInfo &configInfo);
 
 	private:
 		bool				_healthy{true};
 		std::string			_reason{""};
 		Device				&_device;
-		AssetManager		&_assetManager;
 		VkPipeline			_graphicsPipeline{VK_NULL_HANDLE};
 };
 
 }
+
+# include "api/vulkan/Pipeline.tpp"
