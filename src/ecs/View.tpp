@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 16:09:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 16:15:22                                        */
+/*  Last Modified: 2026/01/30 16:54:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -31,7 +31,6 @@ View<Components...>::View(Registry &registry)
 template <typename... Components>
 template <typename Component>
 const Component	*View<Components...>::get(Entity::id handle) const {
-	if (!_registry.isValidHandle(handle))	{ return (nullptr); }
 	auto	*pool = std::get<Pool<Component>*>(_pools);
 	return (&pool->components[pool->indices[Entity::getIndex(handle)]]);
 }
@@ -81,7 +80,6 @@ typename View<Components...>::Iterator	View<Components...>::begin(void) {
 	Iterator	it {0, *this};
 	it.moveNext();
 	return (it);
-
 }
 
 template <typename... Components>
