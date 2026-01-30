@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 12:07:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 16:28:36                                        */
+/*  Last Modified: 2026/01/30 16:49:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,11 +25,8 @@ Registry::Registry(AssetManager &assetManager)
 
 bool	Registry::isValidHandle(Entity::id handle) {
 	uint32_t	entityIndex = Entity::getIndex(handle);
-	if (entityIndex < _aliveEntities.size() &&
-			_aliveEntities[entityIndex] == handle)
-		return (true);
-	std::cout << "Nope, c'est pas valide ca" << std::endl;
-	return (false);
+	return (entityIndex < _aliveEntities.size() &&
+			_aliveEntities[entityIndex] == handle);
 }
 
 Entity::id	Registry::createEntity(void) {
