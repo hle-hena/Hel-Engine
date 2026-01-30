@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 12:07:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/26 16:48:32                                        */
+/*  Last Modified: 2026/01/30 16:49:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,10 +23,30 @@ Registry::Registry(AssetManager &assetManager)
 	
 }
 
-void	Registry::removeEntity(EntityId entity) {
+bool	Registry::isValidHandle(Entity::id handle) {
+	uint32_t	entityIndex = Entity::getIndex(handle);
+	return (entityIndex < _aliveEntities.size() &&
+			_aliveEntities[entityIndex] == handle);
+}
+
+Entity::id	Registry::createEntity(void) {
+	Entity::id	newEntity = Entity::acquire();
+	uint32_t	newEntityIndex = Entity::getIndex(newEntity);
+	if (_aliveEntities.size() <= newEntityIndex)
+		_aliveEntities.resize(newEntityIndex + 1, Entity::NOT_REGISTERED);
+	_aliveEntities[newEntityIndex] = newEntity;
+	return (newEntity);
+}
+
+void	Registry::removeEntity(Entity::id handle) {
+	if (!isValidHandle(handle))	{ return ; }
+	
+	uint32_t	entityIndex = Entity::getIndex(handle);
+	_aliveEntities[entityIndex] = Entity::NOT_REGISTERED;
 	for (auto &pool: _pools) {
-		pool.second->tryRemoveEntity(entity);
+		pool.second->removeEntity(handle);
 	}
+	Entity::release(handle);
 }
 
 }

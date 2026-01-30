@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 16:09:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/23 18:52:42                                        */
+/*  Last Modified: 2026/01/30 16:54:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,14 +30,14 @@ View<Components...>::View(Registry &registry)
 
 template <typename... Components>
 template <typename Component>
-const Component	&View<Components...>::get(EntityId entity) const {
+const Component	*View<Components...>::get(Entity::id handle) const {
 	auto	*pool = std::get<Pool<Component>*>(_pools);
-	return pool->components[pool->indices[entity]];
+	return (&pool->components[pool->indices[Entity::getIndex(handle)]]);
 }
 
 template <typename... Components>
-std::vector<EntityId>	*View<Components...>::findSmallestPool(void) {
-	std::vector<EntityId>	*smallestPool = nullptr;
+std::vector<Entity::id>	*View<Components...>::findSmallestPool(void) {
+	std::vector<Entity::id>	*smallestPool = nullptr;
 	size_t					minSize = -1;
 
 	std::apply([&](auto*... pools){
@@ -55,18 +55,20 @@ std::vector<EntityId>	*View<Components...>::findSmallestPool(void) {
 template <typename... Components>
 void	View<Components...>::Iterator::moveNext(void) {
 	while (index < view._maxEntities) {
-		EntityId	entity = (*view._leadEntityList)[index];
-		if (isValid(entity))
+		Entity::id	handle = (*view._leadEntityList)[index];
+		if (isValid(handle))
 			break ;
 		index++;
 	}
 }
 
 template <typename... Components>
-bool		View<Components...>::Iterator::isValid(EntityId entity) {
-	return (std::apply([entity](auto*... pools){
-		return (... && (entity < pools->indices.size() &&
-						pools->indices[entity] != NOT_REGISTERED));
+bool		View<Components...>::Iterator::isValid(Entity::id handle) {
+	uint32_t	entityIndex = Entity::getIndex(handle);
+	return (std::apply([entityIndex, handle](auto*... pools){
+		return (... && (entityIndex < pools->indices.size() &&
+						pools->indices[entityIndex] != Entity::NOT_REGISTERED &&
+						pools->entities[pools->indices[entityIndex]] == handle));
 	}, view._pools));
 }
 
@@ -78,7 +80,6 @@ typename View<Components...>::Iterator	View<Components...>::begin(void) {
 	Iterator	it {0, *this};
 	it.moveNext();
 	return (it);
-
 }
 
 template <typename... Components>
@@ -87,7 +88,7 @@ typename View<Components...>::Iterator	View<Components...>::end(void) {
 }
 
 template <typename... Components>
-EntityId	View<Components...>::Iterator::operator*(void) const {
+Entity::id	View<Components...>::Iterator::operator*(void) const {
 	return ((*view._leadEntityList)[index]);
 }
 
