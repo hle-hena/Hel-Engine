@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/29 17:30:30                                        */
+/*  Last Modified: 2026/01/30 12:40:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -40,14 +40,6 @@ class	RenderSystem {
 
 		RenderSystem(const RenderSystem &) = delete;
 		RenderSystem	operator=(const RenderSystem &) = delete;
-
-		struct	Vertex {
-			glm::vec2	position{0.};
-			glm::vec3	color{1.};
-
-			static std::vector<VkVertexInputBindingDescription>		getBindingDescriptions(void);
-			static std::vector<VkVertexInputAttributeDescription>	getAttributeDescriptions(void);
-		};
 
 		void	update(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex);
 

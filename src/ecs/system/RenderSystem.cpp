@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 12:34:39                                        */
+/*  Last Modified: 2026/01/30 12:40:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,24 +22,6 @@
 #include "ecs/Assets.hpp"
 
 namespace	hel {
-
-std::vector<VkVertexInputBindingDescription>	RenderSystem::Vertex::getBindingDescriptions(void) {
-	std::vector<VkVertexInputBindingDescription>	bindingDescriptions(1);
-	bindingDescriptions[0].binding = 0;
-	bindingDescriptions[0].stride = sizeof(Vertex);
-	bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-	return (bindingDescriptions);
-}
-
-std::vector<VkVertexInputAttributeDescription>		RenderSystem::Vertex::getAttributeDescriptions(void)
-{
-	std::vector<VkVertexInputAttributeDescription>	attributeDescriptions{};
-
-	attributeDescriptions.push_back({0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)});
-	attributeDescriptions.push_back({1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)});
-
-	return (attributeDescriptions);
-}
 
 RenderSystem::RenderSystem(Device &device, Registry &registry)
 	:	_device{device},
