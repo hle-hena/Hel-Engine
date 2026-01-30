@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:27:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 15:13:11                                        */
+/*  Last Modified: 2026/01/30 15:58:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,7 +25,7 @@ class	Entity {
 	public:
 		using id = uint32_t;
 
-		static constexpr uint32_t	INDEX_BITS = 24;
+		static constexpr uint32_t	INDEX_BITS = 20;
 		static constexpr uint32_t	INDEX_MASK = (1 << INDEX_BITS) - 1;
 		static constexpr uint32_t	VERSION_MASK = ~INDEX_MASK;
 		static constexpr uint32_t	NOT_REGISTERED = 0xFFFFFFFF;

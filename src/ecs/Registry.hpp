@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 15:49:37                                        */
+/*  Last Modified: 2026/01/30 16:27:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -44,7 +44,6 @@ struct	is_unique<T, Rest...> : std::bool_constant<
 
 struct	IPool {
 	virtual ~IPool(void) = default;
-	virtual void	tryRemoveEntity(Entity::id handle) = 0;
 	virtual void	removeEntity(Entity::id handle) = 0;
 };
 
@@ -54,7 +53,6 @@ struct	Pool : IPool {
 	std::vector<Entity::id>	entities{};
 	std::vector<Component>	components{};
 
-	void	tryRemoveEntity(Entity::id handle) override;
 	void	removeEntity(Entity::id handle) override;
 };
 
@@ -70,27 +68,20 @@ class	Registry {
 		}
 
 		template <typename Component, typename... Args>
-		const Component	&addComponent(Entity::id handle, Args&&... args);
-		template <typename Component, typename... Args>
-		const Component	&tryAddComponent(Entity::id handle, Args&&... args);
+		const Component	*addComponent(Entity::id handle, Args&&... args);
 		template <typename Component>
-		const Component	&getComponent(Entity::id handle);
+		const Component	*getComponent(Entity::id handle);
 		template <typename Component>
-		const Component	*tryGetComponent(Entity::id handle);
+		void			removeComponent(Entity::id handle);
 
 		template <typename Component, typename Func>
 		void		patch(Entity::id handle, Func&& func);
 		template <typename Component, typename Func>
-		void		patch(const Component &comp, Func&& func);
+		void		patch(const Component *comp, Func&& func);
 		template <typename Component, typename Func>
 		void		update(Entity::id handle, Func&& func);
 		template <typename Component, typename Func>
-		void		update(const Component &comp, Func&& func);
-
-		template <typename Component>
-		void		removeComponent(Entity::id handle);
-		template <typename Component>
-		void		tryRemoveComponent(Entity::id handle);
+		void		update(const Component *comp, Func&& func);
 
 		Entity::id	createEntity(void);
 		void		removeEntity(Entity::id handle);
@@ -104,6 +95,9 @@ class	Registry {
 		template <typename Component>
 		Pool<Component>			&getPool();
 
+		bool	isValidHandle(Entity::id handle);
+
+		std::vector<Entity::id>										_aliveEntities{};
 		std::unordered_map<std::type_index, std::unique_ptr<IPool>>	_pools;
 		AssetManager												&_assetManager;
 

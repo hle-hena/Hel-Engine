@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 15:34:55                                        */
+/*  Last Modified: 2026/01/30 16:27:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,21 +21,6 @@ namespace	hel {
 
 template <typename Component>
 void	Pool<Component>::removeEntity(Entity::id handle) {
-	uint32_t		entityIndex = Entity::getIndex(handle);
-	uint32_t		lastIndex = components.size() - 1;
-	uint32_t		removedIndex = indices[entityIndex];
-	if (removedIndex != lastIndex) {
-		components[removedIndex] = std::move(components[lastIndex]);
-		indices[Entity::getIndex(entities[lastIndex])] = removedIndex;
-		entities[removedIndex] = entities[lastIndex];
-	}
-	components.resize(lastIndex);
-	entities.resize(lastIndex);
-	indices[entityIndex] = Entity::NOT_REGISTERED;
-}
-
-template <typename Component>
-void	Pool<Component>::tryRemoveEntity(Entity::id handle) {
 	uint32_t		entityIndex = Entity::getIndex(handle);
 	if (entityIndex >= indices.size() || indices[entityIndex] == Entity::NOT_REGISTERED)
 		return;
@@ -54,21 +39,8 @@ void	Pool<Component>::tryRemoveEntity(Entity::id handle) {
 
 
 template <typename Component, typename... Args>
-const Component	&Registry::addComponent(Entity::id handle, Args&&... args) {
-	Pool<Component>	&pool = getPool<Component>();
-	uint32_t		entityIndex = Entity::getIndex(handle);
-	if (pool.indices.size() <= entityIndex) {
-		pool.indices.resize(entityIndex + 1, Entity::NOT_REGISTERED);
-	}
-	Component	&component = pool.components.emplace_back(std::forward<Args>(args)...);
-	pool.entities.push_back(handle);
-	pool.indices[entityIndex] = pool.components.size() - 1;
-	prepareComponent(component);
-	return (component);
-}
-
-template <typename Component, typename... Args>
-const Component	&Registry::tryAddComponent(Entity::id handle, Args&&... args) {
+const Component	*Registry::addComponent(Entity::id handle, Args&&... args) {
+	if (!isValidHandle(handle))	{ return (nullptr); }
 	Pool<Component>	&pool = getPool<Component>();
 	uint32_t		entityIndex = Entity::getIndex(handle);
 	if (pool.indices.size() <= entityIndex) {
@@ -77,23 +49,18 @@ const Component	&Registry::tryAddComponent(Entity::id handle, Args&&... args) {
 	if (pool.indices[entityIndex] != Entity::NOT_REGISTERED) {
 		std::cout << "Cannot add a component when one already exists. " <<
 			"Use tryGetComponent for that." << std::endl;
-		return (pool.components[pool.indices[entityIndex]]);
+		return (&pool.components[pool.indices[entityIndex]]);
 	}
 	Component	&component = pool.components.emplace_back(std::forward<Args>(args)...);
 	pool.entities.push_back(handle);
 	pool.indices[entityIndex] = pool.components.size() - 1;
 	prepareComponent(component);
-	return (component);
+	return (&component);
 }
 
 template <typename Component>
-const Component	&Registry::getComponent(Entity::id handle) {
-	Pool<Component>	&pool = getPool<Component>();
-	return (pool.components[pool.indices[Entity::getIndex(handle)]]);
-}
-
-template <typename Component>
-const Component	*Registry::tryGetComponent(Entity::id handle) {
+const Component	*Registry::getComponent(Entity::id handle) {
+	if (!isValidHandle(handle))	{ return (nullptr); }
 	Pool<Component>	&pool = getPool<Component>();
 	uint32_t		entityIndex = Entity::getIndex(handle);
 	if (pool.indices.size() <= entityIndex || pool.indices[entityIndex] == Entity::NOT_REGISTERED)
@@ -104,7 +71,7 @@ const Component	*Registry::tryGetComponent(Entity::id handle) {
 
 template <typename Component, typename Func>
 void	Registry::patch(Entity::id handle, Func &&func) {
-	const Component	*comp = tryGetComponent<Component>(handle);
+	const Component	*comp = getComponent<Component>(handle);
 	if (!comp)
 		return ;
 	Component		&mutableComp = const_cast<Component &>(*comp);
@@ -114,8 +81,8 @@ void	Registry::patch(Entity::id handle, Func &&func) {
 }
 
 template <typename Component, typename Func>
-void	Registry::patch(const Component &comp, Func &&func) {
-	Component	&mutableComp = const_cast<Component &>(comp);
+void	Registry::patch(const Component *comp, Func &&func) {
+	Component	&mutableComp = const_cast<Component &>(*comp);
 	func(mutableComp);
 	if constexpr (requires { mutableComp.isDirty = true; })
 		mutableComp.isDirty = true;
@@ -123,7 +90,7 @@ void	Registry::patch(const Component &comp, Func &&func) {
 
 template <typename Component, typename Func>
 void	Registry::update(Entity::id handle, Func &&func) {
-	const Component	*comp = tryGetComponent<Component>(handle);
+	const Component	*comp = getComponent<Component>(handle);
 	if (!comp)
 		return ;
 	Component		&mutableComp = const_cast<Component &>(*comp);
@@ -133,22 +100,18 @@ void	Registry::update(Entity::id handle, Func &&func) {
 }
 
 template <typename Component, typename Func>
-void	Registry::update(const Component &comp, Func &&func) {
-	Component	&mutableComp = const_cast<Component &>(comp);
+void	Registry::update(const Component *comp, Func &&func) {
+	Component	&mutableComp = const_cast<Component &>(*comp);
 	func(mutableComp);
 	if constexpr (requires { mutableComp.isDirty = false; })
 		mutableComp.isDirty = false;
 }
 
 
-template <typename Component>
-void	Registry::removeComponent(Entity::id handle) {
-	Pool<Component>	&pool = getPool<Component>();
-	pool.removeEntity(handle);
-}
 
 template <typename Component>
-void	Registry::tryRemoveComponent(Entity::id handle) {
+void	Registry::removeComponent(Entity::id handle) {
+	if (!isValidHandle(handle))	{ return ; }
 	Pool<Component>	&pool = getPool<Component>();
 	pool.tryRemoveEntity(handle);
 }
