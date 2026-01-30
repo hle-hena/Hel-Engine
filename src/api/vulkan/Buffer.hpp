@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/29 16:04:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/29 16:44:31                                        */
+/*  Last Modified: 2026/01/30 12:22:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,7 @@
 #pragma once
 
 # include <vulkan/vulkan.h>
+# include <memory>
 
 namespace	hel {
 
@@ -24,8 +25,8 @@ class	Device;
 
 class Buffer {
 	public:
-		Buffer(Device &device, VkDeviceSize size, VkBufferUsageFlags usage,
-				VkMemoryPropertyFlags properties);
+		static std::unique_ptr<Buffer>	create(Device &device, VkDeviceSize size,
+						VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
 		~Buffer(void);
 
 		Buffer(const Buffer &) = delete;
@@ -44,6 +45,8 @@ class Buffer {
 		VkDeviceSize	getSize() const { return _size; }
 
 	private:
+		Buffer(Device &device, VkDeviceSize size, VkBufferUsageFlags usage,
+				VkMemoryPropertyFlags properties);
 		uint32_t	findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 		Device			&_device;

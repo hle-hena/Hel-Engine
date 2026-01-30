@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/29 16:04:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 11:45:06                                        */
+/*  Last Modified: 2026/01/30 12:35:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,8 +19,19 @@
 
 #include <stdexcept>
 #include <cstring>
+#include <iostream>
 
 namespace	hel {
+
+std::unique_ptr<Buffer>	Buffer::create(Device &device, VkDeviceSize size,
+					VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
+	try	 {
+		return (std::unique_ptr<Buffer>(new Buffer(device, size, usage, properties)));
+	} catch (const std::exception &e) {
+		std::cerr << e.what() << std::endl;
+		return (nullptr);
+	}
+}
 
 Buffer::Buffer(Device &device, VkDeviceSize size, VkBufferUsageFlags usage,
 			VkMemoryPropertyFlags properties)
@@ -33,7 +44,7 @@ Buffer::Buffer(Device &device, VkDeviceSize size, VkBufferUsageFlags usage,
 	createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 	if (vkCreateBuffer(_device.getLogical(), &createInfo, nullptr, &_buffer)) {
-		throw std::runtime_error("failed to create vertex buffer!");//TODO -> find a way to handle this cleanly
+		throw std::runtime_error("Failed to create a buffer");
 	}
 
 	VkMemoryRequirements	memRequirements;
@@ -43,7 +54,7 @@ Buffer::Buffer(Device &device, VkDeviceSize size, VkBufferUsageFlags usage,
 	allocateInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 	allocateInfo.allocationSize = memRequirements.size;
 	if (vkAllocateMemory(_device.getLogical(), &allocateInfo, nullptr, &_memory)) {
-		throw std::runtime_error("Too bad");
+		throw std::runtime_error("Failed to allocate memory for a buffer");
 	}
 	vkBindBufferMemory(_device.getLogical(), _buffer, _memory, 0);
 }
@@ -64,13 +75,12 @@ uint32_t	Buffer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags prope
 		if ((typeFilter & (1 << i)) && (deviceProperties.memoryTypes[i].propertyFlags & properties) == properties)
 			return (i);
 	}
-	throw std::runtime_error("Hum, nope");
+	throw std::runtime_error("Failed to find a proper memory for a buffer");
 }
 
 VkResult	Buffer::map(VkDeviceSize size, VkDeviceSize offset) {
-	if (_mapped)	return (VK_SUCCESS);
-	if (size == VK_WHOLE_SIZE)
-		size = _size;
+	if (_mapped)	{ return (VK_SUCCESS); }
+	if (size == VK_WHOLE_SIZE)	{ size = _size; }
 	return (vkMapMemory(_device.getLogical(), _memory, offset, size, 0, &_mapped));
 }
 
@@ -81,13 +91,24 @@ void	Buffer::unmap(void) {
 	}
 }
 
+VkResult	Buffer::flush(VkDeviceSize size, VkDeviceSize offset) {
+	if (!_mapped)	{ return (VK_SUCCESS); }
+	if (size == VK_WHOLE_SIZE)	{ size = _size; }
+
+	VkMappedMemoryRange	mappedMemoryRange{};
+	mappedMemoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+	mappedMemoryRange.memory = _memory;
+	mappedMemoryRange.offset = offset;
+	mappedMemoryRange.size = size;
+	return (vkFlushMappedMemoryRanges(_device.getLogical(), 1, &mappedMemoryRange));
+}
+
 void	Buffer::writeToBuffer(void* data, VkDeviceSize size, VkDeviceSize offset) {
-	if (size == VK_WHOLE_SIZE)
-		size = _size;
+	if (size == VK_WHOLE_SIZE)	{ size = _size; }
 
 	bool	notMapped = (_mapped == nullptr);
 	if (notMapped)	map();
-	std::memcpy(_mapped + offset, data, _size);
+	std::memcpy(static_cast<char *>(_mapped) + offset, data, size);
 	if (notMapped)	unmap();
 }
 

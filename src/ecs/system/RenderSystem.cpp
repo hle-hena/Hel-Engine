@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/29 17:34:48                                        */
+/*  Last Modified: 2026/01/30 12:34:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -68,9 +68,13 @@ void	RenderSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_
 			{{-0.5f, 0.5f}, {1.0f, 0.0f, 1.0f}}
 		};
 
-		_tempVertexBuffer = std::make_unique<Buffer>(_device, sizeof(vertices[0]) * vertices.size(),
+		_tempVertexBuffer = Buffer::create(_device, sizeof(vertices[0]) * vertices.size(),
 					VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
 						VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		if (!_tempVertexBuffer) {
+			endRenderPass(commandBuffer);
+			return ;
+		}
 		_tempVertexBuffer->writeToBuffer(static_cast<void *>(vertices.data()));
 	}
 	VkBuffer	buffers[] = {_tempVertexBuffer->getBuffer()};
