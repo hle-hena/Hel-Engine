@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/29 16:04:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/29 17:39:30                                        */
+/*  Last Modified: 2026/01/30 11:45:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -46,8 +46,6 @@ Buffer::Buffer(Device &device, VkDeviceSize size, VkBufferUsageFlags usage,
 		throw std::runtime_error("Too bad");
 	}
 	vkBindBufferMemory(_device.getLogical(), _buffer, _memory, 0);
-
-	map();//TODO -> This shouldn't be done here.
 }
 
 Buffer::~Buffer(void) {
@@ -70,19 +68,27 @@ uint32_t	Buffer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags prope
 }
 
 VkResult	Buffer::map(VkDeviceSize size, VkDeviceSize offset) {
+	if (_mapped)	return (VK_SUCCESS);
 	if (size == VK_WHOLE_SIZE)
 		size = _size;
 	return (vkMapMemory(_device.getLogical(), _memory, offset, size, 0, &_mapped));
 }
 
 void	Buffer::unmap(void) {
-	vkUnmapMemory(_device.getLogical(), _memory);
+	if (_mapped) {
+		vkUnmapMemory(_device.getLogical(), _memory);
+		_mapped = nullptr;
+	}
 }
 
 void	Buffer::writeToBuffer(void* data, VkDeviceSize size, VkDeviceSize offset) {
 	if (size == VK_WHOLE_SIZE)
 		size = _size;
+
+	bool	notMapped = (_mapped == nullptr);
+	if (notMapped)	map();
 	std::memcpy(_mapped + offset, data, _size);
+	if (notMapped)	unmap();
 }
 
 }

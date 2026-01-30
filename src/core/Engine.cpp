@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/29 11:54:23                                        */
+/*  Last Modified: 2026/01/30 12:02:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,7 +29,6 @@ namespace hel {
 Engine::Engine(Device &device, Registry &registry)
 	:	_device{device},
 		_registry{registry},
-		_triangleSystem{device, registry},
 		_renderSystem{device, registry},
 		_transformSystem{registry} {
 }
@@ -98,7 +97,6 @@ void	Engine::runFrame(Window &window, uint32_t currentFrame) {
 	vkResetCommandBuffer(cmd, 0);
 
 	beginFrame(cmd, imageIndex);
-	// _triangleSystem.update(cmd, window, imageIndex);
 	_renderSystem.update(cmd, window, imageIndex);
 	_transformSystem.update();
 	endFrame(cmd);
