@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/26 16:48:09                                        */
+/*  Last Modified: 2026/01/30 15:49:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,14 +23,13 @@
 # include <vector>
 # include <memory>
 
+# include "ecs/Entity.hpp"
+
 namespace	hel {
 
 class	AssetManager;
 template <typename... Components>
 class	View;
-
-using EntityId = uint32_t;
-static constexpr uint32_t NOT_REGISTERED = 0xFFFFFFFF;
 
 template <typename... T>
 struct	is_unique;
@@ -45,18 +44,18 @@ struct	is_unique<T, Rest...> : std::bool_constant<
 
 struct	IPool {
 	virtual ~IPool(void) = default;
-	virtual void	tryRemoveEntity(EntityId entity) = 0;
-	virtual void	removeEntity(EntityId entity) = 0;
+	virtual void	tryRemoveEntity(Entity::id handle) = 0;
+	virtual void	removeEntity(Entity::id handle) = 0;
 };
 
 template <typename Component>
 struct	Pool : IPool {
 	std::vector<uint32_t>	indices{};
-	std::vector<EntityId>	entities{};
+	std::vector<Entity::id>	entities{};
 	std::vector<Component>	components{};
 
-	void	tryRemoveEntity(EntityId entity) override;
-	void	removeEntity(EntityId entity) override;
+	void	tryRemoveEntity(Entity::id handle) override;
+	void	removeEntity(Entity::id handle) override;
 };
 
 class	Registry {
@@ -71,28 +70,30 @@ class	Registry {
 		}
 
 		template <typename Component, typename... Args>
-		const Component	&addComponent(EntityId entity, Args&&... args);
+		const Component	&addComponent(Entity::id handle, Args&&... args);
 		template <typename Component, typename... Args>
-		const Component	&tryAddComponent(EntityId entity, Args&&... args);
+		const Component	&tryAddComponent(Entity::id handle, Args&&... args);
 		template <typename Component>
-		const Component	&getComponent(EntityId entity);
+		const Component	&getComponent(Entity::id handle);
 		template <typename Component>
-		const Component	*tryGetComponent(EntityId entity);
+		const Component	*tryGetComponent(Entity::id handle);
 
 		template <typename Component, typename Func>
-		void		patch(EntityId entity, Func&& func);
+		void		patch(Entity::id handle, Func&& func);
 		template <typename Component, typename Func>
 		void		patch(const Component &comp, Func&& func);
 		template <typename Component, typename Func>
-		void		update(EntityId entity, Func&& func);
+		void		update(Entity::id handle, Func&& func);
 		template <typename Component, typename Func>
 		void		update(const Component &comp, Func&& func);
 
 		template <typename Component>
-		void		removeComponent(EntityId entity);
+		void		removeComponent(Entity::id handle);
 		template <typename Component>
-		void		tryRemoveComponent(EntityId entity);
-		void		removeEntity(EntityId entity);
+		void		tryRemoveComponent(Entity::id handle);
+
+		Entity::id	createEntity(void);
+		void		removeEntity(Entity::id handle);
 
 		template <typename... Components>
 		View<Components...>		view();

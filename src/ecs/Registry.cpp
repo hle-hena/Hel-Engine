@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 12:07:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/26 16:48:32                                        */
+/*  Last Modified: 2026/01/30 15:29:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,9 +23,9 @@ Registry::Registry(AssetManager &assetManager)
 	
 }
 
-void	Registry::removeEntity(EntityId entity) {
+void	Registry::removeEntity(Entity::id handle) {
 	for (auto &pool: _pools) {
-		pool.second->tryRemoveEntity(entity);
+		pool.second->tryRemoveEntity(handle);
 	}
 }
 
