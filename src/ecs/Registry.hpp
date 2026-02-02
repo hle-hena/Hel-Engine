@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 20:28:37                                        */
+/*  Last Modified: 2026/02/02 20:48:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -64,8 +64,8 @@ struct	ModificationProxy {
 	Component	*component;
 	ModificationProxy(Component *comp) : component(comp) {}
 	~ModificationProxy(void) {
-		if constexpr (requires { component.isDirty = true; })
-			component.isDirty = true;
+		if constexpr (requires { component->isDirty = true; })
+			component->isDirty = true;
 	}
 	Component	*operator->(void) { return component; };
 	explicit operator bool() const { return (component != nullptr); }

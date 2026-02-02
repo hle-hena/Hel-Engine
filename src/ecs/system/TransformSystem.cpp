@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 15:06:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 20:28:51                                        */
+/*  Last Modified: 2026/02/02 20:50:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,28 +28,36 @@ TransformSystem::TransformSystem(Registry &registry)
 TransformSystem::~TransformSystem(void) {
 }
 
-void	TransformSystem::handleInput(void) {
-	auto	&inputState = _registry.getInputState();
-	auto	*windowFocused = inputState.getFocused();
-	if (!windowFocused)
+void TransformSystem::handleInput(void) {
+	auto& inputState = _registry.getInputState();
+	auto* windowFocused = inputState.getFocused();
+	if (!windowFocused) { return ; }
+
+	Entity::id entityHandle = windowFocused->getEntityReference();
+	auto* transform = _registry.getComponent<Transform>(entityHandle);
+	if (!transform) return ;
+
+	static const std::vector<std::pair<int, glm::vec3>> moveConfig = {
+		{GLFW_KEY_A, { 0.001f, 0.0f, 0.0f}},
+		{GLFW_KEY_D, {-0.001f, 0.0f, 0.0f}},
+		{GLFW_KEY_W, { 0.0f,  0.001f, 0.0f}},
+		{GLFW_KEY_S, { 0.0f, -0.001f, 0.0f}}
+	};
+
+	glm::vec3 delta{0.0f};
+	bool moved = false;
+
+	for (const auto& [key, dir] : moveConfig) {
+		if (inputState.isKeyHeld(key)) {
+			delta += dir;
+			moved = true;
+		}
+	}
+
+	if (!moved)
 		return ;
-	Entity::id	entityHandle = windowFocused->getEntityReference();
-	if (inputState.isKeyHeld(GLFW_KEY_A)) {
-		_registry.patch<Transform>(entityHandle, [](Transform &t){t.position.x += 0.001;});
-		_registry.patch<Camera>(entityHandle, [](Camera &){});
-	}
-	if (inputState.isKeyHeld(GLFW_KEY_D)) {
-		_registry.patch<Transform>(entityHandle, [](Transform &t){t.position.x -= 0.001;});
-		_registry.patch<Camera>(entityHandle, [](Camera &){});
-	}
-	if (inputState.isKeyHeld(GLFW_KEY_W)) {
-		_registry.patch<Transform>(entityHandle, [](Transform &t){t.position.y += 0.001;});
-		_registry.patch<Camera>(entityHandle, [](Camera &){});
-	}
-	if (inputState.isKeyHeld(GLFW_KEY_S)) {
-		_registry.patch<Transform>(entityHandle, [](Transform &t){t.position.y -= 0.001;});
-		_registry.patch<Camera>(entityHandle, [](Camera &){});
-	}
+	if (auto transform = _registry.modify<Transform>(entityHandle))
+		transform->position += delta;
 }
 
 void	TransformSystem::update(void) {
@@ -65,7 +73,6 @@ void	TransformSystem::update(void) {
 		glm::mat4	R = glm::mat4_cast(transform->rotation);
 		glm::mat4	S = glm::scale(glm::mat4(1.f), transform->scale);
 		_registry.modify(transform)->worldMatrix = T * R * S;
-		std::cout << "Updated a transform" << std::endl;
 	}
 }
 

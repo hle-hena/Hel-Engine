@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 16:42:07                                        */
+/*  Last Modified: 2026/02/02 21:56:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -101,12 +101,14 @@ bool	Window::shouldClose(void) {
 	if (inputState.isKeyReleased(GLFW_KEY_ESCAPE) &&
 		inputState.getFocused() == this) {
 		glfwSetWindowShouldClose(_windowPtr, true);
+		inputState.setFocus(this, false);
 		return (true);
 	}
 	if (inputState.isKeyHeld(GLFW_KEY_ESCAPE) &&
 		inputState.hasMod(GLFW_MOD_CONTROL) &&
 		inputState.getFocused() == this) {
 		glfwSetWindowShouldClose(_windowPtr, true);
+		inputState.setFocus(this, false);
 		return (true);
 	}
 	if (inputState.isKeyPressed(GLFW_KEY_N) &&
@@ -122,6 +124,11 @@ void	Window::frameBufferResizedCallback(GLFWwindow *window,
 												int width, int height) {
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 	appWindow->getSwapchain()._frameBufferResized = true;
+
+	Entity::id	handle = appWindow->getEntityReference();
+	if (auto camera = appWindow->getApp().getRegistry().modify<Camera>(handle)) {
+		camera->aspect = static_cast<float>(width) / static_cast<float>(height);
+	}
 }
 
 void	Window::focusCallback(GLFWwindow *window, int focused) {

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 20:29:13                                        */
+/*  Last Modified: 2026/02/02 20:39:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -87,6 +87,7 @@ VkCommandBuffer Engine::getCommandBuffer(Window& window, uint32_t currentFrame) 
 
 void	Engine::updateGlobal(void) {
 	_transformSystem.update();
+	_cameraSystem.update();
 }
 
 void	Engine::runFrame(Window &window, uint32_t currentFrame) {
@@ -103,11 +104,6 @@ void	Engine::runFrame(Window &window, uint32_t currentFrame) {
 
 	beginFrame(cmd, imageIndex);
 	_renderSystem.update(cmd, window, imageIndex);
-<<<<<<< HEAD
-	_transformSystem.update();
-	_cameraSystem.update();
-=======
->>>>>>> main
 	endFrame(cmd);
 
 	swapchain.submitCommandBuffer(&cmd, imageIndex, currentFrame);

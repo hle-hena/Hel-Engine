@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 11:50:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 15:37:38                                        */
+/*  Last Modified: 2026/02/02 20:46:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,7 +34,7 @@ void	CameraSystem::update(void) {
 		auto	*transform = entities.get<Transform>(entity);
 		auto	*camera = entities.get<Camera>(entity);
 
-		if (!camera->isDirty)
+		if (!camera->isDirty && !transform->isDirty)
 			continue ;
 		glm::mat4	view = glm::lookAt(transform->position,
 			glm::vec3(0.f),
@@ -42,9 +42,7 @@ void	CameraSystem::update(void) {
 									camera->up);
 		glm::mat4	projection = glm::perspective(camera->fov, camera->aspect,
 												camera->near, camera->far);
-		_registry.update(camera, [&](Camera &camera){
-			camera.viewProjection = projection * view;
-		});
+		_registry.modify(camera)->viewProjection = projection * view;
 	}
 }
 
