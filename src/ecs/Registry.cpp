@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 12:07:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 16:49:25                                        */
+/*  Last Modified: 2026/02/02 20:22:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -47,6 +47,11 @@ void	Registry::removeEntity(Entity::id handle) {
 		pool.second->removeEntity(handle);
 	}
 	Entity::release(handle);
+}
+
+void	Registry::resetAllDirty(void) {
+	for (auto &[type, pool]: _pools)
+		pool->resetDirtyFlag();
 }
 
 }

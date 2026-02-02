@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 16:27:07                                        */
+/*  Last Modified: 2026/02/02 18:38:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,6 +45,7 @@ struct	is_unique<T, Rest...> : std::bool_constant<
 struct	IPool {
 	virtual ~IPool(void) = default;
 	virtual void	removeEntity(Entity::id handle) = 0;
+	virtual void	resetDirtyFlag(void) = 0;
 };
 
 template <typename Component>
@@ -54,6 +55,19 @@ struct	Pool : IPool {
 	std::vector<Component>	components{};
 
 	void	removeEntity(Entity::id handle) override;
+	void	resetDirtyFlag(void) override;
+};
+
+template <typename Component>
+struct	ModificationProxy {
+	Component	*component;
+	ModificationProxy(Component *comp) : component(comp) {}
+	~ModificationProxy(void) {
+		if constexpr (requires { component.isDirty = true; })
+			component.isDirty = true;
+	}
+	Component	*operator->(void) { return component; };
+	explicit operator bool() const { return (component != nullptr); }
 };
 
 class	Registry {
@@ -74,17 +88,15 @@ class	Registry {
 		template <typename Component>
 		void			removeComponent(Entity::id handle);
 
-		template <typename Component, typename Func>
-		void		patch(Entity::id handle, Func&& func);
-		template <typename Component, typename Func>
-		void		patch(const Component *comp, Func&& func);
-		template <typename Component, typename Func>
-		void		update(Entity::id handle, Func&& func);
-		template <typename Component, typename Func>
-		void		update(const Component *comp, Func&& func);
+		template <typename Component>
+		ModificationProxy<Component>	modify(Entity::id handle);
+		template <typename Component>
+		ModificationProxy<Component>	modify(const Component *component);
 
 		Entity::id	createEntity(void);
 		void		removeEntity(Entity::id handle);
+
+		void		resetAllDirty(void);
 
 		template <typename... Components>
 		View<Components...>		view();

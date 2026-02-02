@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 12:02:36                                        */
+/*  Last Modified: 2026/02/02 20:19:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,6 +48,7 @@ class	Engine {
 
 		bool	init(void);
 		void	runFrame(Window &window, uint32_t currentFrame);
+		void	updateGlobal(void);
 
 	private:
 		using WindowCmdBuffers = std::array<VkCommandBuffer, Swapchain::MAX_FRAMES_IN_FLIGHT>;
