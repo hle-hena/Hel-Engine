@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 12:41:29                                        */
+/*  Last Modified: 2026/02/02 14:11:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -92,6 +92,8 @@ class	Window {
 		void		deleteWindow(void);
 		static void	frameBufferResizedCallback(GLFWwindow *window, int width,
 											int height);
+		static void	keyCallback(GLFWwindow *window, int key, int scancode,
+								int action, int mods);
 
 		bool						_healthy{true};
 		std::string					_reason{""};

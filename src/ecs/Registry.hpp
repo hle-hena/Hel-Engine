@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 16:27:07                                        */
+/*  Last Modified: 2026/02/02 15:35:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,6 +24,7 @@
 # include <memory>
 
 # include "ecs/Entity.hpp"
+# include "platform/input/InputState.hpp"
 
 namespace	hel {
 
@@ -67,6 +68,10 @@ class	Registry {
 			return (_assetManager);
 		}
 
+		InputState		&getInputState(void) {
+			return (_inputState);
+		}
+
 		template <typename Component, typename... Args>
 		const Component	*addComponent(Entity::id handle, Args&&... args);
 		template <typename Component>
@@ -100,6 +105,7 @@ class	Registry {
 		std::vector<Entity::id>										_aliveEntities{};
 		std::unordered_map<std::type_index, std::unique_ptr<IPool>>	_pools;
 		AssetManager												&_assetManager;
+		InputState													_inputState;
 
 	template <typename... Components>
 	friend class View;

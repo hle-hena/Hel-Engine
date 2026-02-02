@@ -1,27 +1,27 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: KeyEvent.hpp                                                        */
+/*  File: WindowSystem.hpp                                                    */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2025/12/10 17:15:43 by hle-hena                                  */
+/*  Created: 2026/02/02 15:42:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 20:05:02                                        */
+/*  Last Modified: 2026/02/02 15:42:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
 /*                                                                            */
-/*  Copyright (c) 2025 hle-hena                                               */
+/*  Copyright (c) 2026 hle-hena                                               */
 /*                                                                            */
 /* *************************************************************************  */
 
 #pragma once
 
-# define GLFW_INCLUDE_VULKAN
-# include <GLFW/glfw3.h>
-
 namespace	hel {
 
-void	keyEventCallback(GLFWwindow *glfwWindow, int key, int scanCode,
-						int action, int modifier);
+class	WindowSystem {
+
+
+
+};
 
 }

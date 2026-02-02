@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/19 16:59:42                                        */
+/*  Last Modified: 2026/02/02 15:39:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,8 +16,8 @@
 
 #include "platform/window/Window.hpp"
 #include "platform/window/GLFW.hpp"
-#include "platform/events/KeyEvent.hpp"
 #include "core/Application.hpp"
+#include "ecs/Component.hpp"
 
 namespace	hel {
 
@@ -78,7 +78,7 @@ void	Window::initWindow(void) {
 	_windowPtr = glfwCreateWindow(_width, _height, _windowName.c_str(),
 								nullptr, nullptr);
 	glfwSetWindowUserPointer(_windowPtr, this);
-	glfwSetKeyCallback(_windowPtr, keyEventCallback);
+	glfwSetKeyCallback(_windowPtr, keyCallback);
 	glfwSetFramebufferSizeCallback(_windowPtr, frameBufferResizedCallback);
 }
 
@@ -96,8 +96,39 @@ void	Window::deleteWindow(void) {
 
 void	Window::frameBufferResizedCallback(GLFWwindow *window,
 												int width, int height) {
-	auto _rtWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
-	_rtWindow->getSwapchain()._frameBufferResized = true;
+	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+	appWindow->getSwapchain()._frameBufferResized = true;
+}
+
+void	Window::keyCallback(GLFWwindow *window, int key, int scancode,
+							int action, int mod) {
+	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+	auto	&app = appWindow->getApp();
+	auto	&appRegistry = app.getRegistry();
+
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+		glfwSetWindowShouldClose(window, true);
+		return ;
+	}
+	else if (key == GLFW_KEY_N && action == GLFW_PRESS
+			&& mod == GLFW_MOD_CONTROL) {
+		app.addNewWindow(Window::WIDTH, Window::HEIGHT, appWindow->getWindowName() + "_copy");
+		return ;
+	}
+	Entity::id	entityHandle = appWindow->getEntityReference();
+	if (entityHandle == Entity::NOT_REGISTERED)
+		return ;
+	appRegistry.patch(appRegistry.getComponent<Transform>(entityHandle), [&](Transform &transform){
+		if (key == GLFW_KEY_W && action == GLFW_PRESS)
+			transform.position.y += 1;
+		if (key == GLFW_KEY_S && action == GLFW_PRESS)
+			transform.position.y -= 1;
+		if (key == GLFW_KEY_D && action == GLFW_PRESS)
+			transform.position.x += 1;
+		if (key == GLFW_KEY_A && action == GLFW_PRESS)
+			transform.position.x -= 1;
+	});
+	appRegistry.patch(appRegistry.getComponent<Camera>(entityHandle), [](Camera &cam){});
 }
 
 }

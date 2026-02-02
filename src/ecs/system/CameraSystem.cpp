@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 11:50:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 13:49:49                                        */
+/*  Last Modified: 2026/02/02 15:37:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,11 +34,11 @@ void	CameraSystem::update(void) {
 		auto	*transform = entities.get<Transform>(entity);
 		auto	*camera = entities.get<Camera>(entity);
 
-		std::cout << "Hey ! I exist " << entity << std::endl;
 		if (!camera->isDirty)
 			continue ;
 		glm::mat4	view = glm::lookAt(transform->position,
-									transform->position + camera->direction,
+			glm::vec3(0.f),
+									// transform->position + camera->direction,
 									camera->up);
 		glm::mat4	projection = glm::perspective(camera->fov, camera->aspect,
 												camera->near, camera->far);
