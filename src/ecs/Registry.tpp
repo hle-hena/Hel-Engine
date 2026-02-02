@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 12:36:43                                        */
+/*  Last Modified: 2026/02/02 20:28:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,6 +34,15 @@ void	Pool<Component>::removeEntity(Entity::id handle) {
 	components.resize(lastIndex);
 	entities.resize(lastIndex);
 	indices[entityIndex] = Entity::NOT_REGISTERED;
+}
+
+template <typename Component>
+void	Pool<Component>::resetDirtyFlag(void) {
+	if constexpr (requires(Component c) { c.isDirty = false; }) {
+		for (auto &comp : components) {
+			comp.isDirty = false;
+		}
+	}
 }
 
 
@@ -68,53 +77,26 @@ const Component	*Registry::getComponent(Entity::id handle) {
 	return (&pool.components[pool.indices[entityIndex]]);
 }
 
-
-template <typename Component, typename Func>
-void	Registry::patch(Entity::id handle, Func &&func) {
-	const Component	*comp = getComponent<Component>(handle);
-	if (!comp)
-		return ;
-	Component		&mutableComp = const_cast<Component &>(*comp);
-	func(mutableComp);
-	if constexpr (requires { mutableComp.isDirty = true; })
-		mutableComp.isDirty = true;
-}
-
-template <typename Component, typename Func>
-void	Registry::patch(const Component *comp, Func &&func) {
-	Component	&mutableComp = const_cast<Component &>(*comp);
-	func(mutableComp);
-	if constexpr (requires { mutableComp.isDirty = true; })
-		mutableComp.isDirty = true;
-}
-
-template <typename Component, typename Func>
-void	Registry::update(Entity::id handle, Func &&func) {
-	const Component	*comp = getComponent<Component>(handle);
-	if (!comp)
-		return ;
-	Component		&mutableComp = const_cast<Component &>(*comp);
-	func(mutableComp);
-	if constexpr (requires { mutableComp.isDirty = false; })
-		mutableComp.isDirty = false;
-}
-
-template <typename Component, typename Func>
-void	Registry::update(const Component *comp, Func &&func) {
-	Component	&mutableComp = const_cast<Component &>(*comp);
-	func(mutableComp);
-	if constexpr (requires { mutableComp.isDirty = false; })
-		mutableComp.isDirty = false;
-}
-
-
-
 template <typename Component>
 void	Registry::removeComponent(Entity::id handle) {
 	if (!isValidHandle(handle))	{ return ; }
 	Pool<Component>	&pool = getPool<Component>();
 	pool.tryRemoveEntity(handle);
 }
+
+
+
+template <typename Component>
+ModificationProxy<Component>	Registry::modify(Entity::id handle) {
+	auto	*comp = getComponent<Component>(handle);
+	return (ModificationProxy<Component>(const_cast<Component *>(comp)));
+}
+
+template <typename Component>
+ModificationProxy<Component>	Registry::modify(const Component *comp) {
+	return (ModificationProxy<Component>(const_cast<Component *>(comp)));
+}
+
 
 
 template <typename Component>
