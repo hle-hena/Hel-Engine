@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 15:01:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 15:41:43                                        */
+/*  Last Modified: 2026/02/02 15:56:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,6 +23,8 @@
 
 namespace	hel {
 
+class	Window;
+
 class	InputState {
 	public:
 		InputState(void) = default;
@@ -38,13 +40,18 @@ class	InputState {
 		bool	hasMod(int mod);
 		bool	hasAnyChanged(std::vector<int> keys);
 
+		Window	*getFocused(void) const {
+			return (_windowFocused);
+		}
+
 	private:
 		void	setKeyState(int key, int action, int mods);
+		void	setFocus(Window *window, bool focused);
 
 		std::bitset<512>	_current{false};
 		std::bitset<512>	_previous{false};
 		int					_currentMods{0};
-		int					_windowFocused{-1};
+		Window				*_windowFocused{nullptr};
 
 	friend class Window;
 };

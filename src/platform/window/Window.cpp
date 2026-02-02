@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 15:39:10                                        */
+/*  Last Modified: 2026/02/02 16:42:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -80,6 +80,7 @@ void	Window::initWindow(void) {
 	glfwSetWindowUserPointer(_windowPtr, this);
 	glfwSetKeyCallback(_windowPtr, keyCallback);
 	glfwSetFramebufferSizeCallback(_windowPtr, frameBufferResizedCallback);
+	glfwSetWindowFocusCallback(_windowPtr, focusCallback);
 }
 
 Window::~Window(void) {
@@ -94,41 +95,46 @@ void	Window::deleteWindow(void) {
 	GLFW::release();
 }
 
+bool	Window::shouldClose(void) {
+	auto	&inputState = _app.getRegistry().getInputState();
+
+	if (inputState.isKeyReleased(GLFW_KEY_ESCAPE) &&
+		inputState.getFocused() == this) {
+		glfwSetWindowShouldClose(_windowPtr, true);
+		return (true);
+	}
+	if (inputState.isKeyHeld(GLFW_KEY_ESCAPE) &&
+		inputState.hasMod(GLFW_MOD_CONTROL) &&
+		inputState.getFocused() == this) {
+		glfwSetWindowShouldClose(_windowPtr, true);
+		return (true);
+	}
+	if (inputState.isKeyPressed(GLFW_KEY_N) &&
+		inputState.hasMod(GLFW_MOD_CONTROL) &&
+		inputState.getFocused() == this) {
+		_app.addNewWindow(Window::WIDTH, Window::HEIGHT, _windowName + "_copy");
+		return (false);
+	}
+	return (glfwWindowShouldClose(_windowPtr));
+}
+
 void	Window::frameBufferResizedCallback(GLFWwindow *window,
 												int width, int height) {
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 	appWindow->getSwapchain()._frameBufferResized = true;
 }
 
+void	Window::focusCallback(GLFWwindow *window, int focused) {
+	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+
+	appWindow->getApp().getRegistry().getInputState().setFocus(appWindow, focused);
+}
+
 void	Window::keyCallback(GLFWwindow *window, int key, int scancode,
 							int action, int mod) {
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
-	auto	&app = appWindow->getApp();
-	auto	&appRegistry = app.getRegistry();
 
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-		glfwSetWindowShouldClose(window, true);
-		return ;
-	}
-	else if (key == GLFW_KEY_N && action == GLFW_PRESS
-			&& mod == GLFW_MOD_CONTROL) {
-		app.addNewWindow(Window::WIDTH, Window::HEIGHT, appWindow->getWindowName() + "_copy");
-		return ;
-	}
-	Entity::id	entityHandle = appWindow->getEntityReference();
-	if (entityHandle == Entity::NOT_REGISTERED)
-		return ;
-	appRegistry.patch(appRegistry.getComponent<Transform>(entityHandle), [&](Transform &transform){
-		if (key == GLFW_KEY_W && action == GLFW_PRESS)
-			transform.position.y += 1;
-		if (key == GLFW_KEY_S && action == GLFW_PRESS)
-			transform.position.y -= 1;
-		if (key == GLFW_KEY_D && action == GLFW_PRESS)
-			transform.position.x += 1;
-		if (key == GLFW_KEY_A && action == GLFW_PRESS)
-			transform.position.x -= 1;
-	});
-	appRegistry.patch(appRegistry.getComponent<Camera>(entityHandle), [](Camera &cam){});
+	appWindow->getApp().getRegistry().getInputState().setKeyState(key, action, mod);
 }
 
 }

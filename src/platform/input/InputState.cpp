@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 15:02:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 15:30:54                                        */
+/*  Last Modified: 2026/02/02 16:43:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,6 +16,8 @@
 
 #include "platform/input/InputState.hpp"
 
+#include <iostream>
+
 namespace	hel {
 
 void	InputState::setKeyState(int key, int action, int mods) {
@@ -23,6 +25,13 @@ void	InputState::setKeyState(int key, int action, int mods) {
 		_current.set(key, action != GLFW_RELEASE);
 		_currentMods = mods;
 	}
+}
+
+void	InputState::setFocus(Window *window, bool focused) {
+	if (focused)
+		_windowFocused = window;
+	else if (_windowFocused == window)
+		_windowFocused = nullptr;
 }
 
 void	InputState::newFrame(void) {

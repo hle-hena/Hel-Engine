@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 15:06:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 11:48:06                                        */
+/*  Last Modified: 2026/02/02 16:15:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,7 @@
 #include "ecs/system/TransformSystem.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
+#include "platform/window/Window.hpp"
 
 namespace	hel {
 
@@ -27,7 +28,33 @@ TransformSystem::TransformSystem(Registry &registry)
 TransformSystem::~TransformSystem(void) {
 }
 
+void	TransformSystem::handleInput(void) {
+	auto	&inputState = _registry.getInputState();
+	auto	*windowFocused = inputState.getFocused();
+	if (!windowFocused)
+		return ;
+	Entity::id	entityHandle = windowFocused->getEntityReference();
+	if (inputState.isKeyHeld(GLFW_KEY_A)) {
+		_registry.patch<Transform>(entityHandle, [](Transform &t){t.position.x += 0.001;});
+		_registry.patch<Camera>(entityHandle, [](Camera &){});
+	}
+	if (inputState.isKeyHeld(GLFW_KEY_D)) {
+		_registry.patch<Transform>(entityHandle, [](Transform &t){t.position.x -= 0.001;});
+		_registry.patch<Camera>(entityHandle, [](Camera &){});
+	}
+	if (inputState.isKeyHeld(GLFW_KEY_W)) {
+		_registry.patch<Transform>(entityHandle, [](Transform &t){t.position.y += 0.001;});
+		_registry.patch<Camera>(entityHandle, [](Camera &){});
+	}
+	if (inputState.isKeyHeld(GLFW_KEY_S)) {
+		_registry.patch<Transform>(entityHandle, [](Transform &t){t.position.y -= 0.001;});
+		_registry.patch<Camera>(entityHandle, [](Camera &){});
+	}
+}
+
 void	TransformSystem::update(void) {
+	handleInput();
+
 	auto	entities = _registry.view<Transform>();
 
 	for (auto entity: entities) {

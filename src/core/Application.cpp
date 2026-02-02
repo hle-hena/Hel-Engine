@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 13:48:15                                        */
+/*  Last Modified: 2026/02/02 16:23:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -50,6 +50,7 @@ void	Application::run(void) {
 	uint32_t	currentFrame = 0;
 
 	while (!_appWindows.empty() && _healthy) {
+		_registry.getInputState().newFrame();
 		glfwPollEvents();
 
 		for (size_t i = 0; i < _appWindows.size(); i++) {

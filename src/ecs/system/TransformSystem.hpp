@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 15:07:06 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/22 15:13:18                                        */
+/*  Last Modified: 2026/02/02 16:03:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,6 +30,8 @@ class	TransformSystem {
 		void	update(void);
 
 	private:
+		void	handleInput(void);
+
 		Registry	&_registry;
 };
 

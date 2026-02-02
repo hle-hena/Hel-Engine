@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 14:11:08                                        */
+/*  Last Modified: 2026/02/02 16:18:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -46,15 +46,13 @@ class	Window {
 		static windowPtr	createBootstrap(int width, int height,
 										const std::string &windowName,
 										Application &app, VkInstance &instance) noexcept;
+		bool				shouldClose(void);
 
 		std::string		getReason(void) const {
 			return (_reason);
 		}
 		bool			isHealthy(void) const {
 			return (_healthy);
-		}
-		bool			shouldClose(void) const {
-			return (glfwWindowShouldClose(_windowPtr));
 		}
 		GLFWwindow		*getWindow(void) const {
 			return (_windowPtr);
@@ -94,6 +92,7 @@ class	Window {
 											int height);
 		static void	keyCallback(GLFWwindow *window, int key, int scancode,
 								int action, int mods);
+		static void	focusCallback(GLFWwindow *window, int focused);
 
 		bool						_healthy{true};
 		std::string					_reason{""};
