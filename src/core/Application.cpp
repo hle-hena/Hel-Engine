@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 16:37:25                                        */
+/*  Last Modified: 2026/02/02 20:21:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -52,6 +52,7 @@ void	Application::run(void) {
 	while (!_appWindows.empty() && _healthy) {
 		glfwPollEvents();
 
+		_engine.updateGlobal();
 		for (size_t i = 0; i < _appWindows.size(); i++) {
 			if (_appWindows[i]->shouldClose()) {
 				_appWindows.erase(_appWindows.begin() + i);
@@ -62,6 +63,7 @@ void	Application::run(void) {
 		}
 
 		currentFrame = (currentFrame + 1) % Swapchain::MAX_FRAMES_IN_FLIGHT;
+		_registry.resetAllDirty();
 	}
 	vkDeviceWaitIdle(_vkContext.getDevice().getLogical());
 	if (!_healthy)
