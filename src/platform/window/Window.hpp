@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/21 11:40:01                                        */
+/*  Last Modified: 2026/02/02 12:41:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,8 +20,10 @@
 # include <GLFW/glfw3.h>
 # include <string>
 # include <memory>
+# include <optional>
 
 # include "api/vulkan/Swapchain.hpp"
+# include "ecs/Entity.hpp"
 
 
 namespace	hel {
@@ -72,6 +74,12 @@ class	Window {
 		VkFormat		getFormat(void) const {
 			return (_swapchain.getFormat());
 		}
+		void	setEntityReference(Entity::id handle) {
+			_entityHandle = handle;
+		}
+		Entity::id	getEntityReference(void) const {
+			return (_entityHandle.value_or(Entity::NOT_REGISTERED));
+		}
 
 
 	private:
@@ -85,17 +93,18 @@ class	Window {
 		static void	frameBufferResizedCallback(GLFWwindow *window, int width,
 											int height);
 
-		bool			_healthy{true};
-		std::string		_reason{""};
-		int				_width;
-		int				_height;
-		bool			_frameBufferResized{false};
-		std::string		_windowName;
-		GLFWwindow		*_windowPtr;
-		VkSurfaceKHR	_surface{VK_NULL_HANDLE};
-		Swapchain		_swapchain;
-		Application		&_app;
-		VkInstance		&_instance;
+		bool						_healthy{true};
+		std::string					_reason{""};
+		int							_width;
+		int							_height;
+		bool						_frameBufferResized{false};
+		std::string					_windowName;
+		GLFWwindow					*_windowPtr;
+		VkSurfaceKHR				_surface{VK_NULL_HANDLE};
+		Swapchain					_swapchain;
+		Application					&_app;
+		VkInstance					&_instance;
+		std::optional<Entity::id>	_entityHandle;
 };
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 16:37:25                                        */
+/*  Last Modified: 2026/02/02 12:40:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -79,6 +79,13 @@ void	Application::addNewWindow(int width, int height, const std::string &windowN
 		std::cerr << "The window surface is not supported." << std::endl;
 		return ;
 	}
+	Entity::id	handle = _registry.createEntity();
+	_registry.patch(_registry.addComponent<Transform>(handle), [](Transform &transform){
+		transform.position = {10.f, 0.f, 0.f};
+	});
+	_registry.patch(_registry.addComponent<Camera>(handle), [&](Camera &camera){
+		camera.aspect = width / height;
+	});
 	_appWindows.push_back(std::move(window));
 }
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 12:02:45                                        */
+/*  Last Modified: 2026/02/02 12:26:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,7 +30,8 @@ Engine::Engine(Device &device, Registry &registry)
 	:	_device{device},
 		_registry{registry},
 		_renderSystem{device, registry},
-		_transformSystem{registry} {
+		_transformSystem{registry},
+		_cameraSystem{registry} {
 }
 
 Engine::~Engine(void) {
@@ -99,6 +100,7 @@ void	Engine::runFrame(Window &window, uint32_t currentFrame) {
 	beginFrame(cmd, imageIndex);
 	_renderSystem.update(cmd, window, imageIndex);
 	_transformSystem.update();
+	_cameraSystem.update();
 	endFrame(cmd);
 
 	swapchain.submitCommandBuffer(&cmd, imageIndex, currentFrame);

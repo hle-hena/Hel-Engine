@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 12:02:36                                        */
+/*  Last Modified: 2026/02/02 12:25:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,6 +23,7 @@
 
 #include "ecs/system/RenderSystem.hpp"
 #include "ecs/system/TransformSystem.hpp"
+#include "ecs/system/CameraSystem.hpp"
 #include "api/vulkan/Swapchain.hpp"
 
 namespace hel {
@@ -65,6 +66,7 @@ class	Engine {
 		std::unordered_map<Window*, WindowCmdBuffers>	_perWindowCommandBuffers;
 		RenderSystem									_renderSystem;
 		TransformSystem									_transformSystem;
+		CameraSystem									_cameraSystem;
 		uint32_t										_currentFrameIndex{0};
 
 };

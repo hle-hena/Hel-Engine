@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 16:09:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 16:54:55                                        */
+/*  Last Modified: 2026/02/02 11:38:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -71,7 +71,6 @@ bool		View<Components...>::Iterator::isValid(Entity::id handle) {
 						pools->entities[pools->indices[entityIndex]] == handle));
 	}, view._pools));
 }
-
 
 
 
