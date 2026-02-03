@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/26 15:35:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 12:43:26                                        */
+/*  Last Modified: 2026/02/03 11:04:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,7 +39,7 @@ struct	Shader {
 };
 
 struct	Vertex {
-	glm::vec2	position{0.};
+	glm::vec3	position{0.};
 	glm::vec3	color{1.};
 
 	static std::vector<VkVertexInputBindingDescription>	getBindingDescriptions(void) {

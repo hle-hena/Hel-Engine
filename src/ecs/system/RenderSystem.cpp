@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 13:00:38                                        */
+/*  Last Modified: 2026/02/03 11:06:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -56,9 +56,9 @@ void	RenderSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_
 
 	if (_tempVertexBuffer == nullptr) {
 		std::vector<Vertex> vertices = {
-			{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-			{{0.5f, 0.5f}, {0.0f, 1.0f, 1.0f}},
-			{{-0.5f, 0.5f}, {1.0f, 0.0f, 1.0f}}
+			{{0.0f, -0.5f, 0.f}, {1.0f, 0.0f, 0.0f}},
+			{{0.5f, 0.5f, 0.f}, {0.0f, 1.0f, 1.0f}},
+			{{-0.5f, 0.5f, 0.f}, {1.0f, 0.0f, 1.0f}}
 		};
 
 		_tempVertexBuffer = Buffer::create(_device, sizeof(vertices[0]) * vertices.size(),
