@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 11:50:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/03 11:45:41                                        */
+/*  Last Modified: 2026/02/03 19:58:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,37 +28,26 @@ CameraSystem::CameraSystem(Registry &registry)
 CameraSystem::~CameraSystem(void) {
 }
 
-void	CameraSystem::handleInput(void) {
-	auto	&inputState = _registry.getInputState();
-	auto	*windowFocused = inputState.getFocused();
-	if (!windowFocused || !inputState.mouseMoved())	{ return ; }
-
-	if (auto transform = _registry.modify<Transform>(windowFocused->getEntityReference())) {
-		int	deltaX, deltaY = 0;
-		inputState.getMouseDelta(deltaX, deltaY);
-		transform->position.x += deltaX * 0.01;
-		transform->position.y += deltaY * 0.01;
-	}
-}
-
 void	CameraSystem::update(void) {
-	handleInput();
-
 	auto	entities = _registry.view<Transform, Camera>();
 
 	for (auto entity: entities) {
-		auto	*transform = entities.get<Transform>(entity);
-		auto	*camera = entities.get<Camera>(entity);
+		auto	*constTransform = entities.get<Transform>(entity);
+		auto	*constCamera = entities.get<Camera>(entity);
 
-		if (!camera->isDirty && !transform->isDirty)
+		if (!constCamera->isDirty && !constTransform->isDirty)
 			continue ;
-		glm::mat4	view = glm::lookAt(transform->position,
-			glm::vec3(0.f),
-									// transform->position + camera->direction,
-									camera->up);
-		glm::mat4	projection = glm::perspective(camera->fov, camera->aspect,
-												camera->near, camera->far);
-		_registry.modify(camera)->viewProjection = projection * view;
+		if (auto camera = _registry.modify(constCamera)) {
+
+			glm::mat4 rotate = glm::mat4_cast(glm::conjugate(constTransform->rotation));
+			glm::mat4 translate = glm::translate(glm::mat4(1.0f), -constTransform->position);
+			glm::mat4 view = rotate * translate;
+
+			glm::mat4 projection = glm::perspective(camera->fov, camera->aspect, camera->near, camera->far);
+			projection[1][1] *= -1; 
+
+			camera->viewProjection = projection * view;
+		}
 	}
 }
 

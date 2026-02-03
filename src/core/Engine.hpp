@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 20:29:17                                        */
+/*  Last Modified: 2026/02/03 19:59:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,6 +24,8 @@
 #include "ecs/system/RenderSystem.hpp"
 #include "ecs/system/TransformSystem.hpp"
 #include "ecs/system/CameraSystem.hpp"
+#include "ecs/system/ControllerSystem.hpp"
+
 #include "api/vulkan/Swapchain.hpp"
 
 namespace hel {
@@ -68,6 +70,7 @@ class	Engine {
 		RenderSystem									_renderSystem;
 		TransformSystem									_transformSystem;
 		CameraSystem									_cameraSystem;
+		ControllerSystem								_controllerSystem;
 		uint32_t										_currentFrameIndex{0};
 
 };

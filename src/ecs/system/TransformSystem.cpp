@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 15:06:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 20:50:15                                        */
+/*  Last Modified: 2026/02/03 19:57:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,41 +28,7 @@ TransformSystem::TransformSystem(Registry &registry)
 TransformSystem::~TransformSystem(void) {
 }
 
-void TransformSystem::handleInput(void) {
-	auto& inputState = _registry.getInputState();
-	auto* windowFocused = inputState.getFocused();
-	if (!windowFocused) { return ; }
-
-	Entity::id entityHandle = windowFocused->getEntityReference();
-	auto* transform = _registry.getComponent<Transform>(entityHandle);
-	if (!transform) return ;
-
-	static const std::vector<std::pair<int, glm::vec3>> moveConfig = {
-		{GLFW_KEY_A, { 0.001f, 0.0f, 0.0f}},
-		{GLFW_KEY_D, {-0.001f, 0.0f, 0.0f}},
-		{GLFW_KEY_W, { 0.0f,  0.001f, 0.0f}},
-		{GLFW_KEY_S, { 0.0f, -0.001f, 0.0f}}
-	};
-
-	glm::vec3 delta{0.0f};
-	bool moved = false;
-
-	for (const auto& [key, dir] : moveConfig) {
-		if (inputState.isKeyHeld(key)) {
-			delta += dir;
-			moved = true;
-		}
-	}
-
-	if (!moved)
-		return ;
-	if (auto transform = _registry.modify<Transform>(entityHandle))
-		transform->position += delta;
-}
-
 void	TransformSystem::update(void) {
-	handleInput();
-
 	auto	entities = _registry.view<Transform>();
 
 	for (auto entity: entities) {

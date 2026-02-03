@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: TransformSystem.hpp                                                 */
+/*  File: ControllerSystem.hpp                                                */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/22 15:07:06 by hle-hena                                  */
+/*  Created: 2026/02/03 18:58:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/03 19:57:08                                        */
+/*  Last Modified: 2026/02/03 19:11:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,21 +16,26 @@
 
 #pragma once
 
+# include "ecs/Entity.hpp"
+
 namespace	hel {
 
 class	Registry;
+class	InputState;
 
-class	TransformSystem {
+class	ControllerSystem {
 	public:
-		TransformSystem(Registry &registry);
-		~TransformSystem(void);
-		TransformSystem(const TransformSystem &) = delete;
-		TransformSystem	&operator=(const TransformSystem &) = delete;
+		ControllerSystem(Registry &registry);
+		~ControllerSystem(void);
 
 		void	update(void);
 
 	private:
+		void	handleKeyboardInput(Entity::id handle);
+		void	handleMouseMove(Entity::id handle);
+
 		Registry	&_registry;
+		InputState	&_input;
 };
 
 }

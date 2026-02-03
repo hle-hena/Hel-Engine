@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/03 11:58:50                                        */
+/*  Last Modified: 2026/02/03 20:06:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -83,6 +83,8 @@ void	Window::initWindow(void) {
 	glfwSetWindowFocusCallback(_windowPtr, focusCallback);
 	glfwSetCursorPosCallback(_windowPtr, cursorPositionCallback);
 	glfwSetCursorEnterCallback(_windowPtr, cursorEnterCallback);
+
+	glfwSetInputMode(_windowPtr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 Window::~Window(void) {

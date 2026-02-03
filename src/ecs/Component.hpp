@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 13:47:29                                        */
+/*  Last Modified: 2026/02/03 19:49:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -44,11 +44,22 @@ struct	Camera {
 	float		aspect{1.f};
 	float		near{0.1f};
 	float		far{1000.f};
-	glm::vec3	up{0.f, 1.f, 0.f};
-	glm::vec3	direction{0.f, 0.f, 0.f};
 	glm::mat4	viewProjection{1.f};
 
 	bool		isDirty{true};
+};
+
+struct	Controller {
+	float	mouseSensivity{0.001f};
+	float	movementSpeed{0.001f};
+	int		forwardKey{GLFW_KEY_W};
+	int		backwardKey{GLFW_KEY_S};
+	int		leftStrideKey{GLFW_KEY_A};
+	int		rightStrideKey{GLFW_KEY_D};
+};
+
+struct	Parent {
+//TODO -> for future implementation of hierarchy, but for the moment I need a placeholder.
 };
 
 

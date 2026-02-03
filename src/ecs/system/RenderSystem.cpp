@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/03 11:06:24                                        */
+/*  Last Modified: 2026/02/03 18:40:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -41,7 +41,7 @@ void	RenderSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_
 		return ;
 
 	PushConstantData	push{};
-	push.viewProjection = glm::mat4{1.f};
+	push.viewProjection = glm::mat4{0.f};
 	Entity::id	windowHandle = window.getEntityReference();
 	if (windowHandle != Entity::NOT_REGISTERED) {
 		push.viewProjection = _registry.getComponent<Camera>(windowHandle)->viewProjection;
