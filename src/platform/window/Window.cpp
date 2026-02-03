@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 21:56:14                                        */
+/*  Last Modified: 2026/02/03 11:58:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -81,6 +81,8 @@ void	Window::initWindow(void) {
 	glfwSetKeyCallback(_windowPtr, keyCallback);
 	glfwSetFramebufferSizeCallback(_windowPtr, frameBufferResizedCallback);
 	glfwSetWindowFocusCallback(_windowPtr, focusCallback);
+	glfwSetCursorPosCallback(_windowPtr, cursorPositionCallback);
+	glfwSetCursorEnterCallback(_windowPtr, cursorEnterCallback);
 }
 
 Window::~Window(void) {
@@ -142,6 +144,29 @@ void	Window::keyCallback(GLFWwindow *window, int key, int scancode,
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
 	appWindow->getApp().getRegistry().getInputState().setKeyState(key, action, mod);
+}
+
+void	Window::cursorEnterCallback(GLFWwindow *window, int enter) {
+	if (enter) {
+		auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+
+		appWindow->_lastMouseX = -1;
+	}
+}
+
+void	Window::cursorPositionCallback(GLFWwindow *window, double x, double y) {
+	auto		appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+	auto		&input = appWindow->getApp().getRegistry().getInputState();
+
+	if (input.getFocused() != appWindow) { return ; }
+	if (appWindow->_lastMouseX == -1) {
+		appWindow->_lastMouseX = x;
+		appWindow->_lastMouseY = y;
+	}
+	input.setMouseMove(appWindow, x - appWindow->_lastMouseX,
+					y - appWindow->_lastMouseY);
+	appWindow->_lastMouseX = x;
+	appWindow->_lastMouseY = y;
 }
 
 }

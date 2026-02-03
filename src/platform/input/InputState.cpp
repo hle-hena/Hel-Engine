@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 15:02:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 16:43:46                                        */
+/*  Last Modified: 2026/02/03 12:02:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,8 +15,6 @@
 /* *************************************************************************  */
 
 #include "platform/input/InputState.hpp"
-
-#include <iostream>
 
 namespace	hel {
 
@@ -34,8 +32,15 @@ void	InputState::setFocus(Window *window, bool focused) {
 		_windowFocused = nullptr;
 }
 
+void	InputState::setMouseMove(Window *window, double deltaX, double deltaY) {
+	_mouseDeltaX += deltaX;
+	_mouseDeltaY += deltaY;
+}
+
 void	InputState::newFrame(void) {
 	_previous = _current;
+	_mouseDeltaX = 0;
+	_mouseDeltaY = 0;
 }
 
 bool	InputState::isKeyHeld(int key) {

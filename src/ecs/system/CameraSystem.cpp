@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 11:50:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 20:46:28                                        */
+/*  Last Modified: 2026/02/03 11:45:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,7 @@
 #include "ecs/system/CameraSystem.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
+#include "platform/window/Window.hpp"
 
 namespace	hel {
 
@@ -27,7 +28,22 @@ CameraSystem::CameraSystem(Registry &registry)
 CameraSystem::~CameraSystem(void) {
 }
 
+void	CameraSystem::handleInput(void) {
+	auto	&inputState = _registry.getInputState();
+	auto	*windowFocused = inputState.getFocused();
+	if (!windowFocused || !inputState.mouseMoved())	{ return ; }
+
+	if (auto transform = _registry.modify<Transform>(windowFocused->getEntityReference())) {
+		int	deltaX, deltaY = 0;
+		inputState.getMouseDelta(deltaX, deltaY);
+		transform->position.x += deltaX * 0.01;
+		transform->position.y += deltaY * 0.01;
+	}
+}
+
 void	CameraSystem::update(void) {
+	handleInput();
+
 	auto	entities = _registry.view<Transform, Camera>();
 
 	for (auto entity: entities) {

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 11:50:40 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 11:51:54                                        */
+/*  Last Modified: 2026/02/03 11:29:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,6 +30,8 @@ class	CameraSystem {
 		void	update(void);
 
 	private:
+		void	handleInput(void);
+
 		Registry	&_registry;
 };
 

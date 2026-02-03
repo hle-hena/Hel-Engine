@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 16:18:09                                        */
+/*  Last Modified: 2026/02/03 12:02:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -93,11 +93,16 @@ class	Window {
 		static void	keyCallback(GLFWwindow *window, int key, int scancode,
 								int action, int mods);
 		static void	focusCallback(GLFWwindow *window, int focused);
+		static void cursorPositionCallback(GLFWwindow* window, double xpos,
+										double ypos);
+		static void	cursorEnterCallback(GLFWwindow *window, int entered);
 
 		bool						_healthy{true};
 		std::string					_reason{""};
 		int							_width;
 		int							_height;
+		int							_lastMouseX{-1};
+		int							_lastMouseY{-1};
 		bool						_frameBufferResized{false};
 		std::string					_windowName;
 		GLFWwindow					*_windowPtr;
