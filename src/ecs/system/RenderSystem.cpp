@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/03 18:40:05                                        */
+/*  Last Modified: 2026/02/04 11:17:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -57,8 +57,11 @@ void	RenderSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_
 	if (_tempVertexBuffer == nullptr) {
 		std::vector<Vertex> vertices = {
 			{{0.0f, -0.5f, 0.f}, {1.0f, 0.0f, 0.0f}},
-			{{0.5f, 0.5f, 0.f}, {0.0f, 1.0f, 1.0f}},
-			{{-0.5f, 0.5f, 0.f}, {1.0f, 0.0f, 1.0f}}
+			{{0.5f, 0.5f, 0.f}, {0.0f, 1.0f, 0.0f}},
+			{{-0.5f, 0.5f, 0.f}, {0.0f, 0.0f, 1.0f}},
+			{{0.0f, -0.5f, 0.5f}, {1.0f, 1.0f, 0.0f}},
+			{{0.5f, 0.5f, 0.5f}, {0.0f, 1.0f, 1.0f}},
+			{{-0.5f, 0.5f, 0.5f}, {1.0f, 0.0f, 1.0f}}
 		};
 
 		_tempVertexBuffer = Buffer::create(_device, sizeof(vertices[0]) * vertices.size(),
@@ -73,7 +76,7 @@ void	RenderSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_
 	VkBuffer	buffers[] = {_tempVertexBuffer->getBuffer()};
 	VkDeviceSize	offset[] = {0};
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offset);
-	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+	vkCmdDraw(commandBuffer, _tempVertexBuffer->getSize() / sizeof(Vertex), 1, 0, 0);
 
 	endRenderPass(commandBuffer);
 }

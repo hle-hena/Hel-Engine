@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/21 11:40:01                                        */
+/*  Last Modified: 2026/02/04 12:54:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -96,6 +96,19 @@ QueuesFamilyIndices	Device::findQueueFamilies(VkPhysicalDevice device, Window &b
 		i++;
 	}
 	return (indices);
+}
+
+bool	Device::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, uint32_t &outTypeIndex) {
+	VkPhysicalDeviceMemoryProperties	deviceProperties;
+	vkGetPhysicalDeviceMemoryProperties(_physicalDevice, &deviceProperties);
+
+	for (uint32_t i = 0; i < deviceProperties.memoryTypeCount; i++) {
+		if ((typeFilter & (1 << i)) && (deviceProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+			outTypeIndex = i;
+			return (false);
+		}
+	}
+	return (true);
 }
 
 bool	Device::createLogicalDevice() {

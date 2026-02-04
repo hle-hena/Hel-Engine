@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/21 11:40:01                                        */
+/*  Last Modified: 2026/02/04 19:10:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,7 @@
 #include "platform/window/Window.hpp"
 #include "api/vulkan/Device.hpp"
 #include "utils/healthHelper.hpp"
+#include "api/vulkan/MemoryHelper.hpp"
 
 #include <limits>
 #include <iostream>
@@ -33,6 +34,12 @@ Swapchain::~Swapchain(void) {
 
 void	Swapchain::deleteSwapChain(void) {
 	vkDeviceWaitIdle(_device.getLogical());
+	if (_depthImageView != VK_NULL_HANDLE)
+		vkDestroyImageView(_device.getLogical(), _depthImageView, nullptr);
+	if (_depthImage != VK_NULL_HANDLE)
+		vkDestroyImage(_device.getLogical(), _depthImage, nullptr);
+	if (_depthImageMemory != VK_NULL_HANDLE)
+		vkFreeMemory(_device.getLogical(), _depthImageMemory, nullptr);
 	for (auto it : _frameBufferCache) {
 		for (auto frameBuffer : it.second) {
 			vkDestroyFramebuffer(_device.getLogical(), frameBuffer, nullptr);
@@ -121,7 +128,7 @@ bool	Swapchain::initiateSwapChain(Window &window) {
 	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, _images.data());
 	_format = format.format;
 	_extent = extent;
-	return (createImagesView() || createSyncObjects());
+	return (createSwapchainImageView() || createDepthResources() || createSyncObjects());
 }
 
 bool	Swapchain::recreateSwapChain(Window &window) {
@@ -166,30 +173,95 @@ VkExtent2D	Swapchain::selectSwapExtent(const VkSurfaceCapabilitiesKHR &capabilit
 	return (extent);
 }
 
-bool	Swapchain::createImagesView(void) {
+bool	Swapchain::createImage(VkImage &image, VkDeviceMemory &memory,
+							VkExtent3D extent, VkFormat format,
+							VkImageTiling tiling, VkImageUsageFlags usage,
+							VkMemoryPropertyFlags properties) {
+	VkImageCreateInfo	createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	createInfo.imageType = VK_IMAGE_TYPE_2D;
+	createInfo.extent = extent;
+	createInfo.format = format;
+	createInfo.mipLevels = 1;
+	createInfo.arrayLayers = 1;
+	createInfo.tiling = tiling;
+	createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	createInfo.usage = usage;
+	createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	if (vkCreateImage(_device.getLogical(), &createInfo, nullptr, &image))
+		return (true);
+	VkMemoryRequirements	memRequirements;
+	vkGetImageMemoryRequirements(_device.getLogical(), image, &memRequirements);
+	if (MemoryHelper::allocate(_device, memRequirements, properties, memory))
+		return (true);
+	return (false);
+	vkBindImageMemory(_device.getLogical(), image, memory, 0);
+}
+
+bool	Swapchain::createImageView(VkImage &image, VkImageView &imageView,
+								VkFormat format, VkImageAspectFlags aspectFlag) {
+	VkImageViewCreateInfo	createInfo;
+	createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	createInfo.pNext = nullptr;
+	createInfo.flags = 0;
+	createInfo.image = image;
+	createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	createInfo.format = format;
+	createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+	createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+	createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+	createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+	createInfo.subresourceRange.aspectMask = aspectFlag;
+	createInfo.subresourceRange.baseMipLevel = 0;
+	createInfo.subresourceRange.levelCount = 1;
+	createInfo.subresourceRange.baseArrayLayer = 0;
+	createInfo.subresourceRange.layerCount = 1;
+	if (vkCreateImageView(_device.getLogical(), &createInfo, nullptr, &imageView))
+		return (true);
+	return (false);
+}
+
+bool	Swapchain::createSwapchainImageView(void) {
 	_imagesView.resize(_images.size());
 	for (size_t i = 0; i < _images.size(); i++) {
-		VkImageViewCreateInfo	createInfo;
-		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		createInfo.pNext = nullptr;
-		createInfo.flags = 0;
-		createInfo.image = _images[i];
-		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		createInfo.format = _format;
-		createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		createInfo.subresourceRange.baseMipLevel = 0;
-		createInfo.subresourceRange.levelCount = 1;
-		createInfo.subresourceRange.baseArrayLayer = 0;
-		createInfo.subresourceRange.layerCount = 1;
-		if (vkCreateImageView(_device.getLogical(), &createInfo, nullptr,
-								&_imagesView[i]) != VK_SUCCESS)
+		if (createImageView(_images[i], _imagesView[i], _format, VK_IMAGE_ASPECT_COLOR_BIT))
 			RETURN_SET_UNHEALTHY("Couldn't create an image view", true);
 	}
 	return (false);
+}
+
+bool	Swapchain::createDepthResources(void) {
+	VkFormat	depthFormat = selectDepthFormat(
+		{VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+	);
+
+	if (createImage(_depthImage, _depthImageMemory, {_extent.width, _extent.height, 1},
+				depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))
+		return (true);
+	return (false);
+}
+
+VkFormat	Swapchain::selectDepthFormat(const std::vector<VkFormat> &candidates,
+										VkImageTiling tiling,
+										VkFormatFeatureFlags features) {
+	for (VkFormat format: candidates) {
+		VkFormatProperties	properties;
+		vkGetPhysicalDeviceFormatProperties(_device.getPhysical(), format, &properties);
+
+		if (tiling == VK_IMAGE_TILING_LINEAR &&
+			(properties.linearTilingFeatures & features) == features)
+			return (format);
+		else if (tiling == VK_IMAGE_TILING_OPTIMAL &&
+			(properties.optimalTilingFeatures & features) == features)
+			return (format);
+	}
+
+	return (VK_FORMAT_UNDEFINED);
 }
 
 VkFramebuffer	Swapchain::getFrameBuffer(uint32_t imageIndex, VkRenderPass renderPass) {

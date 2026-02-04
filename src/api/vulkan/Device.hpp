@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:22 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 20:53:58                                        */
+/*  Last Modified: 2026/02/04 12:52:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -69,6 +69,9 @@ class	Device {
 
 		bool	pickPhysicalDevice(Window &bootstrapWindow);
 		bool	supportSurface(Window &window);
+
+		bool	findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties,
+							uint32_t &outTypeIndex);
 
 	private:
 		bool				isDeviceSuitable(VkPhysicalDevice device, Window &bootstrapWindow);
