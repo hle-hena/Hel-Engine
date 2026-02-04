@@ -1,27 +1,41 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: KeyEvent.hpp                                                        */
+/*  File: ControllerSystem.hpp                                                */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2025/12/10 17:15:43 by hle-hena                                  */
+/*  Created: 2026/02/03 18:58:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/10 20:05:02                                        */
+/*  Last Modified: 2026/02/03 19:11:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
 /*                                                                            */
-/*  Copyright (c) 2025 hle-hena                                               */
+/*  Copyright (c) 2026 hle-hena                                               */
 /*                                                                            */
 /* *************************************************************************  */
 
 #pragma once
 
-# define GLFW_INCLUDE_VULKAN
-# include <GLFW/glfw3.h>
+# include "ecs/Entity.hpp"
 
 namespace	hel {
 
-void	keyEventCallback(GLFWwindow *glfwWindow, int key, int scanCode,
-						int action, int modifier);
+class	Registry;
+class	InputState;
+
+class	ControllerSystem {
+	public:
+		ControllerSystem(Registry &registry);
+		~ControllerSystem(void);
+
+		void	update(void);
+
+	private:
+		void	handleKeyboardInput(Entity::id handle);
+		void	handleMouseMove(Entity::id handle);
+
+		Registry	&_registry;
+		InputState	&_input;
+};
 
 }

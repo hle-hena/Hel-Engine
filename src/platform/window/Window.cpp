@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/19 16:59:42                                        */
+/*  Last Modified: 2026/02/03 20:06:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,8 +16,8 @@
 
 #include "platform/window/Window.hpp"
 #include "platform/window/GLFW.hpp"
-#include "platform/events/KeyEvent.hpp"
 #include "core/Application.hpp"
+#include "ecs/Component.hpp"
 
 namespace	hel {
 
@@ -78,8 +78,13 @@ void	Window::initWindow(void) {
 	_windowPtr = glfwCreateWindow(_width, _height, _windowName.c_str(),
 								nullptr, nullptr);
 	glfwSetWindowUserPointer(_windowPtr, this);
-	glfwSetKeyCallback(_windowPtr, keyEventCallback);
+	glfwSetKeyCallback(_windowPtr, keyCallback);
 	glfwSetFramebufferSizeCallback(_windowPtr, frameBufferResizedCallback);
+	glfwSetWindowFocusCallback(_windowPtr, focusCallback);
+	glfwSetCursorPosCallback(_windowPtr, cursorPositionCallback);
+	glfwSetCursorEnterCallback(_windowPtr, cursorEnterCallback);
+
+	glfwSetInputMode(_windowPtr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 Window::~Window(void) {
@@ -94,10 +99,76 @@ void	Window::deleteWindow(void) {
 	GLFW::release();
 }
 
+bool	Window::shouldClose(void) {
+	auto	&inputState = _app.getRegistry().getInputState();
+
+	if (inputState.isKeyReleased(GLFW_KEY_ESCAPE) &&
+		inputState.getFocused() == this) {
+		glfwSetWindowShouldClose(_windowPtr, true);
+		inputState.setFocus(this, false);
+		return (true);
+	}
+	if (inputState.isKeyHeld(GLFW_KEY_ESCAPE) &&
+		inputState.hasMod(GLFW_MOD_CONTROL) &&
+		inputState.getFocused() == this) {
+		glfwSetWindowShouldClose(_windowPtr, true);
+		inputState.setFocus(this, false);
+		return (true);
+	}
+	if (inputState.isKeyPressed(GLFW_KEY_N) &&
+		inputState.hasMod(GLFW_MOD_CONTROL) &&
+		inputState.getFocused() == this) {
+		_app.addNewWindow(Window::WIDTH, Window::HEIGHT, _windowName + "_copy");
+		return (false);
+	}
+	return (glfwWindowShouldClose(_windowPtr));
+}
+
 void	Window::frameBufferResizedCallback(GLFWwindow *window,
 												int width, int height) {
-	auto _rtWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
-	_rtWindow->getSwapchain()._frameBufferResized = true;
+	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+	appWindow->getSwapchain()._frameBufferResized = true;
+
+	Entity::id	handle = appWindow->getEntityReference();
+	if (auto camera = appWindow->getApp().getRegistry().modify<Camera>(handle)) {
+		camera->aspect = static_cast<float>(width) / static_cast<float>(height);
+	}
+}
+
+void	Window::focusCallback(GLFWwindow *window, int focused) {
+	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+
+	appWindow->getApp().getRegistry().getInputState().setFocus(appWindow, focused);
+}
+
+void	Window::keyCallback(GLFWwindow *window, int key, int scancode,
+							int action, int mod) {
+	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+
+	appWindow->getApp().getRegistry().getInputState().setKeyState(key, action, mod);
+}
+
+void	Window::cursorEnterCallback(GLFWwindow *window, int enter) {
+	if (enter) {
+		auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+
+		appWindow->_lastMouseX = -1;
+	}
+}
+
+void	Window::cursorPositionCallback(GLFWwindow *window, double x, double y) {
+	auto		appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+	auto		&input = appWindow->getApp().getRegistry().getInputState();
+
+	if (input.getFocused() != appWindow) { return ; }
+	if (appWindow->_lastMouseX == -1) {
+		appWindow->_lastMouseX = x;
+		appWindow->_lastMouseY = y;
+	}
+	input.setMouseMove(appWindow, x - appWindow->_lastMouseX,
+					y - appWindow->_lastMouseY);
+	appWindow->_lastMouseX = x;
+	appWindow->_lastMouseY = y;
 }
 
 }
