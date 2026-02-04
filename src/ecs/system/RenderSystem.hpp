@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 12:40:16                                        */
+/*  Last Modified: 2026/02/02 12:56:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -32,6 +32,10 @@ class	Window;
 class	Device;
 class	Registry;
 class	AssetManager;
+
+struct	PushConstantData {
+	glm::mat4	viewProjection;
+};
 
 class	RenderSystem {
 	public:

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 20:21:59                                        */
+/*  Last Modified: 2026/02/03 20:03:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -50,6 +50,7 @@ void	Application::run(void) {
 	uint32_t	currentFrame = 0;
 
 	while (!_appWindows.empty() && _healthy) {
+		_registry.getInputState().newFrame();
 		glfwPollEvents();
 
 		_engine.updateGlobal();
@@ -81,6 +82,12 @@ void	Application::addNewWindow(int width, int height, const std::string &windowN
 		std::cerr << "The window surface is not supported." << std::endl;
 		return ;
 	}
+	Entity::id	handle = _registry.createEntity();
+	_registry.modify(_registry.addComponent<Transform>(handle))->position = {1.f, 1.f, 1.f};
+	_registry.addComponent<Controller>(handle);
+	auto camera = _registry.modify(_registry.addComponent<Camera>(handle));
+	camera->aspect = static_cast<float>(width) / static_cast<float>(height);
+	window->setEntityReference(handle);
 	_appWindows.push_back(std::move(window));
 }
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 12:40:43                                        */
+/*  Last Modified: 2026/02/03 18:40:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,7 @@
 #include "ecs/Registry.hpp"
 #include "ecs/AssetManager.hpp"
 #include "ecs/Assets.hpp"
+#include "ecs/Component.hpp"
 
 namespace	hel {
 
@@ -39,15 +40,25 @@ void	RenderSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_
 	if (pipeline == nullptr || commandBuffer == VK_NULL_HANDLE)
 		return ;
 
+	PushConstantData	push{};
+	push.viewProjection = glm::mat4{0.f};
+	Entity::id	windowHandle = window.getEntityReference();
+	if (windowHandle != Entity::NOT_REGISTERED) {
+		push.viewProjection = _registry.getComponent<Camera>(windowHandle)->viewProjection;
+	}
+
 	beginRenderPass(commandBuffer, window, imageIndex, pipeline);
 
 	pipeline->_pipeline.bind(commandBuffer);
 
+	vkCmdPushConstants(commandBuffer, _pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
+						0, sizeof(PushConstantData), &push);
+
 	if (_tempVertexBuffer == nullptr) {
 		std::vector<Vertex> vertices = {
-			{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-			{{0.5f, 0.5f}, {0.0f, 1.0f, 1.0f}},
-			{{-0.5f, 0.5f}, {1.0f, 0.0f, 1.0f}}
+			{{0.0f, -0.5f, 0.f}, {1.0f, 0.0f, 0.0f}},
+			{{0.5f, 0.5f, 0.f}, {0.0f, 1.0f, 1.0f}},
+			{{-0.5f, 0.5f, 0.f}, {1.0f, 0.0f, 1.0f}}
 		};
 
 		_tempVertexBuffer = Buffer::create(_device, sizeof(vertices[0]) * vertices.size(),
@@ -130,12 +141,17 @@ VkPipelineLayout	*RenderSystem::getPipelineLayout(void) {
 	if (_pipelineLayout != VK_NULL_HANDLE)
 		return (&_pipelineLayout);
 
+	VkPushConstantRange	pushConstant;
+	pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	pushConstant.size = sizeof(PushConstantData);
+	pushConstant.offset = 0;
+
 	VkPipelineLayoutCreateInfo	layoutInfo{};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	layoutInfo.setLayoutCount = 0;
 	layoutInfo.pSetLayouts = nullptr;
-	layoutInfo.pushConstantRangeCount = 0;
-	layoutInfo.pPushConstantRanges = nullptr;
+	layoutInfo.pushConstantRangeCount = 1;
+	layoutInfo.pPushConstantRanges = &pushConstant;
 
 	if (vkCreatePipelineLayout(_device.getLogical(), &layoutInfo, nullptr, &_pipelineLayout))
 		return (nullptr);

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 18:38:57                                        */
+/*  Last Modified: 2026/02/02 20:48:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,6 +24,7 @@
 # include <memory>
 
 # include "ecs/Entity.hpp"
+# include "platform/input/InputState.hpp"
 
 namespace	hel {
 
@@ -63,8 +64,8 @@ struct	ModificationProxy {
 	Component	*component;
 	ModificationProxy(Component *comp) : component(comp) {}
 	~ModificationProxy(void) {
-		if constexpr (requires { component.isDirty = true; })
-			component.isDirty = true;
+		if constexpr (requires { component->isDirty = true; })
+			component->isDirty = true;
 	}
 	Component	*operator->(void) { return component; };
 	explicit operator bool() const { return (component != nullptr); }
@@ -79,6 +80,10 @@ class	Registry {
 
 		AssetManager	&getAssetManager(void) const {
 			return (_assetManager);
+		}
+
+		InputState		&getInputState(void) {
+			return (_inputState);
 		}
 
 		template <typename Component, typename... Args>
@@ -112,6 +117,7 @@ class	Registry {
 		std::vector<Entity::id>										_aliveEntities{};
 		std::unordered_map<std::type_index, std::unique_ptr<IPool>>	_pools;
 		AssetManager												&_assetManager;
+		InputState													_inputState;
 
 	template <typename... Components>
 	friend class View;

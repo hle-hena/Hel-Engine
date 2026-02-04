@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:12 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/28 18:50:03                                        */
+/*  Last Modified: 2026/02/02 14:30:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -46,6 +46,9 @@ class	Application {
 		}
 		VulkanContext	&getVkContext(void) {
 			return (_vkContext);
+		}
+		Registry	&getRegistry(void) {
+			return (_registry);
 		}
 
 	private:

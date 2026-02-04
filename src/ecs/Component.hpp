@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/23 18:44:58                                        */
+/*  Last Modified: 2026/02/03 19:49:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,6 +37,29 @@ struct	Transform {
 	glm::mat4	worldMatrix{1.f};
 
 	bool		isDirty{true};
+};
+
+struct	Camera {
+	float		fov{glm::radians<float>(70)};
+	float		aspect{1.f};
+	float		near{0.1f};
+	float		far{1000.f};
+	glm::mat4	viewProjection{1.f};
+
+	bool		isDirty{true};
+};
+
+struct	Controller {
+	float	mouseSensivity{0.001f};
+	float	movementSpeed{0.001f};
+	int		forwardKey{GLFW_KEY_W};
+	int		backwardKey{GLFW_KEY_S};
+	int		leftStrideKey{GLFW_KEY_A};
+	int		rightStrideKey{GLFW_KEY_D};
+};
+
+struct	Parent {
+//TODO -> for future implementation of hierarchy, but for the moment I need a placeholder.
 };
 
 

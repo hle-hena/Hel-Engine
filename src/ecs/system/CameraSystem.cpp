@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: TransformSystem.cpp                                                 */
+/*  File: CameraSystem.cpp                                                    */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/22 15:06:58 by hle-hena                                  */
+/*  Created: 2026/02/02 11:50:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/04 18:29:28                                        */
+/*  Last Modified: 2026/02/03 19:58:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,30 +14,40 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/system/TransformSystem.hpp"
+#include "ecs/system/CameraSystem.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
+#include "platform/window/Window.hpp"
 
 namespace	hel {
 
-TransformSystem::TransformSystem(Registry &registry)
+CameraSystem::CameraSystem(Registry &registry)
 	:	_registry{registry} {
 }
 
-TransformSystem::~TransformSystem(void) {
+CameraSystem::~CameraSystem(void) {
 }
 
-void	TransformSystem::update(void) {
-	auto	entities = _registry.view<Transform>();
+void	CameraSystem::update(void) {
+	auto	entities = _registry.view<Transform, Camera>();
 
 	for (auto entity: entities) {
-		auto	*transform = entities.get<Transform>(entity);
-		if (!transform || !transform->isDirty)
+		auto	*constTransform = entities.get<Transform>(entity);
+		auto	*constCamera = entities.get<Camera>(entity);
+
+		if (!constCamera->isDirty && !constTransform->isDirty)
 			continue ;
-		glm::mat4	T = glm::translate(glm::mat4(1.f), transform->position);
-		glm::mat4	R = glm::mat4_cast(transform->rotation);
-		glm::mat4	S = glm::scale(glm::mat4(1.f), transform->scale);
-		_registry.modify(transform)->worldMatrix = T * R * S;
+		if (auto camera = _registry.modify(constCamera)) {
+
+			glm::mat4 rotate = glm::mat4_cast(glm::conjugate(constTransform->rotation));
+			glm::mat4 translate = glm::translate(glm::mat4(1.0f), -constTransform->position);
+			glm::mat4 view = rotate * translate;
+
+			glm::mat4 projection = glm::perspective(camera->fov, camera->aspect, camera->near, camera->far);
+			projection[1][1] *= -1; 
+
+			camera->viewProjection = projection * view;
+		}
 	}
 }
 

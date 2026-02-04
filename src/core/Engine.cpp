@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 20:20:13                                        */
+/*  Last Modified: 2026/02/03 19:59:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,7 +30,9 @@ Engine::Engine(Device &device, Registry &registry)
 	:	_device{device},
 		_registry{registry},
 		_renderSystem{device, registry},
-		_transformSystem{registry} {
+		_transformSystem{registry},
+		_cameraSystem{registry},
+		_controllerSystem{registry} {
 }
 
 Engine::~Engine(void) {
@@ -85,7 +87,9 @@ VkCommandBuffer Engine::getCommandBuffer(Window& window, uint32_t currentFrame) 
 }
 
 void	Engine::updateGlobal(void) {
+	_controllerSystem.update();
 	_transformSystem.update();
+	_cameraSystem.update();
 }
 
 void	Engine::runFrame(Window &window, uint32_t currentFrame) {
