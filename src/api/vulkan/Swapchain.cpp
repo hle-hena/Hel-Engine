@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/04 19:10:59                                        */
+/*  Last Modified: 2026/02/04 19:47:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -196,8 +196,8 @@ bool	Swapchain::createImage(VkImage &image, VkDeviceMemory &memory,
 	vkGetImageMemoryRequirements(_device.getLogical(), image, &memRequirements);
 	if (MemoryHelper::allocate(_device, memRequirements, properties, memory))
 		return (true);
-	return (false);
 	vkBindImageMemory(_device.getLogical(), image, memory, 0);
+	return (false);
 }
 
 bool	Swapchain::createImageView(VkImage &image, VkImageView &imageView,
@@ -233,15 +233,17 @@ bool	Swapchain::createSwapchainImageView(void) {
 }
 
 bool	Swapchain::createDepthResources(void) {
-	VkFormat	depthFormat = selectDepthFormat(
+	_depthFormat = selectDepthFormat(
 		{VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
 		VK_IMAGE_TILING_OPTIMAL,
 		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
 	);
 
 	if (createImage(_depthImage, _depthImageMemory, {_extent.width, _extent.height, 1},
-				depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+				_depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))
+		return (true);
+	if (createImageView(_depthImage, _depthImageView, _depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT))
 		return (true);
 	return (false);
 }
@@ -274,12 +276,16 @@ VkFramebuffer	Swapchain::getFrameBuffer(uint32_t imageIndex, VkRenderPass render
 bool	Swapchain::createFramebuffersForRenderPass(VkRenderPass renderPass) {
 	_frameBufferCache[renderPass] = std::vector<VkFramebuffer>(_imagesView.size());
 	for (size_t i = 0; i < _imagesView.size(); i++) {
-		VkImageView	attachments[] = {_imagesView[i]};
-		VkFramebufferCreateInfo	framebufferInfo{};
+		std::array<VkImageView, 2>	attachments = {
+			_imagesView[i],
+			_depthImageView
+		};
+
+		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferInfo.renderPass = renderPass;
-		framebufferInfo.attachmentCount = 1;
-		framebufferInfo.pAttachments = attachments;
+		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+		framebufferInfo.pAttachments = attachments.data();
 		framebufferInfo.width = _extent.width;
 		framebufferInfo.height = _extent.height;
 		framebufferInfo.layers = 1;

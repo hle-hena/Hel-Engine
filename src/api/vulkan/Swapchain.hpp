@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/04 19:11:16                                        */
+/*  Last Modified: 2026/02/04 19:21:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -56,6 +56,9 @@ class	Swapchain
 		VkFormat		getFormat(void) const {
 			return (_format);
 		}
+		VkFormat		getDepthFormat(void) const {
+			return (_depthFormat);
+		}
 		VkExtent2D		getExtent(void) const {
 			return (_extent);
 		}
@@ -104,6 +107,7 @@ class	Swapchain
 		VkSwapchainKHR				_swapchain{VK_NULL_HANDLE};
 		std::vector<VkImage>		_images;
 		std::vector<VkImageView>	_imagesView;
+		VkFormat					_depthFormat;
 		VkImage						_depthImage{VK_NULL_HANDLE};
 		VkDeviceMemory				_depthImageMemory{VK_NULL_HANDLE};
 		VkImageView					_depthImageView{VK_NULL_HANDLE};
