@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 15:06:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/03 19:57:02                                        */
+/*  Last Modified: 2026/02/04 18:29:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,7 +17,6 @@
 #include "ecs/system/TransformSystem.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
-#include "platform/window/Window.hpp"
 
 namespace	hel {
 

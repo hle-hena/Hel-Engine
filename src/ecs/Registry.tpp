@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 20:28:43                                        */
+/*  Last Modified: 2026/02/04 18:31:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -57,7 +57,7 @@ const Component	*Registry::addComponent(Entity::id handle, Args&&... args) {
 	}
 	if (pool.indices[entityIndex] != Entity::NOT_REGISTERED) {
 		std::cout << "Cannot add a component when one already exists. " <<
-			"Use getComponent to get it and patch to modifiy it." << std::endl;
+			"Use getComponent to get it and modify to modifiy it." << std::endl;
 		return (&pool.components[pool.indices[entityIndex]]);
 	}
 	Component	&component = pool.components.emplace_back(std::forward<Args>(args)...);
