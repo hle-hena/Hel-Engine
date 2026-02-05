@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/29 16:04:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 12:22:06                                        */
+/*  Last Modified: 2026/02/04 12:54:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -47,7 +47,6 @@ class Buffer {
 	private:
 		Buffer(Device &device, VkDeviceSize size, VkBufferUsageFlags usage,
 				VkMemoryPropertyFlags properties);
-		uint32_t	findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 		Device			&_device;
 		VkBuffer		_buffer{VK_NULL_HANDLE};

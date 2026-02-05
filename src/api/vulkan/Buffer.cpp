@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/29 16:04:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 13:09:12                                        */
+/*  Last Modified: 2026/02/04 18:45:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,6 +16,7 @@
 
 #include "api/vulkan/Buffer.hpp"
 #include "api/vulkan/Device.hpp"
+#include "api/vulkan/MemoryHelper.hpp"
 
 #include <stdexcept>
 #include <cstring>
@@ -49,11 +50,7 @@ Buffer::Buffer(Device &device, VkDeviceSize size, VkBufferUsageFlags usage,
 
 	VkMemoryRequirements	memRequirements;
 	vkGetBufferMemoryRequirements(_device.getLogical(), _buffer, &memRequirements);
-	VkMemoryAllocateInfo	allocateInfo{};
-	allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocateInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
-	allocateInfo.allocationSize = memRequirements.size;
-	if (vkAllocateMemory(_device.getLogical(), &allocateInfo, nullptr, &_memory)) {
+	if (MemoryHelper::allocate(_device, memRequirements, properties, _memory)) {
 		throw std::runtime_error("Failed to allocate memory for a buffer");
 	}
 	vkBindBufferMemory(_device.getLogical(), _buffer, _memory, 0);
@@ -65,17 +62,6 @@ Buffer::~Buffer(void) {
 		vkDestroyBuffer(_device.getLogical(), _buffer, nullptr);
 	if (_memory != VK_NULL_HANDLE)
 		vkFreeMemory(_device.getLogical(), _memory, nullptr);
-}
-
-uint32_t	Buffer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
-	VkPhysicalDeviceMemoryProperties	deviceProperties;
-	vkGetPhysicalDeviceMemoryProperties(_device.getPhysical(), &deviceProperties);
-
-	for (uint32_t i = 0; i < deviceProperties.memoryTypeCount; i++) {
-		if ((typeFilter & (1 << i)) && (deviceProperties.memoryTypes[i].propertyFlags & properties) == properties)
-			return (i);
-	}
-	throw std::runtime_error("Failed to find a proper memory for a buffer");
 }
 
 VkResult	Buffer::map(VkDeviceSize size, VkDeviceSize offset) {

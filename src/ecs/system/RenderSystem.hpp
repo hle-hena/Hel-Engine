@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 12:56:51                                        */
+/*  Last Modified: 2026/02/04 19:22:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -49,7 +49,7 @@ class	RenderSystem {
 
 	private:
 		struct	SystemPipeline {
-			SystemPipeline(RenderSystem &system, VkFormat format);
+			SystemPipeline(RenderSystem &system, VkFormat format, VkFormat depthFormat);
 			~SystemPipeline(void);
 
 			bool	init(void);
@@ -57,13 +57,14 @@ class	RenderSystem {
 			bool	createPipeline(void);
 
 			VkFormat		_format;
+			VkFormat		_depthFormat;
 			Pipeline		_pipeline;
 			VkRenderPass	_renderPass;
 			RenderSystem	&_system;
 		};
 		using pipelineMap = std::unordered_map<VkFormat, std::unique_ptr<SystemPipeline>>;
 
-		SystemPipeline		*getPipelineForFormat(VkFormat format);
+		SystemPipeline		*getPipelineForFormat(VkFormat format, VkFormat depthFormat);
 		VkPipelineLayout	*getPipelineLayout(void);
 
 		void				beginRenderPass(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex, SystemPipeline *pipeline);
