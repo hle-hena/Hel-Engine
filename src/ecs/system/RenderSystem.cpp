@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/03 18:40:05                                        */
+/*  Last Modified: 2026/02/04 19:39:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,7 +36,7 @@ RenderSystem::~RenderSystem(void) {
 }
 
 void	RenderSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex) {
-	auto	pipeline = getPipelineForFormat(window.getFormat());
+	auto	pipeline = getPipelineForFormat(window.getFormat(), window.getDepthFormat());
 	if (pipeline == nullptr || commandBuffer == VK_NULL_HANDLE)
 		return ;
 
@@ -57,8 +57,11 @@ void	RenderSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_
 	if (_tempVertexBuffer == nullptr) {
 		std::vector<Vertex> vertices = {
 			{{0.0f, -0.5f, 0.f}, {1.0f, 0.0f, 0.0f}},
-			{{0.5f, 0.5f, 0.f}, {0.0f, 1.0f, 1.0f}},
-			{{-0.5f, 0.5f, 0.f}, {1.0f, 0.0f, 1.0f}}
+			{{0.5f, 0.5f, 0.f}, {0.0f, 1.0f, 0.0f}},
+			{{-0.5f, 0.5f, 0.f}, {0.0f, 0.0f, 1.0f}},
+			{{0.0f, -0.5f, 0.5f}, {1.0f, 1.0f, 0.0f}},
+			{{0.5f, 0.5f, 0.5f}, {0.0f, 1.0f, 1.0f}},
+			{{-0.5f, 0.5f, 0.5f}, {1.0f, 0.0f, 1.0f}}
 		};
 
 		_tempVertexBuffer = Buffer::create(_device, sizeof(vertices[0]) * vertices.size(),
@@ -73,7 +76,7 @@ void	RenderSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_
 	VkBuffer	buffers[] = {_tempVertexBuffer->getBuffer()};
 	VkDeviceSize	offset[] = {0};
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offset);
-	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+	vkCmdDraw(commandBuffer, _tempVertexBuffer->getSize() / sizeof(Vertex), 1, 0, 0);
 
 	endRenderPass(commandBuffer);
 }
@@ -89,9 +92,11 @@ void	RenderSystem::beginRenderPass(VkCommandBuffer commandBuffer, Window &window
 	renderPassBegin.framebuffer = swapchain.getFrameBuffer(imageIndex, pipeline->_renderPass);
 	renderPassBegin.renderArea.extent = extent;
 	renderPassBegin.renderArea.offset = {0, 0};
-	VkClearValue	clearColor{{0., 0., 0., 1.}};
-	renderPassBegin.clearValueCount = 1;
-	renderPassBegin.pClearValues = &clearColor;
+	std::array<VkClearValue, 2>	clearValues{};
+	clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+	clearValues[1].depthStencil = {1.0f, 0};
+	renderPassBegin.clearValueCount = static_cast<uint32_t>(clearValues.size());
+	renderPassBegin.pClearValues = clearValues.data();
 	vkCmdBeginRenderPass(commandBuffer, &renderPassBegin, VK_SUBPASS_CONTENTS_INLINE);
 
 	VkViewport	viewport{};
@@ -111,18 +116,19 @@ void	RenderSystem::endRenderPass(VkCommandBuffer commandBuffer) {
 
 
 
-RenderSystem::SystemPipeline	*RenderSystem::getPipelineForFormat(VkFormat format) {
+RenderSystem::SystemPipeline	*RenderSystem::getPipelineForFormat(VkFormat format, VkFormat depthFormat) {
 	if (_pipelines.find(format) != _pipelines.end())
 		return (_pipelines[format].get());
-	auto	pipeline = std::make_unique<SystemPipeline>(*this, format);
+	auto	pipeline = std::make_unique<SystemPipeline>(*this, format, depthFormat);
 	if (pipeline->init())
 		return (nullptr);
 	_pipelines[format] = std::move(pipeline);
 	return (_pipelines[format].get());
 }
 
-RenderSystem::SystemPipeline::SystemPipeline(RenderSystem &system, VkFormat format)
+RenderSystem::SystemPipeline::SystemPipeline(RenderSystem &system, VkFormat format, VkFormat depthFormat)
 	:	_format{format},
+		_depthFormat{depthFormat},
 		_pipeline{system._device},
 		_system{system} {
 }
@@ -168,20 +174,47 @@ bool	RenderSystem::SystemPipeline::createRenderPass(void) {
 	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	VkAttachmentDescription	depthAttachment{};
+	depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	depthAttachment.format = _depthFormat;
+	depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 	VkAttachmentReference	colorAttachmentRef{};
 	colorAttachmentRef.attachment = 0;
 	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	VkAttachmentReference	depthAttachmentRef{};
+	depthAttachmentRef.attachment = 1;
+	depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 	VkSubpassDescription	subpass{};
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	subpass.colorAttachmentCount = 1;
 	subpass.pColorAttachments = &colorAttachmentRef;
+	subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
+	VkSubpassDependency	dependency{};
+	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependency.dstSubpass = 0;
+	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+							VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+	dependency.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+							VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+								VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+	std::array<VkAttachmentDescription, 2>	attachments = {colorAttachment, depthAttachment};
 	VkRenderPassCreateInfo	renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = 1;
-	renderPassInfo.pAttachments = &colorAttachment;
+	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+	renderPassInfo.pAttachments = attachments.data();
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
+	renderPassInfo.dependencyCount = 1;
+	renderPassInfo.pDependencies = &dependency;
 
 	if (vkCreateRenderPass(_system._device.getLogical(), &renderPassInfo,
 							nullptr, &_renderPass))

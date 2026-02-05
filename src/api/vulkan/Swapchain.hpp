@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/16 15:14:26                                        */
+/*  Last Modified: 2026/02/04 19:21:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -56,6 +56,9 @@ class	Swapchain
 		VkFormat		getFormat(void) const {
 			return (_format);
 		}
+		VkFormat		getDepthFormat(void) const {
+			return (_depthFormat);
+		}
 		VkExtent2D		getExtent(void) const {
 			return (_extent);
 		}
@@ -82,10 +85,21 @@ class	Swapchain
 		VkPresentModeKHR	selectSwapPresent(std::vector<VkPresentModeKHR> &presents);
 		VkExtent2D			selectSwapExtent(const VkSurfaceCapabilitiesKHR &presents,
 													GLFWwindow *window);
+		VkFormat			selectDepthFormat(const std::vector<VkFormat> &candidates,
+										VkImageTiling tiling,
+										VkFormatFeatureFlags features);
 
-		bool				createImagesView(void);
+		bool				createImage(VkImage &image, VkDeviceMemory &memory,
+										VkExtent3D extent, VkFormat format,
+										VkImageTiling tiling, VkImageUsageFlags usage,
+										VkMemoryPropertyFlags properties);
+		bool				createImageView(VkImage &image, VkImageView &imageView,
+										VkFormat format, VkImageAspectFlags aspectFlag);
+
+		bool				createSwapchainImageView(void);
 		bool				createFramebuffersForRenderPass(VkRenderPass renderPass);
 		bool				createSyncObjects(void);
+		bool				createDepthResources(void);
 
 		bool						_healthy{true};
 		std::string					_reason{""};
@@ -93,6 +107,10 @@ class	Swapchain
 		VkSwapchainKHR				_swapchain{VK_NULL_HANDLE};
 		std::vector<VkImage>		_images;
 		std::vector<VkImageView>	_imagesView;
+		VkFormat					_depthFormat;
+		VkImage						_depthImage{VK_NULL_HANDLE};
+		VkDeviceMemory				_depthImageMemory{VK_NULL_HANDLE};
+		VkImageView					_depthImageView{VK_NULL_HANDLE};
 		framebuffersMap				_frameBufferCache;
 		VkFormat					_format;
 		VkExtent2D					_extent;
