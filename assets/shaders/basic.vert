@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/10 16:45:35                                        */
+/*  Last Modified: 2026/02/10 16:53:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,10 +16,11 @@
 
 #version 450
 
-layout(location = 0) out vec3 fragColor;
+layout (location = 0) out vec3		fragColor;
+layout (location = 1) flat out int	primId;
 
-layout (location = 0) in vec3 inPos;
-layout (location = 1) in vec3 inColor;
+layout (location = 0) in vec3	inPos;
+layout (location = 1) in vec3	inColor;
 
 layout(push_constant) uniform Push {
 	mat4 viewProjection;
@@ -28,4 +29,5 @@ layout(push_constant) uniform Push {
 void	main() {
 	gl_Position = push.viewProjection * vec4(inPos, 1.0);
 	fragColor = inColor;
+	primId = gl_VertexIndex / 3;
 }

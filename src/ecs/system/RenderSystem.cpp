@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/10 16:45:02                                        */
+/*  Last Modified: 2026/02/10 19:18:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -56,8 +56,8 @@ void	RenderSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_
 	vkCmdPushConstants(commandBuffer, _pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
 						0, sizeof(PushConstantData), &push);
 
-	auto	mesh = _assetManager.get<Geometry>("assets/models/colored_cube.obj");
-	// auto	mesh = _assetManager.get<Geometry>("assets/models/dragon.obj");
+	// auto	mesh = _assetManager.get<Geometry>("assets/models/colored_cube.obj");
+	auto	mesh = _assetManager.get<Geometry>("assets/models/dragon.obj");
 	VkBuffer	buffers[] = {mesh->vertexBuffer->getBuffer()};
 	VkDeviceSize	offset[] = {0};
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offset);
