@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:03:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/10 16:26:44                                        */
+/*  Last Modified: 2026/02/10 20:13:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -43,6 +43,8 @@ std::vector<VkVertexInputAttributeDescription>	Vertex::getAttributeDescriptions(
 	return (attributeDescriptions);
 }
 
+
+
 std::shared_ptr<Geometry>	Geometry::load(Device &device, const std::string &path) {
 	tinyobj::attrib_t					attrib;
 	std::vector<tinyobj::shape_t>	 	shapes;
@@ -77,13 +79,8 @@ std::shared_ptr<Geometry>	Geometry::load(Device &device, const std::string &path
 		}
 	}
 
-	std::unique_ptr<Buffer>	vertexBuffer = Buffer::create(device,
-										sizeof(vertices[0]) * vertices.size(),
-					VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-						VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	vertexBuffer->writeToBuffer(vertices.data());
 
-	return (std::shared_ptr<Geometry>(new Geometry{path, std::move(vertexBuffer),
+	return (std::shared_ptr<Geometry>(new Geometry{path, createBuffer<Vertex>(device, vertices),
 			nullptr, static_cast<uint32_t>(vertices.size())}));
 }
 

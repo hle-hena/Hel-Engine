@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:01:55 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/10 16:05:01                                        */
+/*  Last Modified: 2026/02/10 20:14:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -43,6 +43,12 @@ struct	Geometry {
 	uint32_t					vertexCount;
 
 	static std::shared_ptr<Geometry>	load(Device &device, const std::string &path);
+
+	private:
+		template <typename T>
+		static std::unique_ptr<Buffer>	createBuffer(Device &device, std::vector<T> data);
 };
 
 }
+
+#include "ecs/assets/Geometry.tpp"

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:22 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/04 12:52:25                                        */
+/*  Last Modified: 2026/02/10 20:06:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,10 +45,10 @@ class	Device {
 		Device(Device &&other) = default;
 		Device	&operator=(Device &&other) = default;
 
-		std::string		getReason(void) const {
+		std::string			getReason(void) const {
 			return (_reason);
 		}
-		bool			isHealthy(void) const {
+		bool				isHealthy(void) const {
 			return (_healthy);
 		}
 		VkPhysicalDevice	&getPhysical(void) {
@@ -60,10 +60,10 @@ class	Device {
 		QueuesFamilyIndices	&getQueueFamily(void) {
 			return (_indices);
 		}
-		VkQueue	getGraphicsQueue(void) const {
+		VkQueue				getGraphicsQueue(void) const {
 			return (_graphicQueue);
 		}
-		VkQueue	getPresentQueue(void) const {
+		VkQueue				getPresentQueue(void) const {
 			return (_presentQueue);
 		}
 
@@ -72,13 +72,17 @@ class	Device {
 
 		bool	findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties,
 							uint32_t &outTypeIndex);
+		
+		VkCommandBuffer	beginSingleTimeCommand(void);
+		void			endSingleTimeCommand(VkCommandBuffer commandBuffer);
 
 	private:
 		bool				isDeviceSuitable(VkPhysicalDevice device, Window &bootstrapWindow);
 		bool				checkDeviceExtensionSupport(VkPhysicalDevice device);
 		QueuesFamilyIndices	findQueueFamilies(VkPhysicalDevice device, Window &bootstrapWindow);
 
-		bool				createLogicalDevice();
+		bool				createLogicalDevice(void);
+		bool				createCommandPool(void);
 
 		bool				_healthy{true};
 		std::string			_reason{""};
@@ -88,6 +92,7 @@ class	Device {
 		QueuesFamilyIndices	_indices;
 		VkQueue				_graphicQueue;
 		VkQueue				_presentQueue;
+		VkCommandPool		_transientCommandPool{VK_NULL_HANDLE};
 
 		const std::vector<const char *>	_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 };

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/04 12:54:01                                        */
+/*  Last Modified: 2026/02/10 20:15:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,6 +29,8 @@ Device::Device(VulkanInstance &instance)
 }
 
 Device::~Device(void) {
+	if (_transientCommandPool != VK_NULL_HANDLE)
+		vkDestroyCommandPool(_device, _transientCommandPool, nullptr);
 	if (_device != VK_NULL_HANDLE)
 		vkDestroyDevice(_device, nullptr);
 }
@@ -111,7 +113,7 @@ bool	Device::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags propertie
 	return (true);
 }
 
-bool	Device::createLogicalDevice() {
+bool	Device::createLogicalDevice(void) {
 	std::vector<VkDeviceQueueCreateInfo>	queueCreateInfos;
 	std::set<uint32_t>						uniqueQueuesFamily = {
 		_indices.graphicsFamily.value(), _indices.presentFamily.value()
@@ -130,7 +132,50 @@ bool	Device::createLogicalDevice() {
 	vkGetDeviceQueue(_device, _indices.graphicsFamily.value(), 0, &_graphicQueue);
 	vkGetDeviceQueue(_device, _indices.presentFamily.value(), 0, &_presentQueue);
 	std::cout << "Created the logical device" << std::endl;
+	return (createCommandPool());
+}
+
+bool	Device::createCommandPool(void) {
+	VkCommandPoolCreateInfo	commandPoolInfo{};
+	commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+	commandPoolInfo.queueFamilyIndex = _indices.graphicsFamily.value();
+
+	if (vkCreateCommandPool(_device, &commandPoolInfo, nullptr, &_transientCommandPool))
+		RETURN_SET_UNHEALTHY("Couldn't create the command pool.", true);
 	return (false);
+}
+
+VkCommandBuffer	Device::beginSingleTimeCommand(void) {
+	VkCommandBufferAllocateInfo	allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandPool = _transientCommandPool;
+	allocInfo.commandBufferCount = 1;
+
+	VkCommandBuffer	commandBuffer;
+	vkAllocateCommandBuffers(_device, &allocInfo, &commandBuffer);
+
+	VkCommandBufferBeginInfo beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	vkBeginCommandBuffer(commandBuffer, &beginInfo);
+	return (commandBuffer);
+}
+
+void	Device::endSingleTimeCommand(VkCommandBuffer commandBuffer) {
+	vkEndCommandBuffer(commandBuffer);
+
+	VkSubmitInfo submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer;
+
+	vkQueueSubmit(_graphicQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(_graphicQueue);
+
+	vkFreeCommandBuffers(_device, _transientCommandPool, 1, &commandBuffer);
 }
 
 bool	Device::supportSurface(Window &window) {
