@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/04 19:22:53                                        */
+/*  Last Modified: 2026/02/10 16:27:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,8 +23,6 @@
 # include <glm/glm.hpp>
 
 # include "api/vulkan/Pipeline.hpp"
-
-# include "api/vulkan/Buffer.hpp"//TEMPORARY, since I don't have a mesh Asset yet.
 
 namespace	hel {
 
@@ -79,8 +77,6 @@ class	RenderSystem {
 		AssetManager		&_assetManager;
 		pipelineMap			_pipelines;
 		VkPipelineLayout	_pipelineLayout{VK_NULL_HANDLE};
-
-		std::unique_ptr<Buffer>		_tempVertexBuffer{nullptr};
 };
 
 }

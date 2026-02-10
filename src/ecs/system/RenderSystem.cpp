@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/04 19:39:41                                        */
+/*  Last Modified: 2026/02/10 16:45:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,10 +17,12 @@
 #include "ecs/system/RenderSystem.hpp"
 #include "platform/window/Window.hpp"
 #include "api/vulkan/Device.hpp"
+#include "api/vulkan/Buffer.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/AssetManager.hpp"
-#include "ecs/Assets.hpp"
 #include "ecs/Component.hpp"
+#include "ecs/assets/Geometry.hpp"
+#include "ecs/assets/Shader.hpp"
 
 namespace	hel {
 
@@ -54,29 +56,12 @@ void	RenderSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_
 	vkCmdPushConstants(commandBuffer, _pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
 						0, sizeof(PushConstantData), &push);
 
-	if (_tempVertexBuffer == nullptr) {
-		std::vector<Vertex> vertices = {
-			{{0.0f, -0.5f, 0.f}, {1.0f, 0.0f, 0.0f}},
-			{{0.5f, 0.5f, 0.f}, {0.0f, 1.0f, 0.0f}},
-			{{-0.5f, 0.5f, 0.f}, {0.0f, 0.0f, 1.0f}},
-			{{0.0f, -0.5f, 0.5f}, {1.0f, 1.0f, 0.0f}},
-			{{0.5f, 0.5f, 0.5f}, {0.0f, 1.0f, 1.0f}},
-			{{-0.5f, 0.5f, 0.5f}, {1.0f, 0.0f, 1.0f}}
-		};
-
-		_tempVertexBuffer = Buffer::create(_device, sizeof(vertices[0]) * vertices.size(),
-					VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-						VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		if (!_tempVertexBuffer) {
-			endRenderPass(commandBuffer);
-			return ;
-		}
-		_tempVertexBuffer->writeToBuffer(static_cast<void *>(vertices.data()));
-	}
-	VkBuffer	buffers[] = {_tempVertexBuffer->getBuffer()};
+	auto	mesh = _assetManager.get<Geometry>("assets/models/colored_cube.obj");
+	// auto	mesh = _assetManager.get<Geometry>("assets/models/dragon.obj");
+	VkBuffer	buffers[] = {mesh->vertexBuffer->getBuffer()};
 	VkDeviceSize	offset[] = {0};
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offset);
-	vkCmdDraw(commandBuffer, _tempVertexBuffer->getSize() / sizeof(Vertex), 1, 0, 0);
+	vkCmdDraw(commandBuffer, mesh->vertexCount, 1, 0, 0);
 
 	endRenderPass(commandBuffer);
 }

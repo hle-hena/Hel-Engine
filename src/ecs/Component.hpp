@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/03 19:49:55                                        */
+/*  Last Modified: 2026/02/10 16:35:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,6 +22,7 @@
 # include <glm/gtc/quaternion.hpp>
 # include <glm/gtc/constants.hpp>
 # include <string>
+# include <vector>
 
 namespace	hel {
 
@@ -39,10 +40,13 @@ struct	Transform {
 	bool		isDirty{true};
 };
 
+struct	Mesh {
+};
+
 struct	Camera {
 	float		fov{glm::radians<float>(70)};
 	float		aspect{1.f};
-	float		near{0.1f};
+	float		near{0.001f};
 	float		far{1000.f};
 	glm::mat4	viewProjection{1.f};
 
