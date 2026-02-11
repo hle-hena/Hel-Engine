@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/10 16:35:34                                        */
+/*  Last Modified: 2026/02/11 15:20:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,7 +22,6 @@
 # include <glm/gtc/quaternion.hpp>
 # include <glm/gtc/constants.hpp>
 # include <string>
-# include <vector>
 
 namespace	hel {
 

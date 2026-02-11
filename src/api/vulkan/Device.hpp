@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:22 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/10 20:06:05                                        */
+/*  Last Modified: 2026/02/11 15:22:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -67,19 +67,22 @@ class	Device {
 			return (_presentQueue);
 		}
 
-		bool	pickPhysicalDevice(Window &bootstrapWindow);
-		bool	supportSurface(Window &window);
+		bool				pickPhysicalDevice(Window &bootstrapWindow);
+		bool				supportSurface(Window &window);
 
-		bool	findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties,
-							uint32_t &outTypeIndex);
+		bool				findMemoryType(uint32_t typeFilter,
+								VkMemoryPropertyFlags properties,
+								uint32_t &outTypeIndex);
 		
-		VkCommandBuffer	beginSingleTimeCommand(void);
-		void			endSingleTimeCommand(VkCommandBuffer commandBuffer);
+		VkCommandBuffer		beginSingleTimeCommand(void);
+		void				endSingleTimeCommand(VkCommandBuffer commandBuffer);
 
 	private:
-		bool				isDeviceSuitable(VkPhysicalDevice device, Window &bootstrapWindow);
+		bool				isDeviceSuitable(VkPhysicalDevice device,
+											Window &bootstrapWindow);
 		bool				checkDeviceExtensionSupport(VkPhysicalDevice device);
-		QueuesFamilyIndices	findQueueFamilies(VkPhysicalDevice device, Window &bootstrapWindow);
+		QueuesFamilyIndices	findQueueFamilies(VkPhysicalDevice device,
+											Window &bootstrapWindow);
 
 		bool				createLogicalDevice(void);
 		bool				createCommandPool(void);
