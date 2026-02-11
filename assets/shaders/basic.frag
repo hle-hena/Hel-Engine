@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/11 15:52:28                                        */
+/*  Last Modified: 2026/02/11 17:01:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,7 +16,8 @@
 
 #version 450
 
-layout (location = 0) in vec3		fragColor;
+layout (location = 0) in vec3		inColor;
+layout (location = 1) in vec3		inNormal;
 
 layout (location = 0) out vec4		outColor;
 
@@ -40,10 +41,17 @@ vec3	hashColor(int primId) {
 	));
 }
 
+const vec3	godRayDirection = normalize(vec3(10.f, 10.f, 1.f));
+const float	ambientLight = 0.1f;
+
 void	main() {
 	bool	debugColor = true;
-	if (debugColor)
-		outColor = vec4(hashColor(gl_PrimitiveID), 1.0);
-	else
-		outColor = vec4(fragColor, 1.0);
+	vec3	surfaceNormal = normalize(inNormal);
+
+	float	diffuse = max(dot(surfaceNormal, godRayDirection), 0.0);
+	vec3 intensity = vec3(diffuse + ambientLight);
+
+	vec3 baseColor = debugColor ? hashColor(gl_PrimitiveID) : inColor;
+	outColor = vec4(baseColor * intensity, 1.);
+
 }
