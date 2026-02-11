@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:12 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 14:30:28                                        */
+/*  Last Modified: 2026/02/11 15:26:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -54,6 +54,8 @@ class	Application {
 	private:
 		Application(const Application &other) = delete;
 		Application	&operator=(const Application &other) = delete;
+
+		void	loadPrimaryScene(void);
 
 		bool							_healthy{true};
 		std::string						_reason{""};

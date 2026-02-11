@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/04 19:22:53                                        */
+/*  Last Modified: 2026/02/11 15:33:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,8 +24,6 @@
 
 # include "api/vulkan/Pipeline.hpp"
 
-# include "api/vulkan/Buffer.hpp"//TEMPORARY, since I don't have a mesh Asset yet.
-
 namespace	hel {
 
 class	Window;
@@ -35,6 +33,7 @@ class	AssetManager;
 
 struct	PushConstantData {
 	glm::mat4	viewProjection;
+	glm::mat4	objectTransform;
 };
 
 class	RenderSystem {
@@ -79,8 +78,6 @@ class	RenderSystem {
 		AssetManager		&_assetManager;
 		pipelineMap			_pipelines;
 		VkPipelineLayout	_pipelineLayout{VK_NULL_HANDLE};
-
-		std::unique_ptr<Buffer>		_tempVertexBuffer{nullptr};
 };
 
 }
