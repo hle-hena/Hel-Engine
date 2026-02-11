@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/10 20:15:29                                        */
+/*  Last Modified: 2026/02/11 15:55:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -124,6 +124,7 @@ bool	Device::createLogicalDevice(void) {
 			nullptr, 0, queueFamily, 1, &priority});
 	}
 	VkPhysicalDeviceFeatures	features{};
+	features.geometryShader = true;
 	VkDeviceCreateInfo	createInfo{VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO, nullptr, 0,
 		static_cast<uint32_t>(queueCreateInfos.size()), queueCreateInfos.data(),
 		0, nullptr, static_cast<uint32_t>(_deviceExtensions.size()), _deviceExtensions.data(), &features};

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/11 14:58:59                                        */
+/*  Last Modified: 2026/02/11 15:45:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -53,16 +53,20 @@ void	RenderSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_
 
 	pipeline->_pipeline.bind(commandBuffer);
 
-	vkCmdPushConstants(commandBuffer, _pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
-						0, sizeof(PushConstantData), &push);
+	auto	entities = _registry.view<Transform, Model>();
+	for (auto entity: entities) {
+		auto	mesh = _assetManager.get<Geometry>(entities.get<Model>(entity)->filePath);
+		if (!mesh)	{ continue ; }
+		push.objectTransform = entities.get<Transform>(entity)->worldMatrix;
 
-	// auto	mesh = _assetManager.get<Geometry>("assets/models/colored_cube.obj");
-	auto	mesh = _assetManager.get<Geometry>("assets/models/dragon.obj");
-	VkBuffer	buffers[] = {mesh->vertexBuffer->getBuffer()};
-	VkDeviceSize	offset[] = {0};
-	vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offset);
-	vkCmdBindIndexBuffer(commandBuffer, mesh->indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
-	vkCmdDrawIndexed(commandBuffer, mesh->vertexCount, 1, 0, 0, 0);
+		vkCmdPushConstants(commandBuffer, _pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
+							0, sizeof(PushConstantData), &push);
+		VkBuffer	buffers[] = {mesh->vertexBuffer->getBuffer()};
+		VkDeviceSize	offset[] = {0};
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offset);
+		vkCmdBindIndexBuffer(commandBuffer, mesh->indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(commandBuffer, mesh->vertexCount, 1, 0, 0, 0);
+	}
 
 	endRenderPass(commandBuffer);
 }

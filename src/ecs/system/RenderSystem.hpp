@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/10 16:27:43                                        */
+/*  Last Modified: 2026/02/11 15:33:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,6 +33,7 @@ class	AssetManager;
 
 struct	PushConstantData {
 	glm::mat4	viewProjection;
+	glm::mat4	objectTransform;
 };
 
 class	RenderSystem {

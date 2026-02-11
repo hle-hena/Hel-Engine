@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/11 15:20:29                                        */
+/*  Last Modified: 2026/02/11 15:37:04                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,7 +39,8 @@ struct	Transform {
 	bool		isDirty{true};
 };
 
-struct	Mesh {
+struct	Model {
+	std::string	filePath{""};
 };
 
 struct	Camera {

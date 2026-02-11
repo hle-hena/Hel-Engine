@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:03:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/11 15:00:53                                        */
+/*  Last Modified: 2026/02/11 15:46:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -99,7 +99,6 @@ std::shared_ptr<Geometry>	Geometry::load(Device &device, const std::string &path
 				}
 				indices.push_back(uniqueVertices[vertex]);
 			}
-			
 		}
 	}
 

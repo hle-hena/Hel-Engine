@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/10 19:18:02                                        */
+/*  Last Modified: 2026/02/11 15:52:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,7 +17,6 @@
 #version 450
 
 layout (location = 0) in vec3		fragColor;
-layout (location = 1) flat in int	primId;
 
 layout (location = 0) out vec4		outColor;
 
@@ -44,7 +43,7 @@ vec3	hashColor(int primId) {
 void	main() {
 	bool	debugColor = true;
 	if (debugColor)
-		outColor = vec4(hashColor(primId), 1.0);
+		outColor = vec4(hashColor(gl_PrimitiveID), 1.0);
 	else
 		outColor = vec4(fragColor, 1.0);
 }
