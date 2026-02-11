@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 19:31:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/10 20:16:05                                        */
+/*  Last Modified: 2026/02/11 14:55:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,7 +22,8 @@ namespace	hel {
 
 template <typename T>
 std::unique_ptr<Buffer>	Geometry::createBuffer(Device &device,
-											std::vector<T> data) {
+											std::vector<T> data,
+											VkBufferUsageFlags usage) {
 	VkDeviceSize	size = sizeof(T) * data.size();
 	auto	stagingBuffer = Buffer::create(device, size,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
@@ -31,7 +32,7 @@ std::unique_ptr<Buffer>	Geometry::createBuffer(Device &device,
 	stagingBuffer->writeToBuffer(data.data());
 
 	auto	buffer = Buffer::create(device, size,
-		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+		VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 

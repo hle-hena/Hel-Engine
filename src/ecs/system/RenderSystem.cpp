@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/10 19:18:27                                        */
+/*  Last Modified: 2026/02/11 14:58:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -61,7 +61,8 @@ void	RenderSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_
 	VkBuffer	buffers[] = {mesh->vertexBuffer->getBuffer()};
 	VkDeviceSize	offset[] = {0};
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offset);
-	vkCmdDraw(commandBuffer, mesh->vertexCount, 1, 0, 0);
+	vkCmdBindIndexBuffer(commandBuffer, mesh->indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+	vkCmdDrawIndexed(commandBuffer, mesh->vertexCount, 1, 0, 0, 0);
 
 	endRenderPass(commandBuffer);
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:01:55 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/10 20:14:17                                        */
+/*  Last Modified: 2026/02/11 14:55:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,6 +33,8 @@ struct	Vertex {
 
 	static std::vector<VkVertexInputBindingDescription>		getBindingDescriptions(void);
 	static std::vector<VkVertexInputAttributeDescription>	getAttributeDescriptions(void);
+	
+	bool	operator==(const Vertex &other) const;
 };
 
 struct	Geometry {
@@ -42,11 +44,14 @@ struct	Geometry {
 	std::unique_ptr<Buffer>		indexBuffer;
 	uint32_t					vertexCount;
 
-	static std::shared_ptr<Geometry>	load(Device &device, const std::string &path);
+	static std::shared_ptr<Geometry>	load(Device &device,
+											const std::string &path);
 
 	private:
 		template <typename T>
-		static std::unique_ptr<Buffer>	createBuffer(Device &device, std::vector<T> data);
+		static std::unique_ptr<Buffer>	createBuffer(Device &device,
+													std::vector<T> data,
+													VkBufferUsageFlags usage);
 };
 
 }
