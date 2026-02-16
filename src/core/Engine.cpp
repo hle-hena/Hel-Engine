@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 13:05:12                                        */
+/*  Last Modified: 2026/02/16 15:33:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,17 +29,17 @@ namespace hel {
 Engine::Engine(Device &device, Registry &registry)
 	:	_device{device},
 		_registry{registry},
-		_renderSystem{device, registry, setLayout},
-		_transformSystem{device, registry, setLayout},
-		_cameraSystem{device, registry, setLayout},
-		_controllerSystem{device, registry, setLayout} {
+		_renderSystem{device, registry, _setLayout},
+		_transformSystem{device, registry, _setLayout},
+		_cameraSystem{device, registry, _setLayout},
+		_controllerSystem{device, registry, _setLayout} {
 }
 
 Engine::~Engine(void) {
 	if (_commandPool != VK_NULL_HANDLE)
 		vkDestroyCommandPool(_device.getLogical(), _commandPool, nullptr);
-	if (setLayout)
-		vkDestroyDescriptorSetLayout(_device.getLogical(), setLayout,
+	if (_setLayout)
+		vkDestroyDescriptorSetLayout(_device.getLogical(), _setLayout,
 									nullptr);
 }
 
@@ -70,7 +70,7 @@ bool	Engine::createDescriptorSetLayout(void) {
 	createInfo.bindingCount = 1;
 	createInfo.pBindings = &globalUboBinding;
 
-	if (vkCreateDescriptorSetLayout(_device.getLogical(), &createInfo, nullptr, &setLayout))
+	if (vkCreateDescriptorSetLayout(_device.getLogical(), &createInfo, nullptr, &_setLayout))
 		RETURN_SET_UNHEALTHY("Couldn't create the descriptor set layout.", true);
 	return (false);
 }
@@ -133,7 +133,7 @@ void	Engine::runFrame(Window &window, uint32_t currentFrame) {
 	vkResetCommandBuffer(commandBuffer, 0);
 
 	beginFrame(commandBuffer, imageIndex);
-	_renderSystem.update(commandBuffer, window, imageIndex);
+	_renderSystem.render(commandBuffer, window, imageIndex);
 	endFrame(commandBuffer);
 
 	swapchain.submitCommandBuffer(&commandBuffer, imageIndex, currentFrame);

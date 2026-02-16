@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 11:50:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/03 19:58:20                                        */
+/*  Last Modified: 2026/02/16 15:01:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,8 +21,8 @@
 
 namespace	hel {
 
-CameraSystem::CameraSystem(Registry &registry)
-	:	_registry{registry} {
+CameraSystem::CameraSystem(Device &device, Registry &registry, VkDescriptorSetLayout &setLayout)
+	:	ISystem(device, registry, setLayout) {
 }
 
 CameraSystem::~CameraSystem(void) {

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/03 18:56:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/03 20:03:45                                        */
+/*  Last Modified: 2026/02/16 15:07:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,8 +22,9 @@
 
 namespace	hel {
 
-ControllerSystem::ControllerSystem(Registry &registry)
-	:	_registry{registry},
+ControllerSystem::ControllerSystem(Device &device, Registry &registry,
+						VkDescriptorSetLayout &setLayout)
+	:	ISystem(device, registry, setLayout),
 		_input{registry.getInputState()} {
 }
 

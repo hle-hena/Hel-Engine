@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 13:03:31                                        */
+/*  Last Modified: 2026/02/16 15:32:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -75,7 +75,7 @@ class	Engine {
 		Device											&_device;
 		Registry										&_registry;
 		VkCommandPool									_commandPool{VK_NULL_HANDLE};
-		VkDescriptorSetLayout							setLayout{VK_NULL_HANDLE};
+		VkDescriptorSetLayout							_setLayout{VK_NULL_HANDLE};
 		std::unordered_map<Window*, WindowResources>	_perWindowResources;
 		RenderSystem									_renderSystem;
 		TransformSystem									_transformSystem;
