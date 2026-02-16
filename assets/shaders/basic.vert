@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 18:21:38                                        */
+/*  Last Modified: 2026/02/16 19:53:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,7 +17,8 @@
 #version 450
 
 layout (location = 0) out vec3	fragColor;
-layout (location = 1) out vec3	fragNormal;
+layout (location = 1) out vec3	fragPos;
+layout (location = 2) out vec3	fragNormal;
 
 layout (location = 0) in vec3	inPos;
 layout (location = 1) in vec3	inColor;
@@ -36,5 +37,6 @@ void	main() {
 	vec4	positionInWorld = push.modelMatrix * vec4(inPos, 1.0);
 	gl_Position = ubo.viewProjection * positionInWorld;
 	fragColor = inColor;
+	fragPos = vec3(positionInWorld);
 	fragNormal = normalize(mat3(push.normalMatrix) * inNormal);
 }
