@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 15:33:32                                        */
+/*  Last Modified: 2026/02/16 17:41:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,9 +16,12 @@
 
 #include "core/Engine.hpp"
 #include "api/vulkan/Device.hpp"
-#include "utils/healthHelper.hpp"
 #include "api/vulkan/Swapchain.hpp"
+#include "utils/healthHelper.hpp"
 #include "platform/window/Window.hpp"
+#include "platform/window/GLFW.hpp"
+#include "ecs/Registry.hpp"
+#include "ecs/Component.hpp"
 
 #include <stdexcept>
 #include <array>
@@ -39,12 +42,13 @@ Engine::~Engine(void) {
 	if (_commandPool != VK_NULL_HANDLE)
 		vkDestroyCommandPool(_device.getLogical(), _commandPool, nullptr);
 	if (_setLayout)
-		vkDestroyDescriptorSetLayout(_device.getLogical(), _setLayout,
-									nullptr);
+		vkDestroyDescriptorSetLayout(_device.getLogical(), _setLayout, nullptr);
+	if (_descriptorPool)
+		vkDestroyDescriptorPool(_device.getLogical(), _descriptorPool, nullptr);
 }
 
 bool	Engine::init(void) {
-	return (createCommandPool() || createDescriptorSetLayout());
+	return (createCommandPool() || createDescriptorSetLayout() || createDescriptorPool());
 }
 
 bool	Engine::createCommandPool(void) {
@@ -75,6 +79,23 @@ bool	Engine::createDescriptorSetLayout(void) {
 	return (false);
 }
 
+bool	Engine::createDescriptorPool(void) {
+	VkDescriptorPoolSize	poolSize{};
+	poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSize.descriptorCount = GLFW::_maxInstanceCount *
+		static_cast<uint32_t>(Swapchain::MAX_FRAMES_IN_FLIGHT);
+
+	VkDescriptorPoolCreateInfo	createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	createInfo.poolSizeCount = 1;
+	createInfo.pPoolSizes = &poolSize;
+	createInfo.maxSets = poolSize.descriptorCount;
+
+	if (vkCreateDescriptorPool(_device.getLogical(), &createInfo, nullptr, &_descriptorPool))
+		RETURN_SET_UNHEALTHY("Couldn't create the descriptor pool.", true);
+	return (false);
+}
+
 bool	Engine::beginFrame(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
 	VkCommandBufferBeginInfo	beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -91,35 +112,73 @@ bool	Engine::endFrame(VkCommandBuffer commandBuffer) {
 }
 
 Engine::WindowResources *Engine::getWindowResources(Window& window) {
-	if (_perWindowResources.find(&window) == _perWindowResources.end()) {
-		VkCommandBufferAllocateInfo	allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool = _commandPool;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = Swapchain::MAX_FRAMES_IN_FLIGHT;
+	if (_perWindowResources.find(&window) != _perWindowResources.end())
+		return (&_perWindowResources[&window]);
+	uint32_t			frameCount = Swapchain::MAX_FRAMES_IN_FLIGHT;
+	WindowResources		newResources{&window};
 
-		WindowResources	newResources;
-		if (vkAllocateCommandBuffers(_device.getLogical(), &allocInfo,
-									newResources.commandBuffers.data()))
-			return (nullptr);
-		for (size_t i = 0; i < Swapchain::MAX_FRAMES_IN_FLIGHT; i++) {
-			newResources.globalUbos[i] = Buffer::create(_device,
-				sizeof(GlobalUBO), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-			newResources.globalUbos[i]->map();
-		}
-		_perWindowResources[&window] = std::move(newResources);
+	VkCommandBufferAllocateInfo	cbAllocInfo{};
+	cbAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	cbAllocInfo.commandPool = _commandPool;
+	cbAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	cbAllocInfo.commandBufferCount = frameCount;
+	if (vkAllocateCommandBuffers(_device.getLogical(), &cbAllocInfo,
+		newResources.commandBuffers.data()))	{ return (nullptr); }
+
+	std::vector<VkDescriptorSetLayout>	layouts(frameCount, _setLayout);
+	VkDescriptorSetAllocateInfo	dsAllocInfo{};
+	dsAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	dsAllocInfo.descriptorPool = _descriptorPool;
+	dsAllocInfo.descriptorSetCount = frameCount;
+	dsAllocInfo.pSetLayouts = layouts.data();
+	if (vkAllocateDescriptorSets(_device.getLogical(), &dsAllocInfo,
+		newResources.globalDescriptorSets.data()))	{ return (nullptr); }
+
+	std::vector<VkWriteDescriptorSet>	writeSets(frameCount);
+	std::vector<VkDescriptorBufferInfo>	bufferInfos(frameCount);
+	for (size_t i = 0; i < frameCount; i++) {
+		newResources.globalUbos[i] = Buffer::create(_device, sizeof(GlobalUBO),
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		if (!newResources.globalUbos[i])	{ return (nullptr); }
+		newResources.globalUbos[i]->map();
+
+		bufferInfos[i].buffer = newResources.globalUbos[i]->getBuffer();
+		bufferInfos[i].offset = 0;
+		bufferInfos[i].range = sizeof(GlobalUBO);
+		writeSets[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeSets[i].dstSet = newResources.globalDescriptorSets[i];
+		writeSets[i].dstBinding = 0;
+		writeSets[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		writeSets[i].descriptorCount = 1;
+		writeSets[i].pBufferInfo = &bufferInfos[i];
 	}
+	vkUpdateDescriptorSets(_device.getLogical(), frameCount, writeSets.data(),
+							0, nullptr);
+
+	_perWindowResources[&window] = std::move(newResources);
 	return (&_perWindowResources[&window]);
 }
 
-void	Engine::updateGlobal(void) {
+void	Engine::updateFrame(void) {
 	_controllerSystem.update();
 	_transformSystem.update();
 	_cameraSystem.update();
 }
 
-void	Engine::runFrame(Window &window, uint32_t currentFrame) {
+void	Engine::updateGlobalUBO(Window &window, uint32_t currentFrame) {
+	WindowResources	*resources = getWindowResources(window);
+	if (!resources)
+		return ;
+	
+	GlobalUBO	data{};
+	data.viewProjection = glm::mat4{0.f};
+	if (auto *transform = _registry.getComponent<Transform>(window.getEntityReference()))
+		data.viewProjection = transform->worldMatrix;
+	resources->globalUbos[currentFrame]->writeToBuffer(&data);
+}
+
+void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	Swapchain	&swapchain = window.getSwapchain();
 
 	uint32_t	imageIndex;

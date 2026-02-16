@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 12:27:18                                        */
+/*  Last Modified: 2026/02/16 15:48:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -90,14 +90,14 @@ void	Application::run(void) {
 		_registry.getInputState().newFrame();
 		glfwPollEvents();
 
-		_engine.updateGlobal();
+		_engine.updateFrame();
 		for (size_t i = 0; i < _appWindows.size(); i++) {
 			if (_appWindows[i]->shouldClose()) {
 				_appWindows.erase(_appWindows.begin() + i);
 				i--;
 				continue ;
 			}
-			_engine.runFrame(*_appWindows[i], currentFrame);
+			_engine.renderFrame(*_appWindows[i], currentFrame);
 		}
 
 		currentFrame = (currentFrame + 1) % Swapchain::MAX_FRAMES_IN_FLIGHT;

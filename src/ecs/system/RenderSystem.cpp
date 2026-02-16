@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 15:14:16                                        */
+/*  Last Modified: 2026/02/16 15:36:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -144,8 +144,8 @@ VkPipelineLayout	*RenderSystem::getPipelineLayout(void) {
 
 	VkPipelineLayoutCreateInfo	layoutInfo{};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	layoutInfo.setLayoutCount = 0;
-	layoutInfo.pSetLayouts = nullptr;
+	layoutInfo.setLayoutCount = 1;
+	layoutInfo.pSetLayouts = &_setLayout;
 	layoutInfo.pushConstantRangeCount = 1;
 	layoutInfo.pPushConstantRanges = &pushConstant;
 

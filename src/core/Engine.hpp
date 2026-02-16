@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 15:32:40                                        */
+/*  Last Modified: 2026/02/16 17:41:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -55,17 +55,21 @@ class	Engine {
 		}
 
 		bool			init(void);
-		void			runFrame(Window &window, uint32_t currentFrame);
-		void			updateGlobal(void);
+		void			updateFrame(void);
+		void			renderFrame(Window &window, uint32_t currentFrame);
 
 	private:
 		struct	WindowResources {
+			Window																	*window;
 			std::array<VkCommandBuffer, Swapchain::MAX_FRAMES_IN_FLIGHT>			commandBuffers;
 			std::array<std::unique_ptr<Buffer>, Swapchain::MAX_FRAMES_IN_FLIGHT>	globalUbos;
+			std::array<VkDescriptorSet, Swapchain::MAX_FRAMES_IN_FLIGHT>			globalDescriptorSets;
 		};
 		bool			createCommandPool(void);
 		bool			createDescriptorSetLayout(void);
+		bool			createDescriptorPool(void);
 
+		void			updateGlobalUBO(Window &window, uint32_t currentFrame);
 		bool			beginFrame(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 		bool			endFrame(VkCommandBuffer commandBuffer);
 		WindowResources	*getWindowResources(Window& window);
@@ -75,6 +79,7 @@ class	Engine {
 		Device											&_device;
 		Registry										&_registry;
 		VkCommandPool									_commandPool{VK_NULL_HANDLE};
+		VkDescriptorPool								_descriptorPool{VK_NULL_HANDLE};
 		VkDescriptorSetLayout							_setLayout{VK_NULL_HANDLE};
 		std::unordered_map<Window*, WindowResources>	_perWindowResources;
 		RenderSystem									_renderSystem;
