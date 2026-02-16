@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 18:22:03                                        */
+/*  Last Modified: 2026/02/16 18:38:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,13 +45,15 @@ const vec3	godRayDirection = normalize(vec3(10.f, 10.f, 1.f));
 const float	ambientLight = 0.1f;
 
 void	main() {
-	bool	debugColor = false;
+	bool	triangleDebug = false;
+	bool	normalDebug = true;
 	vec3	surfaceNormal = normalize(inNormal);
 
 	float	diffuse = max(dot(surfaceNormal, godRayDirection), 0.0);
-	vec3 intensity = vec3(diffuse + ambientLight);
+	vec3	intensity = vec3(diffuse + ambientLight);
 
-	vec3 baseColor = debugColor ? hashColor(gl_PrimitiveID) : inColor;
+	vec3 baseColor = triangleDebug ? hashColor(gl_PrimitiveID) :
+					(normalDebug ? vec3(normalize(inNormal) * 0.5 + 0.5) : inColor);
 	outColor = vec4(baseColor * intensity, 1.);
 
 }
