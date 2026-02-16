@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: CameraSystem.hpp                                                    */
+/*  File: ISystem.hpp                                                         */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/02 11:50:40 by hle-hena                                  */
+/*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 15:00:00                                        */
+/*  Last Modified: 2026/02/16 15:25:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,19 +16,36 @@
 
 #pragma once
 
-# include "ecs/system/ISystem.hpp"
+# include <vulkan/vulkan.h>
 
 namespace	hel {
 
-class	CameraSystem : public ISystem {
+class	Device;
+class	Registry;
+class	Window;
+
+class	ISystem {
 	public:
-		CameraSystem(Device &device, Registry &registry,
-			VkDescriptorSetLayout &setLayout);
-		~CameraSystem(void) override;
+		ISystem(Device &device, Registry &registry,
+				VkDescriptorSetLayout &setLayout):
+			_device{device},
+			_registry{registry},
+			_setLayout{setLayout} {}
+		virtual ~ISystem(void) = 0;
 
-		void	update(void) override;
+		ISystem(const ISystem &other) = delete;
+		ISystem	&operator=(const ISystem &other) = delete;
 
-	private:
+		virtual void	update(void) {}
+		virtual void	render(VkCommandBuffer commandBuffer, Window &window,
+							uint32_t imageIndex) {}
+
+	protected:
+		Device					&_device;
+		Registry				&_registry;
+		VkDescriptorSetLayout	&_setLayout;
 };
+
+inline	ISystem::~ISystem(void) {}
 
 }
