@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/11 15:45:03                                        */
+/*  Last Modified: 2026/02/16 15:14:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,9 +26,9 @@
 
 namespace	hel {
 
-RenderSystem::RenderSystem(Device &device, Registry &registry)
-	:	_device{device},
-		_registry{registry},
+RenderSystem::RenderSystem(Device &device, Registry &registry,
+						VkDescriptorSetLayout &setLayout)
+	:	ISystem(device, registry, setLayout),
 		_assetManager{registry.getAssetManager()} {
 }
 
@@ -37,7 +37,7 @@ RenderSystem::~RenderSystem(void) {
 		vkDestroyPipelineLayout(_device.getLogical(), _pipelineLayout, nullptr);
 }
 
-void	RenderSystem::update(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex) {
+void	RenderSystem::render(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex) {
 	auto	pipeline = getPipelineForFormat(window.getFormat(), window.getDepthFormat());
 	if (pipeline == nullptr || commandBuffer == VK_NULL_HANDLE)
 		return ;
