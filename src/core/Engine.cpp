@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/03 19:59:34                                        */
+/*  Last Modified: 2026/02/16 15:21:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,10 +29,10 @@ namespace hel {
 Engine::Engine(Device &device, Registry &registry)
 	:	_device{device},
 		_registry{registry},
-		_renderSystem{device, registry},
-		_transformSystem{registry},
-		_cameraSystem{registry},
-		_controllerSystem{registry} {
+		_renderSystem{device, registry, _setLayout},
+		_transformSystem{device, registry, _setLayout},
+		_cameraSystem{device, registry, _setLayout},
+		_controllerSystem{device, registry, _setLayout} {
 }
 
 Engine::~Engine(void) {
@@ -105,7 +105,7 @@ void	Engine::runFrame(Window &window, uint32_t currentFrame) {
 	vkResetCommandBuffer(cmd, 0);
 
 	beginFrame(cmd, imageIndex);
-	_renderSystem.update(cmd, window, imageIndex);
+	_renderSystem.render(cmd, window, imageIndex);
 	endFrame(cmd);
 
 	swapchain.submitCommandBuffer(&cmd, imageIndex, currentFrame);

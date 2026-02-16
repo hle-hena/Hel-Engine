@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/11 15:33:15                                        */
+/*  Last Modified: 2026/02/16 15:15:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,13 +22,11 @@
 # include <string>
 # include <glm/glm.hpp>
 
+# include "ecs/system/ISystem.hpp"
 # include "api/vulkan/Pipeline.hpp"
 
 namespace	hel {
 
-class	Window;
-class	Device;
-class	Registry;
 class	AssetManager;
 
 struct	PushConstantData {
@@ -36,15 +34,14 @@ struct	PushConstantData {
 	glm::mat4	objectTransform;
 };
 
-class	RenderSystem {
+class	RenderSystem : public ISystem {
 	public:
-		RenderSystem(Device &device, Registry &registry);
-		~RenderSystem(void);
+		RenderSystem(Device &device, Registry &registry,
+					VkDescriptorSetLayout &setLayout);
+		~RenderSystem(void) override;
 
-		RenderSystem(const RenderSystem &) = delete;
-		RenderSystem	operator=(const RenderSystem &) = delete;
-
-		void	update(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex);
+		void	render(VkCommandBuffer commandBuffer, Window &window,
+						uint32_t imageIndex) override;
 
 	private:
 		struct	SystemPipeline {
@@ -73,8 +70,6 @@ class	RenderSystem {
 		std::string			_reason{""};
 		std::string			_vertPath{"assets/shaders/basic.vert.spv"};
 		std::string			_fragPath{"assets/shaders/basic.frag.spv"};
-		Device				&_device;
-		Registry			&_registry;
 		AssetManager		&_assetManager;
 		pipelineMap			_pipelines;
 		VkPipelineLayout	_pipelineLayout{VK_NULL_HANDLE};
