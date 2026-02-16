@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/11 15:37:04                                        */
+/*  Last Modified: 2026/02/16 18:15:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,6 +35,7 @@ struct	Transform {
 	glm::vec3	scale{1.f};
 
 	glm::mat4	worldMatrix{1.f};
+	glm::mat4	normalMatrix{1.f};
 
 	bool		isDirty{true};
 };

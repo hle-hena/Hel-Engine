@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 12:02:00                                        */
+/*  Last Modified: 2026/02/16 18:21:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,19 +23,18 @@ layout (location = 0) in vec3	inPos;
 layout (location = 1) in vec3	inColor;
 layout (location = 2) in vec3	inNormal;
 
-// layout (binding = 0) uniform UniformBufferObject {
-// 	mat4	viewProjection;
-// }	ubo;
+layout (binding = 0) uniform UniformBufferObject {
+	mat4	viewProjection;
+}	ubo;
 
 layout (push_constant) uniform Push {
-	mat4	viewProjection;
-	mat4	objectTransform;
+	mat4	modelMatrix;
+	mat4	normalMatrix;
 } push;
 
 void	main() {
-	vec4	positionInWorld = push.objectTransform * vec4(inPos, 1.0);
-	gl_Position = push.viewProjection * positionInWorld;
+	vec4	positionInWorld = push.modelMatrix * vec4(inPos, 1.0);
+	gl_Position = ubo.viewProjection * positionInWorld;
 	fragColor = inColor;
-	mat4	normalMatrix = transpose(inverse(push.objectTransform));
-	fragNormal = normalize(mat3(normalMatrix) * inNormal);
+	fragNormal = normalize(mat3(push.normalMatrix) * inNormal);
 }

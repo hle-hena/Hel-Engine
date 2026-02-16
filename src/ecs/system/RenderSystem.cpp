@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 15:36:54                                        */
+/*  Last Modified: 2026/02/16 18:19:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,6 +23,7 @@
 #include "ecs/Component.hpp"
 #include "ecs/assets/Geometry.hpp"
 #include "ecs/assets/Shader.hpp"
+#include "core/Engine.hpp"
 
 namespace	hel {
 
@@ -37,17 +38,13 @@ RenderSystem::~RenderSystem(void) {
 		vkDestroyPipelineLayout(_device.getLogical(), _pipelineLayout, nullptr);
 }
 
-void	RenderSystem::render(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex) {
+void	RenderSystem::render(WindowResources &resources, uint32_t currentFrame,
+							uint32_t imageIndex) {
+	auto	&window = *resources.window;
+	auto	commandBuffer = resources.commandBuffers[currentFrame];
 	auto	pipeline = getPipelineForFormat(window.getFormat(), window.getDepthFormat());
 	if (pipeline == nullptr || commandBuffer == VK_NULL_HANDLE)
 		return ;
-
-	PushConstantData	push{};
-	push.viewProjection = glm::mat4{0.f};
-	Entity::id	windowHandle = window.getEntityReference();
-	if (windowHandle != Entity::NOT_REGISTERED) {
-		push.viewProjection = _registry.getComponent<Camera>(windowHandle)->viewProjection;
-	}
 
 	beginRenderPass(commandBuffer, window, imageIndex, pipeline);
 
@@ -57,14 +54,23 @@ void	RenderSystem::render(VkCommandBuffer commandBuffer, Window &window, uint32_
 	for (auto entity: entities) {
 		auto	mesh = _assetManager.get<Geometry>(entities.get<Model>(entity)->filePath);
 		if (!mesh)	{ continue ; }
-		push.objectTransform = entities.get<Transform>(entity)->worldMatrix;
+		PushConstantData	push{};
+		if (auto transform = entities.get<Transform>(entity)) {
+			push.modelMatrix = transform->worldMatrix;
+			push.normalMatrix = transform->normalMatrix;
+		}
 
 		vkCmdPushConstants(commandBuffer, _pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
 							0, sizeof(PushConstantData), &push);
 		VkBuffer	buffers[] = {mesh->vertexBuffer->getBuffer()};
 		VkDeviceSize	offset[] = {0};
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offset);
-		vkCmdBindIndexBuffer(commandBuffer, mesh->indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindIndexBuffer(commandBuffer, mesh->indexBuffer->getBuffer(), 0,
+							VK_INDEX_TYPE_UINT32);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+							_pipelineLayout, 0, 1,
+							&resources.globalDescriptorSets[currentFrame], 0,
+							nullptr);
 		vkCmdDrawIndexed(commandBuffer, mesh->vertexCount, 1, 0, 0, 0);
 	}
 

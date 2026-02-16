@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 17:41:14                                        */
+/*  Last Modified: 2026/02/16 18:07:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -111,7 +111,7 @@ bool	Engine::endFrame(VkCommandBuffer commandBuffer) {
 	return (false);
 }
 
-Engine::WindowResources *Engine::getWindowResources(Window& window) {
+WindowResources *Engine::getWindowResources(Window& window) {
 	if (_perWindowResources.find(&window) != _perWindowResources.end())
 		return (&_perWindowResources[&window]);
 	uint32_t			frameCount = Swapchain::MAX_FRAMES_IN_FLIGHT;
@@ -170,11 +170,11 @@ void	Engine::updateGlobalUBO(Window &window, uint32_t currentFrame) {
 	WindowResources	*resources = getWindowResources(window);
 	if (!resources)
 		return ;
-	
 	GlobalUBO	data{};
 	data.viewProjection = glm::mat4{0.f};
-	if (auto *transform = _registry.getComponent<Transform>(window.getEntityReference()))
-		data.viewProjection = transform->worldMatrix;
+	if (auto *camera = _registry.getComponent<Camera>(window.getEntityReference())) {
+		data.viewProjection = camera->viewProjection;
+	}
 	resources->globalUbos[currentFrame]->writeToBuffer(&data);
 }
 
@@ -185,6 +185,7 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	if (swapchain.acquireNextImage(window, currentFrame, &imageIndex))
 		return ;
 
+	updateGlobalUBO(window, currentFrame);
 	WindowResources *resources = getWindowResources(window);
 	if (!resources)
 		return ;
@@ -192,7 +193,7 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	vkResetCommandBuffer(commandBuffer, 0);
 
 	beginFrame(commandBuffer, imageIndex);
-	_renderSystem.render(commandBuffer, window, imageIndex);
+	_renderSystem.render(*resources, currentFrame, imageIndex);
 	endFrame(commandBuffer);
 
 	swapchain.submitCommandBuffer(&commandBuffer, imageIndex, currentFrame);

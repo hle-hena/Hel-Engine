@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 12:29:08                                        */
+/*  Last Modified: 2026/02/16 18:22:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,7 +45,7 @@ const vec3	godRayDirection = normalize(vec3(10.f, 10.f, 1.f));
 const float	ambientLight = 0.1f;
 
 void	main() {
-	bool	debugColor = true;
+	bool	debugColor = false;
 	vec3	surfaceNormal = normalize(inNormal);
 
 	float	diffuse = max(dot(surfaceNormal, godRayDirection), 0.0);

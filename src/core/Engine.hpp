@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 17:41:21                                        */
+/*  Last Modified: 2026/02/16 17:49:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,12 +35,19 @@ class	Window;
 class	Device;
 class	Registry;
 
+struct	GlobalUBO {
+	glm::mat4	viewProjection;
+};
+
+struct	WindowResources {
+	Window																	*window;
+	std::array<VkCommandBuffer, Swapchain::MAX_FRAMES_IN_FLIGHT>			commandBuffers;
+	std::array<std::unique_ptr<Buffer>, Swapchain::MAX_FRAMES_IN_FLIGHT>	globalUbos;
+	std::array<VkDescriptorSet, Swapchain::MAX_FRAMES_IN_FLIGHT>			globalDescriptorSets;
+};
+
 class	Engine {
 	public:
-		struct	GlobalUBO {
-			glm::mat4	viewProjection;
-		};
-
 		Engine(Device &device, Registry &registry);
 		~Engine();
 
@@ -59,12 +66,6 @@ class	Engine {
 		void			renderFrame(Window &window, uint32_t currentFrame);
 
 	private:
-		struct	WindowResources {
-			Window																	*window;
-			std::array<VkCommandBuffer, Swapchain::MAX_FRAMES_IN_FLIGHT>			commandBuffers;
-			std::array<std::unique_ptr<Buffer>, Swapchain::MAX_FRAMES_IN_FLIGHT>	globalUbos;
-			std::array<VkDescriptorSet, Swapchain::MAX_FRAMES_IN_FLIGHT>			globalDescriptorSets;
-		};
 		bool			createCommandPool(void);
 		bool			createDescriptorSetLayout(void);
 		bool			createDescriptorPool(void);
