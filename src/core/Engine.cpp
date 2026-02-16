@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/03 19:59:34                                        */
+/*  Last Modified: 2026/02/16 13:05:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,19 +29,22 @@ namespace hel {
 Engine::Engine(Device &device, Registry &registry)
 	:	_device{device},
 		_registry{registry},
-		_renderSystem{device, registry},
-		_transformSystem{registry},
-		_cameraSystem{registry},
-		_controllerSystem{registry} {
+		_renderSystem{device, registry, setLayout},
+		_transformSystem{device, registry, setLayout},
+		_cameraSystem{device, registry, setLayout},
+		_controllerSystem{device, registry, setLayout} {
 }
 
 Engine::~Engine(void) {
 	if (_commandPool != VK_NULL_HANDLE)
 		vkDestroyCommandPool(_device.getLogical(), _commandPool, nullptr);
+	if (setLayout)
+		vkDestroyDescriptorSetLayout(_device.getLogical(), setLayout,
+									nullptr);
 }
 
 bool	Engine::init(void) {
-	return (createCommandPool());
+	return (createCommandPool() || createDescriptorSetLayout());
 }
 
 bool	Engine::createCommandPool(void) {
@@ -52,6 +55,23 @@ bool	Engine::createCommandPool(void) {
 
 	if (vkCreateCommandPool(_device.getLogical(), &commandPoolInfo, nullptr, &_commandPool) != VK_SUCCESS)
 		RETURN_SET_UNHEALTHY("Couldn't create the command pool.", true);
+	return (false);
+}
+
+bool	Engine::createDescriptorSetLayout(void) {
+	VkDescriptorSetLayoutBinding	globalUboBinding{};
+	globalUboBinding.binding = 0;
+	globalUboBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	globalUboBinding.descriptorCount = 1;
+	globalUboBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+	VkDescriptorSetLayoutCreateInfo	createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	createInfo.bindingCount = 1;
+	createInfo.pBindings = &globalUboBinding;
+
+	if (vkCreateDescriptorSetLayout(_device.getLogical(), &createInfo, nullptr, &setLayout))
+		RETURN_SET_UNHEALTHY("Couldn't create the descriptor set layout.", true);
 	return (false);
 }
 
@@ -70,20 +90,27 @@ bool	Engine::endFrame(VkCommandBuffer commandBuffer) {
 	return (false);
 }
 
-VkCommandBuffer Engine::getCommandBuffer(Window& window, uint32_t currentFrame) {
-	if (_perWindowCommandBuffers.find(&window) == _perWindowCommandBuffers.end()) {
+Engine::WindowResources *Engine::getWindowResources(Window& window) {
+	if (_perWindowResources.find(&window) == _perWindowResources.end()) {
 		VkCommandBufferAllocateInfo	allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool = _commandPool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount = Swapchain::MAX_FRAMES_IN_FLIGHT;
 
-		WindowCmdBuffers newBuffers;
-		if (vkAllocateCommandBuffers(_device.getLogical(), &allocInfo, newBuffers.data()) != VK_SUCCESS)
-			return (VK_NULL_HANDLE);
-		_perWindowCommandBuffers[&window] = newBuffers;
+		WindowResources	newResources;
+		if (vkAllocateCommandBuffers(_device.getLogical(), &allocInfo,
+									newResources.commandBuffers.data()))
+			return (nullptr);
+		for (size_t i = 0; i < Swapchain::MAX_FRAMES_IN_FLIGHT; i++) {
+			newResources.globalUbos[i] = Buffer::create(_device,
+				sizeof(GlobalUBO), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			newResources.globalUbos[i]->map();
+		}
+		_perWindowResources[&window] = std::move(newResources);
 	}
-	return _perWindowCommandBuffers[&window][currentFrame];
+	return (&_perWindowResources[&window]);
 }
 
 void	Engine::updateGlobal(void) {
@@ -99,16 +126,17 @@ void	Engine::runFrame(Window &window, uint32_t currentFrame) {
 	if (swapchain.acquireNextImage(window, currentFrame, &imageIndex))
 		return ;
 
-	VkCommandBuffer	cmd = getCommandBuffer(window, currentFrame);
-	if (cmd == VK_NULL_HANDLE)
+	WindowResources *resources = getWindowResources(window);
+	if (!resources)
 		return ;
-	vkResetCommandBuffer(cmd, 0);
+	VkCommandBuffer	commandBuffer = resources->commandBuffers[currentFrame];
+	vkResetCommandBuffer(commandBuffer, 0);
 
-	beginFrame(cmd, imageIndex);
-	_renderSystem.update(cmd, window, imageIndex);
-	endFrame(cmd);
+	beginFrame(commandBuffer, imageIndex);
+	_renderSystem.update(commandBuffer, window, imageIndex);
+	endFrame(commandBuffer);
 
-	swapchain.submitCommandBuffer(&cmd, imageIndex, currentFrame);
+	swapchain.submitCommandBuffer(&commandBuffer, imageIndex, currentFrame);
 	if (swapchain.present(window, imageIndex, currentFrame))
 		return ;
 }

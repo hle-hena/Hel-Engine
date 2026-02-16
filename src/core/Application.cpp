@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/11 17:00:42                                        */
+/*  Last Modified: 2026/02/16 12:27:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,7 +48,7 @@ Application::~Application(void) {
 }
 
 void	Application::loadPrimaryScene(void) {
-	Entity::id	handle = _registry.createEntity();
+/* 	Entity::id	handle = _registry.createEntity();
 	if (auto mesh = _registry.modify(_registry.addComponent<Model>(handle))) {
 		mesh->filePath = "assets/models/dragon.obj";
 	}
@@ -62,8 +62,8 @@ void	Application::loadPrimaryScene(void) {
 	if (auto transform = _registry.modify(_registry.addComponent<Transform>(secondHandle))) {
 		transform->position = glm::vec3(2.f, 0.f, 2.f);
 		transform->rotation = glm::quat(0.932, -0.267, 0.237, -0.059);
-	}
-/* 	Entity::id	handle = _registry.createEntity();
+	} */
+	Entity::id	handle = _registry.createEntity();
 	if (auto mesh = _registry.modify(_registry.addComponent<Model>(handle))) {
 		mesh->filePath = "assets/models/flat_vase.obj";
 	}
@@ -80,7 +80,7 @@ void	Application::loadPrimaryScene(void) {
 		transform->position = glm::vec3(2.f, 0.f, 2.f);
 		transform->scale = glm::vec3(4.f);
 		transform->scale.y = -transform->scale.y;
-	} */
+	}
 }
 
 void	Application::run(void) {

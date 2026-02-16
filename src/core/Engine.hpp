@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/03 19:59:05                                        */
+/*  Last Modified: 2026/02/16 13:03:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,6 +27,7 @@
 #include "ecs/system/ControllerSystem.hpp"
 
 #include "api/vulkan/Swapchain.hpp"
+#include "api/vulkan/Buffer.hpp"
 
 namespace hel {
 
@@ -36,6 +37,10 @@ class	Registry;
 
 class	Engine {
 	public:
+		struct	GlobalUBO {
+			glm::mat4	viewProjection;
+		};
+
 		Engine(Device &device, Registry &registry);
 		~Engine();
 
@@ -49,30 +54,34 @@ class	Engine {
 			return (_healthy);
 		}
 
-		bool	init(void);
-		void	runFrame(Window &window, uint32_t currentFrame);
-		void	updateGlobal(void);
+		bool			init(void);
+		void			runFrame(Window &window, uint32_t currentFrame);
+		void			updateGlobal(void);
 
 	private:
-		using WindowCmdBuffers = std::array<VkCommandBuffer, Swapchain::MAX_FRAMES_IN_FLIGHT>;
-		bool	createCommandPool(void);
+		struct	WindowResources {
+			std::array<VkCommandBuffer, Swapchain::MAX_FRAMES_IN_FLIGHT>			commandBuffers;
+			std::array<std::unique_ptr<Buffer>, Swapchain::MAX_FRAMES_IN_FLIGHT>	globalUbos;
+		};
+		bool			createCommandPool(void);
+		bool			createDescriptorSetLayout(void);
 
 		bool			beginFrame(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 		bool			endFrame(VkCommandBuffer commandBuffer);
-		VkCommandBuffer	getCommandBuffer(Window& window, uint32_t currentFrame);
+		WindowResources	*getWindowResources(Window& window);
 
 		bool											_healthy{true};
 		std::string										_reason{""};
 		Device											&_device;
 		Registry										&_registry;
 		VkCommandPool									_commandPool{VK_NULL_HANDLE};
-		std::unordered_map<Window*, WindowCmdBuffers>	_perWindowCommandBuffers;
+		VkDescriptorSetLayout							setLayout{VK_NULL_HANDLE};
+		std::unordered_map<Window*, WindowResources>	_perWindowResources;
 		RenderSystem									_renderSystem;
 		TransformSystem									_transformSystem;
 		CameraSystem									_cameraSystem;
 		ControllerSystem								_controllerSystem;
 		uint32_t										_currentFrameIndex{0};
-
 };
 
 }
