@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 15:06:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 15:17:40                                        */
+/*  Last Modified: 2026/02/16 18:19:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -38,7 +38,9 @@ void	TransformSystem::update(void) {
 		glm::mat4	T = glm::translate(glm::mat4(1.f), transform->position);
 		glm::mat4	R = glm::mat4_cast(transform->rotation);
 		glm::mat4	S = glm::scale(glm::mat4(1.f), transform->scale);
-		_registry.modify(transform)->worldMatrix = T * R * S;
+		auto modTransform = _registry.modify(transform);
+		modTransform->worldMatrix = T * R * S;
+		modTransform->normalMatrix = glm::transpose(glm::inverse(modTransform->worldMatrix));
 	}
 }
 

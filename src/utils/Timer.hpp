@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: triangle.frag                                                       */
+/*  File: Timer.hpp                                                           */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/12 16:11:39 by hle-hena                                  */
+/*  Created: 2026/02/17 16:36:44 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/20 18:28:26                                        */
+/*  Last Modified: 2026/02/17 17:11:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,12 +14,24 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#version 450
+#pragma once
 
-layout(location = 0) in vec3 fragColor;
+# include <chrono>
 
-layout(location = 0) out vec4 outColor;
+namespace	hel {
 
-void	main() {
-	outColor = vec4(fragColor, 1.0);
+class	Timer {
+	public:
+		void	start(void)	 {_startTime = clock::now(); }
+
+		template <typename Ratio = std::ratio<1>>
+		float	elapsedTime(void) {
+			return (std::chrono::duration<float, Ratio>(clock::now() - _startTime).count());
+		}
+
+	private:
+		using clock = std::chrono::steady_clock;
+		std::chrono::time_point<clock>	_startTime;
+};
+
 }

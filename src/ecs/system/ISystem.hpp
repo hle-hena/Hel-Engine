@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 15:25:11                                        */
+/*  Last Modified: 2026/02/16 17:46:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,7 +22,7 @@ namespace	hel {
 
 class	Device;
 class	Registry;
-class	Window;
+struct	WindowResources;
 
 class	ISystem {
 	public:
@@ -37,8 +37,8 @@ class	ISystem {
 		ISystem	&operator=(const ISystem &other) = delete;
 
 		virtual void	update(void) {}
-		virtual void	render(VkCommandBuffer commandBuffer, Window &window,
-							uint32_t imageIndex) {}
+		virtual void	render(WindowResources &resources,
+							uint32_t currentFrame, uint32_t imageIndex) {}
 
 	protected:
 		Device					&_device;

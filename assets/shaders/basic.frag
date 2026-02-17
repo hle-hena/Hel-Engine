@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/11 15:52:28                                        */
+/*  Last Modified: 2026/02/17 20:11:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,9 +16,16 @@
 
 #version 450
 
-layout (location = 0) in vec3		fragColor;
-
 layout (location = 0) out vec4		outColor;
+
+layout (location = 0) in vec3		inColor;
+layout (location = 1) in vec3		inPos;
+layout (location = 2) in vec3		inNormal;
+
+layout (binding = 0) uniform UniformBufferObject {
+	mat4	viewProjection;
+	float	elapsedTime;
+}	ubo;
 
 float	squirrelHash(int position, uint noise1, uint noise2, uint noise3) {
 	uint mangled = position;
@@ -40,10 +47,72 @@ vec3	hashColor(int primId) {
 	));
 }
 
+struct	Spotlight {
+	vec3	pos;
+	vec4	dir;	//dir.w beeing the light out angle
+	vec4	color;	//color.w beeing the intensity;
+};
+
+vec3	getColorFromSpotlight(vec3 surfaceNormal, Spotlight light, bool lightDebug) {
+	vec3	toLight = inPos - light.pos;
+	float	dist = length(toLight);
+	toLight = normalize(toLight);
+
+	float	edgeSoftness = lightDebug ? 0. : 1.0 - (1. / (dist + 1.));
+	float	coneIntensity = smoothstep(light.dir.w, light.dir.w + edgeSoftness, dot(toLight, light.dir.xyz));
+
+	float	falloff = lightDebug ? 1. : (1. / (dist * dist + 1.));
+	float	diffuse = max(dot(surfaceNormal, -toLight), 0.);
+	return (light.color.xyz * (light.color.w * diffuse * falloff * coneIntensity));
+}
+
+vec3	getThreeLightsColor(vec3 surfaceNormal, bool lightDebug) {
+	float	lightOffset = 2.0943951023931953;
+	Spotlight	redSpotlight = Spotlight(
+		vec3(cos(ubo.elapsedTime * 0.5) * 3, 10., sin(ubo.elapsedTime * 0.5) * 3),
+		vec4(normalize(vec3(0., -1., 0.)), 0.5 + cos(ubo.elapsedTime * 3) * 0.1),
+		vec4(1., 0., 0., (sin(ubo.elapsedTime) * 0.25 + 0.75) * 100.)
+	);
+	Spotlight	greenSpotlight = Spotlight(
+		vec3(cos(ubo.elapsedTime * 0.5 + lightOffset) * 3, 10., sin(ubo.elapsedTime * 0.5 + lightOffset) * 3),
+		vec4(normalize(vec3(0., -1., 0.)), 0.5 + cos(ubo.elapsedTime * 3) * 0.1),
+		vec4(0., 1., 0., (sin(ubo.elapsedTime) * 0.25 + 0.75) * 100.)
+	);
+	Spotlight	blueSpotlight = Spotlight(
+		vec3(cos(ubo.elapsedTime * 0.5 + 2 * lightOffset) * 3, 10., sin(ubo.elapsedTime * 0.5 + 2 * lightOffset) * 3),
+		vec4(normalize(vec3(0., -1., 0.)), 0.5 + cos(ubo.elapsedTime * 3) * 0.1),
+		vec4(0., 0., 1., (sin(ubo.elapsedTime) * 0.25 + 0.75) * 100.)
+	);
+
+	return (getColorFromSpotlight(surfaceNormal, redSpotlight, lightDebug) +
+		getColorFromSpotlight(surfaceNormal, greenSpotlight, lightDebug) +
+		getColorFromSpotlight(surfaceNormal, blueSpotlight, lightDebug));
+}
+
+vec3	getOneAlternatingLight(vec3 surfaceNormal, bool lightDebug) {
+	float	interval = 2.0943951023931953;
+	Spotlight	light = Spotlight(
+		vec3(10., 20., 10.),
+		vec4(normalize(vec3(-2., -2, -2.)), 0.8),
+		vec4(cos(ubo.elapsedTime),
+			cos(ubo.elapsedTime + interval),
+			cos(ubo.elapsedTime + 2 * interval),
+			1000.)
+	);
+
+	return (getColorFromSpotlight(surfaceNormal, light, lightDebug));
+}
+
 void	main() {
-	bool	debugColor = true;
-	if (debugColor)
-		outColor = vec4(hashColor(gl_PrimitiveID), 1.0);
-	else
-		outColor = vec4(fragColor, 1.0);
+	bool	triangleDebug = false;
+	bool	normalDebug = false;
+	bool	lightDebug = false;
+	vec3	surfaceNormal = normalize(inNormal);
+
+	float	ambientLight = 0.01;
+	vec3	lightRecieved = vec3(ambientLight) + getThreeLightsColor(surfaceNormal, lightDebug);
+
+	vec3 baseColor = triangleDebug ? hashColor(gl_PrimitiveID) :
+					(normalDebug ? vec3(normalize(inNormal) * 0.5 + 0.5) : inColor);
+	outColor = lightDebug ? vec4(lightRecieved, 1.) : vec4(baseColor * lightRecieved, 1.);
 }
