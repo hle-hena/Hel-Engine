@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/17 19:39:52                                        */
+/*  Last Modified: 2026/02/17 19:51:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -53,19 +53,19 @@ struct	Spotlight {
 	vec4	color;	//color.w beeing the intensity;
 };
 
-vec3	getColorFromSpotlight(vec3 surfaceNormal, Spotlight light) {
+vec3	getColorFromSpotlight(vec3 surfaceNormal, Spotlight light, bool lightDebug) {
 	vec3	toLight = inPos - light.pos;
 	float	dist = length(toLight);
 	toLight = normalize(toLight);
 
-	float	edgeSoftness = 1.0 - (1. / (dist + 1.));
+	float	edgeSoftness = lightDebug ? 0. : 1.0 - (1. / (dist + 1.));
 	float	coneIntensity = smoothstep(light.dir.w, light.dir.w + edgeSoftness, dot(toLight, light.dir.xyz));
 
 	float	diffuse = max(dot(surfaceNormal, -toLight), 0.);
 	return (light.color.xyz * (light.color.w * diffuse * (1. / (dist * dist + 1.)) * coneIntensity));
 }
 
-vec3	getThreeLightsColor(vec3 surfaceNormal) {
+vec3	getThreeLightsColor(vec3 surfaceNormal, bool lightDebug) {
 	float	lightOffset = 2.0943951023931953;
 	Spotlight	redSpotlight = Spotlight(
 		vec3(cos(ubo.elapsedTime * 0.5) * 3, 10., sin(ubo.elapsedTime * 0.5) * 3),
@@ -83,12 +83,12 @@ vec3	getThreeLightsColor(vec3 surfaceNormal) {
 		vec4(0., 0., 1., (sin(ubo.elapsedTime) * 0.25 + 0.75) * 100.)
 	);
 
-	return (getColorFromSpotlight(surfaceNormal, redSpotlight) +
-		getColorFromSpotlight(surfaceNormal, greenSpotlight) +
-		getColorFromSpotlight(surfaceNormal, blueSpotlight));
+	return (getColorFromSpotlight(surfaceNormal, redSpotlight, lightDebug) +
+		getColorFromSpotlight(surfaceNormal, greenSpotlight, lightDebug) +
+		getColorFromSpotlight(surfaceNormal, blueSpotlight, lightDebug));
 }
 
-vec3	getOneAlternatingLight(vec3 surfaceNormal) {
+vec3	getOneAlternatingLight(vec3 surfaceNormal, bool lightDebug) {
 	float	interval = 2.0943951023931953;
 	Spotlight	light = Spotlight(
 		vec3(10., 20., 10.),
@@ -99,7 +99,7 @@ vec3	getOneAlternatingLight(vec3 surfaceNormal) {
 			1000.)
 	);
 
-	return (getColorFromSpotlight(surfaceNormal, light));
+	return (getColorFromSpotlight(surfaceNormal, light, lightDebug));
 }
 
 void	main() {
@@ -109,9 +109,9 @@ void	main() {
 	vec3	surfaceNormal = normalize(inNormal);
 
 	float	ambientLight = 0.01;
-	vec3	lightRecieved = vec3(ambientLight) + getThreeLightsColor(surfaceNormal);
+	vec3	lightRecieved = vec3(ambientLight) + getOneAlternatingLight(surfaceNormal, lightDebug);
 
 	vec3 baseColor = triangleDebug ? hashColor(gl_PrimitiveID) :
 					(normalDebug ? vec3(normalize(inNormal) * 0.5 + 0.5) : inColor);
-	outColor = vec4(baseColor * lightRecieved, 1.);
+	outColor = lightDebug ? vec4(lightRecieved, 1.) : vec4(baseColor * lightRecieved, 1.);
 }
