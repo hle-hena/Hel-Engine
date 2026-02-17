@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:04:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/15 22:34:58                                        */
+/*  Last Modified: 2026/02/16 16:09:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,10 +25,11 @@ namespace	hel {
 class	GLFW {
 	private:
 		~GLFW(void) = delete;
-		static inline uint32_t	_instanceCount = 0;
-		static inline uint32_t	_maxInstanceCount = 10;
+		static inline uint32_t			_instanceCount = 0;
 
 	public:
+		static inline const uint32_t	_maxInstanceCount = 10;
+
 		static bool	acquire(void) {
 			if (_instanceCount == _maxInstanceCount) {
 				std::cerr << "The max number of window has been reached." << std::endl;

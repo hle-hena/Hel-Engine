@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:14:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 15:15:00                                        */
+/*  Last Modified: 2026/02/16 18:09:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,10 +28,11 @@
 namespace	hel {
 
 class	AssetManager;
+class	Window;
 
 struct	PushConstantData {
-	glm::mat4	viewProjection;
-	glm::mat4	objectTransform;
+	glm::mat4	modelMatrix;
+	glm::mat4	normalMatrix;
 };
 
 class	RenderSystem : public ISystem {
@@ -40,7 +41,7 @@ class	RenderSystem : public ISystem {
 					VkDescriptorSetLayout &setLayout);
 		~RenderSystem(void) override;
 
-		void	render(VkCommandBuffer commandBuffer, Window &window,
+		void	render(WindowResources &resources, uint32_t currentFrame,
 						uint32_t imageIndex) override;
 
 	private:

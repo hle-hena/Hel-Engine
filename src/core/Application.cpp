@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/11 15:49:24                                        */
+/*  Last Modified: 2026/02/17 20:13:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,11 +48,47 @@ Application::~Application(void) {
 }
 
 void	Application::loadPrimaryScene(void) {
+		Entity::id	dragonHandle = _registry.createEntity();
+	if (auto mesh = _registry.modify(_registry.addComponent<Model>(dragonHandle))) {
+		mesh->filePath = "assets/models/dragon.obj";
+	}
+	if (auto transform = _registry.modify(_registry.addComponent<Transform>(dragonHandle))) {
+		transform->scale = glm::vec3(4.f);
+	}
+	Entity::id	dragonSecondHandle = _registry.createEntity();
+	if (auto mesh = _registry.modify(_registry.addComponent<Model>(dragonSecondHandle))) {
+		mesh->filePath = "assets/models/dragon.obj";
+	}
+	if (auto transform = _registry.modify(_registry.addComponent<Transform>(dragonSecondHandle))) {
+		transform->position = glm::vec3(2.f, 0.f, 2.f);
+		transform->rotation = glm::quat(0.932, -0.267, 0.237, -0.059);
+	}
 	Entity::id	handle = _registry.createEntity();
 	if (auto mesh = _registry.modify(_registry.addComponent<Model>(handle))) {
-		mesh->filePath = "assets/models/colored_cube.obj";
+		mesh->filePath = "assets/models/flat_vase.obj";
 	}
-	_registry.addComponent<Transform>(handle);
+	if (auto transform = _registry.modify(_registry.addComponent<Transform>(handle))) {
+		transform->position = glm::vec3(-2.f, 0.f, -2.f);
+		transform->scale = glm::vec3(4.f, 2.f, 4.f);
+		transform->scale.y = -transform->scale.y;
+	}
+	Entity::id	secondHandle = _registry.createEntity();
+	if (auto mesh = _registry.modify(_registry.addComponent<Model>(secondHandle))) {
+		mesh->filePath = "assets/models/smooth_vase.obj";
+	}
+	if (auto transform = _registry.modify(_registry.addComponent<Transform>(secondHandle))) {
+		transform->position = glm::vec3(2.f, 0.f, 2.f);
+		transform->scale = glm::vec3(4.f);
+		transform->scale.y = -transform->scale.y;
+	}
+	Entity::id	thirdHandle = _registry.createEntity();
+	if (auto mesh = _registry.modify(_registry.addComponent<Model>(thirdHandle))) {
+		mesh->filePath = "assets/models/quad.obj";
+	}
+	if (auto transform = _registry.modify(_registry.addComponent<Transform>(thirdHandle))) {
+		transform->position = glm::vec3(0.f, 0.f, 0.f);
+		transform->scale = glm::vec3(400.f);
+	}
 }
 
 void	Application::run(void) {
@@ -62,14 +98,14 @@ void	Application::run(void) {
 		_registry.getInputState().newFrame();
 		glfwPollEvents();
 
-		_engine.updateGlobal();
+		_engine.updateFrame();
 		for (size_t i = 0; i < _appWindows.size(); i++) {
 			if (_appWindows[i]->shouldClose()) {
 				_appWindows.erase(_appWindows.begin() + i);
 				i--;
 				continue ;
 			}
-			_engine.runFrame(*_appWindows[i], currentFrame);
+			_engine.renderFrame(*_appWindows[i], currentFrame);
 		}
 
 		currentFrame = (currentFrame + 1) % Swapchain::MAX_FRAMES_IN_FLIGHT;
