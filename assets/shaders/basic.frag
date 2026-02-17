@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/17 19:51:49                                        */
+/*  Last Modified: 2026/02/17 19:54:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -61,8 +61,9 @@ vec3	getColorFromSpotlight(vec3 surfaceNormal, Spotlight light, bool lightDebug)
 	float	edgeSoftness = lightDebug ? 0. : 1.0 - (1. / (dist + 1.));
 	float	coneIntensity = smoothstep(light.dir.w, light.dir.w + edgeSoftness, dot(toLight, light.dir.xyz));
 
+	float	falloff = lightDebug ? 1. : (1. / (dist * dist + 1.));
 	float	diffuse = max(dot(surfaceNormal, -toLight), 0.);
-	return (light.color.xyz * (light.color.w * diffuse * (1. / (dist * dist + 1.)) * coneIntensity));
+	return (light.color.xyz * (light.color.w * diffuse * falloff * coneIntensity));
 }
 
 vec3	getThreeLightsColor(vec3 surfaceNormal, bool lightDebug) {
@@ -105,11 +106,11 @@ vec3	getOneAlternatingLight(vec3 surfaceNormal, bool lightDebug) {
 void	main() {
 	bool	triangleDebug = false;
 	bool	normalDebug = false;
-	bool	lightDebug = false;
+	bool	lightDebug = true;
 	vec3	surfaceNormal = normalize(inNormal);
 
 	float	ambientLight = 0.01;
-	vec3	lightRecieved = vec3(ambientLight) + getOneAlternatingLight(surfaceNormal, lightDebug);
+	vec3	lightRecieved = vec3(ambientLight) + getThreeLightsColor(surfaceNormal, lightDebug);
 
 	vec3 baseColor = triangleDebug ? hashColor(gl_PrimitiveID) :
 					(normalDebug ? vec3(normalize(inNormal) * 0.5 + 0.5) : inColor);
