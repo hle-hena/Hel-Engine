@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 22:16:08                                        */
+/*  Last Modified: 2026/02/17 19:39:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,11 +16,16 @@
 
 #version 450
 
+layout (location = 0) out vec4		outColor;
+
 layout (location = 0) in vec3		inColor;
 layout (location = 1) in vec3		inPos;
 layout (location = 2) in vec3		inNormal;
 
-layout (location = 0) out vec4		outColor;
+layout (binding = 0) uniform UniformBufferObject {
+	mat4	viewProjection;
+	float	elapsedTime;
+}	ubo;
 
 float	squirrelHash(int position, uint noise1, uint noise2, uint noise3) {
 	uint mangled = position;
@@ -42,14 +47,60 @@ vec3	hashColor(int primId) {
 	));
 }
 
-const vec3	spotlightPos = vec3(0., 10., 10.);
-const vec3	spotlightDir = normalize(vec3(-0., -1., -1.));
-const vec3	spotLightColor = vec3(1., 1., 1.);
-const float	spotLightIntensity = 1.;
-const float	spotLightAngle = 0.8f;
+struct	Spotlight {
+	vec3	pos;
+	vec4	dir;	//dir.w beeing the light out angle
+	vec4	color;	//color.w beeing the intensity;
+};
 
-const vec3	godRayDirection = normalize(vec3(10., 10., 1.));
-const float	ambientLight = 0.1f;
+vec3	getColorFromSpotlight(vec3 surfaceNormal, Spotlight light) {
+	vec3	toLight = inPos - light.pos;
+	float	dist = length(toLight);
+	toLight = normalize(toLight);
+
+	float	edgeSoftness = 1.0 - (1. / (dist + 1.));
+	float	coneIntensity = smoothstep(light.dir.w, light.dir.w + edgeSoftness, dot(toLight, light.dir.xyz));
+
+	float	diffuse = max(dot(surfaceNormal, -toLight), 0.);
+	return (light.color.xyz * (light.color.w * diffuse * (1. / (dist * dist + 1.)) * coneIntensity));
+}
+
+vec3	getThreeLightsColor(vec3 surfaceNormal) {
+	float	lightOffset = 2.0943951023931953;
+	Spotlight	redSpotlight = Spotlight(
+		vec3(cos(ubo.elapsedTime * 0.5) * 3, 10., sin(ubo.elapsedTime * 0.5) * 3),
+		vec4(normalize(vec3(0., -1., 0.)), 0.5 + cos(ubo.elapsedTime * 3) * 0.1),
+		vec4(1., 0., 0., (sin(ubo.elapsedTime) * 0.25 + 0.75) * 100.)
+	);
+	Spotlight	greenSpotlight = Spotlight(
+		vec3(cos(ubo.elapsedTime * 0.5 + lightOffset) * 3, 10., sin(ubo.elapsedTime * 0.5 + lightOffset) * 3),
+		vec4(normalize(vec3(0., -1., 0.)), 0.5 + cos(ubo.elapsedTime * 3) * 0.1),
+		vec4(0., 1., 0., (sin(ubo.elapsedTime) * 0.25 + 0.75) * 100.)
+	);
+	Spotlight	blueSpotlight = Spotlight(
+		vec3(cos(ubo.elapsedTime * 0.5 + 2 * lightOffset) * 3, 10., sin(ubo.elapsedTime * 0.5 + 2 * lightOffset) * 3),
+		vec4(normalize(vec3(0., -1., 0.)), 0.5 + cos(ubo.elapsedTime * 3) * 0.1),
+		vec4(0., 0., 1., (sin(ubo.elapsedTime) * 0.25 + 0.75) * 100.)
+	);
+
+	return (getColorFromSpotlight(surfaceNormal, redSpotlight) +
+		getColorFromSpotlight(surfaceNormal, greenSpotlight) +
+		getColorFromSpotlight(surfaceNormal, blueSpotlight));
+}
+
+vec3	getOneAlternatingLight(vec3 surfaceNormal) {
+	float	interval = 2.0943951023931953;
+	Spotlight	light = Spotlight(
+		vec3(10., 20., 10.),
+		vec4(normalize(vec3(-2., -2, -2.)), 0.8),
+		vec4(cos(ubo.elapsedTime),
+			cos(ubo.elapsedTime + interval),
+			cos(ubo.elapsedTime + 2 * interval),
+			1000.)
+	);
+
+	return (getColorFromSpotlight(surfaceNormal, light));
+}
 
 void	main() {
 	bool	triangleDebug = false;
@@ -57,16 +108,10 @@ void	main() {
 	bool	lightDebug = false;
 	vec3	surfaceNormal = normalize(inNormal);
 
-	vec3	toLight = inPos - spotlightPos;
-	float	distSquared = dot(toLight, toLight);
-	toLight = normalize(toLight);
-	float	edgeSoftness = distSquared / 10000.;
-	float	coneIntensity = smoothstep(spotLightAngle, spotLightAngle + edgeSoftness, dot(toLight, spotlightDir));
-	float	diffuse = max(dot(surfaceNormal, -toLight), 0.);
-
-	vec3	intensity = vec3((diffuse * coneIntensity) + ambientLight);
+	float	ambientLight = 0.01;
+	vec3	lightRecieved = vec3(ambientLight) + getThreeLightsColor(surfaceNormal);
 
 	vec3 baseColor = triangleDebug ? hashColor(gl_PrimitiveID) :
 					(normalDebug ? vec3(normalize(inNormal) * 0.5 + 0.5) : inColor);
-	outColor = vec4(baseColor * intensity, 1.);
+	outColor = vec4(baseColor * lightRecieved, 1.);
 }

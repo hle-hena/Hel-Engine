@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 18:07:57                                        */
+/*  Last Modified: 2026/02/17 17:09:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,6 +36,7 @@ Engine::Engine(Device &device, Registry &registry)
 		_transformSystem{device, registry, _setLayout},
 		_cameraSystem{device, registry, _setLayout},
 		_controllerSystem{device, registry, _setLayout} {
+	_timer.start();
 }
 
 Engine::~Engine(void) {
@@ -67,7 +68,7 @@ bool	Engine::createDescriptorSetLayout(void) {
 	globalUboBinding.binding = 0;
 	globalUboBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	globalUboBinding.descriptorCount = 1;
-	globalUboBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	globalUboBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
 	VkDescriptorSetLayoutCreateInfo	createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -174,6 +175,7 @@ void	Engine::updateGlobalUBO(Window &window, uint32_t currentFrame) {
 	data.viewProjection = glm::mat4{0.f};
 	if (auto *camera = _registry.getComponent<Camera>(window.getEntityReference())) {
 		data.viewProjection = camera->viewProjection;
+		data.elapsedTime = _timer.elapsedTime();
 	}
 	resources->globalUbos[currentFrame]->writeToBuffer(&data);
 }

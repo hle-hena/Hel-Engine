@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: basic.vert                                                          */
+/*  File: Timer.hpp                                                           */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/27 17:07:52 by hle-hena                                  */
+/*  Created: 2026/02/17 16:36:44 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/17 17:07:29                                        */
+/*  Last Modified: 2026/02/17 17:11:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,30 +14,24 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#version 450
+#pragma once
 
-layout (location = 0) out vec3	fragColor;
-layout (location = 1) out vec3	fragPos;
-layout (location = 2) out vec3	fragNormal;
+# include <chrono>
 
-layout (location = 0) in vec3	inPos;
-layout (location = 1) in vec3	inColor;
-layout (location = 2) in vec3	inNormal;
+namespace	hel {
 
-layout (binding = 0) uniform UniformBufferObject {
-	mat4	viewProjection;
-	float	elapsedTime;
-}	ubo;
+class	Timer {
+	public:
+		void	start(void)	 {_startTime = clock::now(); }
 
-layout (push_constant) uniform Push {
-	mat4	modelMatrix;
-	mat4	normalMatrix;
-} push;
+		template <typename Ratio = std::ratio<1>>
+		float	elapsedTime(void) {
+			return (std::chrono::duration<float, Ratio>(clock::now() - _startTime).count());
+		}
 
-void	main() {
-	vec4	positionInWorld = push.modelMatrix * vec4(inPos, 1.0);
-	gl_Position = ubo.viewProjection * positionInWorld;
-	fragColor = inColor;
-	fragPos = vec3(positionInWorld);
-	fragNormal = normalize(mat3(push.normalMatrix) * inNormal);
+	private:
+		using clock = std::chrono::steady_clock;
+		std::chrono::time_point<clock>	_startTime;
+};
+
 }

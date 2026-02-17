@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 17:49:49                                        */
+/*  Last Modified: 2026/02/17 17:05:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,6 +25,7 @@
 #include "ecs/system/TransformSystem.hpp"
 #include "ecs/system/CameraSystem.hpp"
 #include "ecs/system/ControllerSystem.hpp"
+#include "utils/Timer.hpp"
 
 #include "api/vulkan/Swapchain.hpp"
 #include "api/vulkan/Buffer.hpp"
@@ -37,6 +38,7 @@ class	Registry;
 
 struct	GlobalUBO {
 	glm::mat4	viewProjection;
+	float		elapsedTime;
 };
 
 struct	WindowResources {
@@ -79,6 +81,7 @@ class	Engine {
 		std::string										_reason{""};
 		Device											&_device;
 		Registry										&_registry;
+		Timer											_timer;
 		VkCommandPool									_commandPool{VK_NULL_HANDLE};
 		VkDescriptorPool								_descriptorPool{VK_NULL_HANDLE};
 		VkDescriptorSetLayout							_setLayout{VK_NULL_HANDLE};
