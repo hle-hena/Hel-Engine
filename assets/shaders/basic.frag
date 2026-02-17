@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/17 19:54:20                                        */
+/*  Last Modified: 2026/02/17 20:11:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -106,7 +106,7 @@ vec3	getOneAlternatingLight(vec3 surfaceNormal, bool lightDebug) {
 void	main() {
 	bool	triangleDebug = false;
 	bool	normalDebug = false;
-	bool	lightDebug = true;
+	bool	lightDebug = false;
 	vec3	surfaceNormal = normalize(inNormal);
 
 	float	ambientLight = 0.01;
