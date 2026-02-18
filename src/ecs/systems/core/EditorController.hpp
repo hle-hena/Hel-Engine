@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: ControllerSystem.hpp                                                */
+/*  File: EditorController.hpp                                                */
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/03 18:58:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 11:19:45                                        */
+/*  Last Modified: 2026/02/18 17:56:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,18 +16,22 @@
 
 #pragma once
 
-# include "ecs/system/ISystem.hpp"
+# include "ecs/systems/ISystem.hpp"
 # include "ecs/Entity.hpp"
 
 namespace	hel {
 
 class	InputState;
 
-class	ControllerSystem : public ISystem {
+}
+
+namespace	hel::sys {
+
+class	SEditorController : public ISystem {
 	public:
-		ControllerSystem(Device &device, Registry &registry,
+		SEditorController(Device &device, Registry &registry,
 						VkDescriptorSetLayout &setLayout);
-		~ControllerSystem(void) override;
+		~SEditorController(void) override;
 
 		void	update(float deltaTime) override;
 

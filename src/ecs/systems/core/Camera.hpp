@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: CameraSystem.hpp                                                    */
+/*  File: Camera.hpp                                                          */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/02 11:50:40 by hle-hena                                  */
+/*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 11:18:43                                        */
+/*  Last Modified: 2026/02/18 17:55:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,15 +16,15 @@
 
 #pragma once
 
-# include "ecs/system/ISystem.hpp"
+# include "ecs/systems/ISystem.hpp"
 
-namespace	hel {
+namespace	hel::sys {
 
-class	CameraSystem : public ISystem {
+class	SCamera : public ISystem {
 	public:
-		CameraSystem(Device &device, Registry &registry,
+		SCamera(Device &device, Registry &registry,
 			VkDescriptorSetLayout &setLayout);
-		~CameraSystem(void) override;
+		~SCamera(void) override;
 
 		void	update(float deltaTime) override;
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 11:18:26                                        */
+/*  Last Modified: 2026/02/18 17:51:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,6 +23,10 @@ namespace	hel {
 class	Device;
 class	Registry;
 struct	WindowResources;
+
+}
+
+namespace	hel::sys {
 
 class	ISystem {
 	public:

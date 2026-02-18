@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: CameraSystem.cpp                                                    */
+/*  File: Camera.cpp                                                          */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/02 11:50:52 by hle-hena                                  */
+/*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 11:19:14                                        */
+/*  Last Modified: 2026/02/18 17:55:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,21 +14,21 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/system/CameraSystem.hpp"
+#include "ecs/systems/core/Camera.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
 #include "platform/window/Window.hpp"
 
-namespace	hel {
+namespace	hel::sys {
 
-CameraSystem::CameraSystem(Device &device, Registry &registry, VkDescriptorSetLayout &setLayout)
+SCamera::SCamera(Device &device, Registry &registry, VkDescriptorSetLayout &setLayout)
 	:	ISystem(device, registry, setLayout) {
 }
 
-CameraSystem::~CameraSystem(void) {
+SCamera::~SCamera(void) {
 }
 
-void	CameraSystem::update(float deltaTime) {
+void	SCamera::update(float deltaTime) {
 	auto	entities = _registry.view<Transform, Camera>();
 
 	for (auto entity: entities) {

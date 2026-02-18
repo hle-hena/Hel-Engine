@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: ControllerSystem.cpp                                                */
+/*  File: EditorController.cpp                                                */
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/03 18:56:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 14:55:10                                        */
+/*  Last Modified: 2026/02/18 17:55:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,24 +14,24 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/system/ControllerSystem.hpp"
+#include "ecs/systems/core/EditorController.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
 #include "platform/input/InputState.hpp"
 #include "platform/window/Window.hpp"
 
-namespace	hel {
+namespace	hel::sys {
 
-ControllerSystem::ControllerSystem(Device &device, Registry &registry,
+SEditorController::SEditorController(Device &device, Registry &registry,
 						VkDescriptorSetLayout &setLayout)
 	:	ISystem(device, registry, setLayout),
 		_input{registry.getInputState()} {
 }
 
-ControllerSystem::~ControllerSystem(void) {
+SEditorController::~SEditorController(void) {
 }
 
-void	ControllerSystem::handleKeyboardInput(Entity::id handle, float deltaTime) {
+void	SEditorController::handleKeyboardInput(Entity::id handle, float deltaTime) {
 	auto	*constTransform = _registry.getComponent<Transform>(handle);
 	auto	*constController = _registry.getComponent<Controller>(handle);
 	if (!constTransform || !constController)	{ return ; }
@@ -95,7 +95,7 @@ void	ControllerSystem::handleKeyboardInput(Entity::id handle, float deltaTime) {
 		transform->position += delta;
 }
 
-void ControllerSystem::handleMouseMove(Entity::id handle) {
+void SEditorController::handleMouseMove(Entity::id handle) {
     if (!_input.mouseMoved()) { return ; }
     auto *constTransform = _registry.getComponent<Transform>(handle);
     auto *constController = _registry.getComponent<Controller>(handle);
@@ -123,7 +123,7 @@ void ControllerSystem::handleMouseMove(Entity::id handle) {
     }
 }
 
-void	ControllerSystem::update(float deltaTime) {
+void	SEditorController::update(float deltaTime) {
 	auto	window = _input.getFocused();
 	if (!window)	{ return ; }
 
@@ -133,4 +133,3 @@ void	ControllerSystem::update(float deltaTime) {
 }
 
 }
-

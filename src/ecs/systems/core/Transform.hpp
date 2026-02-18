@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: TransformSystem.hpp                                                 */
+/*  File: Transform.hpp                                                       */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/22 15:07:06 by hle-hena                                  */
+/*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 11:18:46                                        */
+/*  Last Modified: 2026/02/18 18:01:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,15 +16,15 @@
 
 #pragma once
 
-#include "ecs/system/ISystem.hpp"
+#include "ecs/systems/ISystem.hpp"
 
-namespace	hel {
+namespace	hel::sys {
 
-class	TransformSystem : public ISystem {
+class	STransform : public ISystem {
 	public:
-		TransformSystem(Device &device, Registry &registry,
+		STransform(Device &device, Registry &registry,
 						VkDescriptorSetLayout &setLayout);
-		~TransformSystem(void) override;
+		~STransform(void) override;
 
 		void	update(float deltaTime) override;
 

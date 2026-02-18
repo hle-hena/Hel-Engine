@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: TransformSystem.cpp                                                 */
+/*  File: Transform.cpp                                                       */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/22 15:06:58 by hle-hena                                  */
+/*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 11:18:54                                        */
+/*  Last Modified: 2026/02/18 18:03:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,21 +14,21 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/system/TransformSystem.hpp"
+#include "ecs/systems/core/Transform.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
 
-namespace	hel {
+namespace	hel::sys {
 
-TransformSystem::TransformSystem(Device &device, Registry &registry,
+STransform::STransform(Device &device, Registry &registry,
 								VkDescriptorSetLayout &setLayout)
 	:	ISystem(device, registry, setLayout) {
 }
 
-TransformSystem::~TransformSystem(void) {
+STransform::~STransform(void) {
 }
 
-void	TransformSystem::update(float deltaTime) {
+void	STransform::update(float deltaTime) {
 	auto	entities = _registry.view<Transform>();
 
 	for (auto entity: entities) {

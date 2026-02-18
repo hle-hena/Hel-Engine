@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: RenderSystem.cpp                                                    */
+/*  File: Render.cpp                                                          */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/27 17:14:23 by hle-hena                                  */
+/*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 18:19:56                                        */
+/*  Last Modified: 2026/02/18 17:58:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,7 +14,7 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/system/RenderSystem.hpp"
+#include "ecs/systems/core/Render.hpp"
 #include "platform/window/Window.hpp"
 #include "api/vulkan/Device.hpp"
 #include "api/vulkan/Buffer.hpp"
@@ -25,20 +25,20 @@
 #include "ecs/assets/Shader.hpp"
 #include "core/Engine.hpp"
 
-namespace	hel {
+namespace	hel::sys {
 
-RenderSystem::RenderSystem(Device &device, Registry &registry,
+SRender::SRender(Device &device, Registry &registry,
 						VkDescriptorSetLayout &setLayout)
 	:	ISystem(device, registry, setLayout),
 		_assetManager{registry.getAssetManager()} {
 }
 
-RenderSystem::~RenderSystem(void) {
+SRender::~SRender(void) {
 	if (_pipelineLayout != VK_NULL_HANDLE)
 		vkDestroyPipelineLayout(_device.getLogical(), _pipelineLayout, nullptr);
 }
 
-void	RenderSystem::render(WindowResources &resources, uint32_t currentFrame,
+void	SRender::render(WindowResources &resources, uint32_t currentFrame,
 							uint32_t imageIndex) {
 	auto	&window = *resources.window;
 	auto	commandBuffer = resources.commandBuffers[currentFrame];
@@ -77,7 +77,7 @@ void	RenderSystem::render(WindowResources &resources, uint32_t currentFrame,
 	endRenderPass(commandBuffer);
 }
 
-void	RenderSystem::beginRenderPass(VkCommandBuffer commandBuffer, Window &window,
+void	SRender::beginRenderPass(VkCommandBuffer commandBuffer, Window &window,
 									uint32_t imageIndex, SystemPipeline *pipeline) {
 	Swapchain	&swapchain = window.getSwapchain();
 	VkExtent2D	extent = swapchain.getExtent();
@@ -106,13 +106,13 @@ void	RenderSystem::beginRenderPass(VkCommandBuffer commandBuffer, Window &window
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
-void	RenderSystem::endRenderPass(VkCommandBuffer commandBuffer) {
+void	SRender::endRenderPass(VkCommandBuffer commandBuffer) {
 	vkCmdEndRenderPass(commandBuffer);
 }
 
 
 
-RenderSystem::SystemPipeline	*RenderSystem::getPipelineForFormat(VkFormat format, VkFormat depthFormat) {
+SRender::SystemPipeline	*SRender::getPipelineForFormat(VkFormat format, VkFormat depthFormat) {
 	if (_pipelines.find(format) != _pipelines.end())
 		return (_pipelines[format].get());
 	auto	pipeline = std::make_unique<SystemPipeline>(*this, format, depthFormat);
@@ -122,24 +122,24 @@ RenderSystem::SystemPipeline	*RenderSystem::getPipelineForFormat(VkFormat format
 	return (_pipelines[format].get());
 }
 
-RenderSystem::SystemPipeline::SystemPipeline(RenderSystem &system, VkFormat format, VkFormat depthFormat)
+SRender::SystemPipeline::SystemPipeline(SRender &system, VkFormat format, VkFormat depthFormat)
 	:	_format{format},
 		_depthFormat{depthFormat},
 		_pipeline{system._device},
 		_system{system} {
 }
 
-RenderSystem::SystemPipeline::~SystemPipeline(void) {
+SRender::SystemPipeline::~SystemPipeline(void) {
 	_pipeline.deleteGraphicsPipeline();
 	if (_renderPass != VK_NULL_HANDLE)
 		vkDestroyRenderPass(_system._device.getLogical(), _renderPass, nullptr);
 }
 
-bool	RenderSystem::SystemPipeline::init(void) {
+bool	SRender::SystemPipeline::init(void) {
 	return (createRenderPass() || createPipeline());
 }
 
-VkPipelineLayout	*RenderSystem::getPipelineLayout(void) {
+VkPipelineLayout	*SRender::getPipelineLayout(void) {
 	if (_pipelineLayout != VK_NULL_HANDLE)
 		return (&_pipelineLayout);
 
@@ -160,7 +160,7 @@ VkPipelineLayout	*RenderSystem::getPipelineLayout(void) {
 	return (&_pipelineLayout);
 }
 
-bool	RenderSystem::SystemPipeline::createRenderPass(void) {
+bool	SRender::SystemPipeline::createRenderPass(void) {
 	VkAttachmentDescription	colorAttachment{};
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	colorAttachment.format = _format;
@@ -218,7 +218,7 @@ bool	RenderSystem::SystemPipeline::createRenderPass(void) {
 	return (false);
 }
 
-bool	RenderSystem::SystemPipeline::createPipeline(void) {
+bool	SRender::SystemPipeline::createPipeline(void) {
 	auto	pipelineLayout = _system.getPipelineLayout();
 	if (pipelineLayout == nullptr)
 		return (true);

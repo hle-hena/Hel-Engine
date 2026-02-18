@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 11:17:14                                        */
+/*  Last Modified: 2026/02/18 18:02:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,10 +21,10 @@
 #include <memory>
 #include <cassert>
 
-#include "ecs/system/RenderSystem.hpp"
-#include "ecs/system/TransformSystem.hpp"
-#include "ecs/system/CameraSystem.hpp"
-#include "ecs/system/ControllerSystem.hpp"
+#include "ecs/systems/core/Render.hpp"
+#include "ecs/systems/core/Transform.hpp"
+#include "ecs/systems/core/Camera.hpp"
+#include "ecs/systems/core/EditorController.hpp"
 #include "utils/Timer.hpp"
 
 #include "api/vulkan/Swapchain.hpp"
@@ -87,10 +87,10 @@ class	Engine {
 		VkDescriptorPool								_descriptorPool{VK_NULL_HANDLE};
 		VkDescriptorSetLayout							_setLayout{VK_NULL_HANDLE};
 		std::unordered_map<Window*, WindowResources>	_perWindowResources;
-		RenderSystem									_renderSystem;
-		TransformSystem									_transformSystem;
-		CameraSystem									_cameraSystem;
-		ControllerSystem								_controllerSystem;
+		sys::SRender									_renderSystem;
+		sys::STransform									_transformSystem;
+		sys::SCamera									_cameraSystem;
+		sys::SEditorController							_controllerSystem;
 		uint32_t										_currentFrameIndex{0};
 };
 
