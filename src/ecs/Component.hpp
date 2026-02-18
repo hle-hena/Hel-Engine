@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:05:36                                        */
+/*  Last Modified: 2026/02/18 19:40:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,6 +25,9 @@
 
 namespace	hel::comp {
 
+struct	EditorControllerTag {
+};
+
 struct	Name {
 	std::string	name;
 };
@@ -33,8 +36,6 @@ struct	Transform {
 	glm::vec3	position{0.f};
 	glm::quat	rotation{1.f, 0.f, 0.f, 0.f};
 	glm::vec3	scale{1.f};
-
-	glm::vec3	localUp{0., 1., 0.};
 
 	glm::mat4	worldMatrix{1.f};
 	glm::mat4	normalMatrix{1.f};

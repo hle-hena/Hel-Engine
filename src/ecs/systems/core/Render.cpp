@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:09:56                                        */
+/*  Last Modified: 2026/02/18 18:49:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -54,11 +54,8 @@ void	Render::render(WindowResources &resources, uint32_t currentFrame,
 	for (auto entity: entities) {
 		auto	mesh = _assetManager.get<Geometry>(entities.get<comp::Model>(entity)->filePath);
 		if (!mesh)	{ continue ; }
-		PushConstantData	push{};
-		if (auto transform = entities.get<comp::Transform>(entity)) {
-			push.modelMatrix = transform->worldMatrix;
-			push.normalMatrix = transform->normalMatrix;
-		}
+		auto	*transform = entities.get<comp::Transform>(entity);
+		PushConstantData	push{transform->worldMatrix, transform->normalMatrix};
 
 		vkCmdPushConstants(commandBuffer, _pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
 							0, sizeof(PushConstantData), &push);

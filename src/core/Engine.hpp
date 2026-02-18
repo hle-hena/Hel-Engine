@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:10:50                                        */
+/*  Last Modified: 2026/02/18 19:27:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,6 +25,10 @@
 #include "ecs/systems/core/Transform.hpp"
 #include "ecs/systems/core/Camera.hpp"
 #include "ecs/systems/core/EditorController.hpp"
+
+#include "ecs/systems/runtime/BaseController.hpp"
+#include "ecs/systems/runtime/SurfaceAllignement.hpp"
+
 #include "utils/Timer.hpp"
 
 #include "api/vulkan/Swapchain.hpp"
@@ -90,7 +94,9 @@ class	Engine {
 		sys::Render										_renderSystem;
 		sys::Transform									_transformSystem;
 		sys::Camera										_cameraSystem;
-		sys::EditorController							_controllerSystem;
+		sys::EditorController							_editorControllerSystem;
+		sys::BaseController								_baseControllerSystem;
+		sys::SurfaceAllignement							_surfaceAllignementSystem;
 		uint32_t										_currentFrameIndex{0};
 };
 

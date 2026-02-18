@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: EditorController.cpp                                                */
+/*  File: BaseController.cpp                                                  */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/03 18:56:59 by hle-hena                                  */
+/*  Created: 2026/02/18 18:14:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 19:24:00                                        */
+/*  Last Modified: 2026/02/18 19:14:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,7 +14,7 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/systems/core/EditorController.hpp"
+#include "ecs/systems/runtime/BaseController.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
 #include "platform/input/InputState.hpp"
@@ -22,22 +22,24 @@
 
 namespace	hel::sys {
 
-EditorController::EditorController(Device &device, Registry &registry,
+BaseController::BaseController(Device &device, Registry &registry,
 						VkDescriptorSetLayout &setLayout)
 	:	ISystem(device, registry, setLayout),
 		_input{registry.getInputState()} {
 }
 
-EditorController::~EditorController(void) {
+BaseController::~BaseController(void) {
 }
 
-void	EditorController::handleKeyboardInput(Entity::id handle, float deltaTime) {
+void	BaseController::handleKeyboardInput(Entity::id handle, float deltaTime) {
 	auto	*constTransform = _registry.getComponent<comp::Transform>(handle);
 	auto	*constController = _registry.getComponent<comp::Controller>(handle);
-	auto	*tag = _registry.getComponent<comp::EditorControllerTag>(handle);
-	if (!constTransform || !constController || !tag)	{ return ; }
+	if (!constTransform || !constController)	{ return ; }
 
 	glm::vec3	upVector = glm::vec3(0., 1., 0.);
+	if (auto *surface = _registry.getComponent<comp::SurfaceAllignement>(handle))
+		upVector = surface->localUp;
+
 	glm::vec3	forwardVec = constTransform->rotation * glm::vec3(0.f, 0.f, -1.f);
 	glm::vec3	rightVec   = constTransform->rotation * glm::vec3(1.f, 0.f, 0.f);
 	forwardVec = glm::normalize(forwardVec - glm::dot(forwardVec, upVector) * upVector);
@@ -69,12 +71,11 @@ void	EditorController::handleKeyboardInput(Entity::id handle, float deltaTime) {
 		transform->position += delta;
 }
 
-void	EditorController::handleMouseMove(Entity::id handle) {
+void	BaseController::handleMouseMove(Entity::id handle) {
 	if (!_input.mouseMoved())	{ return ; }
 	auto	*constTransform = _registry.getComponent<comp::Transform>(handle);
 	auto	*constController = _registry.getComponent<comp::Controller>(handle);
-	auto	*tag = _registry.getComponent<comp::EditorControllerTag>(handle);
-	if (!constTransform || !constController || !tag)	{ return ; }
+	if (!constTransform || !constController)	{ return ; }
 
 	int	dx, dy;
 	_input.getMouseDelta(dx, dy);
@@ -82,6 +83,8 @@ void	EditorController::handleMouseMove(Entity::id handle) {
 
 	auto		transform = _registry.modify<comp::Transform>(handle);
 	glm::vec3	upVector = glm::vec3(0., 1., 0.);
+	if (auto *allign = _registry.getComponent<comp::SurfaceAllignement>(handle))
+		upVector = allign->localUp;
 	glm::quat	qYaw = glm::angleAxis(-static_cast<float>(dx) * sensitivity,
 					upVector);
 	glm::quat	qPitch = glm::angleAxis(-static_cast<float>(dy) * sensitivity,
@@ -89,13 +92,13 @@ void	EditorController::handleMouseMove(Entity::id handle) {
 	transform->rotation = glm::normalize(qYaw * qPitch * transform->rotation);
 }
 
-void	EditorController::update(float deltaTime) {
+void	BaseController::update(float deltaTime) {
 	auto	window = _input.getFocused();
 	if (!window)	{ return ; }
 
 	Entity::id	handle = window->getEntityReference();
-	handleKeyboardInput(handle, deltaTime);
 	handleMouseMove(handle);
+	handleKeyboardInput(handle, deltaTime);
 }
 
 }

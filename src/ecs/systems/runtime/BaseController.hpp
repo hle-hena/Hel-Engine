@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: ISystem.hpp                                                         */
+/*  File: BaseController.hpp                                                  */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
+/*  Created: 2026/02/18 18:14:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:27:08                                        */
+/*  Last Modified: 2026/02/18 18:33:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,39 +16,30 @@
 
 #pragma once
 
-# include <vulkan/vulkan.h>
+# include "ecs/systems/ISystem.hpp"
+# include "ecs/Entity.hpp"
 
 namespace	hel {
 
-class	Device;
-class	Registry;
-struct	WindowResources;
+class	InputState;
 
 }
 
 namespace	hel::sys {
 
-class	ISystem {
+class	BaseController : public ISystem {
 	public:
-		ISystem(Device &device, Registry &registry,
-				VkDescriptorSetLayout &setLayout):
-			_device{device},
-			_registry{registry},
-			_setLayout{setLayout} {}
-		virtual ~ISystem(void) = 0;
+		BaseController(Device &device, Registry &registry,
+						VkDescriptorSetLayout &setLayout);
+		~BaseController(void) override;
 
-		ISystem(const ISystem &other) = delete;
-		ISystem	&operator=(const ISystem &other) = delete;
+		void	update(float deltaTime) override;
 
-		virtual void	update(float) {}
-		virtual void	render(WindowResources &, uint32_t, uint32_t) {}
+	private:
+		void	handleKeyboardInput(Entity::id handle, float deltaTime);
+		void	handleMouseMove(Entity::id handle);
 
-	protected:
-		Device					&_device;
-		Registry				&_registry;
-		VkDescriptorSetLayout	&_setLayout;
+		InputState	&_input;
 };
-
-inline	ISystem::~ISystem(void) {}
 
 }

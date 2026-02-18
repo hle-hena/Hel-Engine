@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:07:07                                        */
+/*  Last Modified: 2026/02/18 19:25:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -130,6 +130,12 @@ void	Application::addNewWindow(int width, int height, const std::string &windowN
 	Entity::id	handle = _registry.createEntity();
 	_registry.modify(_registry.addComponent<comp::Transform>(handle))->position = {1.f, 1.f, 1.f};
 	_registry.addComponent<comp::Controller>(handle);
+	if (windowName == "Hel") {
+		_registry.addComponent<comp::EditorControllerTag>(handle);
+	} else {
+		auto allign = _registry.modify(_registry.addComponent<comp::SurfaceAllignement>(handle));
+		allign->isDynamic = true;
+	}
 	auto camera = _registry.modify(_registry.addComponent<comp::Camera>(handle));
 	camera->aspect = static_cast<float>(width) / static_cast<float>(height);
 	window->setEntityReference(handle);
