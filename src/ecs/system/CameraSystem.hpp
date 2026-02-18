@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 11:50:40 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 15:00:00                                        */
+/*  Last Modified: 2026/02/18 11:18:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,7 +26,7 @@ class	CameraSystem : public ISystem {
 			VkDescriptorSetLayout &setLayout);
 		~CameraSystem(void) override;
 
-		void	update(void) override;
+		void	update(float deltaTime) override;
 
 	private:
 };

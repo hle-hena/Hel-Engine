@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 11:50:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 15:01:09                                        */
+/*  Last Modified: 2026/02/18 11:19:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,7 +28,7 @@ CameraSystem::CameraSystem(Device &device, Registry &registry, VkDescriptorSetLa
 CameraSystem::~CameraSystem(void) {
 }
 
-void	CameraSystem::update(void) {
+void	CameraSystem::update(float deltaTime) {
 	auto	entities = _registry.view<Transform, Camera>();
 
 	for (auto entity: entities) {

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/17 17:09:18                                        */
+/*  Last Modified: 2026/02/18 11:18:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -162,9 +162,11 @@ WindowResources *Engine::getWindowResources(Window& window) {
 }
 
 void	Engine::updateFrame(void) {
-	_controllerSystem.update();
-	_transformSystem.update();
-	_cameraSystem.update();
+	_lastFrameTime = _timer.lapTime();
+	_timer.lap();
+	_controllerSystem.update(_lastFrameTime);
+	_transformSystem.update(_lastFrameTime);
+	_cameraSystem.update(_lastFrameTime);
 }
 
 void	Engine::updateGlobalUBO(Window &window, uint32_t currentFrame) {

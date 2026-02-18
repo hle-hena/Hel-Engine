@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/03 18:58:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 15:07:12                                        */
+/*  Last Modified: 2026/02/18 11:19:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,10 +29,10 @@ class	ControllerSystem : public ISystem {
 						VkDescriptorSetLayout &setLayout);
 		~ControllerSystem(void) override;
 
-		void	update(void) override;
+		void	update(float deltaTime) override;
 
 	private:
-		void	handleKeyboardInput(Entity::id handle);
+		void	handleKeyboardInput(Entity::id handle, float deltaTime);
 		void	handleMouseMove(Entity::id handle);
 
 		InputState	&_input;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 15:06:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 18:19:26                                        */
+/*  Last Modified: 2026/02/18 11:18:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,7 +28,7 @@ TransformSystem::TransformSystem(Device &device, Registry &registry,
 TransformSystem::~TransformSystem(void) {
 }
 
-void	TransformSystem::update(void) {
+void	TransformSystem::update(float deltaTime) {
 	auto	entities = _registry.view<Transform>();
 
 	for (auto entity: entities) {

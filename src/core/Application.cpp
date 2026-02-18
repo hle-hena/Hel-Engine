@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/17 20:13:10                                        */
+/*  Last Modified: 2026/02/18 11:23:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,7 +48,7 @@ Application::~Application(void) {
 }
 
 void	Application::loadPrimaryScene(void) {
-		Entity::id	dragonHandle = _registry.createEntity();
+	Entity::id	dragonHandle = _registry.createEntity();
 	if (auto mesh = _registry.modify(_registry.addComponent<Model>(dragonHandle))) {
 		mesh->filePath = "assets/models/dragon.obj";
 	}

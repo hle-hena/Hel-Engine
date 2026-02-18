@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/17 17:05:39                                        */
+/*  Last Modified: 2026/02/18 11:17:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -82,6 +82,7 @@ class	Engine {
 		Device											&_device;
 		Registry										&_registry;
 		Timer											_timer;
+		float											_lastFrameTime;
 		VkCommandPool									_commandPool{VK_NULL_HANDLE};
 		VkDescriptorPool								_descriptorPool{VK_NULL_HANDLE};
 		VkDescriptorSetLayout							_setLayout{VK_NULL_HANDLE};

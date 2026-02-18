@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 15:07:06 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 15:15:47                                        */
+/*  Last Modified: 2026/02/18 11:18:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,7 +26,7 @@ class	TransformSystem : public ISystem {
 						VkDescriptorSetLayout &setLayout);
 		~TransformSystem(void) override;
 
-		void	update(void) override;
+		void	update(float deltaTime) override;
 
 	private:
 };
