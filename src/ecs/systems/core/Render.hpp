@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:00:00                                        */
+/*  Last Modified: 2026/02/18 18:09:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,18 +39,18 @@ struct	PushConstantData {
 	glm::mat4	normalMatrix;
 };
 
-class	SRender : public ISystem {
+class	Render : public ISystem {
 	public:
-		SRender(Device &device, Registry &registry,
+		Render(Device &device, Registry &registry,
 					VkDescriptorSetLayout &setLayout);
-		~SRender(void) override;
+		~Render(void) override;
 
 		void	render(WindowResources &resources, uint32_t currentFrame,
 						uint32_t imageIndex) override;
 
 	private:
 		struct	SystemPipeline {
-			SystemPipeline(SRender &system, VkFormat format, VkFormat depthFormat);
+			SystemPipeline(Render &system, VkFormat format, VkFormat depthFormat);
 			~SystemPipeline(void);
 
 			bool	init(void);
@@ -61,7 +61,7 @@ class	SRender : public ISystem {
 			VkFormat		_depthFormat;
 			Pipeline		_pipeline;
 			VkRenderPass	_renderPass;
-			SRender	&_system;
+			Render	&_system;
 		};
 		using pipelineMap = std::unordered_map<VkFormat, std::unique_ptr<SystemPipeline>>;
 

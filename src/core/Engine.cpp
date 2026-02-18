@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 11:18:11                                        */
+/*  Last Modified: 2026/02/18 18:07:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -175,7 +175,7 @@ void	Engine::updateGlobalUBO(Window &window, uint32_t currentFrame) {
 		return ;
 	GlobalUBO	data{};
 	data.viewProjection = glm::mat4{0.f};
-	if (auto *camera = _registry.getComponent<Camera>(window.getEntityReference())) {
+	if (auto *camera = _registry.getComponent<comp::Camera>(window.getEntityReference())) {
 		data.viewProjection = camera->viewProjection;
 		data.elapsedTime = _timer.elapsedTime();
 	}

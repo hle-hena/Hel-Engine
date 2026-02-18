@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:01:11                                        */
+/*  Last Modified: 2026/02/18 18:09:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,11 +20,11 @@
 
 namespace	hel::sys {
 
-class	STransform : public ISystem {
+class	Transform : public ISystem {
 	public:
-		STransform(Device &device, Registry &registry,
+		Transform(Device &device, Registry &registry,
 						VkDescriptorSetLayout &setLayout);
-		~STransform(void) override;
+		~Transform(void) override;
 
 		void	update(float deltaTime) override;
 

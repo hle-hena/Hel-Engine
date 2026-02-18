@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:02:16                                        */
+/*  Last Modified: 2026/02/18 18:10:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -87,10 +87,10 @@ class	Engine {
 		VkDescriptorPool								_descriptorPool{VK_NULL_HANDLE};
 		VkDescriptorSetLayout							_setLayout{VK_NULL_HANDLE};
 		std::unordered_map<Window*, WindowResources>	_perWindowResources;
-		sys::SRender									_renderSystem;
-		sys::STransform									_transformSystem;
-		sys::SCamera									_cameraSystem;
-		sys::SEditorController							_controllerSystem;
+		sys::Render										_renderSystem;
+		sys::Transform									_transformSystem;
+		sys::Camera										_cameraSystem;
+		sys::EditorController							_controllerSystem;
 		uint32_t										_currentFrameIndex{0};
 };
 

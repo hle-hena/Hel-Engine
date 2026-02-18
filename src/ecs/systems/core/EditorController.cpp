@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/03 18:56:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 17:55:58                                        */
+/*  Last Modified: 2026/02/18 18:10:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,18 +22,18 @@
 
 namespace	hel::sys {
 
-SEditorController::SEditorController(Device &device, Registry &registry,
+EditorController::EditorController(Device &device, Registry &registry,
 						VkDescriptorSetLayout &setLayout)
 	:	ISystem(device, registry, setLayout),
 		_input{registry.getInputState()} {
 }
 
-SEditorController::~SEditorController(void) {
+EditorController::~EditorController(void) {
 }
 
-void	SEditorController::handleKeyboardInput(Entity::id handle, float deltaTime) {
-	auto	*constTransform = _registry.getComponent<Transform>(handle);
-	auto	*constController = _registry.getComponent<Controller>(handle);
+void	EditorController::handleKeyboardInput(Entity::id handle, float deltaTime) {
+	auto	*constTransform = _registry.getComponent<comp::Transform>(handle);
+	auto	*constController = _registry.getComponent<comp::Controller>(handle);
 	if (!constTransform || !constController)	{ return ; }
 
 	// 1. Calculate the sphere's normal at current position
@@ -95,16 +95,16 @@ void	SEditorController::handleKeyboardInput(Entity::id handle, float deltaTime) 
 		transform->position += delta;
 }
 
-void SEditorController::handleMouseMove(Entity::id handle) {
+void EditorController::handleMouseMove(Entity::id handle) {
     if (!_input.mouseMoved()) { return ; }
-    auto *constTransform = _registry.getComponent<Transform>(handle);
-    auto *constController = _registry.getComponent<Controller>(handle);
+    auto *constTransform = _registry.getComponent<comp::Transform>(handle);
+    auto *constController = _registry.getComponent<comp::Controller>(handle);
     if (!constTransform || !constController) { return ; }
 
     int dx, dy;
     _input.getMouseDelta(dx, dy);
 
-    if (auto transform = _registry.modify<Transform>(constTransform)) {
+    if (auto transform = _registry.modify<comp::Transform>(constTransform)) {
         // 1. Get the current "Up" for the player based on their position on the sphere
         // This is the axis we should rotate around for 'Yaw' (looking left/right)
         glm::vec3 worldUp = glm::normalize(transform->position);
@@ -123,7 +123,7 @@ void SEditorController::handleMouseMove(Entity::id handle) {
     }
 }
 
-void	SEditorController::update(float deltaTime) {
+void	EditorController::update(float deltaTime) {
 	auto	window = _input.getFocused();
 	if (!window)	{ return ; }
 

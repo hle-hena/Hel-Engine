@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/03 18:58:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 17:56:16                                        */
+/*  Last Modified: 2026/02/18 18:10:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,11 +27,11 @@ class	InputState;
 
 namespace	hel::sys {
 
-class	SEditorController : public ISystem {
+class	EditorController : public ISystem {
 	public:
-		SEditorController(Device &device, Registry &registry,
+		EditorController(Device &device, Registry &registry,
 						VkDescriptorSetLayout &setLayout);
-		~SEditorController(void) override;
+		~EditorController(void) override;
 
 		void	update(float deltaTime) override;
 

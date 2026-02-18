@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:03:33                                        */
+/*  Last Modified: 2026/02/18 18:09:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,19 +20,19 @@
 
 namespace	hel::sys {
 
-STransform::STransform(Device &device, Registry &registry,
+Transform::Transform(Device &device, Registry &registry,
 								VkDescriptorSetLayout &setLayout)
 	:	ISystem(device, registry, setLayout) {
 }
 
-STransform::~STransform(void) {
+Transform::~Transform(void) {
 }
 
-void	STransform::update(float deltaTime) {
-	auto	entities = _registry.view<Transform>();
+void	Transform::update(float deltaTime) {
+	auto	entities = _registry.view<comp::Transform>();
 
 	for (auto entity: entities) {
-		auto	*transform = entities.get<Transform>(entity);
+		auto	*transform = entities.get<comp::Transform>(entity);
 		if (!transform || !transform->isDirty)
 			continue ;
 		glm::mat4	T = glm::translate(glm::mat4(1.f), transform->position);

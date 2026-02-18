@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 17:55:22                                        */
+/*  Last Modified: 2026/02/18 18:10:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,11 +20,11 @@
 
 namespace	hel::sys {
 
-class	SCamera : public ISystem {
+class	Camera : public ISystem {
 	public:
-		SCamera(Device &device, Registry &registry,
+		Camera(Device &device, Registry &registry,
 			VkDescriptorSetLayout &setLayout);
-		~SCamera(void) override;
+		~Camera(void) override;
 
 		void	update(float deltaTime) override;
 

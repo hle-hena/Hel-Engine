@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 15:19:10                                        */
+/*  Last Modified: 2026/02/18 18:05:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,7 +23,7 @@
 # include <glm/gtc/constants.hpp>
 # include <string>
 
-namespace	hel {
+namespace	hel::comp {
 
 struct	Name {
 	std::string	name;

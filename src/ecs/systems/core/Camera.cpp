@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 17:55:29                                        */
+/*  Last Modified: 2026/02/18 18:10:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,19 +21,19 @@
 
 namespace	hel::sys {
 
-SCamera::SCamera(Device &device, Registry &registry, VkDescriptorSetLayout &setLayout)
+Camera::Camera(Device &device, Registry &registry, VkDescriptorSetLayout &setLayout)
 	:	ISystem(device, registry, setLayout) {
 }
 
-SCamera::~SCamera(void) {
+Camera::~Camera(void) {
 }
 
-void	SCamera::update(float deltaTime) {
-	auto	entities = _registry.view<Transform, Camera>();
+void	Camera::update(float deltaTime) {
+	auto	entities = _registry.view<comp::Transform, comp::Camera>();
 
 	for (auto entity: entities) {
-		auto	*constTransform = entities.get<Transform>(entity);
-		auto	*constCamera = entities.get<Camera>(entity);
+		auto	*constTransform = entities.get<comp::Transform>(entity);
+		auto	*constCamera = entities.get<comp::Camera>(entity);
 
 		if (!constCamera->isDirty && !constTransform->isDirty)
 			continue ;
