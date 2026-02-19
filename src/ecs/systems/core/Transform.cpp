@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: TransformSystem.cpp                                                 */
+/*  File: Transform.cpp                                                       */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/22 15:06:58 by hle-hena                                  */
+/*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 18:19:26                                        */
+/*  Last Modified: 2026/02/18 18:09:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,25 +14,25 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/system/TransformSystem.hpp"
+#include "ecs/systems/core/Transform.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
 
-namespace	hel {
+namespace	hel::sys {
 
-TransformSystem::TransformSystem(Device &device, Registry &registry,
+Transform::Transform(Device &device, Registry &registry,
 								VkDescriptorSetLayout &setLayout)
 	:	ISystem(device, registry, setLayout) {
 }
 
-TransformSystem::~TransformSystem(void) {
+Transform::~Transform(void) {
 }
 
-void	TransformSystem::update(void) {
-	auto	entities = _registry.view<Transform>();
+void	Transform::update(float deltaTime) {
+	auto	entities = _registry.view<comp::Transform>();
 
 	for (auto entity: entities) {
-		auto	*transform = entities.get<Transform>(entity);
+		auto	*transform = entities.get<comp::Transform>(entity);
 		if (!transform || !transform->isDirty)
 			continue ;
 		glm::mat4	T = glm::translate(glm::mat4(1.f), transform->position);

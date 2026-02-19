@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/17 17:05:39                                        */
+/*  Last Modified: 2026/02/18 19:27:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,10 +21,14 @@
 #include <memory>
 #include <cassert>
 
-#include "ecs/system/RenderSystem.hpp"
-#include "ecs/system/TransformSystem.hpp"
-#include "ecs/system/CameraSystem.hpp"
-#include "ecs/system/ControllerSystem.hpp"
+#include "ecs/systems/core/Render.hpp"
+#include "ecs/systems/core/Transform.hpp"
+#include "ecs/systems/core/Camera.hpp"
+#include "ecs/systems/core/EditorController.hpp"
+
+#include "ecs/systems/runtime/BaseController.hpp"
+#include "ecs/systems/runtime/SurfaceAllignement.hpp"
+
 #include "utils/Timer.hpp"
 
 #include "api/vulkan/Swapchain.hpp"
@@ -82,14 +86,17 @@ class	Engine {
 		Device											&_device;
 		Registry										&_registry;
 		Timer											_timer;
+		float											_lastFrameTime;
 		VkCommandPool									_commandPool{VK_NULL_HANDLE};
 		VkDescriptorPool								_descriptorPool{VK_NULL_HANDLE};
 		VkDescriptorSetLayout							_setLayout{VK_NULL_HANDLE};
 		std::unordered_map<Window*, WindowResources>	_perWindowResources;
-		RenderSystem									_renderSystem;
-		TransformSystem									_transformSystem;
-		CameraSystem									_cameraSystem;
-		ControllerSystem								_controllerSystem;
+		sys::Render										_renderSystem;
+		sys::Transform									_transformSystem;
+		sys::Camera										_cameraSystem;
+		sys::EditorController							_editorControllerSystem;
+		sys::BaseController								_baseControllerSystem;
+		sys::SurfaceAllignement							_surfaceAllignementSystem;
 		uint32_t										_currentFrameIndex{0};
 };
 

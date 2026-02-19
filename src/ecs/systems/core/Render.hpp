@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: RenderSystem.hpp                                                    */
+/*  File: Render.hpp                                                          */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/27 17:14:13 by hle-hena                                  */
+/*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 18:09:47                                        */
+/*  Last Modified: 2026/02/18 18:09:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,7 +22,7 @@
 # include <string>
 # include <glm/glm.hpp>
 
-# include "ecs/system/ISystem.hpp"
+# include "ecs/systems/ISystem.hpp"
 # include "api/vulkan/Pipeline.hpp"
 
 namespace	hel {
@@ -30,23 +30,27 @@ namespace	hel {
 class	AssetManager;
 class	Window;
 
+}
+
+namespace	hel::sys {
+
 struct	PushConstantData {
 	glm::mat4	modelMatrix;
 	glm::mat4	normalMatrix;
 };
 
-class	RenderSystem : public ISystem {
+class	Render : public ISystem {
 	public:
-		RenderSystem(Device &device, Registry &registry,
+		Render(Device &device, Registry &registry,
 					VkDescriptorSetLayout &setLayout);
-		~RenderSystem(void) override;
+		~Render(void) override;
 
 		void	render(WindowResources &resources, uint32_t currentFrame,
 						uint32_t imageIndex) override;
 
 	private:
 		struct	SystemPipeline {
-			SystemPipeline(RenderSystem &system, VkFormat format, VkFormat depthFormat);
+			SystemPipeline(Render &system, VkFormat format, VkFormat depthFormat);
 			~SystemPipeline(void);
 
 			bool	init(void);
@@ -57,7 +61,7 @@ class	RenderSystem : public ISystem {
 			VkFormat		_depthFormat;
 			Pipeline		_pipeline;
 			VkRenderPass	_renderPass;
-			RenderSystem	&_system;
+			Render	&_system;
 		};
 		using pipelineMap = std::unordered_map<VkFormat, std::unique_ptr<SystemPipeline>>;
 

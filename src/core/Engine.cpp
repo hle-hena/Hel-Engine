@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/17 17:09:18                                        */
+/*  Last Modified: 2026/02/18 19:28:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,7 +35,9 @@ Engine::Engine(Device &device, Registry &registry)
 		_renderSystem{device, registry, _setLayout},
 		_transformSystem{device, registry, _setLayout},
 		_cameraSystem{device, registry, _setLayout},
-		_controllerSystem{device, registry, _setLayout} {
+		_editorControllerSystem{device, registry, _setLayout},
+		_baseControllerSystem{device, registry, _setLayout},
+		_surfaceAllignementSystem{device, registry, _setLayout} {
 	_timer.start();
 }
 
@@ -162,9 +164,13 @@ WindowResources *Engine::getWindowResources(Window& window) {
 }
 
 void	Engine::updateFrame(void) {
-	_controllerSystem.update();
-	_transformSystem.update();
-	_cameraSystem.update();
+	_lastFrameTime = _timer.lapTime();
+	_timer.lap();
+	_surfaceAllignementSystem.update(_lastFrameTime);
+	_baseControllerSystem.update(_lastFrameTime);
+	_editorControllerSystem.update(_lastFrameTime);
+	_transformSystem.update(_lastFrameTime);
+	_cameraSystem.update(_lastFrameTime);
 }
 
 void	Engine::updateGlobalUBO(Window &window, uint32_t currentFrame) {
@@ -173,7 +179,7 @@ void	Engine::updateGlobalUBO(Window &window, uint32_t currentFrame) {
 		return ;
 	GlobalUBO	data{};
 	data.viewProjection = glm::mat4{0.f};
-	if (auto *camera = _registry.getComponent<Camera>(window.getEntityReference())) {
+	if (auto *camera = _registry.getComponent<comp::Camera>(window.getEntityReference())) {
 		data.viewProjection = camera->viewProjection;
 		data.elapsedTime = _timer.elapsedTime();
 	}

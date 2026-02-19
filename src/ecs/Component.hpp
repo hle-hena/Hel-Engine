@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 22:04:17                                        */
+/*  Last Modified: 2026/02/18 19:40:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,7 +23,10 @@
 # include <glm/gtc/constants.hpp>
 # include <string>
 
-namespace	hel {
+namespace	hel::comp {
+
+struct	EditorControllerTag {
+};
 
 struct	Name {
 	std::string	name;
@@ -38,6 +41,12 @@ struct	Transform {
 	glm::mat4	normalMatrix{1.f};
 
 	bool		isDirty{true};
+};
+
+struct	SurfaceAllignement {
+	glm::vec3	localUp{0., 1., 0.};
+
+	bool	isDynamic{false};
 };
 
 struct	Model {
@@ -56,11 +65,14 @@ struct	Camera {
 
 struct	Controller {
 	float	mouseSensivity{0.001f};
-	float	movementSpeed{0.001f};
+	float	movementSpeed{1.f};
+
 	int		forwardKey{GLFW_KEY_W};
 	int		backwardKey{GLFW_KEY_S};
 	int		leftStrideKey{GLFW_KEY_A};
 	int		rightStrideKey{GLFW_KEY_D};
+	int		upKey{GLFW_KEY_SPACE};
+	int		downKey{GLFW_KEY_LEFT_SHIFT};
 };
 
 struct	Parent {
