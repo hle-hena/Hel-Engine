@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:27:08                                        */
+/*  Last Modified: 2026/02/19 18:58:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -41,7 +41,7 @@ class	ISystem {
 		ISystem	&operator=(const ISystem &other) = delete;
 
 		virtual void	update(float) {}
-		virtual void	render(WindowResources &, uint32_t, uint32_t) {}
+		virtual void	render(VkRenderPass, WindowResources &, uint32_t) {}
 
 	protected:
 		Device					&_device;
