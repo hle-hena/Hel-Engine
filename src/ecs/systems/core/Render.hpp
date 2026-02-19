@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 15:48:18                                        */
+/*  Last Modified: 2026/02/19 19:23:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -40,8 +40,8 @@ class	Render : public ISystem {
 					VkDescriptorSetLayout &setLayout);
 		~Render(void) override;
 
-		void	render(WindowResources &resources, uint32_t currentFrame,
-						uint32_t imageIndex) override;
+		void	render(VkRenderPass renderPass, WindowResources &resources,
+					uint32_t currentFrame) override;
 
 	private:
 		struct	PushConstantData {
@@ -50,29 +50,18 @@ class	Render : public ISystem {
 		};
 
 		struct	SystemPipeline {
-			SystemPipeline(Render &system, VkFormat format, VkFormat depthFormat);
+			SystemPipeline(Render &system);
 			~SystemPipeline(void);
 
-			bool	init(void);
-			bool	createRenderPass(void);
-			bool	createPipeline(void);
+			bool	init(VkRenderPass renderPass);
 
-			VkFormat		_depthFormat;
-			VkFormat		_format;
 			Pipeline		_pipeline;
-			VkRenderPass	_renderPass {VK_NULL_HANDLE};
-			Render			&_system;
+			Render	&_system;
 		};
-		using pipelineMap = std::unordered_map<VkFormat,
-											std::unique_ptr<SystemPipeline>>;
+		using pipelineMap = std::unordered_map<VkRenderPass, std::unique_ptr<SystemPipeline>>;
 
-		SystemPipeline		*getPipelineForFormat(VkFormat format, VkFormat depthFormat);
+		SystemPipeline		*getPipelineForPass(VkRenderPass renderPass);
 		VkPipelineLayout	getPipelineLayout(void);
-
-		void				beginRenderPass(VkCommandBuffer commandBuffer,
-											Window &window, uint32_t imageIndex,
-											SystemPipeline *pipeline);
-		void				endRenderPass(VkCommandBuffer commandBuffer);
 
 		bool				_healthy{true};
 		std::string			_reason{""};

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 17:22:28                                        */
+/*  Last Modified: 2026/02/19 19:26:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -32,7 +32,7 @@ Camera::~Camera(void) {
 		vkDestroyPipelineLayout(_device.getLogical(), _pipelineLayout, nullptr);
 }
 
-Camera::SystemPipeline	*Camera::getPipelineForFormat(VkFormat format, VkFormat depthFormat) {
+Camera::SystemPipeline	*Camera::getPipelineForPass(VkFormat format, VkFormat depthFormat) {
 	if (_pipelines.find(format) != _pipelines.end())
 		return (_pipelines[format].get());
 	auto	pipeline = std::make_unique<SystemPipeline>(*this, format, depthFormat);
@@ -85,16 +85,14 @@ void	Camera::update(float deltaTime) {
 	}
 }
 
-void	Camera::render(WindowResources &resources, uint32_t currentFrame,
-					uint32_t imageIndex) {
+void	Camera::render(VkRenderPass renderPass, WindowResources &resources,
+					uint32_t currentFrame) {
 }
 
 
 
-Camera::SystemPipeline::SystemPipeline(Camera &camera, VkFormat format, VkFormat depthFormat)
-	:	_format {format},
-		_depthFormat {depthFormat},
-		_pipeline {camera._device},
+Camera::SystemPipeline::SystemPipeline(Camera &camera)
+	:	_pipeline {camera._device},
 		_camera {camera} {
 }
 
@@ -103,38 +101,6 @@ Camera::SystemPipeline::~SystemPipeline(void) {
 }
 
 bool	Camera::SystemPipeline::init(void) {
-	return (createRenderPass() || createPipeline());
-}
-
-bool	Camera::SystemPipeline::createRenderPass(void) {
-	VkAttachmentDescription	colorAttachment{};
-	colorAttachment.format = _format;
-	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	VkAttachmentDescription	depthAttachment{};
-	colorAttachment.format = _depthFormat;
-	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-	VkRenderPassCreateInfo	createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-
-
-	if (vkCreateRenderPass(_camera._device.getLogical(), &createInfo, nullptr,
-							&_renderPass))
-		return (true);
-	return (false);
-}
-
-bool	Camera::SystemPipeline::createPipeline(void) {
 	return (false);
 }
 

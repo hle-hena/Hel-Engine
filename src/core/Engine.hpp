@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 19:27:25                                        */
+/*  Last Modified: 2026/02/19 19:13:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,6 +33,7 @@
 
 #include "api/vulkan/Swapchain.hpp"
 #include "api/vulkan/Buffer.hpp"
+#include "api/vulkan/RenderPass.hpp"
 
 namespace hel {
 
@@ -47,9 +48,9 @@ struct	GlobalUBO {
 
 struct	WindowResources {
 	Window																	*window;
-	std::array<VkCommandBuffer, Swapchain::MAX_FRAMES_IN_FLIGHT>			commandBuffers;
-	std::array<std::unique_ptr<Buffer>, Swapchain::MAX_FRAMES_IN_FLIGHT>	globalUbos;
-	std::array<VkDescriptorSet, Swapchain::MAX_FRAMES_IN_FLIGHT>			globalDescriptorSets;
+	std::array<VkCommandBuffer, Swapchain::MAX_FRAMES_IN_FLIGHT>			commandBuffers{};
+	std::array<std::unique_ptr<Buffer>, Swapchain::MAX_FRAMES_IN_FLIGHT>	globalUbos{};
+	std::array<VkDescriptorSet, Swapchain::MAX_FRAMES_IN_FLIGHT>			globalDescriptorSets{};
 };
 
 class	Engine {
@@ -77,7 +78,9 @@ class	Engine {
 		bool			createDescriptorPool(void);
 
 		void			updateGlobalUBO(Window &window, uint32_t currentFrame);
-		bool			beginFrame(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+		bool			beginFrame(VkRenderPass renderPass,
+								VkCommandBuffer commandBuffer,
+								VkFramebuffer framebuffer, VkExtent2D extent);
 		bool			endFrame(VkCommandBuffer commandBuffer);
 		WindowResources	*getWindowResources(Window& window);
 
@@ -90,6 +93,7 @@ class	Engine {
 		VkCommandPool									_commandPool{VK_NULL_HANDLE};
 		VkDescriptorPool								_descriptorPool{VK_NULL_HANDLE};
 		VkDescriptorSetLayout							_setLayout{VK_NULL_HANDLE};
+		RenderPass										_passes;
 		std::unordered_map<Window*, WindowResources>	_perWindowResources;
 		sys::Render										_renderSystem;
 		sys::Transform									_transformSystem;

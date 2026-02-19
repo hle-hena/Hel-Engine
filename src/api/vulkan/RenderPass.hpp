@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: ISystem.hpp                                                         */
+/*  File: RenderPass.hpp                                                      */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
+/*  Created: 2026/02/19 17:25:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 18:58:42                                        */
+/*  Last Modified: 2026/02/19 19:27:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,38 +17,34 @@
 #pragma once
 
 # include <vulkan/vulkan.h>
+# include <unordered_map>
 
 namespace	hel {
 
 class	Device;
-class	Registry;
-struct	WindowResources;
+class	Window;
 
-}
-
-namespace	hel::sys {
-
-class	ISystem {
+class	RenderPass {
 	public:
-		ISystem(Device &device, Registry &registry,
-				VkDescriptorSetLayout &setLayout):
-			_device{device},
-			_registry{registry},
-			_setLayout{setLayout} {}
-		virtual ~ISystem(void) = 0;
+		RenderPass(Device &device);
+		~RenderPass(void);
+		RenderPass(const RenderPass &) = delete;
+		RenderPass	&operator=(const RenderPass &) = delete;
 
-		ISystem(const ISystem &other) = delete;
-		ISystem	&operator=(const ISystem &other) = delete;
+		VkRenderPass	getRenderPasss(VkFormat imageFormat,
+											VkFormat depthFormat);
+		static void			beginRenderPass(VkRenderPass renderPass,
+										VkCommandBuffer commandBuffer,
+										VkFramebuffer frameBuffer,
+										VkExtent2D extent);
+		static void			endRenderPass(VkCommandBuffer commandBuffer);
 
-		virtual void	update(float) {}
-		virtual void	render(VkRenderPass, WindowResources &, uint32_t) {}
+	private:
+		VkRenderPass	createRenderPass(VkFormat imageFormat,
+										VkFormat depthFormat);
 
-	protected:
-		Device					&_device;
-		Registry				&_registry;
-		VkDescriptorSetLayout	&_setLayout;
+		Device										&_device;
+		std::unordered_map<VkFormat, VkRenderPass>	_renderPasses;
 };
-
-inline	ISystem::~ISystem(void) {}
 
 }

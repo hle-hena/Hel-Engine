@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 17:21:49                                        */
+/*  Last Modified: 2026/02/19 19:25:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,8 +39,8 @@ class	Camera : public ISystem {
 		~Camera(void) override;
 
 		void	update(float deltaTime) override;
-		void	render(WindowResources &resources, uint32_t currentFrame,
-					uint32_t imageIndex) override;
+		void	render(VkRenderPass renderPass, WindowResources &resources,
+					uint32_t currentFrame) override;
 
 	private:
 		struct	PushConstantData {
@@ -49,23 +49,18 @@ class	Camera : public ISystem {
 		};
 
 		struct	SystemPipeline {
-			SystemPipeline(Camera &camera, VkFormat format, VkFormat depthFormat);
+			SystemPipeline(Camera &camera);
 			~SystemPipeline(void);
 
 			bool	init(void);
-			bool	createPipeline(void);
-			bool	createRenderPass(void);
 
-			VkFormat		_format;
-			VkFormat		_depthFormat;
-			VkRenderPass	_renderPass {VK_NULL_HANDLE};
 			Pipeline		_pipeline;
 			Camera			&_camera;
 		};
 		using pipelineMap = std::unordered_map<VkFormat,
 											std::unique_ptr<SystemPipeline>>;
 
-		SystemPipeline		*getPipelineForFormat(VkFormat format, VkFormat depthFormat);
+		SystemPipeline		*getPipelineForPass(VkFormat format, VkFormat depthFormat);
 		VkPipelineLayout	getPipelineLayout(void);
 
 		void				beginRenderPass(VkCommandBuffer commandBuffer,
