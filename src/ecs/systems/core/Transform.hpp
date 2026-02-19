@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: ISystem.hpp                                                         */
+/*  File: Transform.hpp                                                       */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
+/*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 17:46:20                                        */
+/*  Last Modified: 2026/02/18 18:09:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,36 +16,19 @@
 
 #pragma once
 
-# include <vulkan/vulkan.h>
+#include "ecs/systems/ISystem.hpp"
 
-namespace	hel {
+namespace	hel::sys {
 
-class	Device;
-class	Registry;
-struct	WindowResources;
-
-class	ISystem {
+class	Transform : public ISystem {
 	public:
-		ISystem(Device &device, Registry &registry,
-				VkDescriptorSetLayout &setLayout):
-			_device{device},
-			_registry{registry},
-			_setLayout{setLayout} {}
-		virtual ~ISystem(void) = 0;
+		Transform(Device &device, Registry &registry,
+						VkDescriptorSetLayout &setLayout);
+		~Transform(void) override;
 
-		ISystem(const ISystem &other) = delete;
-		ISystem	&operator=(const ISystem &other) = delete;
+		void	update(float deltaTime) override;
 
-		virtual void	update(void) {}
-		virtual void	render(WindowResources &resources,
-							uint32_t currentFrame, uint32_t imageIndex) {}
-
-	protected:
-		Device					&_device;
-		Registry				&_registry;
-		VkDescriptorSetLayout	&_setLayout;
+	private:
 };
-
-inline	ISystem::~ISystem(void) {}
 
 }

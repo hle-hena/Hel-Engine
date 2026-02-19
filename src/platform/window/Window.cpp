@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/03 20:06:49                                        */
+/*  Last Modified: 2026/02/18 18:08:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -130,7 +130,7 @@ void	Window::frameBufferResizedCallback(GLFWwindow *window,
 	appWindow->getSwapchain()._frameBufferResized = true;
 
 	Entity::id	handle = appWindow->getEntityReference();
-	if (auto camera = appWindow->getApp().getRegistry().modify<Camera>(handle)) {
+	if (auto camera = appWindow->getApp().getRegistry().modify<comp::Camera>(handle)) {
 		camera->aspect = static_cast<float>(width) / static_cast<float>(height);
 	}
 }

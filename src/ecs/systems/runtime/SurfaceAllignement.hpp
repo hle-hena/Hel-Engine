@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: TransformSystem.hpp                                                 */
+/*  File: SurfaceAllignement.hpp                                              */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/22 15:07:06 by hle-hena                                  */
+/*  Created: 2026/02/18 18:20:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 15:15:47                                        */
+/*  Last Modified: 2026/02/18 18:29:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,17 +16,17 @@
 
 #pragma once
 
-#include "ecs/system/ISystem.hpp"
+# include "ecs/systems/ISystem.hpp"
 
-namespace	hel {
+namespace	hel::sys {
 
-class	TransformSystem : public ISystem {
+class	SurfaceAllignement : public ISystem {
 	public:
-		TransformSystem(Device &device, Registry &registry,
+		SurfaceAllignement(Device &device, Registry &registry,
 						VkDescriptorSetLayout &setLayout);
-		~TransformSystem(void) override;
+		~SurfaceAllignement(void) override = default;
 
-		void	update(void) override;
+		void	update(float deltaTime) override;
 
 	private:
 };

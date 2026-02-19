@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: ControllerSystem.hpp                                                */
+/*  File: ISystem.hpp                                                         */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/03 18:58:03 by hle-hena                                  */
+/*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 15:07:12                                        */
+/*  Last Modified: 2026/02/18 18:27:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,26 +16,39 @@
 
 #pragma once
 
-# include "ecs/system/ISystem.hpp"
-# include "ecs/Entity.hpp"
+# include <vulkan/vulkan.h>
 
 namespace	hel {
 
-class	InputState;
+class	Device;
+class	Registry;
+struct	WindowResources;
 
-class	ControllerSystem : public ISystem {
+}
+
+namespace	hel::sys {
+
+class	ISystem {
 	public:
-		ControllerSystem(Device &device, Registry &registry,
-						VkDescriptorSetLayout &setLayout);
-		~ControllerSystem(void) override;
+		ISystem(Device &device, Registry &registry,
+				VkDescriptorSetLayout &setLayout):
+			_device{device},
+			_registry{registry},
+			_setLayout{setLayout} {}
+		virtual ~ISystem(void) = 0;
 
-		void	update(void) override;
+		ISystem(const ISystem &other) = delete;
+		ISystem	&operator=(const ISystem &other) = delete;
 
-	private:
-		void	handleKeyboardInput(Entity::id handle);
-		void	handleMouseMove(Entity::id handle);
+		virtual void	update(float) {}
+		virtual void	render(WindowResources &, uint32_t, uint32_t) {}
 
-		InputState	&_input;
+	protected:
+		Device					&_device;
+		Registry				&_registry;
+		VkDescriptorSetLayout	&_setLayout;
 };
+
+inline	ISystem::~ISystem(void) {}
 
 }

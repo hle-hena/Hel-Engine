@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Timer.hpp                                                           */
+/*  File: EditorController.hpp                                                */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/17 16:36:44 by hle-hena                                  */
+/*  Created: 2026/02/03 18:58:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 11:21:35                                        */
+/*  Last Modified: 2026/02/18 18:10:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,32 +16,30 @@
 
 #pragma once
 
-# include <chrono>
+# include "ecs/systems/ISystem.hpp"
+# include "ecs/Entity.hpp"
 
 namespace	hel {
 
-class	Timer {
+class	InputState;
+
+}
+
+namespace	hel::sys {
+
+class	EditorController : public ISystem {
 	public:
-		using clock = std::chrono::steady_clock;
+		EditorController(Device &device, Registry &registry,
+						VkDescriptorSetLayout &setLayout);
+		~EditorController(void) override;
 
-		void	start(void)	{	_startTime = clock::now();
-								_lapStartTime = _startTime;	}
-
-		void	lap(void)	{	_lapStartTime = clock::now();	}
-
-		template <typename Ratio = std::ratio<1>>
-		float	elapsedTime(void) {
-			return (std::chrono::duration<float, Ratio>(clock::now() - _startTime).count());
-		}
-
-		template <typename Ratio = std::ratio<1>>
-		float	lapTime(void) {
-			return (std::chrono::duration<float, Ratio>(clock::now() - _lapStartTime).count());
-		}
+		void	update(float deltaTime) override;
 
 	private:
-		std::chrono::time_point<clock>	_startTime;
-		std::chrono::time_point<clock>	_lapStartTime;
+		void	handleKeyboardInput(Entity::id handle, float deltaTime);
+		void	handleMouseMove(Entity::id handle);
+
+		InputState	&_input;
 };
 
 }
