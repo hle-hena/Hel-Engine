@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:09:52                                        */
+/*  Last Modified: 2026/02/19 15:48:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,11 +34,6 @@ class	Window;
 
 namespace	hel::sys {
 
-struct	PushConstantData {
-	glm::mat4	modelMatrix;
-	glm::mat4	normalMatrix;
-};
-
 class	Render : public ISystem {
 	public:
 		Render(Device &device, Registry &registry,
@@ -49,6 +44,11 @@ class	Render : public ISystem {
 						uint32_t imageIndex) override;
 
 	private:
+		struct	PushConstantData {
+			glm::mat4	modelMatrix;
+			glm::mat4	normalMatrix;
+		};
+
 		struct	SystemPipeline {
 			SystemPipeline(Render &system, VkFormat format, VkFormat depthFormat);
 			~SystemPipeline(void);
@@ -57,18 +57,21 @@ class	Render : public ISystem {
 			bool	createRenderPass(void);
 			bool	createPipeline(void);
 
-			VkFormat		_format;
 			VkFormat		_depthFormat;
+			VkFormat		_format;
 			Pipeline		_pipeline;
-			VkRenderPass	_renderPass;
-			Render	&_system;
+			VkRenderPass	_renderPass {VK_NULL_HANDLE};
+			Render			&_system;
 		};
-		using pipelineMap = std::unordered_map<VkFormat, std::unique_ptr<SystemPipeline>>;
+		using pipelineMap = std::unordered_map<VkFormat,
+											std::unique_ptr<SystemPipeline>>;
 
 		SystemPipeline		*getPipelineForFormat(VkFormat format, VkFormat depthFormat);
-		VkPipelineLayout	*getPipelineLayout(void);
+		VkPipelineLayout	getPipelineLayout(void);
 
-		void				beginRenderPass(VkCommandBuffer commandBuffer, Window &window, uint32_t imageIndex, SystemPipeline *pipeline);
+		void				beginRenderPass(VkCommandBuffer commandBuffer,
+											Window &window, uint32_t imageIndex,
+											SystemPipeline *pipeline);
 		void				endRenderPass(VkCommandBuffer commandBuffer);
 
 		bool				_healthy{true};

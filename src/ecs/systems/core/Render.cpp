@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:49:54                                        */
+/*  Last Modified: 2026/02/19 16:28:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -136,14 +136,13 @@ bool	Render::SystemPipeline::init(void) {
 	return (createRenderPass() || createPipeline());
 }
 
-VkPipelineLayout	*Render::getPipelineLayout(void) {
+VkPipelineLayout	Render::getPipelineLayout(void) {
 	if (_pipelineLayout != VK_NULL_HANDLE)
-		return (&_pipelineLayout);
+		return (_pipelineLayout);
 
-	VkPushConstantRange	pushConstant;
+	VkPushConstantRange	pushConstant{};
 	pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 	pushConstant.size = sizeof(PushConstantData);
-	pushConstant.offset = 0;
 
 	VkPipelineLayoutCreateInfo	layoutInfo{};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -154,7 +153,7 @@ VkPipelineLayout	*Render::getPipelineLayout(void) {
 
 	if (vkCreatePipelineLayout(_device.getLogical(), &layoutInfo, nullptr, &_pipelineLayout))
 		return (nullptr);
-	return (&_pipelineLayout);
+	return (_pipelineLayout);
 }
 
 bool	Render::SystemPipeline::createRenderPass(void) {
@@ -225,7 +224,7 @@ bool	Render::SystemPipeline::createPipeline(void) {
 
 
 	configInfo.renderPass = _renderPass;
-	configInfo.pipelineLayout = *pipelineLayout;
+	configInfo.pipelineLayout = pipelineLayout;
 
 	auto	vert = _system._assetManager.get<Shader>(_system._vertPath);
 	auto	frag = _system._assetManager.get<Shader>(_system._fragPath);
