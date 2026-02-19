@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 19:23:49                                        */
+/*  Last Modified: 2026/02/19 19:39:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -94,8 +94,6 @@ bool	Render::SystemPipeline::init(VkRenderPass renderPass) {
 	hel::PipelineConfigInfo	configInfo{};
 	Pipeline::defaultPipelineConfigInfo(configInfo);
 	Pipeline::setVertexInputDescriptions<Vertex>(configInfo);
-
-
 	configInfo.renderPass = renderPass;
 	configInfo.pipelineLayout = pipelineLayout;
 

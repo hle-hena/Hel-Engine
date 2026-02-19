@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 19:23:39                                        */
+/*  Last Modified: 2026/02/19 19:31:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -56,9 +56,10 @@ class	Render : public ISystem {
 			bool	init(VkRenderPass renderPass);
 
 			Pipeline		_pipeline;
-			Render	&_system;
+			Render			&_system;
 		};
-		using pipelineMap = std::unordered_map<VkRenderPass, std::unique_ptr<SystemPipeline>>;
+		using pipelineMap = std::unordered_map<VkRenderPass,
+											std::unique_ptr<SystemPipeline>>;
 
 		SystemPipeline		*getPipelineForPass(VkRenderPass renderPass);
 		VkPipelineLayout	getPipelineLayout(void);

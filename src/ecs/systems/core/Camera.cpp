@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 19:26:17                                        */
+/*  Last Modified: 2026/02/19 19:41:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,10 +14,13 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "api/vulkan/Device.hpp"
 #include "ecs/systems/core/Camera.hpp"
+#include "api/vulkan/Device.hpp"
+#include "ecs/AssetManager.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
+#include "ecs/assets/Geometry.hpp"
+#include "ecs/assets/Shader.hpp"
 #include "platform/window/Window.hpp"
 
 namespace	hel::sys {
@@ -32,14 +35,14 @@ Camera::~Camera(void) {
 		vkDestroyPipelineLayout(_device.getLogical(), _pipelineLayout, nullptr);
 }
 
-Camera::SystemPipeline	*Camera::getPipelineForPass(VkFormat format, VkFormat depthFormat) {
-	if (_pipelines.find(format) != _pipelines.end())
-		return (_pipelines[format].get());
-	auto	pipeline = std::make_unique<SystemPipeline>(*this, format, depthFormat);
-	if (pipeline->init())
+Camera::SystemPipeline	*Camera::getPipelineForPass(VkRenderPass renderPass) {
+	if (_pipelines.find(renderPass) != _pipelines.end())
+		return (_pipelines[renderPass].get());
+	auto	pipeline = std::make_unique<SystemPipeline>(*this);
+	if (pipeline->init(renderPass))
 		return (nullptr);
-	_pipelines[format] = std::move(pipeline);
-	return (_pipelines[format].get());
+	_pipelines[renderPass] = std::move(pipeline);
+	return (_pipelines[renderPass].get());
 }
 
 VkPipelineLayout	Camera::getPipelineLayout(void) {
@@ -87,20 +90,35 @@ void	Camera::update(float deltaTime) {
 
 void	Camera::render(VkRenderPass renderPass, WindowResources &resources,
 					uint32_t currentFrame) {
+	
 }
 
 
 
-Camera::SystemPipeline::SystemPipeline(Camera &camera)
-	:	_pipeline {camera._device},
-		_camera {camera} {
+Camera::SystemPipeline::SystemPipeline(Camera &system)
+	:	_pipeline {system._device},
+		_system {system} {
 }
 
 Camera::SystemPipeline::~SystemPipeline(void) {
 	_pipeline.deleteGraphicsPipeline();
 }
 
-bool	Camera::SystemPipeline::init(void) {
+bool	Camera::SystemPipeline::init(VkRenderPass renderPass) {
+	auto	layout = _system.getPipelineLayout();
+	if (!layout)
+		return (true);
+	PipelineConfigInfo	config;
+	Pipeline::defaultPipelineConfigInfo(config);
+	Pipeline::setVertexInputDescriptions<Vertex>(config);
+	config.renderPass = renderPass;
+	config.pipelineLayout = layout;
+
+	auto	vert = _system._assetManager.get<Shader>(_system._vertPath);
+	auto	frag = _system._assetManager.get<Shader>(_system._fragPath);
+	if (!vert || !frag)
+		return (true);
+	_pipeline.createGraphicsPipeline(config, {});
 	return (false);
 }
 

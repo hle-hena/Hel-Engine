@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 19:25:10                                        */
+/*  Last Modified: 2026/02/19 19:40:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -52,21 +52,16 @@ class	Camera : public ISystem {
 			SystemPipeline(Camera &camera);
 			~SystemPipeline(void);
 
-			bool	init(void);
+			bool	init(VkRenderPass renderPass);
 
 			Pipeline		_pipeline;
-			Camera			&_camera;
+			Camera			&_system;
 		};
-		using pipelineMap = std::unordered_map<VkFormat,
+		using pipelineMap = std::unordered_map<VkRenderPass,
 											std::unique_ptr<SystemPipeline>>;
 
-		SystemPipeline		*getPipelineForPass(VkFormat format, VkFormat depthFormat);
+		SystemPipeline		*getPipelineForPass(VkRenderPass renderPass);
 		VkPipelineLayout	getPipelineLayout(void);
-
-		void				beginRenderPass(VkCommandBuffer commandBuffer,
-											Window &window, uint32_t imageIndex,
-											SystemPipeline *pipeline);
-		void				endRenderPass(VkCommandBuffer commandBuffer);
 
 		bool				_healthy {true};
 		std::string			_reason {""};
