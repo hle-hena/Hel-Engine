@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 19:28:50                                        */
+/*  Last Modified: 2026/02/19 19:06:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -32,6 +32,7 @@ namespace hel {
 Engine::Engine(Device &device, Registry &registry)
 	:	_device{device},
 		_registry{registry},
+		_passes{device},
 		_renderSystem{device, registry, _setLayout},
 		_transformSystem{device, registry, _setLayout},
 		_cameraSystem{device, registry, _setLayout},
@@ -99,16 +100,20 @@ bool	Engine::createDescriptorPool(void) {
 	return (false);
 }
 
-bool	Engine::beginFrame(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+bool	Engine::beginFrame(VkRenderPass renderPass,
+						VkCommandBuffer commandBuffer,
+						VkFramebuffer framebuffer, VkExtent2D extent) {
 	VkCommandBufferBeginInfo	beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
 	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
 		return (true);
+	_passes.beginRenderPass(renderPass, commandBuffer, framebuffer, extent);
 	return (false);
 }
 
 bool	Engine::endFrame(VkCommandBuffer commandBuffer) {
+	_passes.endRenderPass(commandBuffer);
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
 		return (true);
 	return (false);
@@ -197,11 +202,15 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	WindowResources *resources = getWindowResources(window);
 	if (!resources)
 		return ;
+	Swapchain		&swap = window.getSwapchain();
+	VkRenderPass	renderPass = _passes.getRenderPasss(window.getFormat(),
+													window.getDepthFormat());
 	VkCommandBuffer	commandBuffer = resources->commandBuffers[currentFrame];
 	vkResetCommandBuffer(commandBuffer, 0);
 
-	beginFrame(commandBuffer, imageIndex);
-	_renderSystem.render(*resources, currentFrame, imageIndex);
+	beginFrame(renderPass, commandBuffer,
+			swap.getFrameBuffer(imageIndex, renderPass), swap.getExtent());
+	_renderSystem.render(renderPass, *resources, currentFrame);
 	endFrame(commandBuffer);
 
 	swapchain.submitCommandBuffer(&commandBuffer, imageIndex, currentFrame);
