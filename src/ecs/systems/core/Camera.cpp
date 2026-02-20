@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/20 17:09:28                                        */
+/*  Last Modified: 2026/02/20 19:23:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -104,7 +104,7 @@ void	Camera::render(VkRenderPass renderPass, WindowResources &resources,
 									comp::Transform>();
 	for (auto entity : entities) {
 		if (entity == selfHandle)	{ continue ; }
-		auto	mesh = _assetManager.get<FullGeometry>("assets/models/cube.obj");
+		auto	mesh = _assetManager.get<FullGeometry>("assets/models/frustum.obj");
 		if (!mesh)	{ continue ; }
 		auto	*transform = entities.get<comp::Transform>(entity);
 		auto	*camera = entities.get<comp::Camera>(entity);
