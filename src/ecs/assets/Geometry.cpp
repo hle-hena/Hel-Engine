@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:03:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/20 15:13:41                                        */
+/*  Last Modified: 2026/02/20 16:56:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,6 +27,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <glm/gtx/hash.hpp>
+#include "Geometry.hpp"
 
 namespace std
 {
@@ -66,7 +67,7 @@ bool	Vertex::operator==(const Vertex &other) const {
 	return (position == other.position && color == other.color && normal == other.normal);
 }
 
-std::shared_ptr<Geometry>	Geometry::load(Device &device, const std::string &path) {
+Geometry::GeometryVectors	Geometry::loadFile(const std::string &path, bool fullLoad) {
 	tinyobj::attrib_t					attrib;
 	std::vector<tinyobj::shape_t>	 	shapes;
 	std::vector<tinyobj::material_t>	materials;
@@ -74,13 +75,12 @@ std::shared_ptr<Geometry>	Geometry::load(Device &device, const std::string &path
 
 	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &error, path.c_str())) {
 		std::cerr << (warn + error) << std::endl;
-		return (nullptr);
+		return (GeometryVectors{});
 	}
-	std::vector<Vertex>						vertices;
-	std::vector<uint32_t>					triangleIndices;
-	std::set<std::pair<uint32_t, uint32_t>>	lineIndices;
+	GeometryVectors							vec;
 	std::unordered_map<Vertex, uint32_t>	uniqueVertices;
-	std::optional<uint32_t>					lastIndex;
+	std::set<std::pair<uint32_t, uint32_t>>	lineIndices;
+	std::vector<uint32_t>					passedIndices;
 	for (auto &shape: shapes) {
 		for (auto &index: shape.mesh.indices) {
 			Vertex	vertex{};
@@ -105,24 +105,72 @@ std::shared_ptr<Geometry>	Geometry::load(Device &device, const std::string &path
 					attrib.normals[3 * index.normal_index + 2]
 				};
 			}
-			if (uniqueVertices.find(vertex) == 0) {
-				uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-				vertices.push_back(vertex);
+			if (uniqueVertices.find(vertex) == uniqueVertices.end()) {
+				uniqueVertices[vertex] = static_cast<uint32_t>(vec.vertices.size());
+				vec.vertices.push_back(vertex);
 			}
-			triangleIndices.push_back(uniqueVertices[vertex]);
-			if (lastIndex.has_value()) {
-				uint32_t	otherIndex = uniqueVertices[vertex];
-				lineIndices.insert(std::pair(std::min(lastIndex.value(), otherIndex),
-											std::max(lastIndex.value(), otherIndex)));
+			vec.triangleIndices.push_back(uniqueVertices[vertex]);
+			if (fullLoad)
+				passedIndices.push_back(uniqueVertices[vertex]);
+			if (fullLoad && passedIndices.size() == 3) {
+				for (int i = 0; i < 3; i++) {
+					lineIndices.insert(std::pair(std::min(passedIndices[i], passedIndices[(i + 1) % 3]),
+												std::max(passedIndices[i], passedIndices[(i + 1) % 3])));
+				}
+				passedIndices.clear();
 			}
 		}
 	}
+	if (fullLoad) {
+		for (auto pair: lineIndices) {
+			vec.lineIndices.push_back(pair.first);
+			vec.lineIndices.push_back(pair.second);
+		}
+	}
+	return (vec);
+}
 
+bool	Geometry::isLoadedFully(void) const {
+	return (vertexBuffer && triangleIndexBuffer);
+}
 
-	return (std::shared_ptr<Geometry>(new Geometry{path,
-			createBuffer(device, vertices, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
-			createBuffer(device, triangleIndices, VK_BUFFER_USAGE_INDEX_BUFFER_BIT),
-			static_cast<uint32_t>(triangleIndices.size())}));
+std::shared_ptr<Geometry>	Geometry::load(Device &device, const std::string &path) {
+	GeometryVectors	vec = loadFile(path, false);
+	if (vec.vertices.empty())
+		return (nullptr);
+
+	std::shared_ptr<Geometry>	asset = std::make_shared<Geometry>();
+	asset->filePath = path;
+	asset->vertexBuffer = createBuffer(device, vec.vertices,
+										VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+	asset->triangleIndexBuffer = createBuffer(device, vec.triangleIndices,
+										VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+	asset->triangleVertexCount = vec.triangleIndices.size();
+	return (asset);
+}
+
+bool	FullGeometry::isLoadedFully(void) const {
+	return (vertexBuffer && triangleIndexBuffer && lineIndexBuffer);
+}
+
+std::shared_ptr<FullGeometry>	FullGeometry::load(Device &device, const std::string &path) {
+	GeometryVectors	vec = loadFile(path, true);
+	if (vec.vertices.empty())
+		return (nullptr);
+
+	std::shared_ptr<FullGeometry>	asset = std::make_shared<FullGeometry>();
+	asset->filePath = path;
+	asset->vertexBuffer = createBuffer(device, vec.vertices,
+										VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+	asset->triangleIndexBuffer = createBuffer(device, vec.triangleIndices,
+										VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+	asset->triangleVertexCount = vec.triangleIndices.size();
+
+	asset->lineIndexBuffer = createBuffer(device, vec.lineIndices,
+										VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+	asset->lineVertexCount = vec.lineIndices.size();
+	asset->pointVertexCount = vec.vertices.size();
+	return (asset);
 }
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/20 15:51:48                                        */
+/*  Last Modified: 2026/02/20 15:55:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -64,7 +64,7 @@ void	Render::render(VkRenderPass renderPass, WindowResources &resources, uint32_
 							_pipelineLayout, 0, 1,
 							&resources.globalDescriptorSets[currentFrame], 0,
 							nullptr);
-		vkCmdDrawIndexed(commandBuffer, mesh->vertexCount, 1, 0, 0, 0);
+		vkCmdDrawIndexed(commandBuffer, mesh->triangleVertexCount, 1, 0, 0, 0);
 	}
 }
 
