@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 19:25:46                                        */
+/*  Last Modified: 2026/02/19 20:05:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -128,7 +128,9 @@ void	Application::addNewWindow(int width, int height, const std::string &windowN
 		return ;
 	}
 	Entity::id	handle = _registry.createEntity();
-	_registry.modify(_registry.addComponent<comp::Transform>(handle))->position = {1.f, 1.f, 1.f};
+	auto	transform = _registry.modify(_registry.addComponent<comp::Transform>(handle));
+	transform->position = {1.f, 1.f, 1.f};
+	transform->scale = {0.1, 0.1, 0.1};
 	_registry.addComponent<comp::Controller>(handle);
 	if (windowName == "Hel") {
 		_registry.addComponent<comp::EditorControllerTag>(handle);
