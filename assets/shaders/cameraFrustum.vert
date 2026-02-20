@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/20 10:44:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/20 19:32:59                                        */
+/*  Last Modified: 2026/02/20 19:58:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,7 +33,14 @@ layout (push_constant) uniform Push {
 }	push;
 
 void	main() {
-	vec4	positionInWorld = push.invViewProjection * vec4(inPos, 1.);
+	float	visualScale = 0.75;
+	vec4	ndcPos;
+	if (inPos.z == 1) {
+		ndcPos = vec4(inPos * visualScale, 1.);
+	} else {
+		ndcPos = vec4(inPos.x, inPos.y, inPos.z * visualScale, 1.);
+	}
+	vec4	positionInWorld = push.invViewProjection * ndcPos;
 	gl_Position = globalUBO.viewProjection * positionInWorld;
 	fragColor = vec3(1.);
 }
