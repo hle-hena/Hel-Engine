@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 19:06:20                                        */
+/*  Last Modified: 2026/02/19 19:22:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -211,6 +211,7 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	beginFrame(renderPass, commandBuffer,
 			swap.getFrameBuffer(imageIndex, renderPass), swap.getExtent());
 	_renderSystem.render(renderPass, *resources, currentFrame);
+	_cameraSystem.render(renderPass, *resources, currentFrame);
 	endFrame(commandBuffer);
 
 	swapchain.submitCommandBuffer(&commandBuffer, imageIndex, currentFrame);

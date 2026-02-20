@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:10:17                                        */
+/*  Last Modified: 2026/02/20 11:03:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,7 +16,19 @@
 
 #pragma once
 
+# include <unordered_map>
+# include <memory>
+# include <glm/glm.hpp>
+
 # include "ecs/systems/ISystem.hpp"
+# include "api/vulkan/Pipeline.hpp"
+
+namespace	hel {
+
+class	AssetManager;
+class	Window;
+
+}
 
 namespace	hel::sys {
 
@@ -27,8 +39,37 @@ class	Camera : public ISystem {
 		~Camera(void) override;
 
 		void	update(float deltaTime) override;
+		void	render(VkRenderPass renderPass, WindowResources &resources,
+					uint32_t currentFrame) override;
 
 	private:
+		struct	PushConstantData {
+			glm::mat4	modelMatrix;
+			glm::mat4	invViewProjection;
+		};
+
+		struct	SystemPipeline {
+			SystemPipeline(Camera &camera);
+			~SystemPipeline(void);
+
+			bool	init(VkRenderPass renderPass);
+
+			Pipeline		_pipeline;
+			Camera			&_system;
+		};
+		using pipelineMap = std::unordered_map<VkRenderPass,
+											std::unique_ptr<SystemPipeline>>;
+
+		SystemPipeline		*getPipelineForPass(VkRenderPass renderPass);
+		VkPipelineLayout	getPipelineLayout(void);
+
+		bool				_healthy {true};
+		std::string			_reason {""};
+		std::string			_vertPath {"assets/shaders/cameraFrustum.vert.spv"};
+		std::string			_fragPath {"assets/shaders/cameraFrustum.frag.spv"};
+		AssetManager		&_assetManager;
+		pipelineMap			_pipelines;
+		VkPipelineLayout	_pipelineLayout {VK_NULL_HANDLE};
 };
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 19:40:59                                        */
+/*  Last Modified: 2026/02/20 18:29:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -57,7 +57,7 @@ struct	Camera {
 	float		fov{glm::radians<float>(70)};
 	float		aspect{1.f};
 	float		near{0.1f};
-	float		far{1000.f};
+	float		far{100.f};
 	glm::mat4	viewProjection{1.f};
 
 	bool		isDirty{true};

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:03:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/20 16:56:38                                        */
+/*  Last Modified: 2026/02/20 19:28:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -73,52 +73,62 @@ Geometry::GeometryVectors	Geometry::loadFile(const std::string &path, bool fullL
 	std::vector<tinyobj::material_t>	materials;
 	std::string							warn, error;
 
-	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &error, path.c_str())) {
+	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &error, path.c_str(), nullptr, false)) {
 		std::cerr << (warn + error) << std::endl;
 		return (GeometryVectors{});
 	}
 	GeometryVectors							vec;
 	std::unordered_map<Vertex, uint32_t>	uniqueVertices;
 	std::set<std::pair<uint32_t, uint32_t>>	lineIndices;
-	std::vector<uint32_t>					passedIndices;
 	for (auto &shape: shapes) {
-		for (auto &index: shape.mesh.indices) {
-			Vertex	vertex{};
-			if (index.vertex_index >= 0) {
-				vertex.position = {
-					attrib.vertices[3 * index.vertex_index + 0],
-					attrib.vertices[3 * index.vertex_index + 1],
-					attrib.vertices[3 * index.vertex_index + 2]
-				};
+		uint32_t	vertexIndexOffset = 0;
+		for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
+			size_t					faceVertices = static_cast<size_t>(shape.mesh.num_face_vertices[f]);
+			std::vector<uint32_t>	faceIndices;
 
-				vertex.color= {
-					attrib.colors[3 * index.vertex_index + 0],
-					attrib.colors[3 * index.vertex_index + 1],
-					attrib.colors[3 * index.vertex_index + 2]
-				};
-			}
-			if (index.normal_index >= 0)
-			{
-				vertex.normal = {
-					attrib.normals[3 * index.normal_index + 0],
-					attrib.normals[3 * index.normal_index + 1],
-					attrib.normals[3 * index.normal_index + 2]
-				};
-			}
-			if (uniqueVertices.find(vertex) == uniqueVertices.end()) {
-				uniqueVertices[vertex] = static_cast<uint32_t>(vec.vertices.size());
-				vec.vertices.push_back(vertex);
-			}
-			vec.triangleIndices.push_back(uniqueVertices[vertex]);
-			if (fullLoad)
-				passedIndices.push_back(uniqueVertices[vertex]);
-			if (fullLoad && passedIndices.size() == 3) {
-				for (int i = 0; i < 3; i++) {
-					lineIndices.insert(std::pair(std::min(passedIndices[i], passedIndices[(i + 1) % 3]),
-												std::max(passedIndices[i], passedIndices[(i + 1) % 3])));
+			for (size_t v = 0; v < faceVertices; v++) {
+				tinyobj::index_t	index = shape.mesh.indices[vertexIndexOffset + v];
+				Vertex	vertex{};
+				if (index.vertex_index >= 0) {
+					vertex.position = {
+						attrib.vertices[3 * index.vertex_index + 0],
+						attrib.vertices[3 * index.vertex_index + 1],
+						attrib.vertices[3 * index.vertex_index + 2]
+					};
+
+					vertex.color= {
+						attrib.colors[3 * index.vertex_index + 0],
+						attrib.colors[3 * index.vertex_index + 1],
+						attrib.colors[3 * index.vertex_index + 2]
+					};
 				}
-				passedIndices.clear();
+				if (index.normal_index >= 0)
+				{
+					vertex.normal = {
+						attrib.normals[3 * index.normal_index + 0],
+						attrib.normals[3 * index.normal_index + 1],
+						attrib.normals[3 * index.normal_index + 2]
+					};
+				}
+				if (uniqueVertices.find(vertex) == uniqueVertices.end()) {
+					uniqueVertices[vertex] = static_cast<uint32_t>(vec.vertices.size());
+					vec.vertices.push_back(vertex);
+				}
+				faceIndices.push_back(uniqueVertices[vertex]);
 			}
+			for (size_t i = 1; i < faceIndices.size() - 1; i++) {
+				vec.triangleIndices.push_back(faceIndices[0]);
+				vec.triangleIndices.push_back(faceIndices[i]);
+				vec.triangleIndices.push_back(faceIndices[i + 1]);
+			}
+			if (fullLoad) {
+				for (size_t i = 0; i < faceIndices.size(); i++) {
+					lineIndices.insert(std::pair(
+						std::min(faceIndices[i], faceIndices[(i + 1) % faceIndices.size()]),
+						std::max(faceIndices[i], faceIndices[(i + 1) % faceIndices.size()])));
+				}
+			}
+			vertexIndexOffset += faceVertices;
 		}
 	}
 	if (fullLoad) {
