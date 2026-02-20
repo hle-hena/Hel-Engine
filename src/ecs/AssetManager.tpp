@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/26 14:40:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/11 15:10:17                                        */
+/*  Last Modified: 2026/02/20 16:55:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,11 +18,26 @@
 
 namespace	hel {
 
+template<typename T, typename = void>
+struct GetPoolType { using type = T; };
+
+template<typename T>
+struct GetPoolType<T, std::void_t<typename T::AssetPool>> { using type = typename T::AssetPool; };
+
 template <typename Component>
 std::shared_ptr<Component>	AssetManager::get(const std::string &path) {
-	assetGroup	&group = _assets[typeid(Component)];
-	if (group.find(path) != group.end())
-		return (std::static_pointer_cast<Component>(group[path]));
+	using PoolType = GetPoolType<Component>::type;
+	assetGroup	&group = _assets[typeid(PoolType)];
+	if (group.find(path) != group.end()) {
+		auto	basePtr = std::static_pointer_cast<PoolType>(group[path]);
+
+		auto	existing = std::dynamic_pointer_cast<Component>(basePtr);
+		if (existing) {
+			if constexpr (requires(Component c) { c.isLoadedFully(); }) {
+				if (existing->isLoadedFully())	{ return (existing); }
+			} else	{ return (existing); }
+		}
+	}
 	std::shared_ptr<Component>	ptr = load<Component>(path);
 	if (ptr)
 		group[path] = ptr;

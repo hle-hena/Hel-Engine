@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/20 14:55:11                                        */
+/*  Last Modified: 2026/02/20 17:09:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -104,7 +104,7 @@ void	Camera::render(VkRenderPass renderPass, WindowResources &resources,
 									comp::Transform>();
 	for (auto entity : entities) {
 		if (entity == selfHandle)	{ continue ; }
-		auto	mesh = _assetManager.get<Geometry>("assets/models/cube.obj");
+		auto	mesh = _assetManager.get<FullGeometry>("assets/models/cube.obj");
 		if (!mesh)	{ continue ; }
 		auto	*transform = entities.get<comp::Transform>(entity);
 		auto	*camera = entities.get<comp::Camera>(entity);
@@ -115,13 +115,13 @@ void	Camera::render(VkRenderPass renderPass, WindowResources &resources,
 		VkBuffer	buffers[] = {mesh->vertexBuffer->getBuffer()};
 		VkDeviceSize	offset[] = {0};
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offset);
-		vkCmdBindIndexBuffer(commandBuffer, mesh->indexBuffer->getBuffer(), 0,
+		vkCmdBindIndexBuffer(commandBuffer, mesh->lineIndexBuffer->getBuffer(), 0,
 							VK_INDEX_TYPE_UINT32);
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
 							_pipelineLayout, 0, 1,
 							&resources.globalDescriptorSets[currentFrame], 0,
 							nullptr);
-		vkCmdDrawIndexed(commandBuffer, mesh->vertexCount, 1, 0, 0, 0);
+		vkCmdDrawIndexed(commandBuffer, mesh->lineVertexCount, 1, 0, 0, 0);
 	}
 }
 
@@ -145,6 +145,7 @@ bool	Camera::SystemPipeline::init(VkRenderPass renderPass) {
 	Pipeline::setVertexInputDescriptions<Vertex>(config);
 	config.renderPass = renderPass;
 	config.pipelineLayout = layout;
+	config.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
 
 	auto	vert = _system._assetManager.get<Shader>(_system._vertPath);
 	auto	frag = _system._assetManager.get<Shader>(_system._fragPath);

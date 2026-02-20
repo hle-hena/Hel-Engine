@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 19:39:13                                        */
+/*  Last Modified: 2026/02/20 17:06:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -58,13 +58,13 @@ void	Render::render(VkRenderPass renderPass, WindowResources &resources, uint32_
 		VkBuffer	buffers[] = {mesh->vertexBuffer->getBuffer()};
 		VkDeviceSize	offset[] = {0};
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offset);
-		vkCmdBindIndexBuffer(commandBuffer, mesh->indexBuffer->getBuffer(), 0,
+		vkCmdBindIndexBuffer(commandBuffer, mesh->triangleIndexBuffer->getBuffer(), 0,
 							VK_INDEX_TYPE_UINT32);
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
 							_pipelineLayout, 0, 1,
 							&resources.globalDescriptorSets[currentFrame], 0,
 							nullptr);
-		vkCmdDrawIndexed(commandBuffer, mesh->vertexCount, 1, 0, 0, 0);
+		vkCmdDrawIndexed(commandBuffer, mesh->triangleVertexCount, 1, 0, 0, 0);
 	}
 }
 
