@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/19 17:25:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 18:49:53                                        */
+/*  Last Modified: 2026/02/19 19:27:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,6 +28,8 @@ class	RenderPass {
 	public:
 		RenderPass(Device &device);
 		~RenderPass(void);
+		RenderPass(const RenderPass &) = delete;
+		RenderPass	&operator=(const RenderPass &) = delete;
 
 		VkRenderPass	getRenderPasss(VkFormat imageFormat,
 											VkFormat depthFormat);

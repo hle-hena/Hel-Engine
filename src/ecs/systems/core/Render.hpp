@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 19:10:45                                        */
+/*  Last Modified: 2026/02/19 19:31:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,11 +34,6 @@ class	Window;
 
 namespace	hel::sys {
 
-struct	PushConstantData {
-	glm::mat4	modelMatrix;
-	glm::mat4	normalMatrix;
-};
-
 class	Render : public ISystem {
 	public:
 		Render(Device &device, Registry &registry,
@@ -49,6 +44,11 @@ class	Render : public ISystem {
 					uint32_t currentFrame) override;
 
 	private:
+		struct	PushConstantData {
+			glm::mat4	modelMatrix;
+			glm::mat4	normalMatrix;
+		};
+
 		struct	SystemPipeline {
 			SystemPipeline(Render &system);
 			~SystemPipeline(void);
@@ -56,12 +56,13 @@ class	Render : public ISystem {
 			bool	init(VkRenderPass renderPass);
 
 			Pipeline		_pipeline;
-			Render	&_system;
+			Render			&_system;
 		};
-		using pipelineMap = std::unordered_map<VkRenderPass, std::unique_ptr<SystemPipeline>>;
+		using pipelineMap = std::unordered_map<VkRenderPass,
+											std::unique_ptr<SystemPipeline>>;
 
 		SystemPipeline		*getPipelineForPass(VkRenderPass renderPass);
-		VkPipelineLayout	*getPipelineLayout(void);
+		VkPipelineLayout	getPipelineLayout(void);
 
 		bool				_healthy{true};
 		std::string			_reason{""};
