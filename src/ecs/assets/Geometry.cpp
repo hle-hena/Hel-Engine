@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:03:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/11 16:57:24                                        */
+/*  Last Modified: 2026/02/20 15:13:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,6 +25,7 @@
 
 #include <iostream>
 #include <unordered_map>
+#include <algorithm>
 #include <glm/gtx/hash.hpp>
 
 namespace std
@@ -76,8 +77,10 @@ std::shared_ptr<Geometry>	Geometry::load(Device &device, const std::string &path
 		return (nullptr);
 	}
 	std::vector<Vertex>						vertices;
-	std::vector<uint32_t>					indices;
+	std::vector<uint32_t>					triangleIndices;
+	std::set<std::pair<uint32_t, uint32_t>>	lineIndices;
 	std::unordered_map<Vertex, uint32_t>	uniqueVertices;
+	std::optional<uint32_t>					lastIndex;
 	for (auto &shape: shapes) {
 		for (auto &index: shape.mesh.indices) {
 			Vertex	vertex{};
@@ -106,15 +109,20 @@ std::shared_ptr<Geometry>	Geometry::load(Device &device, const std::string &path
 				uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
 				vertices.push_back(vertex);
 			}
-			indices.push_back(uniqueVertices[vertex]);
+			triangleIndices.push_back(uniqueVertices[vertex]);
+			if (lastIndex.has_value()) {
+				uint32_t	otherIndex = uniqueVertices[vertex];
+				lineIndices.insert(std::pair(std::min(lastIndex.value(), otherIndex),
+											std::max(lastIndex.value(), otherIndex)));
+			}
 		}
 	}
 
 
 	return (std::shared_ptr<Geometry>(new Geometry{path,
 			createBuffer(device, vertices, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT),
-			createBuffer(device, indices, VK_BUFFER_USAGE_INDEX_BUFFER_BIT),
-			static_cast<uint32_t>(indices.size())}));
+			createBuffer(device, triangleIndices, VK_BUFFER_USAGE_INDEX_BUFFER_BIT),
+			static_cast<uint32_t>(triangleIndices.size())}));
 }
 
 }
