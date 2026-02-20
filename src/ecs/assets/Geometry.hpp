@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:01:55 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/11 16:07:19                                        */
+/*  Last Modified: 2026/02/20 16:38:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -42,17 +42,37 @@ struct	Geometry {
 	std::string					filePath;
 
 	std::unique_ptr<Buffer>		vertexBuffer;
-	std::unique_ptr<Buffer>		indexBuffer;
-	uint32_t					vertexCount;
+	std::unique_ptr<Buffer>		triangleIndexBuffer;
+	uint32_t					triangleVertexCount;
 
+	virtual bool	isLoadedFully(void) const;
 	static std::shared_ptr<Geometry>	load(Device &device,
 											const std::string &path);
 
-	private:
+	protected:
+		struct	GeometryVectors {
+			std::vector<Vertex>		vertices{};
+			std::vector<uint32_t>	triangleIndices{};
+			std::vector<uint32_t>	lineIndices{};
+		};
+		static GeometryVectors	loadFile(const std::string &path, bool fullLoad);
+
 		template <typename T>
 		static std::unique_ptr<Buffer>	createBuffer(Device &device,
 													std::vector<T> data,
 													VkBufferUsageFlags usage);
+};
+
+struct	FullGeometry : public Geometry {
+	using AssetPool = Geometry;
+
+	std::unique_ptr<Buffer>		lineIndexBuffer;
+	uint32_t					lineVertexCount;
+	uint32_t					pointVertexCount;
+
+	bool	isLoadedFully(void) const override;
+	static std::shared_ptr<FullGeometry> load(Device &device,
+											  const std::string &path);
 };
 
 }
