@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 20:03:16                                        */
+/*  Last Modified: 2026/02/20 10:17:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -40,10 +40,8 @@ Camera::SystemPipeline	*Camera::getPipelineForPass(VkRenderPass renderPass) {
 	if (_pipelines.find(renderPass) != _pipelines.end())
 		return (_pipelines[renderPass].get());
 	auto	pipeline = std::make_unique<SystemPipeline>(*this);
-	std::cout << "?" << std::endl;
 	if (pipeline->init(renderPass))
 		return (nullptr);
-	std::cout << "here" << std::endl;
 	_pipelines[renderPass] = std::move(pipeline);
 	return (_pipelines[renderPass].get());
 }
