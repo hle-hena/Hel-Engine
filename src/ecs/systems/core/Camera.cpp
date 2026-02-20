@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/20 10:17:43                                        */
+/*  Last Modified: 2026/02/20 14:55:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -89,8 +89,11 @@ void	Camera::update(float deltaTime) {
 	}
 }
 
+
+
 void	Camera::render(VkRenderPass renderPass, WindowResources &resources,
 					uint32_t currentFrame) {
+	auto	selfHandle = resources.window->getEntityReference();
 	auto	commandBuffer = resources.commandBuffers[currentFrame];
 	auto	pipeline = getPipelineForPass(renderPass);
 	if (pipeline == nullptr || commandBuffer == VK_NULL_HANDLE)
@@ -100,10 +103,12 @@ void	Camera::render(VkRenderPass renderPass, WindowResources &resources,
 	auto	entities = _registry.view<comp::Camera,
 									comp::Transform>();
 	for (auto entity : entities) {
-		auto	mesh = _assetManager.get<Geometry>("assets/models/colored_cube.obj");
+		if (entity == selfHandle)	{ continue ; }
+		auto	mesh = _assetManager.get<Geometry>("assets/models/cube.obj");
 		if (!mesh)	{ continue ; }
 		auto	*transform = entities.get<comp::Transform>(entity);
-		PushConstantData	push{transform->worldMatrix, transform->normalMatrix};
+		auto	*camera = entities.get<comp::Camera>(entity);
+		PushConstantData	push{transform->worldMatrix, glm::inverse(camera->viewProjection)};
 
 		vkCmdPushConstants(commandBuffer, _pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
 							0, sizeof(PushConstantData), &push);
@@ -143,8 +148,10 @@ bool	Camera::SystemPipeline::init(VkRenderPass renderPass) {
 
 	auto	vert = _system._assetManager.get<Shader>(_system._vertPath);
 	auto	frag = _system._assetManager.get<Shader>(_system._fragPath);
-	if (!vert || !frag)
+	if (!vert || !frag) {
+		std::cerr << "Couldn't find one of the shaders required." << std::endl;
 		return (true);
+	}
 	_pipeline.createGraphicsPipeline(config, {vert->getStageInfo(), frag->getStageInfo()});
 	return (false);
 }

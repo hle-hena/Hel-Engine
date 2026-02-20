@@ -47,7 +47,7 @@ else()
 	message(STATUS "glslc found: ${GLSLC_EXECUTABLE}")
 endif()
 
-file(GLOB_RECURSE SHADERS
+file(GLOB_RECURSE SHADERS CONFIGURE_DEPENDS
 	"${CMAKE_SOURCE_DIR}/assets/shaders/*.vert"
 	"${CMAKE_SOURCE_DIR}/assets/shaders/*.frag"
 )

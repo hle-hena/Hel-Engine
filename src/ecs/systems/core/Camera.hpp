@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 19:59:41                                        */
+/*  Last Modified: 2026/02/20 11:03:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,7 +45,7 @@ class	Camera : public ISystem {
 	private:
 		struct	PushConstantData {
 			glm::mat4	modelMatrix;
-			glm::mat4	normalMatrix;
+			glm::mat4	invViewProjection;
 		};
 
 		struct	SystemPipeline {
@@ -65,8 +65,8 @@ class	Camera : public ISystem {
 
 		bool				_healthy {true};
 		std::string			_reason {""};
-		std::string			_vertPath {"assets/shaders/basic.vert.spv"};
-		std::string			_fragPath {"assets/shaders/basic.frag.spv"};
+		std::string			_vertPath {"assets/shaders/cameraFrustum.vert.spv"};
+		std::string			_fragPath {"assets/shaders/cameraFrustum.frag.spv"};
 		AssetManager		&_assetManager;
 		pipelineMap			_pipelines;
 		VkPipelineLayout	_pipelineLayout {VK_NULL_HANDLE};
