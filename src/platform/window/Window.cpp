@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/21 15:26:54                                        */
+/*  Last Modified: 2026/02/21 15:37:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -79,12 +79,11 @@ void	Window::initWindow(void) {
 								nullptr, nullptr);
 	glfwSetWindowUserPointer(_windowPtr, this);
 	glfwSetKeyCallback(_windowPtr, keyCallback);
+	glfwSetMouseButtonCallback(_windowPtr, mouseButtonCallback);
 	glfwSetFramebufferSizeCallback(_windowPtr, frameBufferResizedCallback);
 	glfwSetWindowFocusCallback(_windowPtr, focusCallback);
 	glfwSetCursorPosCallback(_windowPtr, cursorPositionCallback);
 	glfwSetCursorEnterCallback(_windowPtr, cursorEnterCallback);
-
-	// glfwSetInputMode(_windowPtr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 Window::~Window(void) {
@@ -146,6 +145,13 @@ void	Window::keyCallback(GLFWwindow *window, int key, int scancode,
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
 	appWindow->getApp().getRegistry().getInputState().setState<input::Key>(key, action, mod);
+}
+
+void	Window::mouseButtonCallback(GLFWwindow *window, int button,
+							int action, int mod) {
+	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+
+	appWindow->getApp().getRegistry().getInputState().setState<input::Mouse>(button, action, mod);
 }
 
 void	Window::cursorEnterCallback(GLFWwindow *window, int enter) {
