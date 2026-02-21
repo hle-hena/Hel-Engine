@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 15:01:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/03 11:38:31                                        */
+/*  Last Modified: 2026/02/21 15:25:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,19 @@
 # include <bitset>
 # include <vector>
 
+namespace	hel::input {
+
+struct	Key {
+	static constexpr int OFFSET = 0;
+	static bool	isValid(int id)	{ return (id != GLFW_KEY_UNKNOWN); }
+};
+struct	Mouse {
+	static constexpr int OFFSET = 400;
+	static bool	isValid(int id)	{ return (id <= GLFW_MOUSE_BUTTON_LAST); }
+};
+
+}
+
 namespace	hel {
 
 class	Window;
@@ -34,11 +47,16 @@ class	InputState {
 
 		void	newFrame(void);
 
-		bool	isKeyHeld(int key);
-		bool	isKeyPressed(int key);
-		bool	isKeyReleased(int key);
+		template <typename T>
+		bool	isDown(int index) const;
+		template <typename T>
+		bool	isPressed(int index) const;
+		template <typename T>
+		bool	isReleased(int index) const;
+		template <typename T>
+		bool	hasAnyChanged(std::vector<int> indices) const;
+
 		bool	hasMod(int mod);
-		bool	hasAnyChanged(std::vector<int> keys);
 		bool	mouseMoved(void) { return (_mouseDeltaX || _mouseDeltaY); }
 
 		Window	*getFocused(void) const {
@@ -50,7 +68,10 @@ class	InputState {
 		}
 
 	private:
-		void	setKeyState(int key, int action, int mods);
+		static constexpr int	MOUSE_OFFSET = 400;
+
+		template <typename T>
+		void	setState(int index, int action, int mods);
 		void	setFocus(Window *window, bool focused);
 		void	setMouseMove(Window *window, double deltaX, double deltaY);
 
@@ -65,3 +86,5 @@ class	InputState {
 };
 
 }
+
+#include "platform/input/InputState.tpp"
