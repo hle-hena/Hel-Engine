@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/03 18:56:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 19:24:00                                        */
+/*  Last Modified: 2026/02/21 15:39:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -55,7 +55,7 @@ void	EditorController::handleKeyboardInput(Entity::id handle, float deltaTime) {
 	bool	moved = false;
 
 	for (const auto& [key, dir] : moveConfig) {
-		if (_input.isKeyHeld(key)) {
+		if (_input.isDown<input::Key>(key)) {
 			delta += dir;
 			moved = true;
 		}
@@ -70,7 +70,8 @@ void	EditorController::handleKeyboardInput(Entity::id handle, float deltaTime) {
 }
 
 void	EditorController::handleMouseMove(Entity::id handle) {
-	if (!_input.mouseMoved())	{ return ; }
+	if (!_input.isDown<input::Mouse>(GLFW_MOUSE_BUTTON_RIGHT) ||
+		!_input.mouseMoved())	{ return ; }
 	auto	*constTransform = _registry.getComponent<comp::Transform>(handle);
 	auto	*constController = _registry.getComponent<comp::Controller>(handle);
 	auto	*tag = _registry.getComponent<comp::EditorControllerTag>(handle);

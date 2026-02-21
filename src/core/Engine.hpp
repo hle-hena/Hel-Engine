@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 19:13:20                                        */
+/*  Last Modified: 2026/02/21 15:33:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,6 +25,7 @@
 #include "ecs/systems/core/Transform.hpp"
 #include "ecs/systems/core/Camera.hpp"
 #include "ecs/systems/core/EditorController.hpp"
+#include "ecs/systems/core/HideMouse.hpp"
 
 #include "ecs/systems/runtime/BaseController.hpp"
 #include "ecs/systems/runtime/SurfaceAllignement.hpp"
@@ -98,6 +99,7 @@ class	Engine {
 		sys::Render										_renderSystem;
 		sys::Transform									_transformSystem;
 		sys::Camera										_cameraSystem;
+		sys::HideMouse									_hideMouseSystem;
 		sys::EditorController							_editorControllerSystem;
 		sys::BaseController								_baseControllerSystem;
 		sys::SurfaceAllignement							_surfaceAllignementSystem;

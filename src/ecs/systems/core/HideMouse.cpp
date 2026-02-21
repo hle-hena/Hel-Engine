@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: InputState.cpp                                                      */
+/*  File: HideMouse.cpp                                                       */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/02 15:02:07 by hle-hena                                  */
+/*  Created: 2026/02/21 14:13:56 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/21 15:23:42                                        */
+/*  Last Modified: 2026/02/21 15:43:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,30 +14,28 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "platform/input/InputState.hpp"
+#include "ecs/systems/core/HideMouse.hpp"
+#include "ecs/Registry.hpp"
+#include "platform/window/Window.hpp"
 
-namespace	hel {
+namespace	hel::sys {
 
-void	InputState::setFocus(Window *window, bool focused) {
-	if (focused)
-		_windowFocused = window;
-	else if (_windowFocused == window)
-		_windowFocused = nullptr;
+HideMouse::HideMouse(Device &device, Registry &registry,
+					VkDescriptorSetLayout &setLayout)
+	:	ISystem(device, registry, setLayout),
+		_inputState{registry.getInputState()} {
 }
 
-void	InputState::setMouseMove(Window *window, double deltaX, double deltaY) {
-	_mouseDeltaX += deltaX;
-	_mouseDeltaY += deltaY;
-}
-
-void	InputState::newFrame(void) {
-	_previous = _current;
-	_mouseDeltaX = 0;
-	_mouseDeltaY = 0;
-}
-
-bool	InputState::hasMod(int mod) {
-	return (_currentMods & mod);
+void	HideMouse::update(float deltaTime) {
+	auto	window = _inputState.getFocused();
+	if (!window)
+		return ;
+	if (_inputState.isPressed<input::Mouse>(GLFW_MOUSE_BUTTON_RIGHT))
+		glfwSetInputMode(window->getWindow(),
+			GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	else if (_inputState.isReleased<input::Mouse>(GLFW_MOUSE_BUTTON_RIGHT))
+		glfwSetInputMode(window->getWindow(), GLFW_CURSOR,
+			GLFW_CURSOR_NORMAL);
 }
 
 }

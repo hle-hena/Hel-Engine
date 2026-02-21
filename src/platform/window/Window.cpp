@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:08:58                                        */
+/*  Last Modified: 2026/02/21 15:37:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -79,12 +79,11 @@ void	Window::initWindow(void) {
 								nullptr, nullptr);
 	glfwSetWindowUserPointer(_windowPtr, this);
 	glfwSetKeyCallback(_windowPtr, keyCallback);
+	glfwSetMouseButtonCallback(_windowPtr, mouseButtonCallback);
 	glfwSetFramebufferSizeCallback(_windowPtr, frameBufferResizedCallback);
 	glfwSetWindowFocusCallback(_windowPtr, focusCallback);
 	glfwSetCursorPosCallback(_windowPtr, cursorPositionCallback);
 	glfwSetCursorEnterCallback(_windowPtr, cursorEnterCallback);
-
-	glfwSetInputMode(_windowPtr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 Window::~Window(void) {
@@ -102,20 +101,20 @@ void	Window::deleteWindow(void) {
 bool	Window::shouldClose(void) {
 	auto	&inputState = _app.getRegistry().getInputState();
 
-	if (inputState.isKeyReleased(GLFW_KEY_ESCAPE) &&
+	if (inputState.isReleased<input::Key>(GLFW_KEY_ESCAPE) &&
 		inputState.getFocused() == this) {
 		glfwSetWindowShouldClose(_windowPtr, true);
 		inputState.setFocus(this, false);
 		return (true);
 	}
-	if (inputState.isKeyHeld(GLFW_KEY_ESCAPE) &&
+	if (inputState.isDown<input::Key>(GLFW_KEY_ESCAPE) &&
 		inputState.hasMod(GLFW_MOD_CONTROL) &&
 		inputState.getFocused() == this) {
 		glfwSetWindowShouldClose(_windowPtr, true);
 		inputState.setFocus(this, false);
 		return (true);
 	}
-	if (inputState.isKeyPressed(GLFW_KEY_N) &&
+	if (inputState.isPressed<input::Key>(GLFW_KEY_N) &&
 		inputState.hasMod(GLFW_MOD_CONTROL) &&
 		inputState.getFocused() == this) {
 		_app.addNewWindow(Window::WIDTH, Window::HEIGHT, _windowName + "_copy");
@@ -145,7 +144,14 @@ void	Window::keyCallback(GLFWwindow *window, int key, int scancode,
 							int action, int mod) {
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
-	appWindow->getApp().getRegistry().getInputState().setKeyState(key, action, mod);
+	appWindow->getApp().getRegistry().getInputState().setState<input::Key>(key, action, mod);
+}
+
+void	Window::mouseButtonCallback(GLFWwindow *window, int button,
+							int action, int mod) {
+	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+
+	appWindow->getApp().getRegistry().getInputState().setState<input::Mouse>(button, action, mod);
 }
 
 void	Window::cursorEnterCallback(GLFWwindow *window, int enter) {
