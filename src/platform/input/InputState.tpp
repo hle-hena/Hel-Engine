@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/21 14:36:02 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/21 15:27:24                                        */
+/*  Last Modified: 2026/02/21 15:50:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,9 +39,8 @@ void	InputState::setState(int index, int action, int mods) {
 template <typename T>
 bool	InputState::isDown(int index) const {
 	int	pos = index;
-	if constexpr (hasInputOffset<T>) {
+	if constexpr (hasInputOffset<T>)
 		pos += T::OFFSET;
-	}
 	return (_current.test(pos));
 }
 

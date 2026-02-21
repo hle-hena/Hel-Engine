@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 15:01:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/21 15:25:54                                        */
+/*  Last Modified: 2026/02/21 15:50:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -68,8 +68,6 @@ class	InputState {
 		}
 
 	private:
-		static constexpr int	MOUSE_OFFSET = 400;
-
 		template <typename T>
 		void	setState(int index, int action, int mods);
 		void	setFocus(Window *window, bool focused);
