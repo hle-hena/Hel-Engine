@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/20 18:29:22                                        */
+/*  Last Modified: 2026/02/21 15:15:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,6 +26,9 @@
 namespace	hel::comp {
 
 struct	EditorControllerTag {
+};
+
+struct	BaseControllerTag {
 };
 
 struct	Name {

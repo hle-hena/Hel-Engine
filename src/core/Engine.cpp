@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 19:22:11                                        */
+/*  Last Modified: 2026/02/21 15:33:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,6 +36,7 @@ Engine::Engine(Device &device, Registry &registry)
 		_renderSystem{device, registry, _setLayout},
 		_transformSystem{device, registry, _setLayout},
 		_cameraSystem{device, registry, _setLayout},
+		_hideMouseSystem{device, registry, _setLayout},
 		_editorControllerSystem{device, registry, _setLayout},
 		_baseControllerSystem{device, registry, _setLayout},
 		_surfaceAllignementSystem{device, registry, _setLayout} {
@@ -171,6 +172,7 @@ WindowResources *Engine::getWindowResources(Window& window) {
 void	Engine::updateFrame(void) {
 	_lastFrameTime = _timer.lapTime();
 	_timer.lap();
+	_hideMouseSystem.update(_lastFrameTime);
 	_surfaceAllignementSystem.update(_lastFrameTime);
 	_baseControllerSystem.update(_lastFrameTime);
 	_editorControllerSystem.update(_lastFrameTime);

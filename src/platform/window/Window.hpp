@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/04 19:23:41                                        */
+/*  Last Modified: 2026/02/21 15:36:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -94,6 +94,8 @@ class	Window {
 		static void	frameBufferResizedCallback(GLFWwindow *window, int width,
 											int height);
 		static void	keyCallback(GLFWwindow *window, int key, int scancode,
+								int action, int mods);
+		static void	mouseButtonCallback(GLFWwindow *window, int button,
 								int action, int mods);
 		static void	focusCallback(GLFWwindow *window, int focused);
 		static void cursorPositionCallback(GLFWwindow* window, double xpos,

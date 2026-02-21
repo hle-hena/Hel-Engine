@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:14:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 19:14:25                                        */
+/*  Last Modified: 2026/02/21 15:39:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,7 +34,8 @@ BaseController::~BaseController(void) {
 void	BaseController::handleKeyboardInput(Entity::id handle, float deltaTime) {
 	auto	*constTransform = _registry.getComponent<comp::Transform>(handle);
 	auto	*constController = _registry.getComponent<comp::Controller>(handle);
-	if (!constTransform || !constController)	{ return ; }
+	auto	*tag = _registry.getComponent<comp::BaseControllerTag>(handle);
+	if (!constTransform || !constController || !tag)	{ return ; }
 
 	glm::vec3	upVector = glm::vec3(0., 1., 0.);
 	if (auto *surface = _registry.getComponent<comp::SurfaceAllignement>(handle))
@@ -57,7 +58,7 @@ void	BaseController::handleKeyboardInput(Entity::id handle, float deltaTime) {
 	bool	moved = false;
 
 	for (const auto& [key, dir] : moveConfig) {
-		if (_input.isKeyHeld(key)) {
+		if (_input.isDown<input::Key>(key)) {
 			delta += dir;
 			moved = true;
 		}
@@ -75,7 +76,8 @@ void	BaseController::handleMouseMove(Entity::id handle) {
 	if (!_input.mouseMoved())	{ return ; }
 	auto	*constTransform = _registry.getComponent<comp::Transform>(handle);
 	auto	*constController = _registry.getComponent<comp::Controller>(handle);
-	if (!constTransform || !constController)	{ return ; }
+	auto	*tag = _registry.getComponent<comp::BaseControllerTag>(handle);
+	if (!constTransform || !constController || !tag)	{ return ; }
 
 	int	dx, dy;
 	_input.getMouseDelta(dx, dy);

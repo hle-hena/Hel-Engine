@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: InputState.cpp                                                      */
+/*  File: HideMouse.hpp                                                       */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/02 15:02:07 by hle-hena                                  */
+/*  Created: 2026/02/21 14:14:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/21 15:23:42                                        */
+/*  Last Modified: 2026/02/21 14:19:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,30 +14,28 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "platform/input/InputState.hpp"
+#pragma once
+
+# include "ecs/systems/ISystem.hpp"
 
 namespace	hel {
 
-void	InputState::setFocus(Window *window, bool focused) {
-	if (focused)
-		_windowFocused = window;
-	else if (_windowFocused == window)
-		_windowFocused = nullptr;
+class	InputState;
+
 }
 
-void	InputState::setMouseMove(Window *window, double deltaX, double deltaY) {
-	_mouseDeltaX += deltaX;
-	_mouseDeltaY += deltaY;
-}
+namespace	hel::sys {
 
-void	InputState::newFrame(void) {
-	_previous = _current;
-	_mouseDeltaX = 0;
-	_mouseDeltaY = 0;
-}
+class	HideMouse : public ISystem {
+	public:
+		HideMouse(Device &device, Registry &registry,
+				VkDescriptorSetLayout &setLayout);
+		~HideMouse(void) override = default;
 
-bool	InputState::hasMod(int mod) {
-	return (_currentMods & mod);
-}
+		void	update(float deltaTime) override;
+
+	private:
+		InputState	&_inputState;
+};
 
 }

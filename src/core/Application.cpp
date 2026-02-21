@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/20 18:14:41                                        */
+/*  Last Modified: 2026/02/21 15:41:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -134,6 +134,7 @@ void	Application::addNewWindow(int width, int height, const std::string &windowN
 	if (windowName == "Hel") {
 		_registry.addComponent<comp::EditorControllerTag>(handle);
 	} else {
+		_registry.addComponent<comp::BaseControllerTag>(handle);
 		auto allign = _registry.modify(_registry.addComponent<comp::SurfaceAllignement>(handle));
 		allign->isDynamic = true;
 	}
