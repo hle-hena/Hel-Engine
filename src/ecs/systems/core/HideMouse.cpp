@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/21 14:13:56 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/21 15:32:37                                        */
+/*  Last Modified: 2026/02/21 15:43:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,11 +27,14 @@ HideMouse::HideMouse(Device &device, Registry &registry,
 }
 
 void	HideMouse::update(float deltaTime) {
+	auto	window = _inputState.getFocused();
+	if (!window)
+		return ;
 	if (_inputState.isPressed<input::Mouse>(GLFW_MOUSE_BUTTON_RIGHT))
-		glfwSetInputMode(_inputState.getFocused()->getWindow(),
+		glfwSetInputMode(window->getWindow(),
 			GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	else if (_inputState.isReleased<input::Mouse>(GLFW_MOUSE_BUTTON_RIGHT))
-		glfwSetInputMode(_inputState.getFocused()->getWindow(), GLFW_CURSOR,
+		glfwSetInputMode(window->getWindow(), GLFW_CURSOR,
 			GLFW_CURSOR_NORMAL);
 }
 

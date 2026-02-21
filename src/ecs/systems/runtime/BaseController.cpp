@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:14:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/21 15:26:00                                        */
+/*  Last Modified: 2026/02/21 15:39:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -76,7 +76,8 @@ void	BaseController::handleMouseMove(Entity::id handle) {
 	if (!_input.mouseMoved())	{ return ; }
 	auto	*constTransform = _registry.getComponent<comp::Transform>(handle);
 	auto	*constController = _registry.getComponent<comp::Controller>(handle);
-	if (!constTransform || !constController)	{ return ; }
+	auto	*tag = _registry.getComponent<comp::BaseControllerTag>(handle);
+	if (!constTransform || !constController || !tag)	{ return ; }
 
 	int	dx, dy;
 	_input.getMouseDelta(dx, dy);
