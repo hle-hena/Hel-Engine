@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 15:07:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/22 15:51:42                                        */
+/*  Last Modified: 2026/02/22 16:23:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,14 +16,21 @@
 
 #include "api/vulkan/PipelineMap.hpp"
 #include "api/vulkan/Device.hpp"
+#include "ecs/AssetManager.hpp"
+#include "ecs/assets/Shader.hpp"
+
+#include <iostream>
 
 namespace	hel {
 
 PipelineMap::PipelineMap(Device &device, VkDescriptorSetLayout &globalSetLayout,
-						sys::ISystem &system)
+					sys::ISystem &system, AssetManager &assetManager,
+					std::vector<std::string> shaderPaths)
 	:	_device{device},
 		_globalSetLayout{globalSetLayout},
-		_system{system} {
+		_system{system},
+		_assetManager{assetManager},
+		_shaderPaths{shaderPaths} {
 }
 
 PipelineMap::~PipelineMap(void) {
@@ -51,12 +58,24 @@ VkPipelineLayout	PipelineMap::getLayout(void) {
 	return (_layout);
 }
 
+bool	PipelineMap::getStageInfo(void) {
+	if (!_shaderStageInfos.empty())
+		return (true);
+	for (auto &path: _shaderPaths) {
+		auto	shader = _assetManager.get<Shader>(path);
+		if (!shader)
+			std::cerr << "Couldn't find the shader \"" << shader << "\"" << std::endl;
+		_shaderStageInfos.push_back(shader->getStageInfo());
+	}
+	return (!_shaderStageInfos.empty());
+}
+
 bool	PipelineMap::bindPipeline(VkRenderPass renderPass,
 								VkCommandBuffer commandBuffer) {
 	auto	[it, inserted] = _pipelines.try_emplace(renderPass, _device);
 	auto	&pipeline = it->second;
 	if (inserted) {
-		if (!getLayout())
+		if (!getLayout() || !getStageInfo())
 			return (true);
 		PipelineConfigInfo	config{};
 		Pipeline::defaultPipelineConfigInfo(config);
