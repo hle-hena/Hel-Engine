@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/22 16:53:40                                        */
+/*  Last Modified: 2026/02/22 16:57:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -55,8 +55,6 @@ class	Render : public ISystem {
 
 		bool							_healthy{true};
 		std::string						_reason{""};
-		std::string						_vertPath{"assets/shaders/basic.vert.spv"};
-		std::string						_fragPath{"assets/shaders/basic.frag.spv"};
 		AssetManager					&_assetManager;
 		std::unique_ptr<PipelineMap>	_pipelines{nullptr};
 };
