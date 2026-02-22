@@ -1,0 +1,74 @@
+/* *************************************************************************  */
+/*                                                                            */
+/*                                                                            */
+/*  File: PipelineMap.cpp                                                     */
+/*  Project: Hel Engine                                                       */
+/*  Created: 2026/02/22 15:07:32 by hle-hena                                  */
+/*                                                                            */
+/*  Last Modified: 2026/02/22 15:51:42                                        */
+/*             By: hle-hena                                                   */
+/*                                                                            */
+/*    -----                                                                   */
+/*                                                                            */
+/*  Copyright (c) 2026 hle-hena                                               */
+/*                                                                            */
+/* *************************************************************************  */
+
+#include "api/vulkan/PipelineMap.hpp"
+#include "api/vulkan/Device.hpp"
+
+namespace	hel {
+
+PipelineMap::PipelineMap(Device &device, VkDescriptorSetLayout &globalSetLayout,
+						sys::ISystem &system)
+	:	_device{device},
+		_globalSetLayout{globalSetLayout},
+		_system{system} {
+}
+
+PipelineMap::~PipelineMap(void) {
+	if (_layout)
+		vkDestroyPipelineLayout(_device.getLogical(), _layout, nullptr);
+	for (auto &it: _pipelines)
+		it.second.deleteGraphicsPipeline();
+}
+
+VkPipelineLayout	PipelineMap::getLayout(void) {
+	if (_layout)
+		return (_layout);
+	std::vector<VkDescriptorSetLayout>	setLayouts{_globalSetLayout};
+	std::vector<VkPushConstantRange>	pushConstants{};
+	_system.initPipelineLayout(setLayouts, pushConstants);
+	VkPipelineLayoutCreateInfo	createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	createInfo.setLayoutCount = setLayouts.size();
+	createInfo.pSetLayouts = setLayouts.data();
+	createInfo.pushConstantRangeCount = pushConstants.size();
+	createInfo.pPushConstantRanges = pushConstants.data();
+	if (vkCreatePipelineLayout(_device.getLogical(), &createInfo,
+								nullptr, &_layout))
+		return (nullptr);
+	return (_layout);
+}
+
+bool	PipelineMap::bindPipeline(VkRenderPass renderPass,
+								VkCommandBuffer commandBuffer) {
+	auto	[it, inserted] = _pipelines.try_emplace(renderPass, _device);
+	auto	&pipeline = it->second;
+	if (inserted) {
+		if (!getLayout())
+			return (true);
+		PipelineConfigInfo	config{};
+		Pipeline::defaultPipelineConfigInfo(config);
+		_system.configurePipeline(config);
+		config.pipelineLayout = _layout;
+		config.renderPass = renderPass;
+		if (pipeline.createGraphicsPipeline(config, _shaderStageInfos))
+			return (true);
+	}
+
+	pipeline.bind(commandBuffer);
+	return (false);
+}
+
+}

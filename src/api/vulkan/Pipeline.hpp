@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/29 17:23:51                                        */
+/*  Last Modified: 2026/02/22 15:44:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,7 +39,7 @@ struct	PipelineConfigInfo {
 	VkPipelineColorBlendAttachmentState				colorBlendAttachment;
 	VkPipelineColorBlendStateCreateInfo				colorBlendInfo;
 	VkPipelineDepthStencilStateCreateInfo			depthStencilInfo;
-	std::vector<VkDynamicState>						dynamicStateEnables;
+	std::vector<VkDynamicState>						dynamicStateEnables{};
 	VkPipelineDynamicStateCreateInfo				dynamicStateInfo;
 	VkPipelineLayout								pipelineLayout{nullptr};
 	VkRenderPass									renderPass{nullptr};

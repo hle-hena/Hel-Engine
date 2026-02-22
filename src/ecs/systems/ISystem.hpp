@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 18:58:42                                        */
+/*  Last Modified: 2026/02/22 15:52:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,12 +17,14 @@
 #pragma once
 
 # include <vulkan/vulkan.h>
+# include <vector>
 
 namespace	hel {
 
 class	Device;
 class	Registry;
 struct	WindowResources;
+struct	PipelineConfigInfo;
 
 }
 
@@ -39,6 +41,10 @@ class	ISystem {
 
 		ISystem(const ISystem &other) = delete;
 		ISystem	&operator=(const ISystem &other) = delete;
+
+		virtual void	initPipelineLayout(std::vector<VkDescriptorSetLayout> &,
+										std::vector<VkPushConstantRange> &) {}
+		virtual void	configurePipeline(PipelineConfigInfo &) {};
 
 		virtual void	update(float) {}
 		virtual void	render(VkRenderPass, WindowResources &, uint32_t) {}
