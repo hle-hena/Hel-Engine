@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 19:31:31                                        */
+/*  Last Modified: 2026/02/22 16:57:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,7 +23,7 @@
 # include <glm/glm.hpp>
 
 # include "ecs/systems/ISystem.hpp"
-# include "api/vulkan/Pipeline.hpp"
+# include "api/vulkan/PipelineMap.hpp"
 
 namespace	hel {
 
@@ -49,28 +49,14 @@ class	Render : public ISystem {
 			glm::mat4	normalMatrix;
 		};
 
-		struct	SystemPipeline {
-			SystemPipeline(Render &system);
-			~SystemPipeline(void);
+		static void	initLayout(std::vector<VkDescriptorSetLayout> &setLayouts,
+						std::vector<VkPushConstantRange> &pushConstants);
+		static void	configurePipeline(PipelineConfigInfo &config);
 
-			bool	init(VkRenderPass renderPass);
-
-			Pipeline		_pipeline;
-			Render			&_system;
-		};
-		using pipelineMap = std::unordered_map<VkRenderPass,
-											std::unique_ptr<SystemPipeline>>;
-
-		SystemPipeline		*getPipelineForPass(VkRenderPass renderPass);
-		VkPipelineLayout	getPipelineLayout(void);
-
-		bool				_healthy{true};
-		std::string			_reason{""};
-		std::string			_vertPath{"assets/shaders/basic.vert.spv"};
-		std::string			_fragPath{"assets/shaders/basic.frag.spv"};
-		AssetManager		&_assetManager;
-		pipelineMap			_pipelines;
-		VkPipelineLayout	_pipelineLayout{VK_NULL_HANDLE};
+		bool							_healthy{true};
+		std::string						_reason{""};
+		AssetManager					&_assetManager;
+		std::unique_ptr<PipelineMap>	_pipelines{nullptr};
 };
 
 }
