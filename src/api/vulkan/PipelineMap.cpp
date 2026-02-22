@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 15:07:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/22 16:49:09                                        */
+/*  Last Modified: 2026/02/22 18:33:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -66,8 +66,11 @@ bool	PipelineMap::getStageInfo(void) {
 		return (true);
 	for (auto &path: _shaderPaths) {
 		auto	shader = _assetManager.get<Shader>(path);
-		if (!shader)
-			std::cerr << "Couldn't find the shader \"" << shader << "\"" << std::endl;
+		if (!shader) {
+			std::cerr << "Couldn't find the shader \"" << shader << "\""
+					<< std::endl;
+			return (false);
+		}
 		_shaderStageInfos.push_back(shader->getStageInfo());
 	}
 	return (!_shaderStageInfos.empty());

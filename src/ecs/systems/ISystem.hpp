@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/22 16:52:44                                        */
+/*  Last Modified: 2026/02/22 18:33:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,7 +17,6 @@
 #pragma once
 
 # include <vulkan/vulkan.h>
-# include <vector>
 
 namespace	hel {
 
