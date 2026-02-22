@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 15:07:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/22 16:23:29                                        */
+/*  Last Modified: 2026/02/22 16:49:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,14 +23,17 @@
 
 namespace	hel {
 
-PipelineMap::PipelineMap(Device &device, VkDescriptorSetLayout &globalSetLayout,
-					sys::ISystem &system, AssetManager &assetManager,
-					std::vector<std::string> shaderPaths)
-	:	_device{device},
-		_globalSetLayout{globalSetLayout},
-		_system{system},
-		_assetManager{assetManager},
-		_shaderPaths{shaderPaths} {
+PipelineMap::PipelineMap(const Config &conf)
+	:	_device{*conf.device},
+		_globalSetLayout{*conf.globalSetLayout},
+		_assetManager{*conf.assetManager},
+		_shaderPaths{conf.shaderPaths},
+		_initLayout{[](auto &, auto &){}},
+		_configPipeline{[](auto &){}} {
+	if (conf.initPipelineLayout)
+		_initLayout = conf.initPipelineLayout;
+	if (conf.configurePipeline)
+		_configPipeline = conf.configurePipeline;
 }
 
 PipelineMap::~PipelineMap(void) {
@@ -45,7 +48,7 @@ VkPipelineLayout	PipelineMap::getLayout(void) {
 		return (_layout);
 	std::vector<VkDescriptorSetLayout>	setLayouts{_globalSetLayout};
 	std::vector<VkPushConstantRange>	pushConstants{};
-	_system.initPipelineLayout(setLayouts, pushConstants);
+	_initLayout(setLayouts, pushConstants);
 	VkPipelineLayoutCreateInfo	createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	createInfo.setLayoutCount = setLayouts.size();
@@ -79,7 +82,7 @@ bool	PipelineMap::bindPipeline(VkRenderPass renderPass,
 			return (true);
 		PipelineConfigInfo	config{};
 		Pipeline::defaultPipelineConfigInfo(config);
-		_system.configurePipeline(config);
+		_configPipeline(config);
 		config.pipelineLayout = _layout;
 		config.renderPass = renderPass;
 		if (pipeline.createGraphicsPipeline(config, _shaderStageInfos))

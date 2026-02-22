@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/22 16:20:46                                        */
+/*  Last Modified: 2026/02/22 16:54:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,15 +30,24 @@ namespace	hel::sys {
 Render::Render(Device &device, Registry &registry,
 						VkDescriptorSetLayout &setLayout)
 	:	ISystem(device, registry, setLayout),
-		_assetManager{registry.getAssetManager()},
-		_pipelines{device, setLayout, *this, registry.getAssetManager(),
-			{_vertPath, _fragPath}} {
+		_assetManager{registry.getAssetManager()} {
+	PipelineMap::Config	config;
+	config.device = &device;
+	config.globalSetLayout = &setLayout;
+	config.assetManager = &registry.getAssetManager();
+	config.shaderPaths = {
+		"assets/shaders/basic.vert.spv",
+		"assets/shaders/basic.frag.spv"
+	};
+	config.initPipelineLayout = initLayout;
+	config.configurePipeline = configurePipeline;
+	_pipelines = std::make_unique<PipelineMap>(config);
 }
 
 Render::~Render(void) {
 }
 
-void	Render::initPipelineLayout(std::vector<VkDescriptorSetLayout> &setLayouts,
+void	Render::initLayout(std::vector<VkDescriptorSetLayout> &setLayouts,
 						std::vector<VkPushConstantRange> &pushConstants) {
 	VkPushConstantRange	vertexPush{};
 	vertexPush.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
@@ -52,9 +61,9 @@ void	Render::configurePipeline(PipelineConfigInfo &config) {
 
 void	Render::render(VkRenderPass renderPass, WindowResources &resources, uint32_t currentFrame) {
 	auto	commandBuffer = resources.commandBuffers[currentFrame];
-	if (!commandBuffer || _pipelines.bindPipeline(renderPass, commandBuffer))
+	if (!commandBuffer || _pipelines->bindPipeline(renderPass, commandBuffer))
 		return ;
-	auto	pipelineLayout = _pipelines.getLayout();
+	auto	pipelineLayout = _pipelines->getLayout();
 
 	auto	entities = _registry.view<comp::Transform, comp::Model>();
 	for (auto entity: entities) {

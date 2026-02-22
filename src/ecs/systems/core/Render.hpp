@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/22 15:58:18                                        */
+/*  Last Modified: 2026/02/22 16:53:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -40,10 +40,6 @@ class	Render : public ISystem {
 					VkDescriptorSetLayout &setLayout);
 		~Render(void) override;
 
-		void	initPipelineLayout(std::vector<VkDescriptorSetLayout> &setLayouts,
-								std::vector<VkPushConstantRange> &pushConstants) override;
-		void	configurePipeline(PipelineConfigInfo &config) override;
-
 		void	render(VkRenderPass renderPass, WindowResources &resources,
 					uint32_t currentFrame) override;
 
@@ -53,12 +49,16 @@ class	Render : public ISystem {
 			glm::mat4	normalMatrix;
 		};
 
-		bool				_healthy{true};
-		std::string			_reason{""};
-		std::string			_vertPath{"assets/shaders/basic.vert.spv"};
-		std::string			_fragPath{"assets/shaders/basic.frag.spv"};
-		AssetManager		&_assetManager;
-		PipelineMap			_pipelines;
+		static void	initLayout(std::vector<VkDescriptorSetLayout> &setLayouts,
+						std::vector<VkPushConstantRange> &pushConstants);
+		static void	configurePipeline(PipelineConfigInfo &config);
+
+		bool							_healthy{true};
+		std::string						_reason{""};
+		std::string						_vertPath{"assets/shaders/basic.vert.spv"};
+		std::string						_fragPath{"assets/shaders/basic.frag.spv"};
+		AssetManager					&_assetManager;
+		std::unique_ptr<PipelineMap>	_pipelines{nullptr};
 };
 
 }
