@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/25 19:08:49                                        */
+/*  Last Modified: 2026/02/25 19:16:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -67,8 +67,6 @@ void	Image::createImage(void) {
 	if (vkCreateImage(_device.getLogical(), &createInfo, nullptr, &_image))
 		throw std::runtime_error("Failed to create an Image");
 }
-
-//VK_IMAGE_USAGE_[INPUT_ATTACHMENT|TRANSIENT_ATTACHMENT|SHADING_RATE_IMAGE|FRAGMENT_DENSITY_MAP]_BIT
 
 void	Image::createView(void) {
 	static constexpr VkImageUsageFlags	viewFlags = VK_IMAGE_USAGE_SAMPLED_BIT |
