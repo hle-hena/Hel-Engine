@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/25 18:45:16                                        */
+/*  Last Modified: 2026/02/25 18:58:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,7 +39,7 @@ class Image {
 		Image(const Image &) = delete;
 		Image	operator=(const Image &) = delete;
 
-		bool	transitionLayout(VkCommandBuffer commandBuffer,
+		void	transitionLayout(VkCommandBuffer commandBuffer,
 								VkImageLayout newLayout);
 		void	setData(void *data, VkDeviceSize size);
 
@@ -62,7 +62,7 @@ class Image {
 		VkImage			_image{VK_NULL_HANDLE};
 		VkImageView		_view{VK_NULL_HANDLE};
 		VkDeviceMemory	_memory{VK_NULL_HANDLE};
-		VkImageLayout	_currentLayout;
+		VkImageLayout	_currentLayout{VK_IMAGE_LAYOUT_UNDEFINED};
 };
 
 }

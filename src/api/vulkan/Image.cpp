@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/25 18:48:15                                        */
+/*  Last Modified: 2026/02/25 19:08:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -68,7 +68,14 @@ void	Image::createImage(void) {
 		throw std::runtime_error("Failed to create an Image");
 }
 
+//VK_IMAGE_USAGE_[INPUT_ATTACHMENT|TRANSIENT_ATTACHMENT|SHADING_RATE_IMAGE|FRAGMENT_DENSITY_MAP]_BIT
+
 void	Image::createView(void) {
+	static constexpr VkImageUsageFlags	viewFlags = VK_IMAGE_USAGE_SAMPLED_BIT |
+		VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+	if (!(viewFlags & _config.usage))
+		return ;
 	VkImageViewCreateInfo	viewCreateInfo{};
 	viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	viewCreateInfo.image = _image;
@@ -80,9 +87,9 @@ void	Image::createView(void) {
 	viewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 	viewCreateInfo.subresourceRange.aspectMask = _config.aspectFlags;
 	viewCreateInfo.subresourceRange.baseMipLevel = 0;
-	viewCreateInfo.subresourceRange.levelCount = 1;
+	viewCreateInfo.subresourceRange.levelCount = 1; //TODO -> support mipmaps
 	viewCreateInfo.subresourceRange.baseArrayLayer = 0;
-	viewCreateInfo.subresourceRange.layerCount = 1;
+	viewCreateInfo.subresourceRange.layerCount = 1; //TODO -> support mipmaps
 	if (vkCreateImageView(_device.getLogical(), &viewCreateInfo,
 						nullptr, &_view))
 		throw std::runtime_error("Failed to create the image view");
@@ -98,7 +105,7 @@ void	Image::allocateMemory(void) {
 	vkBindImageMemory(_device.getLogical(), _image, _memory, 0);
 }
 
-bool	Image::transitionLayout(VkCommandBuffer commandBuffer,
+void	Image::transitionLayout(VkCommandBuffer commandBuffer,
 								VkImageLayout newLayout) {
 	VkImageMemoryBarrier2	barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
@@ -130,6 +137,7 @@ bool	Image::transitionLayout(VkCommandBuffer commandBuffer,
 	depInfo.imageMemoryBarrierCount = 1;
 	depInfo.pImageMemoryBarriers = &barrier;
 	vkCmdPipelineBarrier2(commandBuffer, &depInfo);
+	_currentLayout = newLayout;
 }
 
 void	Image::setData(void *data, VkDeviceSize size) {
