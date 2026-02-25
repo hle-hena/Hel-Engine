@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/25 18:32:10                                        */
+/*  Last Modified: 2026/02/25 18:45:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,9 +39,9 @@ class Image {
 		Image(const Image &) = delete;
 		Image	operator=(const Image &) = delete;
 
-		void	setData(void *data, VkDeviceSize size);
 		bool	transitionLayout(VkCommandBuffer commandBuffer,
 								VkImageLayout newLayout);
+		void	setData(void *data, VkDeviceSize size);
 
 		VkDescriptorImageInfo	getDescriptorInfo(void) const
 			{ return {nullptr, _view, _currentLayout}; };

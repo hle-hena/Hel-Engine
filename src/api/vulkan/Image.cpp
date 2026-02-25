@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/25 18:33:05                                        */
+/*  Last Modified: 2026/02/25 18:48:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -98,19 +98,22 @@ void	Image::allocateMemory(void) {
 	vkBindImageMemory(_device.getLogical(), _image, _memory, 0);
 }
 
-bool	Image::transitionLayout(VkCommandBuffer commandBuffer, VkImageLayout newLayout) {
+bool	Image::transitionLayout(VkCommandBuffer commandBuffer,
+								VkImageLayout newLayout) {
 	VkImageMemoryBarrier2	barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
 	barrier.srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
 	barrier.srcAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT;
 	barrier.dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
-	barrier.dstAccessMask = VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT;
+	barrier.dstAccessMask = VK_ACCESS_2_MEMORY_READ_BIT |
+							VK_ACCESS_2_MEMORY_WRITE_BIT;
 	barrier.oldLayout = _currentLayout;
 	barrier.newLayout = newLayout;
 	barrier.image = _image;
 	barrier.subresourceRange = {_config.aspectFlags, 0, 1, 0, 1};
 
-	if (_currentLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+	if (_currentLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
+		newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
 		barrier.srcStageMask = VK_PIPELINE_STAGE_2_NONE;
 		barrier.srcAccessMask = VK_ACCESS_2_NONE;
 		barrier.dstStageMask = VK_PIPELINE_STAGE_2_COPY_BIT;
@@ -122,34 +125,30 @@ bool	Image::transitionLayout(VkCommandBuffer commandBuffer, VkImageLayout newLay
 		barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
 	}
 
-	VkDependencyInfo depInfo{};
+	VkDependencyInfo	depInfo{};
 	depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
 	depInfo.imageMemoryBarrierCount = 1;
 	depInfo.pImageMemoryBarriers = &barrier;
 	vkCmdPipelineBarrier2(commandBuffer, &depInfo);
 }
 
-void	Image::setData(void* data, VkDeviceSize size) {
-	auto	stagingBuffer = Buffer::create(_device, size, 
-		VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
+void	Image::setData(void *data, VkDeviceSize size) {
+	auto	stagingBuffer = Buffer::create(_device, size,
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	stagingBuffer->map();
 	stagingBuffer->writeToBuffer(data);
 	stagingBuffer->unmap();
 
-	VkCommandBuffer cmd = _device.beginSingleTimeCommand();
-
-	transitionLayout(cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-	VkBufferImageCopy region{};
-	region.imageSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+	VkCommandBuffer commandBuffer = _device.beginSingleTimeCommand();
+	transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	VkBufferImageCopy	region{};
+	region.imageSubresource = {_config.aspectFlags, 0, 0, 1};
 	region.imageExtent = { _config.width, _config.height, 1 };
-	vkCmdCopyBufferToImage(cmd, stagingBuffer->getBuffer(), _image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-
-	transitionLayout(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-	_device.endSingleTimeCommand(cmd);
+	vkCmdCopyBufferToImage(commandBuffer, stagingBuffer->getBuffer(), _image,
+						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+	transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	_device.endSingleTimeCommand(commandBuffer);
 }
 
 }
