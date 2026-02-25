@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:33:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/21 11:40:01                                        */
+/*  Last Modified: 2026/02/25 18:08:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,7 +33,7 @@ bool	VulkanInstance::createInstance() {
 
 	VkApplicationInfo	appInfo{VK_STRUCTURE_TYPE_APPLICATION_INFO,
 		nullptr, "Hel", VK_MAKE_VERSION(0, 0, 0),
-		"Hel Engine", VK_MAKE_VERSION(0, 0, 0), VK_API_VERSION_1_0
+		"Hel Engine", VK_MAKE_VERSION(0, 0, 0), VK_API_VERSION_1_3
 	};
 	VkInstanceCreateInfo	createInfo{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
 		nullptr, 0, &appInfo, 0, nullptr,
