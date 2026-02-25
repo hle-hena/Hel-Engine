@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/25 13:55:06                                        */
+/*  Last Modified: 2026/02/25 17:22:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -41,13 +41,14 @@ class Image {
 	private:
 		Image(Device &device, const Config &config);
 
+		void	createImage(const Config &config);
+		void	allocateMemory(const Config &config);
+		void	createView(const Config &config);
+
 		Device			&_device;
 		VkImage			_image{VK_NULL_HANDLE};
 		VkImageView		_view{VK_NULL_HANDLE};
 		VkDeviceMemory	_memory{VK_NULL_HANDLE};
-
-		uint32_t		_width, _height;
-		VkFormat		_format;
 };
 
 struct	Image::Config {
