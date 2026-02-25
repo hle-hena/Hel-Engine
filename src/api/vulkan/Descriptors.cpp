@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/24 21:29:33                                        */
+/*  Last Modified: 2026/02/25 11:37:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,6 +16,26 @@
 
 #include "api/vulkan/Descriptors.hpp"
 #include "api/vulkan/Device.hpp"
+#include "utils/mathUtils.hpp"
+
+namespace	std {
+
+template <>
+struct hash<hel::DescriptorBindings>
+{
+	size_t	operator()(const hel::DescriptorBindings &bindings) const
+	{
+		size_t	seed = 0;
+		for (const auto &binding: bindings._bindings) {
+			hel::mathUtils::hashCombine(seed, binding.binding,
+											binding.descriptorType,
+											binding.descriptorCount);
+		}
+		return (seed);
+	}	
+};
+
+}
 
 namespace	hel {
 
@@ -59,6 +79,8 @@ void	DescriptorPool::resetPools(void) {
 }
 
 void	DescriptorPool::freeSets(DescriptorSet &handle) {
+	if (!(_poolCreationFlags & VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT))
+		return ;
 	Pool		*parent = handle.parentPool;
 	uint32_t	setCount = handle.sets.size();
 	vkFreeDescriptorSets(_device.getLogical(), parent->_pool,
@@ -103,10 +125,9 @@ void	DescriptorPool::getNewPool(void) {
 	}
 }
 
-bool	DescriptorPool::allocateSets(VkDescriptorSetLayout setLayout,
-								DescriptorSet &handle, uint32_t setCount) {
+bool	DescriptorPool::allocateSets(DescriptorSet &handle, uint32_t setCount) {
 	handle.sets.resize(static_cast<size_t>(setCount));
-	std::vector<VkDescriptorSetLayout>	setLayouts(setCount, setLayout);
+	std::vector<VkDescriptorSetLayout>	setLayouts(setCount, handle.setLayout);
 	VkDescriptorSetAllocateInfo	allocateInfo{};
 	allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	allocateInfo.descriptorPool = _activeHandle->_pool;
@@ -129,6 +150,72 @@ bool	DescriptorPool::allocateSets(VkDescriptorSetLayout setLayout,
 		return (false);
 	}
 	return (true);
+}
+
+
+
+bool	DescriptorBindings::operator==(const DescriptorBindings &other) const {
+	if (other._bindings.size() != _bindings.size())
+		return (false);
+	for (int i = 0; i < _bindings.size(); i++) {
+		if (_bindings[i].binding != other._bindings[i].binding ||
+			_bindings[i].descriptorType != other._bindings[i].descriptorType ||
+			_bindings[i].descriptorCount != other._bindings[i].descriptorCount ||
+			_bindings[i].stageFlags != other._bindings[i].stageFlags)
+			return (false);
+	}
+	return (true);
+}
+
+DescriptorFactory	&DescriptorFactory::addBinding(uint32_t binding,
+												VkDescriptorType type,
+												VkShaderStageFlags stages,
+												VkSampler *sampler,
+												uint32_t descriptorCount) {
+	VkDescriptorSetLayoutBinding	layoutBinding{};
+	layoutBinding.binding = binding;
+	layoutBinding.stageFlags = stages;
+	layoutBinding.descriptorCount = descriptorCount;
+	layoutBinding.descriptorType = type;
+	layoutBinding.pImmutableSamplers = sampler;
+
+	_bindings._bindings.push_back(layoutBinding);
+	return (*this);
+}
+
+void	DescriptorFactory::deleteLayoutCache(Device &device) {
+	for (auto it: _descriptorSetLayouts)
+		vkDestroyDescriptorSetLayout(device.getLogical(), it.second, nullptr);
+}
+
+VkDescriptorSetLayout	DescriptorFactory::getSetLayout(void) {
+	if (_descriptorSetLayouts.find(_bindings) != _descriptorSetLayouts.end())
+		return (_descriptorSetLayouts[_bindings]);
+
+	VkDescriptorSetLayout			newSetLayout;
+	VkDescriptorSetLayoutCreateInfo	createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	createInfo.bindingCount = _bindings._bindings.size();
+	createInfo.pBindings = _bindings._bindings.data();
+	if (vkCreateDescriptorSetLayout(_device.getLogical(), &createInfo, nullptr,
+									&newSetLayout))
+		return (nullptr);
+	_descriptorSetLayouts[_bindings] = newSetLayout;
+	return (newSetLayout);
+}
+
+std::unique_ptr<DescriptorSet>	DescriptorFactory::build(
+									DescriptorPool &buildPool) {
+	std::sort(_bindings._bindings.begin(), _bindings._bindings.end(), 
+			[](const auto& a, const auto& b) { return a.binding < b.binding; });
+	VkDescriptorSetLayout	setLayout = getSetLayout();
+	if (!setLayout)
+		return (nullptr);
+	auto	newSet = std::make_unique<DescriptorSet>();
+	newSet->setLayout = setLayout;
+	if (buildPool.allocateSets(*newSet, _setCount))
+		return (nullptr);
+	return (newSet);
 }
 
 }

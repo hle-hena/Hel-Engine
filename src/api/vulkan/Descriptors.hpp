@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/24 21:30:17                                        */
+/*  Last Modified: 2026/02/25 11:30:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -40,8 +40,7 @@ class	DescriptorPool {
 		DescriptorPool(const DescriptorPool &other) = delete;
 		DescriptorPool	&operator=(const DescriptorPool &other) = delete;
 
-		bool	allocateSets(VkDescriptorSetLayout setLayout,
-							DescriptorSet &handle, uint32_t setCount);
+		bool	allocateSets(DescriptorSet &handle, uint32_t setCount);
 		void	resetPools(void);
 		void	freeSets(DescriptorSet &handle);
 
@@ -86,12 +85,48 @@ struct	DescriptorPool::Builder {
 		VkDescriptorPoolCreateFlags			_poolCreationFlags{0};
 };
 
+struct	DescriptorBindings {
+	std::vector<VkDescriptorSetLayoutBinding>	_bindings{};
+
+	bool	operator==(const DescriptorBindings &other) const;
+};
+
+class	DescriptorFactory {
+	public:
+		DescriptorFactory(Device &device);
+		~DescriptorFactory(void);
+
+		DescriptorFactory	&setSetCount(uint32_t setCount)
+			{ _setCount = setCount; return (*this); }
+
+		DescriptorFactory	&addBinding(uint32_t binding, VkDescriptorType type,
+										VkShaderStageFlags stages,
+										VkSampler *sampler = nullptr,
+										uint32_t descriptorCount = 1);
+		std::unique_ptr<DescriptorSet>	build(DescriptorPool &buildPool);
+
+		static void	deleteLayoutCache(Device &device);
+
+	private:
+		VkDescriptorSetLayout	getSetLayout(void);
+
+		Device				&_device;
+		DescriptorBindings	_bindings;
+		uint32_t			_setCount{0};
+
+		static std::unordered_map<DescriptorBindings,
+								VkDescriptorSetLayout>	_descriptorSetLayouts;
+};
+
 struct DescriptorSet {
+	~DescriptorSet(void)	{ free(); }
+
+	VkDescriptorSetLayout			setLayout;
 	std::vector<VkDescriptorSet>	sets;
 	DescriptorPool::Pool			*parentPool{nullptr};
 	DescriptorPool					*manager{nullptr};
 
-	void	free(void)	{ if (manager)	{ manager->freeSets(*this); } }
+	void		free(void)	{ if (manager)	{ manager->freeSets(*this); } }
 };
 
 

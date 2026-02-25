@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:03:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/20 19:28:46                                        */
+/*  Last Modified: 2026/02/25 11:12:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,18 +29,19 @@
 #include <glm/gtx/hash.hpp>
 #include "Geometry.hpp"
 
-namespace std
+namespace std {
+
+template <>
+struct hash<hel::Vertex>
 {
-	template <>
-	struct hash<hel::Vertex>
+	size_t	operator()(const hel::Vertex &vertex) const
 	{
-		size_t	operator()(const hel::Vertex &vertex) const
-		{
-			size_t	seed = 0;
-			hel::mathUtils::hashCombine(seed, vertex.position, vertex.color, vertex.normal);
-			return (seed);
-		}	
-	};
+		size_t	seed = 0;
+		hel::mathUtils::hashCombine(seed, vertex.position, vertex.color, vertex.normal);
+		return (seed);
+	}	
+};
+
 }
 
 namespace	hel {
