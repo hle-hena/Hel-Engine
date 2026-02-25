@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/25 11:30:40                                        */
+/*  Last Modified: 2026/02/25 12:24:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,6 +24,7 @@
 namespace	hel {
 
 class	Device;
+class	Buffer;
 class	DescriptorSet;
 
 class	DescriptorPool {
@@ -116,6 +117,22 @@ class	DescriptorFactory {
 
 		static std::unordered_map<DescriptorBindings,
 								VkDescriptorSetLayout>	_descriptorSetLayouts;
+};
+
+class	DescriptorWriter {
+	public:
+		DescriptorWriter(Device &device, DescriptorSet *sets);
+		~DescriptorWriter(void)	= default;
+
+		DescriptorWriter	&writeBuffer(uint32_t setIndex, uint32_t binding,
+										VkDescriptorType type, Buffer &buffer);
+
+	private:
+		Device								&_device;
+		DescriptorSet						*_handle;
+		std::vector<VkWriteDescriptorSet>	_writes{};
+		std::vector<VkDescriptorBufferInfo>	_buffersInfo{};
+		std::vector<VkDescriptorImageInfo>	_imagesInfo{};
 };
 
 struct DescriptorSet {

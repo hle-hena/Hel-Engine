@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/25 11:37:08                                        */
+/*  Last Modified: 2026/02/25 13:12:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,6 +16,7 @@
 
 #include "api/vulkan/Descriptors.hpp"
 #include "api/vulkan/Device.hpp"
+#include "api/vulkan/Buffer.hpp"
 #include "utils/mathUtils.hpp"
 
 namespace	std {
@@ -217,5 +218,32 @@ std::unique_ptr<DescriptorSet>	DescriptorFactory::build(
 		return (nullptr);
 	return (newSet);
 }
+
+
+
+DescriptorWriter::DescriptorWriter(Device &device, DescriptorSet *handle)
+	:	_device{device},
+		_handle{handle} {
+}
+
+DescriptorWriter	&DescriptorWriter::writeBuffer(uint32_t setIndex,
+												uint32_t binding,
+												VkDescriptorType type,
+												Buffer &buffer) {
+	VkDescriptorBufferInfo	bufferInfo = buffer.getDescriptorInfo();
+	_buffersInfo.push_back(bufferInfo);
+
+	VkWriteDescriptorSet	write{};
+	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	write.dstSet = _handle->sets[setIndex];
+	write.dstBinding = binding;
+	write.descriptorType = type;
+	write.descriptorCount = 1;
+	write.pBufferInfo = &bufferInfo;
+	_writes.push_back(write);
+	return (*this);
+}
+
+
 
 }
