@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/11 15:55:40                                        */
+/*  Last Modified: 2026/02/25 18:43:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -125,7 +125,10 @@ bool	Device::createLogicalDevice(void) {
 	}
 	VkPhysicalDeviceFeatures	features{};
 	features.geometryShader = true;
-	VkDeviceCreateInfo	createInfo{VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO, nullptr, 0,
+	VkPhysicalDeviceSynchronization2Features	sync2Features{};
+	sync2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
+	sync2Features.synchronization2 = VK_TRUE;
+	VkDeviceCreateInfo	createInfo{VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO, &sync2Features, 0,
 		static_cast<uint32_t>(queueCreateInfos.size()), queueCreateInfos.data(),
 		0, nullptr, static_cast<uint32_t>(_deviceExtensions.size()), _deviceExtensions.data(), &features};
 	if (vkCreateDevice(_physicalDevice, &createInfo, nullptr, &_device) != VK_SUCCESS)
