@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:20:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:29:37                                        */
+/*  Last Modified: 2026/02/26 15:49:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,8 +22,7 @@ namespace	hel::sys {
 
 class	SurfaceAllignement : public ISystem {
 	public:
-		SurfaceAllignement(Device &device, Registry &registry,
-						VkDescriptorSetLayout &setLayout);
+		SurfaceAllignement(Device &device, Registry &registry);
 		~SurfaceAllignement(void) override = default;
 
 		void	update(float deltaTime) override;

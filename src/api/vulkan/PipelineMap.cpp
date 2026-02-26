@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 15:07:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/22 18:33:57                                        */
+/*  Last Modified: 2026/02/26 15:44:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,7 +25,6 @@ namespace	hel {
 
 PipelineMap::PipelineMap(const Config &conf)
 	:	_device{*conf.device},
-		_globalSetLayout{*conf.globalSetLayout},
 		_assetManager{*conf.assetManager},
 		_shaderPaths{conf.shaderPaths},
 		_initLayout{[](auto &, auto &){}},
@@ -43,10 +42,9 @@ PipelineMap::~PipelineMap(void) {
 		it.second.deleteGraphicsPipeline();
 }
 
-VkPipelineLayout	PipelineMap::getLayout(void) {
+VkPipelineLayout	PipelineMap::getLayout(std::vector<VkDescriptorSetLayout> setLayouts) {
 	if (_layout)
 		return (_layout);
-	std::vector<VkDescriptorSetLayout>	setLayouts{_globalSetLayout};
 	std::vector<VkPushConstantRange>	pushConstants{};
 	_initLayout(setLayouts, pushConstants);
 	VkPipelineLayoutCreateInfo	createInfo{};
@@ -76,12 +74,12 @@ bool	PipelineMap::getStageInfo(void) {
 	return (!_shaderStageInfos.empty());
 }
 
-bool	PipelineMap::bindPipeline(VkRenderPass renderPass,
+bool	PipelineMap::bindPipeline(LayoutVec setLayouts, VkRenderPass renderPass,
 								VkCommandBuffer commandBuffer) {
 	auto	[it, inserted] = _pipelines.try_emplace(renderPass, _device);
 	auto	&pipeline = it->second;
 	if (inserted) {
-		if (!getLayout() || !getStageInfo())
+		if (!getLayout(setLayouts) || !getStageInfo())
 			return (true);
 		PipelineConfigInfo	config{};
 		Pipeline::defaultPipelineConfigInfo(config);

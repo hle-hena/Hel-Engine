@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/03 18:58:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:10:07                                        */
+/*  Last Modified: 2026/02/26 15:48:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,8 +29,7 @@ namespace	hel::sys {
 
 class	EditorController : public ISystem {
 	public:
-		EditorController(Device &device, Registry &registry,
-						VkDescriptorSetLayout &setLayout);
+		EditorController(Device &device, Registry &registry);
 		~EditorController(void) override;
 
 		void	update(float deltaTime) override;

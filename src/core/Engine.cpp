@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 13:19:03                                        */
+/*  Last Modified: 2026/02/26 15:52:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,13 +35,13 @@ Engine::Engine(Device &device, Registry &registry)
 	:	_device{device},
 		_registry{registry},
 		_passes{device},
-		_renderSystem{device, registry, _setLayout},
-		_transformSystem{device, registry, _setLayout},
-		_cameraSystem{device, registry, _setLayout},
-		_hideMouseSystem{device, registry, _setLayout},
-		_editorControllerSystem{device, registry, _setLayout},
-		_baseControllerSystem{device, registry, _setLayout},
-		_surfaceAllignementSystem{device, registry, _setLayout} {
+		_renderSystem{device, registry},
+		_transformSystem{device, registry},
+		_cameraSystem{device, registry},
+		_hideMouseSystem{device, registry},
+		_editorControllerSystem{device, registry},
+		_baseControllerSystem{device, registry},
+		_surfaceAllignementSystem{device, registry} {
 	_timer.start();
 }
 
@@ -50,14 +50,12 @@ Engine::~Engine(void) {
 	DescriptorFactory::deleteLayoutCache(_device);
 	if (_commandPool != VK_NULL_HANDLE)
 		vkDestroyCommandPool(_device.getLogical(), _commandPool, nullptr);
-	if (_setLayout)
-		vkDestroyDescriptorSetLayout(_device.getLogical(), _setLayout, nullptr);
-	if (_descriptorPool)
-		vkDestroyDescriptorPool(_device.getLogical(), _descriptorPool, nullptr);
 }
 
 bool	Engine::init(void) {
-	return (createCommandPool() || createDescriptorSetLayout() || createDescriptorPool());
+	if (createCommandPool())
+		return (true);
+	createDescriptorPool();
 }
 
 bool	Engine::createCommandPool(void) {
@@ -71,38 +69,11 @@ bool	Engine::createCommandPool(void) {
 	return (false);
 }
 
-bool	Engine::createDescriptorSetLayout(void) {
-	VkDescriptorSetLayoutBinding	globalUboBinding{};
-	globalUboBinding.binding = 0;
-	globalUboBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	globalUboBinding.descriptorCount = 1;
-	globalUboBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-
-	VkDescriptorSetLayoutCreateInfo	createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	createInfo.bindingCount = 1;
-	createInfo.pBindings = &globalUboBinding;
-
-	if (vkCreateDescriptorSetLayout(_device.getLogical(), &createInfo, nullptr, &_setLayout))
-		RETURN_SET_UNHEALTHY("Couldn't create the descriptor set layout.", true);
-	return (false);
-}
-
-bool	Engine::createDescriptorPool(void) {
-	VkDescriptorPoolSize	poolSize{};
-	poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSize.descriptorCount = GLFW::_maxInstanceCount *
-		static_cast<uint32_t>(Swapchain::MAX_FRAMES_IN_FLIGHT);
-
-	VkDescriptorPoolCreateInfo	createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	createInfo.poolSizeCount = 1;
-	createInfo.pPoolSizes = &poolSize;
-	createInfo.maxSets = poolSize.descriptorCount;
-
-	if (vkCreateDescriptorPool(_device.getLogical(), &createInfo, nullptr, &_descriptorPool))
-		RETURN_SET_UNHEALTHY("Couldn't create the descriptor pool.", true);
-	return (false);
+void	Engine::createDescriptorPool(void) {
+	_staticPool = DescriptorPool::Builder(_device)
+		.addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+		.setPageSize(GLFW::_maxInstanceCount * Swapchain::MAX_FRAMES_IN_FLIGHT)
+		.build();
 }
 
 bool	Engine::beginFrame(VkRenderPass renderPass,
@@ -138,17 +109,14 @@ WindowResources *Engine::getWindowResources(Window& window) {
 	if (vkAllocateCommandBuffers(_device.getLogical(), &cbAllocInfo,
 		newResources.commandBuffers.data()))	{ return (nullptr); }
 
-	std::vector<VkDescriptorSetLayout>	layouts(frameCount, _setLayout);
-	VkDescriptorSetAllocateInfo	dsAllocInfo{};
-	dsAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	dsAllocInfo.descriptorPool = _descriptorPool;
-	dsAllocInfo.descriptorSetCount = frameCount;
-	dsAllocInfo.pSetLayouts = layouts.data();
-	if (vkAllocateDescriptorSets(_device.getLogical(), &dsAllocInfo,
-		newResources.globalDescriptorSets.data()))	{ return (nullptr); }
+	newResources.descriptorSets = DescriptorFactory(_device)
+		.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+		.setSetCount(Swapchain::MAX_FRAMES_IN_FLIGHT)
+		.build(*_staticPool);
+	;
+	DescriptorWriter	writer(_device, newResources.descriptorSets.get());
 
-	std::vector<VkWriteDescriptorSet>	writeSets(frameCount);
-	std::vector<VkDescriptorBufferInfo>	bufferInfos(frameCount);
 	for (size_t i = 0; i < frameCount; i++) {
 		newResources.globalUbos[i] = Buffer::create(_device, sizeof(GlobalUBO),
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
@@ -156,18 +124,9 @@ WindowResources *Engine::getWindowResources(Window& window) {
 		if (!newResources.globalUbos[i])	{ return (nullptr); }
 		newResources.globalUbos[i]->map();
 
-		bufferInfos[i].buffer = newResources.globalUbos[i]->getBuffer();
-		bufferInfos[i].offset = 0;
-		bufferInfos[i].range = sizeof(GlobalUBO);
-		writeSets[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeSets[i].dstSet = newResources.globalDescriptorSets[i];
-		writeSets[i].dstBinding = 0;
-		writeSets[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		writeSets[i].descriptorCount = 1;
-		writeSets[i].pBufferInfo = &bufferInfos[i];
+		writer.writeBuffer(i, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, *newResources.globalUbos[i]);
 	}
-	vkUpdateDescriptorSets(_device.getLogical(), frameCount, writeSets.data(),
-							0, nullptr);
+	writer.update();
 
 	_perWindowResources[&window] = std::move(newResources);
 	return (&_perWindowResources[&window]);
