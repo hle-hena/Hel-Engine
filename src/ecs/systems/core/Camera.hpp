@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/22 17:10:30                                        */
+/*  Last Modified: 2026/02/26 15:47:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,8 +34,7 @@ namespace	hel::sys {
 
 class	Camera : public ISystem {
 	public:
-		Camera(Device &device, Registry &registry,
-			VkDescriptorSetLayout &setLayout);
+		Camera(Device &device, Registry &registry);
 		~Camera(void) override;
 
 		void	update(float deltaTime) override;

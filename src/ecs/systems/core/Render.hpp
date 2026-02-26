@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/22 16:57:51                                        */
+/*  Last Modified: 2026/02/26 15:46:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,8 +36,7 @@ namespace	hel::sys {
 
 class	Render : public ISystem {
 	public:
-		Render(Device &device, Registry &registry,
-					VkDescriptorSetLayout &setLayout);
+		Render(Device &device, Registry &registry);
 		~Render(void) override;
 
 		void	render(VkRenderPass renderPass, WindowResources &resources,

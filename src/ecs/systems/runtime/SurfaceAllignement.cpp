@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:20:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 19:42:22                                        */
+/*  Last Modified: 2026/02/26 15:49:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,9 +20,8 @@
 
 namespace	hel::sys {
 
-SurfaceAllignement::SurfaceAllignement(Device &device, Registry &registry,
-				VkDescriptorSetLayout &setLayout)
-	:	ISystem(device, registry, setLayout) {
+SurfaceAllignement::SurfaceAllignement(Device &device, Registry &registry)
+	:	ISystem(device, registry) {
 }
 
 void	SurfaceAllignement::update(float deltaTime) {

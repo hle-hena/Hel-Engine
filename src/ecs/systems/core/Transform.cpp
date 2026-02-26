@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:09:32                                        */
+/*  Last Modified: 2026/02/26 15:49:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,9 +20,8 @@
 
 namespace	hel::sys {
 
-Transform::Transform(Device &device, Registry &registry,
-								VkDescriptorSetLayout &setLayout)
-	:	ISystem(device, registry, setLayout) {
+Transform::Transform(Device &device, Registry &registry)
+	:	ISystem(device, registry) {
 }
 
 Transform::~Transform(void) {

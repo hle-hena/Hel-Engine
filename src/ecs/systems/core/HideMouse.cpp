@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/21 14:13:56 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/21 15:43:36                                        */
+/*  Last Modified: 2026/02/26 15:48:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,9 +20,8 @@
 
 namespace	hel::sys {
 
-HideMouse::HideMouse(Device &device, Registry &registry,
-					VkDescriptorSetLayout &setLayout)
-	:	ISystem(device, registry, setLayout),
+HideMouse::HideMouse(Device &device, Registry &registry)
+	:	ISystem(device, registry),
 		_inputState{registry.getInputState()} {
 }
 

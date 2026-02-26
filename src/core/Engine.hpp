@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/21 15:33:24                                        */
+/*  Last Modified: 2026/02/26 15:50:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,6 +35,7 @@
 #include "api/vulkan/Swapchain.hpp"
 #include "api/vulkan/Buffer.hpp"
 #include "api/vulkan/RenderPass.hpp"
+#include "api/vulkan/Descriptors.hpp"
 
 namespace hel {
 
@@ -51,7 +52,7 @@ struct	WindowResources {
 	Window																	*window;
 	std::array<VkCommandBuffer, Swapchain::MAX_FRAMES_IN_FLIGHT>			commandBuffers{};
 	std::array<std::unique_ptr<Buffer>, Swapchain::MAX_FRAMES_IN_FLIGHT>	globalUbos{};
-	std::array<VkDescriptorSet, Swapchain::MAX_FRAMES_IN_FLIGHT>			globalDescriptorSets{};
+	std::unique_ptr<DescriptorSet>											descriptorSets{};
 };
 
 class	Engine {
@@ -75,8 +76,7 @@ class	Engine {
 
 	private:
 		bool			createCommandPool(void);
-		bool			createDescriptorSetLayout(void);
-		bool			createDescriptorPool(void);
+		void			createDescriptorPool(void);
 
 		void			updateGlobalUBO(Window &window, uint32_t currentFrame);
 		bool			beginFrame(VkRenderPass renderPass,
@@ -92,9 +92,8 @@ class	Engine {
 		Timer											_timer;
 		float											_lastFrameTime;
 		VkCommandPool									_commandPool{VK_NULL_HANDLE};
-		VkDescriptorPool								_descriptorPool{VK_NULL_HANDLE};
-		VkDescriptorSetLayout							_setLayout{VK_NULL_HANDLE};
 		RenderPass										_passes;
+		std::unique_ptr<DescriptorPool>					_staticPool;
 		std::unordered_map<Window*, WindowResources>	_perWindowResources;
 		sys::Render										_renderSystem;
 		sys::Transform									_transformSystem;
