@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/25 18:43:10                                        */
+/*  Last Modified: 2026/02/26 12:00:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -123,14 +123,30 @@ bool	Device::createLogicalDevice(void) {
 		queueCreateInfos.push_back({VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
 			nullptr, 0, queueFamily, 1, &priority});
 	}
-	VkPhysicalDeviceFeatures	features{};
-	features.geometryShader = true;
-	VkPhysicalDeviceSynchronization2Features	sync2Features{};
+	VkPhysicalDeviceFeatures supportedFeatures;
+	vkGetPhysicalDeviceFeatures(_physicalDevice, &supportedFeatures);
+
+	VkPhysicalDeviceSynchronization2Features sync2Features{};
 	sync2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
 	sync2Features.synchronization2 = VK_TRUE;
-	VkDeviceCreateInfo	createInfo{VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO, &sync2Features, 0,
-		static_cast<uint32_t>(queueCreateInfos.size()), queueCreateInfos.data(),
-		0, nullptr, static_cast<uint32_t>(_deviceExtensions.size()), _deviceExtensions.data(), &features};
+
+	VkPhysicalDeviceFeatures2 features2{};
+	features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+	features2.pNext = &sync2Features;
+
+	features2.features.geometryShader = VK_TRUE;
+	if (supportedFeatures.samplerAnisotropy) {
+		features2.features.samplerAnisotropy = VK_TRUE;
+	}
+
+	VkDeviceCreateInfo createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	createInfo.pNext = &features2;
+	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+	createInfo.pQueueCreateInfos = queueCreateInfos.data();
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(_deviceExtensions.size());
+	createInfo.ppEnabledExtensionNames = _deviceExtensions.data();
+	createInfo.pEnabledFeatures = nullptr;
 	if (vkCreateDevice(_physicalDevice, &createInfo, nullptr, &_device) != VK_SUCCESS)
 		RETURN_SET_UNHEALTHY("Couldn't create a logical device", true);
 	vkGetDeviceQueue(_device, _indices.graphicsFamily.value(), 0, &_graphicQueue);
