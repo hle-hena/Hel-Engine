@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 12:37:03                                        */
+/*  Last Modified: 2026/02/26 13:17:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -247,7 +247,7 @@ DescriptorWriter	&DescriptorWriter::writeBuffer(uint32_t setIndex,
 	write.dstBinding = binding;
 	write.descriptorType = type;
 	write.descriptorCount = 1;
-	write.pBufferInfo = &bufferInfo;
+	write.pBufferInfo = &_buffersInfo.back();
 	_writes.push_back(write);
 	return (*this);
 }
@@ -267,7 +267,7 @@ DescriptorWriter	&DescriptorWriter::writeImage(uint32_t setIndex,
 	write.dstBinding = binding;
 	write.descriptorType = type;
 	write.descriptorCount = 1;
-	write.pImageInfo = &imageInfo;
+	write.pImageInfo = &_imagesInfo.back();
 	_writes.push_back(write);
 	return (*this);
 }
