@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 11:49:40                                        */
+/*  Last Modified: 2026/02/26 13:19:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,7 @@
 #include "api/vulkan/Device.hpp"
 #include "api/vulkan/Swapchain.hpp"
 #include "api/vulkan/Sampler.hpp"
+#include "api/vulkan/Descriptors.hpp"
 #include "utils/healthHelper.hpp"
 #include "platform/window/Window.hpp"
 #include "platform/window/GLFW.hpp"
@@ -46,6 +47,7 @@ Engine::Engine(Device &device, Registry &registry)
 
 Engine::~Engine(void) {
 	Sampler::deleteAllSamplers(_device);
+	DescriptorFactory::deleteLayoutCache(_device);
 	if (_commandPool != VK_NULL_HANDLE)
 		vkDestroyCommandPool(_device.getLogical(), _commandPool, nullptr);
 	if (_setLayout)

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/26 11:02:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 11:47:12                                        */
+/*  Last Modified: 2026/02/26 13:08:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,6 +39,8 @@ struct hash<hel::Sampler::Config>
 
 namespace	hel {
 
+std::unordered_map<Sampler::Config, VkSampler>	Sampler::_samplers;
+
 bool	Sampler::Config::operator==(const Config &other) const {
 	return (this->addresMode == other.addresMode &&
 			this->minFilter == other.minFilter &&
@@ -55,7 +57,8 @@ void	Sampler::deleteAllSamplers(Device &device) {
 }
 
 VkSampler	Sampler::getSampler(Device &device, Config config) {
-	VkPhysicalDeviceProperties2	properties;
+	VkPhysicalDeviceProperties2	properties{};
+	properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
 	vkGetPhysicalDeviceProperties2(device.getPhysical(), &properties);
 	config.maxAnisotropy = std::min(config.maxAnisotropy,
 							properties.properties.limits.maxSamplerAnisotropy);
