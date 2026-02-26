@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:01:55 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/20 16:38:35                                        */
+/*  Last Modified: 2026/02/25 10:57:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,7 +34,7 @@ struct	Vertex {
 
 	static std::vector<VkVertexInputBindingDescription>		getBindingDescriptions(void);
 	static std::vector<VkVertexInputAttributeDescription>	getAttributeDescriptions(void);
-	
+
 	bool	operator==(const Vertex &other) const;
 };
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/29 16:04:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/04 12:54:49                                        */
+/*  Last Modified: 2026/02/25 13:14:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -41,8 +41,14 @@ class Buffer {
 		VkResult		flush(VkDeviceSize size = VK_WHOLE_SIZE,
 							VkDeviceSize offset = 0);
 
-		VkBuffer		getBuffer() const { return _buffer; }
-		VkDeviceSize	getSize() const { return _size; }
+		VkDescriptorBufferInfo	getDescriptorInfo(void) const
+			{ return {_buffer, 0, _size}; }
+		VkBuffer				getBuffer(void) const
+			{ return (_buffer); }
+		VkDeviceSize			getSize(void) const
+			{ return (_size); }
+		VkDeviceSize			getOffset(void) const
+			{ return (0); }
 
 	private:
 		Buffer(Device &device, VkDeviceSize size, VkBufferUsageFlags usage,
