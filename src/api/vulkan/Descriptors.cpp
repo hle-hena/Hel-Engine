@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/25 13:12:41                                        */
+/*  Last Modified: 2026/02/26 12:37:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,7 @@
 #include "api/vulkan/Descriptors.hpp"
 #include "api/vulkan/Device.hpp"
 #include "api/vulkan/Buffer.hpp"
+#include "api/vulkan/Image.hpp"
 #include "utils/mathUtils.hpp"
 
 namespace	std {
@@ -40,6 +41,9 @@ struct hash<hel::DescriptorBindings>
 
 namespace	hel {
 
+std::unordered_map<DescriptorBindings, VkDescriptorSetLayout>
+	DescriptorFactory::_descriptorSetLayouts;
+
 std::unique_ptr<DescriptorPool>	DescriptorPool::Builder::build(void) {
 	std::vector<VkDescriptorPoolSize>	poolSizes{};
 	for (auto it: _descriptorsRatio) {
@@ -49,8 +53,8 @@ std::unique_ptr<DescriptorPool>	DescriptorPool::Builder::build(void) {
 		poolSizes.push_back(push);
 	}
 
-	return (std::make_unique<DescriptorPool>(_device, _pageSize,
-											_poolCreationFlags, poolSizes));
+	return (std::unique_ptr<DescriptorPool>(new DescriptorPool(_device, _pageSize,
+											_poolCreationFlags, poolSizes)));
 }
 
 DescriptorPool::DescriptorPool(Device &device, uint32_t pageSize,
@@ -168,6 +172,10 @@ bool	DescriptorBindings::operator==(const DescriptorBindings &other) const {
 	return (true);
 }
 
+DescriptorFactory::DescriptorFactory(Device &device)
+	:	_device{device} {
+}
+
 DescriptorFactory	&DescriptorFactory::addBinding(uint32_t binding,
 												VkDescriptorType type,
 												VkShaderStageFlags stages,
@@ -244,6 +252,29 @@ DescriptorWriter	&DescriptorWriter::writeBuffer(uint32_t setIndex,
 	return (*this);
 }
 
+DescriptorWriter	&DescriptorWriter::writeImage(uint32_t setIndex,
+												uint32_t binding,
+												VkDescriptorType type,
+												Image &image,
+												VkSampler sampler) {
+	VkDescriptorImageInfo	imageInfo = image.getDescriptorInfo();
+	imageInfo.sampler = sampler;
+	_imagesInfo.push_back(imageInfo);
 
+	VkWriteDescriptorSet	write{};
+	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	write.dstSet = _handle->sets[setIndex];
+	write.dstBinding = binding;
+	write.descriptorType = type;
+	write.descriptorCount = 1;
+	write.pImageInfo = &imageInfo;
+	_writes.push_back(write);
+	return (*this);
+}
+
+void	DescriptorWriter::update(void) {
+	vkUpdateDescriptorSets(_device.getLogical(), _writes.size(),
+							_writes.data(), 0, nullptr);
+}
 
 }

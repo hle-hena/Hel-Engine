@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/25 12:24:37                                        */
+/*  Last Modified: 2026/02/26 12:28:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,7 @@
 
 # include <memory>
 # include <vector>
+# include <deque>
 # include <unordered_map>
 # include <vulkan/vulkan.h>
 
@@ -25,6 +26,7 @@ namespace	hel {
 
 class	Device;
 class	Buffer;
+class	Image;
 class	DescriptorSet;
 
 class	DescriptorPool {
@@ -95,7 +97,7 @@ struct	DescriptorBindings {
 class	DescriptorFactory {
 	public:
 		DescriptorFactory(Device &device);
-		~DescriptorFactory(void);
+		~DescriptorFactory(void) = default;
 
 		DescriptorFactory	&setSetCount(uint32_t setCount)
 			{ _setCount = setCount; return (*this); }
@@ -126,13 +128,17 @@ class	DescriptorWriter {
 
 		DescriptorWriter	&writeBuffer(uint32_t setIndex, uint32_t binding,
 										VkDescriptorType type, Buffer &buffer);
+		DescriptorWriter	&writeImage(uint32_t setIndex, uint32_t binding,
+										VkDescriptorType type, Image &image,
+										VkSampler sampler);
+		void				update(void);
 
 	private:
 		Device								&_device;
 		DescriptorSet						*_handle;
 		std::vector<VkWriteDescriptorSet>	_writes{};
-		std::vector<VkDescriptorBufferInfo>	_buffersInfo{};
-		std::vector<VkDescriptorImageInfo>	_imagesInfo{};
+		std::deque<VkDescriptorBufferInfo>	_buffersInfo{};
+		std::deque<VkDescriptorImageInfo>	_imagesInfo{};
 };
 
 struct DescriptorSet {

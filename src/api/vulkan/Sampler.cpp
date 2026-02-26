@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/26 11:02:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 11:47:12                                        */
+/*  Last Modified: 2026/02/26 12:36:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -38,6 +38,8 @@ struct hash<hel::Sampler::Config>
 }
 
 namespace	hel {
+
+std::unordered_map<Sampler::Config, VkSampler>	Sampler::_samplers;
 
 bool	Sampler::Config::operator==(const Config &other) const {
 	return (this->addresMode == other.addresMode &&
