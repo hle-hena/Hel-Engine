@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/21 15:41:36                                        */
+/*  Last Modified: 2026/02/26 17:30:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,7 +39,7 @@ Application::Application(void)
 	GLFW::release();
 	if (_appWindows.size() == 0)
 		RETURN_SET_UNHEALTHY("Couldn't even create one window");
-	if (_engine.init())
+	if (_engine.init(*_appWindows.back()))
 		RETURN_SET_UNHEALTHY(_engine.getReason());
 	loadPrimaryScene();
 }

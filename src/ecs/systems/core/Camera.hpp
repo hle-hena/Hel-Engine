@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 15:47:29                                        */
+/*  Last Modified: 2026/02/26 18:23:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -51,10 +51,8 @@ class	Camera : public ISystem {
 				std::vector<VkPushConstantRange> &pushConstants);
 		static void	configureFrustumPipeline(PipelineConfigInfo &config);
 
-		bool							_healthy {true};
-		std::string						_reason {""};
-		AssetManager					&_assetManager;
-		std::unique_ptr<PipelineMap>	_frustumPipelines;
+		AssetManager	&_assetManager;
+		PipelineMap		*_frustumPipelines;
 };
 
 }

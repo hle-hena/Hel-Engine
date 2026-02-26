@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 15:46:49                                        */
+/*  Last Modified: 2026/02/26 18:40:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,7 +39,7 @@ Render::Render(Device &device, Registry &registry)
 	};
 	config.initPipelineLayout = initLayout;
 	config.configurePipeline = configurePipeline;
-	_pipelines = std::make_unique<PipelineMap>(config);
+	_pipelines = createPipeline(config);
 }
 
 Render::~Render(void) {
@@ -59,9 +59,9 @@ void	Render::configurePipeline(PipelineConfigInfo &config) {
 
 void	Render::render(VkRenderPass renderPass, WindowResources &resources, uint32_t currentFrame) {
 	auto	commandBuffer = resources.commandBuffers[currentFrame];
-	if (!commandBuffer || _pipelines->bindPipeline({resources.descriptorSets->setLayout}, renderPass, commandBuffer))
+	if (!commandBuffer || _pipelines->bindPipeline(renderPass, commandBuffer))
 		return ;
-	auto	pipelineLayout = _pipelines->getLayout({resources.descriptorSets->setLayout});
+	auto	pipelineLayout = _pipelines->getLayout();
 
 	auto	entities = _registry.view<comp::Transform, comp::Model>();
 	for (auto entity: entities) {
