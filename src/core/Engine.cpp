@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 15:52:00                                        */
+/*  Last Modified: 2026/02/26 17:58:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -114,9 +114,8 @@ WindowResources *Engine::getWindowResources(Window& window) {
 			VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
 		.setSetCount(Swapchain::MAX_FRAMES_IN_FLIGHT)
 		.build(*_staticPool);
-	;
-	DescriptorWriter	writer(_device, newResources.descriptorSets.get());
 
+	DescriptorWriter	writer(_device, newResources.descriptorSets.get());
 	for (size_t i = 0; i < frameCount; i++) {
 		newResources.globalUbos[i] = Buffer::create(_device, sizeof(GlobalUBO),
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
