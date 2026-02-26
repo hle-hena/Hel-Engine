@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 13:17:57                                        */
+/*  Last Modified: 2026/02/26 15:10:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,6 +19,8 @@
 #include "api/vulkan/Buffer.hpp"
 #include "api/vulkan/Image.hpp"
 #include "utils/mathUtils.hpp"
+
+#include <algorithm>
 
 namespace	std {
 
@@ -49,7 +51,8 @@ std::unique_ptr<DescriptorPool>	DescriptorPool::Builder::build(void) {
 	for (auto it: _descriptorsRatio) {
 		VkDescriptorPoolSize	push;
 		push.type = it.first;
-		push.descriptorCount = it.second * _pageSize;
+		push.descriptorCount = std::max(1u, static_cast<uint32_t>(
+											it.second * _pageSize));
 		poolSizes.push_back(push);
 	}
 
