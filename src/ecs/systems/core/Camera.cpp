@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/22 17:09:11                                        */
+/*  Last Modified: 2026/02/26 15:48:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,13 +26,11 @@
 
 namespace	hel::sys {
 
-Camera::Camera(Device &device, Registry &registry,
-			VkDescriptorSetLayout &setLayout)
-	:	ISystem(device, registry, setLayout),
+Camera::Camera(Device &device, Registry &registry)
+	:	ISystem(device, registry),
 		_assetManager{registry.getAssetManager()} {
 	PipelineMap::Config	config;
 	config.device = &device;
-	config.globalSetLayout = &setLayout;
 	config.assetManager = &registry.getAssetManager();
 	config.shaderPaths = {
 		"assets/shaders/cameraFrustum.vert.spv",
@@ -86,9 +84,9 @@ void	Camera::render(VkRenderPass renderPass, WindowResources &resources,
 					uint32_t currentFrame) {
 	auto	selfHandle = resources.window->getEntityReference();
 	auto	commandBuffer = resources.commandBuffers[currentFrame];
-	if (_frustumPipelines->bindPipeline(renderPass, commandBuffer) ||
+	if (_frustumPipelines->bindPipeline({resources.descriptorSets->setLayout}, renderPass, commandBuffer) ||
 		!commandBuffer)	{ return ; }
-	auto	pipelineLayout = _frustumPipelines->getLayout();
+	auto	pipelineLayout = _frustumPipelines->getLayout({resources.descriptorSets->setLayout});
 
 	auto	entities = _registry.view<comp::Camera,
 									comp::Transform>();
@@ -109,7 +107,7 @@ void	Camera::render(VkRenderPass renderPass, WindowResources &resources,
 							VK_INDEX_TYPE_UINT32);
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
 							pipelineLayout, 0, 1,
-							&resources.globalDescriptorSets[currentFrame], 0,
+							&resources.descriptorSets->sets[currentFrame], 0,
 							nullptr);
 		vkCmdDrawIndexed(commandBuffer, mesh->lineVertexCount, 1, 0, 0, 0);
 	}

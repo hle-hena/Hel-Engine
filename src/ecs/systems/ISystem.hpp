@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/22 18:33:16                                        */
+/*  Last Modified: 2026/02/26 15:46:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,11 +30,9 @@ namespace	hel::sys {
 
 class	ISystem {
 	public:
-		ISystem(Device &device, Registry &registry,
-				VkDescriptorSetLayout &setLayout):
+		ISystem(Device &device, Registry &registry):
 			_device{device},
-			_registry{registry},
-			_setLayout{setLayout} {}
+			_registry{registry} {}
 		virtual ~ISystem(void) = 0;
 
 		ISystem(const ISystem &other) = delete;
@@ -46,7 +44,6 @@ class	ISystem {
 	protected:
 		Device					&_device;
 		Registry				&_registry;
-		VkDescriptorSetLayout	&_setLayout;
 };
 
 inline	ISystem::~ISystem(void) {}

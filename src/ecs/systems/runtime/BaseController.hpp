@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:14:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:33:49                                        */
+/*  Last Modified: 2026/02/26 15:49:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,8 +29,7 @@ namespace	hel::sys {
 
 class	BaseController : public ISystem {
 	public:
-		BaseController(Device &device, Registry &registry,
-						VkDescriptorSetLayout &setLayout);
+		BaseController(Device &device, Registry &registry);
 		~BaseController(void) override;
 
 		void	update(float deltaTime) override;
