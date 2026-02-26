@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 15:46:22                                        */
+/*  Last Modified: 2026/02/26 18:38:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,7 +16,11 @@
 
 #pragma once
 
+# include "api/vulkan/PipelineMap.hpp"
+
 # include <vulkan/vulkan.h>
+# include <vector>
+# include <memory>
 
 namespace	hel {
 
@@ -38,12 +42,17 @@ class	ISystem {
 		ISystem(const ISystem &other) = delete;
 		ISystem	&operator=(const ISystem &other) = delete;
 
+		virtual void	initAllPipelines(WindowResources &initResources) final;
+
 		virtual void	update(float) {}
 		virtual void	render(VkRenderPass, WindowResources &, uint32_t) {}
 
 	protected:
-		Device					&_device;
-		Registry				&_registry;
+		virtual PipelineMap	*createPipeline(const PipelineMap::Config &config) final;
+
+		Device										&_device;
+		Registry									&_registry;
+		std::vector<std::unique_ptr<PipelineMap>>	_pipelines;
 };
 
 inline	ISystem::~ISystem(void) {}

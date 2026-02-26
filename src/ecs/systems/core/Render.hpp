@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 15:46:44                                        */
+/*  Last Modified: 2026/02/26 18:23:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -52,10 +52,8 @@ class	Render : public ISystem {
 						std::vector<VkPushConstantRange> &pushConstants);
 		static void	configurePipeline(PipelineConfigInfo &config);
 
-		bool							_healthy{true};
-		std::string						_reason{""};
-		AssetManager					&_assetManager;
-		std::unique_ptr<PipelineMap>	_pipelines{nullptr};
+		AssetManager	&_assetManager;
+		PipelineMap		*_pipelines{nullptr};
 };
 
 }
