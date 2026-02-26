@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 17:58:39                                        */
+/*  Last Modified: 2026/02/26 18:42:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -52,10 +52,19 @@ Engine::~Engine(void) {
 		vkDestroyCommandPool(_device.getLogical(), _commandPool, nullptr);
 }
 
-bool	Engine::init(void) {
+bool	Engine::init(Window &window) {
 	if (createCommandPool())
 		return (true);
 	createDescriptorPool();
+	auto	initResources = getWindowResources(window);
+	_renderSystem.initAllPipelines(*initResources);
+	_transformSystem.initAllPipelines(*initResources);
+	_cameraSystem.initAllPipelines(*initResources);
+	_hideMouseSystem.initAllPipelines(*initResources);
+	_editorControllerSystem.initAllPipelines(*initResources);
+	_baseControllerSystem.initAllPipelines(*initResources);
+	_surfaceAllignementSystem.initAllPipelines(*initResources);
+	return (false);
 }
 
 bool	Engine::createCommandPool(void) {

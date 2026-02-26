@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 15:50:58                                        */
+/*  Last Modified: 2026/02/26 17:30:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -70,7 +70,7 @@ class	Engine {
 			return (_healthy);
 		}
 
-		bool			init(void);
+		bool			init(Window &window);
 		void			updateFrame(void);
 		void			renderFrame(Window &window, uint32_t currentFrame);
 

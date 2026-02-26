@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 14:54:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 15:44:23                                        */
+/*  Last Modified: 2026/02/26 18:37:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,6 +23,8 @@
 # include "api/vulkan/Pipeline.hpp"
 
 namespace	hel {
+
+namespace	sys	{ class	ISystem; }
 
 class	AssetManager;
 
@@ -42,28 +44,32 @@ class	PipelineMap {
 			ConfigCallback	configurePipeline;
 		};
 
-		PipelineMap(const Config &config);
 		~PipelineMap(void);
 		PipelineMap(const PipelineMap &other) = delete;
 		PipelineMap	&operator=(const PipelineMap &other) = delete;
 
-		bool				bindPipeline(LayoutVec setLayouts,
-										VkRenderPass renderPass,
+		bool				bindPipeline(VkRenderPass renderPass,
 										VkCommandBuffer commandBuffer);
-		VkPipelineLayout	getLayout(LayoutVec setLayouts);
+		VkPipelineLayout	getLayout(void);
 
 	private:
+		PipelineMap(const Config &config);
+		void	initDefaultSets(std::vector<VkDescriptorSetLayout> sets);
+
 		bool				getStageInfo(void);
 
 		Device											&_device;
 		AssetManager									&_assetManager;
 		std::vector<std::string>						_shaderPaths;
 		std::vector<VkPipelineShaderStageCreateInfo>	_shaderStageInfos;
+		std::vector<VkDescriptorSetLayout>				_defaultLayouts;
 		VkPipelineLayout								_layout{VK_NULL_HANDLE};
 		std::unordered_map<VkRenderPass, Pipeline>		_pipelines;
 
 		LayoutCallback									_initLayout;
 		ConfigCallback									_configPipeline;
+
+	friend class sys::ISystem;
 };
 
 }

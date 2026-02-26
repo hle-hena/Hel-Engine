@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 15:07:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 15:44:46                                        */
+/*  Last Modified: 2026/02/26 18:38:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -42,9 +42,14 @@ PipelineMap::~PipelineMap(void) {
 		it.second.deleteGraphicsPipeline();
 }
 
-VkPipelineLayout	PipelineMap::getLayout(std::vector<VkDescriptorSetLayout> setLayouts) {
+void	PipelineMap::initDefaultSets(std::vector<VkDescriptorSetLayout> sets) {
+	_defaultLayouts = sets;
+}
+
+VkPipelineLayout	PipelineMap::getLayout(void) {
 	if (_layout)
 		return (_layout);
+	std::vector<VkDescriptorSetLayout>	setLayouts = _defaultLayouts;
 	std::vector<VkPushConstantRange>	pushConstants{};
 	_initLayout(setLayouts, pushConstants);
 	VkPipelineLayoutCreateInfo	createInfo{};
@@ -74,12 +79,12 @@ bool	PipelineMap::getStageInfo(void) {
 	return (!_shaderStageInfos.empty());
 }
 
-bool	PipelineMap::bindPipeline(LayoutVec setLayouts, VkRenderPass renderPass,
+bool	PipelineMap::bindPipeline(VkRenderPass renderPass,
 								VkCommandBuffer commandBuffer) {
 	auto	[it, inserted] = _pipelines.try_emplace(renderPass, _device);
 	auto	&pipeline = it->second;
 	if (inserted) {
-		if (!getLayout(setLayouts) || !getStageInfo())
+		if (!getLayout() || !getStageInfo())
 			return (true);
 		PipelineConfigInfo	config{};
 		Pipeline::defaultPipelineConfigInfo(config);

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 15:48:21                                        */
+/*  Last Modified: 2026/02/26 18:40:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -38,7 +38,7 @@ Camera::Camera(Device &device, Registry &registry)
 	};
 	config.initPipelineLayout = initFrustumLayout;
 	config.configurePipeline = configureFrustumPipeline;
-	_frustumPipelines = std::make_unique<PipelineMap>(config);
+	_frustumPipelines = createPipeline(config);
 }
 
 Camera::~Camera(void) {
@@ -84,9 +84,9 @@ void	Camera::render(VkRenderPass renderPass, WindowResources &resources,
 					uint32_t currentFrame) {
 	auto	selfHandle = resources.window->getEntityReference();
 	auto	commandBuffer = resources.commandBuffers[currentFrame];
-	if (_frustumPipelines->bindPipeline({resources.descriptorSets->setLayout}, renderPass, commandBuffer) ||
+	if (_frustumPipelines->bindPipeline(renderPass, commandBuffer) ||
 		!commandBuffer)	{ return ; }
-	auto	pipelineLayout = _frustumPipelines->getLayout({resources.descriptorSets->setLayout});
+	auto	pipelineLayout = _frustumPipelines->getLayout();
 
 	auto	entities = _registry.view<comp::Camera,
 									comp::Transform>();
