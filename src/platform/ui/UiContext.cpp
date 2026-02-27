@@ -1,0 +1,106 @@
+/* *************************************************************************  */
+/*                                                                            */
+/*                                                                            */
+/*  File: UiContext.cpp                                                       */
+/*  Project: Hel Engine                                                       */
+/*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
+/*                                                                            */
+/*  Last Modified: 2026/02/27 17:57:58                                        */
+/*             By: hle-hena                                                   */
+/*                                                                            */
+/*    -----                                                                   */
+/*                                                                            */
+/*  Copyright (c) 2026 hle-hena                                               */
+/*                                                                            */
+/* *************************************************************************  */
+
+#include "platform/ui/UiContext.hpp"
+#include "platform/window/Window.hpp"
+#include "api/vulkan/Descriptors.hpp"
+#include "api/vulkan/Device.hpp"
+#include "core/Application.hpp"
+
+namespace	hel {
+
+UiContext::UiContext(Window *window)
+	:	_window{window} {
+}
+
+UiContext::~UiContext(void) {
+}
+
+void	UiContext::destroy(void) {
+	if (_fullyInitialised) {
+		vkDeviceWaitIdle(_window->_app.getVkContext().getDevice().getLogical());
+		ImGui::SetCurrentContext(_context);
+		ImGui_ImplVulkan_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext(_context);
+	}
+}
+
+void	UiContext::init(VkRenderPass renderPass) {
+	Device	&device = _window->_app.getVkContext().getDevice();
+	initDescriptorPool(device);
+	initImGui(device, renderPass);
+}
+
+void	UiContext::initImGui(Device &device, VkRenderPass renderPass) {
+	_context = ImGui::CreateContext();
+	ImGui::SetCurrentContext(_context);
+
+	ImGui_ImplGlfw_InitForVulkan(_window->_windowPtr, true);
+
+	ImGui_ImplVulkan_InitInfo	initInfo{};
+	initInfo.ApiVersion = VK_API_VERSION_1_3;
+	initInfo.Instance = _window->_instance;
+	initInfo.PhysicalDevice = device.getPhysical();
+	initInfo.Device = device.getLogical();
+	initInfo.QueueFamily = device.getQueueFamily().graphicsFamily.value();
+	initInfo.Queue = device.getGraphicsQueue();
+	initInfo.DescriptorPool = _pool->getActivePool();
+	initInfo.ImageCount = Swapchain::MAX_FRAMES_IN_FLIGHT;
+	initInfo.MinImageCount = Swapchain::MAX_FRAMES_IN_FLIGHT;
+	initInfo.PipelineInfoMain.RenderPass = renderPass;
+	ImGui_ImplVulkan_Init(&initInfo);
+}
+
+void	UiContext::initDescriptorPool(Device &device) {
+	_pool = DescriptorPool::Builder(device)
+		.addDescriptor(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 100.f)
+		.setPageSize(Swapchain::MAX_FRAMES_IN_FLIGHT)
+		.setCreationFlag(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
+		.build();
+}
+
+void	UiContext::newFrame(VkRenderPass renderPass) {
+	if (_fullyInitialised) {
+		ImGui::SetCurrentContext(_context);
+		ImGui_ImplVulkan_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		return ;
+	}
+	init(renderPass);
+	ImGui_ImplVulkan_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+	_fullyInitialised = true;
+}
+
+void	UiContext::renderFrame(VkCommandBuffer commandBuffer) {
+	ImGui::Render();
+	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+}
+
+bool	UiContext::capturesKeyboard(void) {
+	ImGuiIO	&io = ImGui::GetIO();
+	return (io.WantCaptureKeyboard);
+}
+
+bool	UiContext::capturesMouse() {
+	ImGuiIO	&io = ImGui::GetIO();
+	return (io.WantCaptureMouse);
+}
+
+}

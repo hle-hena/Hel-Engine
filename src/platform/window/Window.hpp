@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/21 15:36:58                                        */
+/*  Last Modified: 2026/02/27 15:30:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,7 +24,7 @@
 
 # include "api/vulkan/Swapchain.hpp"
 # include "ecs/Entity.hpp"
-
+# include "platform/ui/UiContext.hpp"
 
 namespace	hel {
 
@@ -60,6 +60,9 @@ class	Window {
 		VkSurfaceKHR	&getSurface(void) {
 			return (_surface);
 		}
+		UiContext		&getUi(void) {
+			return (_uiContext);
+		}
 		Application		&getApp(void) const {
 			return (_app);
 		}
@@ -75,10 +78,10 @@ class	Window {
 		VkFormat		getDepthFormat(void) const {
 			return (_swapchain.getDepthFormat());
 		}
-		void	setEntityReference(Entity::id handle) {
+		void			setEntityReference(Entity::id handle) {
 			_entityHandle = handle;
 		}
-		Entity::id	getEntityReference(void) const {
+		Entity::id		getEntityReference(void) const {
 			return (_entityHandle.value_or(Entity::NOT_REGISTERED));
 		}
 
@@ -106,6 +109,7 @@ class	Window {
 		std::string					_reason{""};
 		int							_width;
 		int							_height;
+		UiContext					_uiContext;
 		int							_lastMouseX{-1};
 		int							_lastMouseY{-1};
 		bool						_frameBufferResized{false};
@@ -116,6 +120,8 @@ class	Window {
 		Application					&_app;
 		VkInstance					&_instance;
 		std::optional<Entity::id>	_entityHandle;
+
+	friend class UiContext;
 };
 
 }

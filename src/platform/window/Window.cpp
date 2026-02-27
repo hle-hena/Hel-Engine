@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/21 15:37:05                                        */
+/*  Last Modified: 2026/02/27 16:57:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -64,6 +64,7 @@ Window::Window(int width, int height, const std::string &windowName,
 			Application &app, VkInstance &instance)
 	:	_width(width),
 		_height(height),
+		_uiContext{this},
 		_windowName(windowName),
 		_windowPtr(nullptr),
 		_swapchain{app.getVkContext().getDevice()},
@@ -91,6 +92,7 @@ Window::~Window(void) {
 }
 
 void	Window::deleteWindow(void) {
+	_uiContext.destroy();
 	_swapchain.deleteSwapChain();
 	if (_surface != VK_NULL_HANDLE)
 		vkDestroySurfaceKHR(_instance, _surface, nullptr);
@@ -141,31 +143,36 @@ void	Window::focusCallback(GLFWwindow *window, int focused) {
 }
 
 void	Window::keyCallback(GLFWwindow *window, int key, int scancode,
-							int action, int mod) {
+							int action, int mods) {
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
-	appWindow->getApp().getRegistry().getInputState().setState<input::Key>(key, action, mod);
+	if (appWindow->_uiContext.capturesKeyboard())
+		return ;
+	appWindow->getApp().getRegistry().getInputState().setState<input::Key>(key, action, mods);
 }
 
 void	Window::mouseButtonCallback(GLFWwindow *window, int button,
-							int action, int mod) {
+							int action, int mods) {
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
-	appWindow->getApp().getRegistry().getInputState().setState<input::Mouse>(button, action, mod);
+	if (appWindow->_uiContext.capturesMouse())
+		return ;
+	appWindow->getApp().getRegistry().getInputState().setState<input::Mouse>(button, action, mods);
 }
 
-void	Window::cursorEnterCallback(GLFWwindow *window, int enter) {
-	if (enter) {
-		auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+void	Window::cursorEnterCallback(GLFWwindow *window, int entered) {
+	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
+	if (entered)
 		appWindow->_lastMouseX = -1;
-	}
 }
 
 void	Window::cursorPositionCallback(GLFWwindow *window, double x, double y) {
 	auto		appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 	auto		&input = appWindow->getApp().getRegistry().getInputState();
 
+	if (appWindow->_uiContext.capturesMouse())
+		return ;
 	if (input.getFocused() != appWindow) { return ; }
 	if (appWindow->_lastMouseX == -1) {
 		appWindow->_lastMouseX = x;
