@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 20:48:44                                        */
+/*  Last Modified: 2026/02/27 18:18:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,6 +24,7 @@
 # include <memory>
 
 # include "ecs/Entity.hpp"
+# include "ecs/Component.hpp"
 # include "platform/input/InputState.hpp"
 
 namespace	hel {

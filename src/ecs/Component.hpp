@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/21 15:15:12                                        */
+/*  Last Modified: 2026/02/27 18:20:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,6 +22,10 @@
 # include <glm/gtc/quaternion.hpp>
 # include <glm/gtc/constants.hpp>
 # include <string>
+# define GLFW_INCLUDE_VULKAN
+# include <GLFW/glfw3.h>
+
+# include "ecs/Entity.hpp"
 
 namespace	hel::comp {
 
@@ -79,7 +83,7 @@ struct	Controller {
 };
 
 struct	Parent {
-//TODO -> for future implementation of hierarchy, but for the moment I need a placeholder.
+	Entity::id	parentId;
 };
 
 
