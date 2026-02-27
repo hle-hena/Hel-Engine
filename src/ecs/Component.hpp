@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 18:20:20                                        */
+/*  Last Modified: 2026/02/27 18:48:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -82,8 +82,9 @@ struct	Controller {
 	int		downKey{GLFW_KEY_LEFT_SHIFT};
 };
 
-struct	Parent {
-	Entity::id	parentId;
+struct	Hierarchy {
+	Entity::id				parentId{Entity::NOT_REGISTERED};
+	std::vector<Entity::id>	childrenId{};
 };
 
 
