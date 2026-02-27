@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 14:34:19                                        */
+/*  Last Modified: 2026/02/27 17:57:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,9 +35,6 @@ class	UI : public ISystem {
 			uint32_t currentFrame) override;
 
 	private:
-		void	init(VkRenderPass renderPass, WindowResources &resources,
-			uint32_t currentFrame);
-
 		AssetManager				&_assetManager;
 };
 
