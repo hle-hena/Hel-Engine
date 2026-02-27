@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 15:48:14                                        */
+/*  Last Modified: 2026/02/27 17:54:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,10 +24,6 @@
 #include "platform/window/GLFW.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
-
-#include "api/ImGui/imgui.h"
-#include "api/ImGui/imgui_impl_glfw.h"
-#include "api/ImGui/imgui_impl_vulkan.h"
 
 #include <stdexcept>
 #include <array>
@@ -86,7 +82,6 @@ bool	Engine::createCommandPool(void) {
 void	Engine::createDescriptorPool(void) {
 	_staticPool = DescriptorPool::Builder(_device)
 		.addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
-		.addDescriptor(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2.f)
 		.setPageSize(GLFW::_maxInstanceCount * Swapchain::MAX_FRAMES_IN_FLIGHT)
 		.build();
 }
