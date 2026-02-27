@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:09 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 16:49:15                                        */
+/*  Last Modified: 2026/02/27 16:57:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,15 +39,8 @@ class	UiContext {
 		ImGuiContext	*get(void) const	{ return (_context); }
 
 	private:
-		void	stealAllCallbacks(GLFWwindow *w);
-		void	dispatchKey(GLFWwindow *w, int key, int scancode, int action,
-							int mods);
-		void	dispatchMouse(GLFWwindow *w, int button, int action, int mods);
-		void	dispatchScroll(GLFWwindow *w, double xoffset, double yoffset);
-		void	disptachCursorPos(GLFWwindow *w, double x, double y);
-		void	dispatchCharCallback(GLFWwindow *w, unsigned int c);
-		void	dispatchCursorEnter(GLFWwindow *w, int entered);
-		void	dispatchFocus(GLFWwindow *w, int focused);
+		bool	capturesMouse(void);
+		bool	capturesKeyboard(void);
 
 		void	destroy(void);
 		void	init(VkRenderPass renderPass);
