@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 17:30:46                                        */
+/*  Last Modified: 2026/02/27 15:56:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,21 +48,21 @@ Application::~Application(void) {
 }
 
 void	Application::loadPrimaryScene(void) {
-	Entity::id	dragonHandle = _registry.createEntity();
-	if (auto mesh = _registry.modify(_registry.addComponent<comp::Model>(dragonHandle))) {
-		mesh->filePath = "assets/models/dragon.obj";
-	}
-	if (auto transform = _registry.modify(_registry.addComponent<comp::Transform>(dragonHandle))) {
-		transform->scale = glm::vec3(4.f);
-	}
-	Entity::id	dragonSecondHandle = _registry.createEntity();
-	if (auto mesh = _registry.modify(_registry.addComponent<comp::Model>(dragonSecondHandle))) {
-		mesh->filePath = "assets/models/dragon.obj";
-	}
-	if (auto transform = _registry.modify(_registry.addComponent<comp::Transform>(dragonSecondHandle))) {
-		transform->position = glm::vec3(2.f, 0.f, 2.f);
-		transform->rotation = glm::quat(0.932, -0.267, 0.237, -0.059);
-	}
+	// Entity::id	dragonHandle = _registry.createEntity();
+	// if (auto mesh = _registry.modify(_registry.addComponent<comp::Model>(dragonHandle))) {
+	// 	mesh->filePath = "assets/models/dragon.obj";
+	// }
+	// if (auto transform = _registry.modify(_registry.addComponent<comp::Transform>(dragonHandle))) {
+	// 	transform->scale = glm::vec3(4.f);
+	// }
+	// Entity::id	dragonSecondHandle = _registry.createEntity();
+	// if (auto mesh = _registry.modify(_registry.addComponent<comp::Model>(dragonSecondHandle))) {
+	// 	mesh->filePath = "assets/models/dragon.obj";
+	// }
+	// if (auto transform = _registry.modify(_registry.addComponent<comp::Transform>(dragonSecondHandle))) {
+	// 	transform->position = glm::vec3(2.f, 0.f, 2.f);
+	// 	transform->rotation = glm::quat(0.932, -0.267, 0.237, -0.059);
+	// }
 	Entity::id	handle = _registry.createEntity();
 	if (auto mesh = _registry.modify(_registry.addComponent<comp::Model>(handle))) {
 		mesh->filePath = "assets/models/flat_vase.obj";

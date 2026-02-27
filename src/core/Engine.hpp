@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 17:30:31                                        */
+/*  Last Modified: 2026/02/27 15:32:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,6 +26,7 @@
 #include "ecs/systems/core/Camera.hpp"
 #include "ecs/systems/core/EditorController.hpp"
 #include "ecs/systems/core/HideMouse.hpp"
+#include "ecs/systems/core/UI.hpp"
 
 #include "ecs/systems/runtime/BaseController.hpp"
 #include "ecs/systems/runtime/SurfaceAllignement.hpp"
@@ -102,6 +103,7 @@ class	Engine {
 		sys::EditorController							_editorControllerSystem;
 		sys::BaseController								_baseControllerSystem;
 		sys::SurfaceAllignement							_surfaceAllignementSystem;
+		sys::UI											_uiSystem;
 		uint32_t										_currentFrameIndex{0};
 };
 

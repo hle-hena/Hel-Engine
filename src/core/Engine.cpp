@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 18:42:51                                        */
+/*  Last Modified: 2026/02/27 15:48:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,6 +25,10 @@
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
 
+#include "api/ImGui/imgui.h"
+#include "api/ImGui/imgui_impl_glfw.h"
+#include "api/ImGui/imgui_impl_vulkan.h"
+
 #include <stdexcept>
 #include <array>
 #include <iostream>
@@ -41,7 +45,8 @@ Engine::Engine(Device &device, Registry &registry)
 		_hideMouseSystem{device, registry},
 		_editorControllerSystem{device, registry},
 		_baseControllerSystem{device, registry},
-		_surfaceAllignementSystem{device, registry} {
+		_surfaceAllignementSystem{device, registry},
+		_uiSystem{device, registry} {
 	_timer.start();
 }
 
@@ -81,6 +86,7 @@ bool	Engine::createCommandPool(void) {
 void	Engine::createDescriptorPool(void) {
 	_staticPool = DescriptorPool::Builder(_device)
 		.addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+		.addDescriptor(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2.f)
 		.setPageSize(GLFW::_maxInstanceCount * Swapchain::MAX_FRAMES_IN_FLIGHT)
 		.build();
 }
@@ -181,10 +187,14 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	VkCommandBuffer	commandBuffer = resources->commandBuffers[currentFrame];
 	vkResetCommandBuffer(commandBuffer, 0);
 
+	UiContext	&ui = window.getUi();
 	beginFrame(renderPass, commandBuffer,
-			swap.getFrameBuffer(imageIndex, renderPass), swap.getExtent());
+		swap.getFrameBuffer(imageIndex, renderPass), swap.getExtent());
+	ui.newFrame(renderPass);
 	_renderSystem.render(renderPass, *resources, currentFrame);
 	_cameraSystem.render(renderPass, *resources, currentFrame);
+	_uiSystem.render(renderPass, *resources, currentFrame);
+	ui.renderFrame(commandBuffer);
 	endFrame(commandBuffer);
 
 	swapchain.submitCommandBuffer(&commandBuffer, imageIndex, currentFrame);
