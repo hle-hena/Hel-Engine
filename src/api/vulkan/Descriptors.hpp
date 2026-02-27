@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 12:28:17                                        */
+/*  Last Modified: 2026/02/27 15:14:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -43,9 +43,12 @@ class	DescriptorPool {
 		DescriptorPool(const DescriptorPool &other) = delete;
 		DescriptorPool	&operator=(const DescriptorPool &other) = delete;
 
-		bool	allocateSets(DescriptorSet &handle, uint32_t setCount);
-		void	resetPools(void);
-		void	freeSets(DescriptorSet &handle);
+		bool				allocateSets(DescriptorSet &handle, uint32_t setCount);
+		void				resetPools(void);
+		void				freeSets(DescriptorSet &handle);
+
+		VkDescriptorPool	getActivePool(void) const
+			{ return (_activeHandle->_pool); }
 
 	private:
 		DescriptorPool(Device &device, uint32_t pageSize,

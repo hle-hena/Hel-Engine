@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 18:42:51                                        */
+/*  Last Modified: 2026/02/27 17:54:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -41,7 +41,8 @@ Engine::Engine(Device &device, Registry &registry)
 		_hideMouseSystem{device, registry},
 		_editorControllerSystem{device, registry},
 		_baseControllerSystem{device, registry},
-		_surfaceAllignementSystem{device, registry} {
+		_surfaceAllignementSystem{device, registry},
+		_uiSystem{device, registry} {
 	_timer.start();
 }
 
@@ -181,10 +182,14 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	VkCommandBuffer	commandBuffer = resources->commandBuffers[currentFrame];
 	vkResetCommandBuffer(commandBuffer, 0);
 
+	UiContext	&ui = window.getUi();
 	beginFrame(renderPass, commandBuffer,
-			swap.getFrameBuffer(imageIndex, renderPass), swap.getExtent());
+		swap.getFrameBuffer(imageIndex, renderPass), swap.getExtent());
+	ui.newFrame(renderPass);
 	_renderSystem.render(renderPass, *resources, currentFrame);
 	_cameraSystem.render(renderPass, *resources, currentFrame);
+	_uiSystem.render(renderPass, *resources, currentFrame);
+	ui.renderFrame(commandBuffer);
 	endFrame(commandBuffer);
 
 	swapchain.submitCommandBuffer(&commandBuffer, imageIndex, currentFrame);
