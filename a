@@ -1,0 +1,48 @@
+#include "ecs/ComponentList.hpp"
+
+namespace    hel {
+
+std::vector<const char *>    ComponentList::_componentList{"aaa", "bbb", "ccc", ...};
+
+void    *ComponentList::addComponent(Registry &registry, Entity::id handle, const char *componentName) {
+
+	if (componentName == "EditorControllerTag")
+		return (_registry.addComponent<comp::EditorControllerTag>(handle));
+	if (componentName == "BaseControllerTag")
+		return (_registry.addComponent<comp::BaseControllerTag>(handle));
+	if (componentName == "Name")
+		return (_registry.addComponent<comp::Name>(handle));
+	if (componentName == "Transform")
+		return (_registry.addComponent<comp::Transform>(handle));
+	if (componentName == "SurfaceAllignement")
+		return (_registry.addComponent<comp::SurfaceAllignement>(handle));
+	if (componentName == "Model")
+		return (_registry.addComponent<comp::Model>(handle));
+	if (componentName == "Camera")
+		return (_registry.addComponent<comp::Camera>(handle));
+	if (componentName == "Controller")
+		return (_registry.addComponent<comp::Controller>(handle));
+	if (componentName == "Parent")
+		return (_registry.addComponent<comp::Parent>(handle));
+	if (componentName == "EditorControllerTag")
+		return (_registry.addComponent<comp::EditorControllerTag>(handle));
+	if (componentName == "BaseControllerTag")
+		return (_registry.addComponent<comp::BaseControllerTag>(handle));
+	if (componentName == "Name")
+		return (_registry.addComponent<comp::Name>(handle));
+	if (componentName == "Transform")
+		return (_registry.addComponent<comp::Transform>(handle));
+	if (componentName == "SurfaceAllignement")
+		return (_registry.addComponent<comp::SurfaceAllignement>(handle));
+	if (componentName == "Model")
+		return (_registry.addComponent<comp::Model>(handle));
+	if (componentName == "Camera")
+		return (_registry.addComponent<comp::Camera>(handle));
+	if (componentName == "Controller")
+		return (_registry.addComponent<comp::Controller>(handle));
+	if (componentName == "Parent")
+		return (_registry.addComponent<comp::Parent>(handle));
+	return (NULL);
+}
+
+}
