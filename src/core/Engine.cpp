@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 17:54:45                                        */
+/*  Last Modified: 2026/02/27 22:54:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -188,6 +188,7 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	ui.newFrame(renderPass);
 	_renderSystem.render(renderPass, *resources, currentFrame);
 	_cameraSystem.render(renderPass, *resources, currentFrame);
+	_registry.resetAllDirty();
 	_uiSystem.render(renderPass, *resources, currentFrame);
 	ui.renderFrame(commandBuffer);
 	endFrame(commandBuffer);

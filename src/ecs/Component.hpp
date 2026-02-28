@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 18:48:19                                        */
+/*  Last Modified: 2026/02/27 22:36:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,16 +30,22 @@
 namespace	hel::comp {
 
 struct	EditorControllerTag {
+	static constexpr const char	*label = "Editor Controller Tag";
 };
 
 struct	BaseControllerTag {
+	static constexpr const char	*label = "Base Controller Tag";
 };
 
 struct	Name {
+	static constexpr const char	*label = "Entity Name";
+
 	std::string	name;
 };
 
 struct	Transform {
+	static constexpr const char	*label = "Transform";
+
 	glm::vec3	position{0.f};
 	glm::quat	rotation{1.f, 0.f, 0.f, 0.f};
 	glm::vec3	scale{1.f};
@@ -51,16 +57,22 @@ struct	Transform {
 };
 
 struct	SurfaceAllignement {
+	static constexpr const char	*label = "Surface Allignement";
+
 	glm::vec3	localUp{0., 1., 0.};
 
 	bool	isDynamic{false};
 };
 
 struct	Model {
+	static constexpr const char	*label = "Model";
+
 	std::string	filePath{""};
 };
 
 struct	Camera {
+	static constexpr const char	*label = "Camera";
+
 	float		fov{glm::radians<float>(70)};
 	float		aspect{1.f};
 	float		near{0.1f};
@@ -71,6 +83,8 @@ struct	Camera {
 };
 
 struct	Controller {
+	static constexpr const char	*label = "Controller";
+
 	float	mouseSensivity{0.001f};
 	float	movementSpeed{1.f};
 
@@ -83,6 +97,8 @@ struct	Controller {
 };
 
 struct	Hierarchy {
+	static constexpr const char	*label = "Hierarchy";
+
 	Entity::id				parentId{Entity::NOT_REGISTERED};
 	std::vector<Entity::id>	childrenId{};
 };

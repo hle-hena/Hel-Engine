@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 18:25:47                                        */
+/*  Last Modified: 2026/02/27 22:36:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -43,6 +43,25 @@ void	Pool<Component>::resetDirtyFlag(void) {
 			comp.isDirty = false;
 		}
 	}
+}
+
+template <typename Component>
+bool	Pool<Component>::has(Entity::id handle) const {
+	uint32_t	idx = Entity::getIndex(handle);
+	return (idx < indices.size() && indices[idx] != Entity::NOT_REGISTERED);
+}
+
+template <typename Component>
+void	*Pool<Component>::getRaw(Entity::id handle) {
+	uint32_t	idx = Entity::getIndex(handle);
+	return (&components[indices[idx]]);
+}
+
+template <typename Component>
+const char	*Pool<Component>::getTypeName(void) const {
+	if constexpr (requires { Component::label; })
+		return (Component::label);
+	return (typeid(Component).name());
 }
 
 

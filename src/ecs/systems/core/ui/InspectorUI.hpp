@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: UI.hpp                                                              */
+/*  File: EditorUI.hpp                                                        */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
+/*  Created: 2026/02/27 21:55:02 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 19:34:08                                        */
+/*  Last Modified: 2026/02/27 22:02:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,33 +16,33 @@
 
 #pragma once
 
-# include "ecs/systems/ISystem.hpp"
+# include <unordered_map>
+# include <typeindex>
+# include <functional>
+
 # include "ecs/Entity.hpp"
-# include "ecs/View.hpp"
 
 namespace	hel {
 
-class	AssetManager;
+class	Registry;
 
 }
 
 namespace	hel::sys {
 
-class	UI : public ISystem {
+class	InspectorUI {
 	public:
-		UI(Device &device, Registry &registry);
-		~UI(void) override;
+		using UIDrawFunc = std::function<void(void *)>;
 
-		void	render(VkRenderPass renderPass, WindowResources &resources,
-			uint32_t currentFrame) override;
+		template <typename Component>
+		void	setDrawFunc(UIDrawFunc func) {
+			_drawFuncs[typeid(Component)] = func;
+		}
+
+		void	renderInspector(Registry &registry, Entity::id handle);
 
 	private:
-		void	moveEntity(View<comp::Hierarchy> view, Entity::id srcHandle,
-						Entity::id dstHandle);
-		void	showEntity(Entity::id handle, View<comp::Hierarchy> view);
-		void	showEntitiesTab(void);
-
-		AssetManager				&_assetManager;
+		std::unordered_map<std::type_index, UIDrawFunc>	_drawFuncs;
 };
 
 }

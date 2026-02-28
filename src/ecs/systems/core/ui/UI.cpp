@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 20:15:51                                        */
+/*  Last Modified: 2026/02/27 23:06:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,9 +15,10 @@
 /* *************************************************************************  */
 
 
-#include "ecs/systems/core/UI.hpp"
+#include "ecs/systems/core/ui/UI.hpp"
 #include "ecs/Registry.hpp"
 #include "api/ImGui/imgui.h"
+#include "api/ImGui/imgui_stdlib.h"
 #include <string>
 
 namespace	hel::sys {
@@ -25,6 +26,23 @@ namespace	hel::sys {
 UI::UI(Device &device, Registry &registry)
 	:	ISystem(device, registry),
 		_assetManager{registry.getAssetManager()} {
+	_inspectorUI.setDrawFunc<comp::Transform>([](void *raw){
+		auto	*t = static_cast<comp::Transform*>(raw);
+		bool	changed = false;
+
+		changed |= ImGui::DragFloat3("Position", &t->position.x, 0.1f);
+		changed |= ImGui::DragFloat3("Scale", &t->scale.x, 0.1f);
+
+		if (changed) {
+			t->isDirty = true;
+		}
+	});
+
+	_inspectorUI.setDrawFunc<comp::Model>([](void *raw){
+		auto	*model = static_cast<comp::Model *>(raw);
+
+		ImGui::InputText("Model filepath", &model->filePath);
+	});
 }
 
 UI::~UI(void) {
@@ -37,8 +55,8 @@ void	UI::render(VkRenderPass renderPass, WindowResources &resources,
 	showEntitiesTab();
 }
 
-void	UI::moveEntity(View<comp::Hierarchy> view, Entity::id srcHandle,
-					Entity::id dstHandle) {
+void	UI::moveEntity(View<comp::Hierarchy> view,
+					Entity::id srcHandle, Entity::id dstHandle) {
 	auto	srcHierarchy = _registry.modify(view.get
 								<comp::Hierarchy>(srcHandle));
 	auto	dstHierarchy = _registry.modify(view.get
@@ -55,8 +73,9 @@ void	UI::moveEntity(View<comp::Hierarchy> view, Entity::id srcHandle,
 	dstHierarchy->childrenId.push_back(srcHandle);
 }
 
-void	UI::showEntity(Entity::id handle, View<comp::Hierarchy> view) {
-	auto	hierarchy = view.get<comp::Hierarchy>(handle);		
+void	UI::showEntity(View<comp::Hierarchy> view,
+					Entity::id handle) {
+	auto	hierarchy = view.get<comp::Hierarchy>(handle);
 	auto	nameComp = _registry.getComponent<comp::Name>(handle);
 	std::string	name = "unknown entity (id: " +
 				std::to_string(Entity::getIndex(handle)) + ")";
@@ -80,9 +99,11 @@ void	UI::showEntity(Entity::id handle, View<comp::Hierarchy> view) {
 		ImGui::EndDragDropTarget();
 	}
 
+	if (Entity::getIndex(handle) == 1)
+		_inspectorUI.renderInspector(_registry, handle);
 	if (nodeOpen) {
-		for (auto chilHandle: hierarchy->childrenId)
-			showEntity(chilHandle, view);
+		for (auto childHandle: hierarchy->childrenId)
+			showEntity(view, childHandle);
 		ImGui::TreePop();
 	}
 }
@@ -97,7 +118,7 @@ void	UI::showEntitiesTab(void) {
 		for (auto handle: view) {
 			auto	hierarchy = view.get<comp::Hierarchy>(handle);
 			if (hierarchy->parentId == Entity::NOT_REGISTERED)	
-				showEntity(handle, view);
+				showEntity(view, handle);
 		}
 
 		ImGui::End();
