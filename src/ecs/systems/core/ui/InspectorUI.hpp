@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:55:02 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 16:18:46                                        */
+/*  Last Modified: 2026/02/28 17:48:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -47,7 +47,7 @@ class	InspectorUI {
 		void	render(Window *window);
 
 	private:
-		void	addNewComponentPopup(void);
+		void	addNewComponentPopup(Entity::id handle);
 		void	removeEntity(Entity::id handle);
 
 		Registry	&_registry;

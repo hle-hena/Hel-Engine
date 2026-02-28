@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 17:33:46                                        */
+/*  Last Modified: 2026/02/28 17:51:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -50,7 +50,7 @@ void	InspectorUI::render(Window *window) {
 	}
 	if (!_addNewComp && ImGui::Button("Add a component"))
 		_addNewComp = true;
-	addNewComponentPopup();
+	addNewComponentPopup(handle);
 	ImGui::End();
 }
 
@@ -61,15 +61,17 @@ void	InspectorUI::removeEntity(Entity::id handle) {
 	_registry.removeEntity(handle);
 }
 
-void	InspectorUI::addNewComponentPopup(void) {
+void	InspectorUI::addNewComponentPopup(Entity::id handle) {
 	if (_addNewComp) {
 		auto	items = ComponentList::getComponentList();
 		ImGui::Combo("Component type", &_newCompTypeIndex, items.data(), items.size());
 		if (ImGui::Button("Cancel"))
 			_addNewComp = false;
 		ImGui::SameLine();
-		if (ImGui::Button("Add"))
+		if (ImGui::Button("Add")) {
+			ComponentList::addComponent(_registry, handle, items[_newCompTypeIndex]);
 			_addNewComp = false;
+		}
 	}
 }
 
