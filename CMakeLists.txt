@@ -10,6 +10,13 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
+add_custom_target(run_auto_component
+	COMMAND python3 ${CMAKE_SOURCE_DIR}/autoAddComponent.py
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+	COMMENT "Running autoAddComponent.py..."
+	USES_TERMINAL
+)
+
 file(GLOB_RECURSE HEL_SOURCES CONFIGURE_DEPENDS
 	"${CMAKE_SOURCE_DIR}/src/*.cpp"
 )
