@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 12:27:15                                        */
+/*  Last Modified: 2026/02/28 14:10:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,11 +19,12 @@
 # include "ecs/systems/ISystem.hpp"
 # include "ecs/Entity.hpp"
 # include "ecs/View.hpp"
+
 # include "ecs/systems/core/ui/InspectorUI.hpp"
+# include "ecs/systems/core/ui/EntityHierarchyUI.hpp"
 
 namespace	hel {
 
-class	AssetManager;
 class	Window;
 
 }
@@ -39,14 +40,8 @@ class	UI : public ISystem {
 			uint32_t currentFrame) override;
 
 	private:
-		void	moveEntity(Window *window, View<comp::Hierarchy> view,
-						Entity::id srcHandle, Entity::id dstHandle);
-		void	showEntity(Window *window, View<comp::Hierarchy> view,
-						Entity::id handle);
-		void	showEntitiesTab(Window *window);
-
-		AssetManager				&_assetManager;
 		InspectorUI					_inspectorUI;
+		EntityHierarchyUI			_entityHierarchyUI;
 };
 
 }

@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: EditorUI.hpp                                                        */
+/*  File: EntityHierarchyUI.hpp                                               */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/27 21:55:02 by hle-hena                                  */
+/*  Created: 2026/02/28 13:55:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 14:09:45                                        */
+/*  Last Modified: 2026/02/28 14:07:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,39 +16,32 @@
 
 #pragma once
 
-# include <unordered_map>
-# include <typeindex>
-# include <functional>
-
+# include "ecs/View.hpp"
 # include "ecs/Entity.hpp"
 
 namespace	hel {
 
-class	Registry;
 class	Window;
+class	Registry;
 
 }
 
 namespace	hel::sys {
 
-class	InspectorUI {
+class	EntityHierarchyUI {
 	public:
-		using UIDrawFunc = std::function<void(void *)>;
-
-		InspectorUI(Registry &registry) : _registry{registry} {}
-		~InspectorUI(void) = default;
-
-		template <typename Component>
-		void	setDrawFunc(UIDrawFunc func) {
-			_drawFuncs[typeid(Component)] = func;
-		}
-		void	setBuiltInDrawFunc(void);
+		EntityHierarchyUI(Registry &registry) : _registry{registry} {}
+		~EntityHierarchyUI(void) = default;
 
 		void	render(Window *window);
 
 	private:
-		Registry										&_registry;
-		std::unordered_map<std::type_index, UIDrawFunc>	_drawFuncs;
+		void	moveEntity(Window *window, View<comp::Hierarchy> &view,
+					Entity::id srcHandle, Entity::id dstHandle);
+		void	showEntity(Window *window, View<comp::Hierarchy> view,
+					Entity::id handle);
+
+		Registry	&_registry;
 };
 
 }
