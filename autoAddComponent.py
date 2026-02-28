@@ -69,9 +69,9 @@ for file in files_list:
 
 output_str = """#include "ecs/ComponentList.hpp"
 
-namespace    hel {
+namespace\thel {
 
-std::vector<const char *>    ComponentList::_componentList{"""
+std::vector<const char *>\tComponentList::_componentList{"""
 
 vector_str = ""
 for struct in comp_structs:
@@ -81,13 +81,13 @@ vector_str = vector_str[:-2] + "};"
 output_str += vector_str
 output_str += """
 
-void    *ComponentList::addComponent(Registry &registry, Entity::id handle, const char *componentName) {\n
+const void\t*ComponentList::addComponent(Registry &registry, Entity::id handle, const char *componentName) {\n
 """
 
 for struct in comp_structs:
-    output_str += f"\n\tif (componentName == \"{struct}\")\n\t\treturn (_registry.addComponent<comp::{struct}>(handle));"
+    output_str += f"\n\tif (componentName == \"{struct}\")\n\t\treturn (registry.addComponent<comp::{struct}>(handle));"
 
-output_str += f"\n\treturn (NULL);\n" + "}\n\n}"
+output_str += f"\n\treturn (NULL);\n" + "}\n\n}\n"
 
 output_file = "src/ecs/ComponentList.cpp"
 with open(output_file, "w") as f:
