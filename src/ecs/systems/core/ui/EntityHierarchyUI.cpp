@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/28 13:55:54 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 14:56:01                                        */
+/*  Last Modified: 2026/02/28 15:50:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -81,15 +81,18 @@ void	EntityHierarchyUI::render(Window *window) {
 	if (tabOpen) {
 		ImGui::Begin("Entities in the scene", &tabOpen);
 
+		if (ImGui::Button("Add a new Entity"))
+			_registry.createEntity();
+		ImGui::Separator();
+
 		auto	view = _registry.view<comp::Hierarchy>();
 		for (auto handle: view) {
 			auto	hierarchy = view.get<comp::Hierarchy>(handle);
 			if (hierarchy->parentId == Entity::NOT_REGISTERED)	
 				showEntity(window, view, handle);
 		}
-
-		if (ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered())
-			window->setEntityFocus(Entity::NOT_REGISTERED);
+		// if (ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered())
+		// 	window->setEntityFocus(Entity::NOT_REGISTERED);
 
 		ImGui::End();
 	}

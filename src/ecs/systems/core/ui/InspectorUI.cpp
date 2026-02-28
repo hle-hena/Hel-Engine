@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 14:14:24                                        */
+/*  Last Modified: 2026/02/28 16:45:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,6 +27,12 @@ void	InspectorUI::render(Window *window) {
 	if (handle == Entity::NOT_REGISTERED)
 		return ;
 	ImGui::Begin("Inspector");
+	if (ImGui::Button("Remove entity")) {
+		removeEntity(handle);
+		ImGui::End();
+		return ;
+	}
+	ImGui::Separator();
 	for (auto &[type, pool]: _registry.getPools()) {
 		if (pool->has(handle)) {
 			auto	label = pool->getTypeName();
@@ -38,16 +44,43 @@ void	InspectorUI::render(Window *window) {
 				else
 					ImGui::TextDisabled("No UI integration for %s", label);
 			}
+			ImGui::Separator();
 		}
 	}
-	ImGui::Button("Add a component", {20, 8});
+	if (!_addNewComp && ImGui::Button("Add a component"))
+		_addNewComp = true;
+	addNewComponentPopup();
 	ImGui::End();
+}
+
+void	InspectorUI::removeEntity(Entity::id handle) {
+	auto	hierarchy = _registry.getComponent<comp::Hierarchy>(handle);
+	for (auto childHandle: hierarchy->childrenId)
+		removeEntity(childHandle);
+	_registry.removeEntity(handle);
+}
+
+void	InspectorUI::addNewComponentPopup(void) {
+	if (_addNewComp) {
+		const char	*items[] = {
+			"AAAA",
+			"BBBB",
+			"CCCC",
+			"DDDD"
+		};
+		ImGui::Combo("Component type", &_newCompTypeIndex, items, IM_COUNTOF(items));
+		if (ImGui::Button("Cancel"))
+			_addNewComp = false;
+		ImGui::SameLine();
+		if (ImGui::Button("Add"))
+			_addNewComp = false;
+	}
 }
 
 void	InspectorUI::setBuiltInDrawFunc(void) {
 	setDrawFunc<comp::Transform>([](void *raw){
 		auto	transform = static_cast<comp::Transform *>(raw);
-		bool	changed;
+		bool	changed = false;
 
 		changed |= ImGui::DragFloat3("Position", &transform->position.x, 0.1f);
 		changed |= ImGui::DragFloat3("Scale", &transform->scale.x, 0.1f);
@@ -72,6 +105,38 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 
 		if (changed)
 			camera->isDirty = true;
+	});
+
+	setDrawFunc<comp::Name>([](void *raw){
+		auto	name = static_cast<comp::Name *>(raw);
+
+		ImGui::InputText("Entity's name", &name->name);
+	});
+
+	setDrawFunc<comp::Hierarchy>([](void *raw){
+		auto	hier = static_cast<comp::Hierarchy *>(raw);
+
+		if (hier->parentId != Entity::NOT_REGISTERED)
+			ImGui::Text("Parent's id: %d", Entity::getIndex(hier->parentId));
+		else
+			ImGui::Text("Entity doesn't have a parent");
+		for (auto childHandle: hier->childrenId)
+			ImGui::BulletText("Child entity %d", Entity::getIndex(childHandle));
+	});
+
+	setDrawFunc<comp::SurfaceAllignement>([](void *raw){
+		auto	surface = static_cast<comp::SurfaceAllignement *>(raw);
+
+		if (ImGui::DragFloat3("Up vector", &surface->localUp.x, 0.1f))
+			glm::normalize(surface->localUp);
+		ImGui::Checkbox("Dynamic allignement", &surface->isDynamic);
+	});
+
+	setDrawFunc<comp::Controller>([](void *raw){
+		auto	controller = static_cast<comp::Controller *>(raw);
+
+		ImGui::DragFloat("Mouse sensitivity", &controller->mouseSensivity);
+		ImGui::DragFloat("Movement speed", &controller->movementSpeed);
 	});
 }
 
