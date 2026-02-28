@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 17:51:16                                        */
+/*  Last Modified: 2026/02/28 18:11:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -76,6 +76,9 @@ void	InspectorUI::addNewComponentPopup(Entity::id handle) {
 }
 
 void	InspectorUI::setBuiltInDrawFunc(void) {
+	setDrawFunc<comp::BaseControllerTag>([](void *){});
+	setDrawFunc<comp::EditorControllerTag>([](void *){});
+
 	setDrawFunc<comp::Transform>([](void *raw){
 		auto	transform = static_cast<comp::Transform *>(raw);
 		bool	changed = false;
