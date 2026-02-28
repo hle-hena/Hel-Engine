@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 15:08:39                                        */
+/*  Last Modified: 2026/02/28 17:55:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,7 +39,7 @@ void	UI::render(VkRenderPass renderPass, WindowResources &resources,
 				uint32_t currentFrame) {
 
 
-	ImGui::ShowDemoWindow();
+	// ImGui::ShowDemoWindow();
 
 
 	_entityHierarchyUI.render(resources.window);

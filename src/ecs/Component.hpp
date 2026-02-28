@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 13:27:01                                        */
+/*  Last Modified: 2026/02/28 18:04:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -40,7 +40,7 @@ struct	BaseControllerTag {
 struct	Name {
 	static constexpr const char	*label = "Entity Name";
 
-	std::string	name;
+	std::string	name{"Paul"};
 };
 
 struct	Transform {
