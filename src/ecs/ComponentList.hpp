@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/28 16:53:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 17:18:26                                        */
+/*  Last Modified: 2026/02/28 17:33:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,7 +30,7 @@ class	ComponentList {
 		const void	*addComponent(Registry &registry, Entity::id handle,
 							const char *componentName);
 
-		std::vector<const char *>	&getComponentList(void) {
+		static std::vector<const char *>	&getComponentList(void) {
 			return (_componentList);
 		}
 

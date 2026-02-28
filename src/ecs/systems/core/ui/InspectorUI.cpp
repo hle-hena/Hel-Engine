@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 16:45:20                                        */
+/*  Last Modified: 2026/02/28 17:33:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,6 +19,7 @@
 #include "api/ImGui/imgui.h"
 #include "api/ImGui/imgui_stdlib.h"
 #include "platform/window/Window.hpp"
+#include "ecs/ComponentList.hpp"
 
 namespace	hel::sys {
 
@@ -62,13 +63,8 @@ void	InspectorUI::removeEntity(Entity::id handle) {
 
 void	InspectorUI::addNewComponentPopup(void) {
 	if (_addNewComp) {
-		const char	*items[] = {
-			"AAAA",
-			"BBBB",
-			"CCCC",
-			"DDDD"
-		};
-		ImGui::Combo("Component type", &_newCompTypeIndex, items, IM_COUNTOF(items));
+		auto	items = ComponentList::getComponentList();
+		ImGui::Combo("Component type", &_newCompTypeIndex, items.data(), items.size());
 		if (ImGui::Button("Cancel"))
 			_addNewComp = false;
 		ImGui::SameLine();
