@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 22:36:11                                        */
+/*  Last Modified: 2026/02/28 13:27:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -73,7 +73,7 @@ struct	Model {
 struct	Camera {
 	static constexpr const char	*label = "Camera";
 
-	float		fov{glm::radians<float>(70)};
+	float		fov{70};
 	float		aspect{1.f};
 	float		near{0.1f};
 	float		far{100.f};

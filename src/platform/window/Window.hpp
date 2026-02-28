@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 15:30:47                                        */
+/*  Last Modified: 2026/02/28 13:06:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -60,7 +60,7 @@ class	Window {
 		VkSurfaceKHR	&getSurface(void) {
 			return (_surface);
 		}
-		UiContext		&getUi(void) {
+		UiContext		&getUI(void) {
 			return (_uiContext);
 		}
 		Application		&getApp(void) const {
@@ -83,6 +83,12 @@ class	Window {
 		}
 		Entity::id		getEntityReference(void) const {
 			return (_entityHandle.value_or(Entity::NOT_REGISTERED));
+		}
+		void			setEntityFocus(Entity::id handle) {
+			_focusHandle = handle;
+		}
+		Entity::id		getEntityFocus(void) const {
+			return (_focusHandle.value_or(Entity::NOT_REGISTERED));
 		}
 
 
@@ -120,6 +126,7 @@ class	Window {
 		Application					&_app;
 		VkInstance					&_instance;
 		std::optional<Entity::id>	_entityHandle;
+		std::optional<Entity::id>	_focusHandle;
 
 	friend class UiContext;
 };

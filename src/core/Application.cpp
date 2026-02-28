@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 17:52:47                                        */
+/*  Last Modified: 2026/02/28 13:38:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,21 +48,6 @@ Application::~Application(void) {
 }
 
 void	Application::loadPrimaryScene(void) {
-	Entity::id	dragonHandle = _registry.createEntity();
-	if (auto mesh = _registry.modify(_registry.addComponent<comp::Model>(dragonHandle))) {
-		mesh->filePath = "assets/models/dragon.obj";
-	}
-	if (auto transform = _registry.modify(_registry.addComponent<comp::Transform>(dragonHandle))) {
-		transform->scale = glm::vec3(4.f);
-	}
-	Entity::id	dragonSecondHandle = _registry.createEntity();
-	if (auto mesh = _registry.modify(_registry.addComponent<comp::Model>(dragonSecondHandle))) {
-		mesh->filePath = "assets/models/dragon.obj";
-	}
-	if (auto transform = _registry.modify(_registry.addComponent<comp::Transform>(dragonSecondHandle))) {
-		transform->position = glm::vec3(2.f, 0.f, 2.f);
-		transform->rotation = glm::quat(0.932, -0.267, 0.237, -0.059);
-	}
 	Entity::id	handle = _registry.createEntity();
 	if (auto mesh = _registry.modify(_registry.addComponent<comp::Model>(handle))) {
 		mesh->filePath = "assets/models/flat_vase.obj";
@@ -98,13 +83,16 @@ void	Application::run(void) {
 		_registry.getInputState().newFrame();
 		glfwPollEvents();
 
-		_engine.updateFrame();
 		for (size_t i = 0; i < _appWindows.size(); i++) {
 			if (_appWindows[i]->shouldClose()) {
 				_appWindows.erase(_appWindows.begin() + i);
 				i--;
 				continue ;
 			}
+			_engine.renderUI(*_appWindows[i], currentFrame);
+		}
+		_engine.updateFrame();
+		for (size_t i = 0; i < _appWindows.size(); i++) {
 			_engine.renderFrame(*_appWindows[i], currentFrame);
 		}
 
@@ -131,13 +119,7 @@ void	Application::addNewWindow(int width, int height, const std::string &windowN
 	auto	transform = _registry.modify(_registry.addComponent<comp::Transform>(handle));
 	transform->position = {1.f, 1.f, 1.f};
 	_registry.addComponent<comp::Controller>(handle);
-	if (windowName == "Hel") {
-		_registry.addComponent<comp::EditorControllerTag>(handle);
-	} else {
-		_registry.addComponent<comp::BaseControllerTag>(handle);
-		auto allign = _registry.modify(_registry.addComponent<comp::SurfaceAllignement>(handle));
-		allign->isDynamic = true;
-	}
+	_registry.addComponent<comp::EditorControllerTag>(handle);
 	auto camera = _registry.modify(_registry.addComponent<comp::Camera>(handle));
 	camera->aspect = static_cast<float>(width) / static_cast<float>(height);
 	window->setEntityReference(handle);
