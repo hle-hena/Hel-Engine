@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/28 13:55:54 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/02 15:32:03                                        */
+/*  Last Modified: 2026/03/02 16:53:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,8 +25,6 @@ void	EntityHierarchyUI::moveEntity(Window *window, View<comp::Hierarchy> &view,
 					Entity::id srcHandle, Entity::id dstHandle) {
 	auto	srcHierarchy = _registry.modify(view.get
 								<comp::Hierarchy>(srcHandle));
-	auto	dstHierarchy = _registry.modify(view.get
-								<comp::Hierarchy>(dstHandle));
 
 	if (auto prevHierarchy = _registry.modify<comp::Hierarchy>
 										(srcHierarchy->parentId)) {
@@ -36,7 +34,8 @@ void	EntityHierarchyUI::moveEntity(Window *window, View<comp::Hierarchy> &view,
 		prevHierarchy->childrenId.erase(it);
 	}
 	srcHierarchy->parentId = dstHandle;
-	dstHierarchy->childrenId.push_back(srcHandle);
+	if (auto dstHierarchy = _registry.modify<comp::Hierarchy>(dstHandle))
+		dstHierarchy->childrenId.push_back(srcHandle);
 }
 
 void	EntityHierarchyUI::showEntity(Window *window, View<comp::Hierarchy> view,
@@ -47,9 +46,14 @@ void	EntityHierarchyUI::showEntity(Window *window, View<comp::Hierarchy> view,
 				std::to_string(Entity::getIndex(handle)) + ")";
 	if (nameComp)
 		name = nameComp->name;
-	bool	nodeOpen = ImGui::TreeNode(name.c_str());
-	bool	nodeClicked = ImGui::IsItemClicked();
+	ImGuiTreeNodeFlags	nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow;
+    if (window->getEntityFocus() == handle) nodeFlags |= ImGuiTreeNodeFlags_Selected;
+    if (hierarchy->childrenId.empty()) nodeFlags |= ImGuiTreeNodeFlags_Leaf;
 
+	bool	nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)handle, nodeFlags, "");
+	ImGui::SameLine();
+	if (ImGui::Selectable(name.c_str(), window->getEntityFocus() == handle))
+		window->setEntityFocus(handle);
 	if (ImGui::BeginDragDropSource()) {
 		Entity::id	payload = handle;
 		ImGui::SetDragDropPayload("Moving Entity In Hierarchy",
@@ -66,8 +70,6 @@ void	EntityHierarchyUI::showEntity(Window *window, View<comp::Hierarchy> view,
 		ImGui::EndDragDropTarget();
 	}
 
-	if (nodeClicked)
-		window->setEntityFocus(handle);
 	if (nodeOpen) {
 		for (auto childHandle: hierarchy->childrenId)
 			showEntity(window, view, childHandle);
@@ -86,6 +88,17 @@ void	EntityHierarchyUI::render(Window *window) {
 		ImGui::Separator();
 
 		auto	view = _registry.view<comp::Hierarchy>();
+		ImVec2	pos = ImGui::GetCursorPos();
+		ImGui::Dummy(ImGui::GetContentRegionAvail());
+		if (ImGui::BeginDragDropTarget()) {
+			if (auto payload = ImGui::AcceptDragDropPayload
+									("Moving Entity In Hierarchy")) {
+				moveEntity(window, view, *static_cast<Entity::id *>(payload->Data), Entity::NOT_REGISTERED);
+			}
+			ImGui::EndDragDropTarget();
+		}
+		ImGui::SetCursorPos(pos);
+
 		for (auto handle: view) {
 			auto	hierarchy = view.get<comp::Hierarchy>(handle);
 			if (hierarchy->parentId == Entity::NOT_REGISTERED)	

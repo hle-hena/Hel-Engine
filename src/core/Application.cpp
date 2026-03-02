@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/02 14:45:47                                        */
+/*  Last Modified: 2026/03/02 15:45:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -57,6 +57,7 @@ void	Application::loadPrimaryScene(void) {
 	auto	extent = _appWindows.back()->getSwapchain().getExtent();
 	camera->aspect = static_cast<float>(extent.width) / static_cast<float>(extent.height);
 	_appWindows.back()->setEntityReference(cameraHandle);
+
 	Entity::id	handle = _registry.createEntity();
 	if (auto mesh = _registry.modify(_registry.addComponent<comp::Model>(handle))) {
 		mesh->filePath = "assets/models/flat_vase.obj";
