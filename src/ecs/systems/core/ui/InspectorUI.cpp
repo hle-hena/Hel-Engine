@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/02 15:02:54                                        */
+/*  Last Modified: 2026/03/02 15:24:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,7 +48,19 @@ void	InspectorUI::render(Window *window) {
 		if (pool->has(handle)) {
 			auto	label = pool->getTypeName();
 
-			if (ImGui::CollapsingHeader(label, ImGuiTreeNodeFlags_DefaultOpen)) {
+			bool	uiOpened = false;
+			if (type != typeid(comp::Hierarchy)) {
+				bool	isVisible = true;
+				uiOpened = ImGui::CollapsingHeader(label, &isVisible,
+												ImGuiTreeNodeFlags_DefaultOpen);
+				if (!isVisible) {
+					pool->removeEntity(handle);
+					continue ;
+				}
+			} else
+				uiOpened = ImGui::CollapsingHeader(label,
+												ImGuiTreeNodeFlags_DefaultOpen);
+			if (uiOpened) {
 				auto	it = _drawFuncs.find(type);
 				if (it != _drawFuncs.end())
 					_drawFuncs[type](pool->getRaw(handle));

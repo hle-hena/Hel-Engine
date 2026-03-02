@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 22:36:57                                        */
+/*  Last Modified: 2026/03/02 15:15:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -100,7 +100,7 @@ template <typename Component>
 void	Registry::removeComponent(Entity::id handle) {
 	if (!isValidHandle(handle))	{ return ; }
 	Pool<Component>	&pool = getPool<Component>();
-	pool.tryRemoveEntity(handle);
+	pool.removeEntity(handle);
 }
 
 
