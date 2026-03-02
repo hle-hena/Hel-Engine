@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 16:57:55                                        */
+/*  Last Modified: 2026/03/02 15:04:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -125,15 +125,27 @@ bool	Window::shouldClose(void) {
 	return (glfwWindowShouldClose(_windowPtr));
 }
 
+void	Window::setEntityReference(Entity::id handle) {
+	if (_app.isHandleAlreadyAssigned(handle))
+		return ;
+	_entityHandle = handle;
+}
+
+void	Window::updateEntityReference(void) {
+	auto	&registry = _app.getRegistry();
+	if (auto camera = registry.modify<comp::Camera>(_entityHandle.value()))
+		camera->aspect = static_cast<float>(_width) /
+						static_cast<float>(_height);
+}
+
 void	Window::frameBufferResizedCallback(GLFWwindow *window,
 												int width, int height) {
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 	appWindow->getSwapchain()._frameBufferResized = true;
 
-	Entity::id	handle = appWindow->getEntityReference();
-	if (auto camera = appWindow->getApp().getRegistry().modify<comp::Camera>(handle)) {
-		camera->aspect = static_cast<float>(width) / static_cast<float>(height);
-	}
+	appWindow->_width = width;
+	appWindow->_height = height;
+	appWindow->updateEntityReference();
 }
 
 void	Window::focusCallback(GLFWwindow *window, int focused) {

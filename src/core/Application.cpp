@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 13:38:15                                        */
+/*  Last Modified: 2026/03/02 14:45:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,6 +48,15 @@ Application::~Application(void) {
 }
 
 void	Application::loadPrimaryScene(void) {
+	Entity::id	cameraHandle = _registry.createEntity();
+	auto	transform = _registry.modify(_registry.addComponent<comp::Transform>(cameraHandle));
+	transform->position = {1.f, 1.f, 1.f};
+	_registry.addComponent<comp::Controller>(cameraHandle);
+	_registry.addComponent<comp::EditorControllerTag>(cameraHandle);
+	auto	camera = _registry.modify(_registry.addComponent<comp::Camera>(cameraHandle));
+	auto	extent = _appWindows.back()->getSwapchain().getExtent();
+	camera->aspect = static_cast<float>(extent.width) / static_cast<float>(extent.height);
+	_appWindows.back()->setEntityReference(cameraHandle);
 	Entity::id	handle = _registry.createEntity();
 	if (auto mesh = _registry.modify(_registry.addComponent<comp::Model>(handle))) {
 		mesh->filePath = "assets/models/flat_vase.obj";
@@ -115,15 +124,15 @@ void	Application::addNewWindow(int width, int height, const std::string &windowN
 		std::cerr << "The window surface is not supported." << std::endl;
 		return ;
 	}
-	Entity::id	handle = _registry.createEntity();
-	auto	transform = _registry.modify(_registry.addComponent<comp::Transform>(handle));
-	transform->position = {1.f, 1.f, 1.f};
-	_registry.addComponent<comp::Controller>(handle);
-	_registry.addComponent<comp::EditorControllerTag>(handle);
-	auto camera = _registry.modify(_registry.addComponent<comp::Camera>(handle));
-	camera->aspect = static_cast<float>(width) / static_cast<float>(height);
-	window->setEntityReference(handle);
 	_appWindows.push_back(std::move(window));
+}
+
+bool	Application::isHandleAlreadyAssigned(Entity::id handle) const {
+	bool	assigned = false;
+
+	for (const auto &window: _appWindows)
+		assigned |= window->getEntityReference() == handle;
+	return (assigned);
 }
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 13:06:22                                        */
+/*  Last Modified: 2026/03/02 14:59:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -78,9 +78,8 @@ class	Window {
 		VkFormat		getDepthFormat(void) const {
 			return (_swapchain.getDepthFormat());
 		}
-		void			setEntityReference(Entity::id handle) {
-			_entityHandle = handle;
-		}
+		void			setEntityReference(Entity::id handle);
+		void			updateEntityReference(void);
 		Entity::id		getEntityReference(void) const {
 			return (_entityHandle.value_or(Entity::NOT_REGISTERED));
 		}
