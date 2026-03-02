@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 17:55:15                                        */
+/*  Last Modified: 2026/03/02 13:58:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,8 +20,6 @@
 #include "api/ImGui/imgui.h"
 #include "api/ImGui/imgui_stdlib.h"
 #include "core/Engine.hpp"
-#include "platform/window/Window.hpp"
-#include <string>
 
 namespace	hel::sys {
 
@@ -37,11 +35,6 @@ UI::~UI(void) {
 
 void	UI::render(VkRenderPass renderPass, WindowResources &resources,
 				uint32_t currentFrame) {
-
-
-	// ImGui::ShowDemoWindow();
-
-
 	_entityHierarchyUI.render(resources.window);
 	_inspectorUI.render(resources.window);
 }

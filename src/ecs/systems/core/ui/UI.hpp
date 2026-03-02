@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 14:10:48                                        */
+/*  Last Modified: 2026/02/28 18:23:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,8 +17,6 @@
 #pragma once
 
 # include "ecs/systems/ISystem.hpp"
-# include "ecs/Entity.hpp"
-# include "ecs/View.hpp"
 
 # include "ecs/systems/core/ui/InspectorUI.hpp"
 # include "ecs/systems/core/ui/EntityHierarchyUI.hpp"
