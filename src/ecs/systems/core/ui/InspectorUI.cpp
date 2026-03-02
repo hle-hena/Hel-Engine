@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 18:11:08                                        */
+/*  Last Modified: 2026/03/02 14:03:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -32,6 +32,14 @@ void	InspectorUI::render(Window *window) {
 		removeEntity(handle);
 		ImGui::End();
 		return ;
+	}
+	ImGui::SameLine();
+	if (handle == window->getEntityReference()) {
+		if (ImGui::Button("Unlink window from entity"))
+			window->setEntityReference(Entity::NOT_REGISTERED);
+	} else {
+		if (ImGui::Button("Link window to entity"))
+			window->setEntityReference(handle);
 	}
 	ImGui::Separator();
 	for (auto &[type, pool]: _registry.getPools()) {
