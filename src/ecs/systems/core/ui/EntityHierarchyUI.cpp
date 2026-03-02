@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/28 13:55:54 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 15:50:33                                        */
+/*  Last Modified: 2026/03/02 15:32:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -91,8 +91,8 @@ void	EntityHierarchyUI::render(Window *window) {
 			if (hierarchy->parentId == Entity::NOT_REGISTERED)	
 				showEntity(window, view, handle);
 		}
-		// if (ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered())
-		// 	window->setEntityFocus(Entity::NOT_REGISTERED);
+		if (ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered() && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
+			window->setEntityFocus(Entity::NOT_REGISTERED);
 
 		ImGui::End();
 	}
