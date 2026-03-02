@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/21 15:15:12                                        */
+/*  Last Modified: 2026/02/28 18:04:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,20 +22,30 @@
 # include <glm/gtc/quaternion.hpp>
 # include <glm/gtc/constants.hpp>
 # include <string>
+# define GLFW_INCLUDE_VULKAN
+# include <GLFW/glfw3.h>
+
+# include "ecs/Entity.hpp"
 
 namespace	hel::comp {
 
 struct	EditorControllerTag {
+	static constexpr const char	*label = "Editor Controller Tag";
 };
 
 struct	BaseControllerTag {
+	static constexpr const char	*label = "Base Controller Tag";
 };
 
 struct	Name {
-	std::string	name;
+	static constexpr const char	*label = "Entity Name";
+
+	std::string	name{"Paul"};
 };
 
 struct	Transform {
+	static constexpr const char	*label = "Transform";
+
 	glm::vec3	position{0.f};
 	glm::quat	rotation{1.f, 0.f, 0.f, 0.f};
 	glm::vec3	scale{1.f};
@@ -47,17 +57,23 @@ struct	Transform {
 };
 
 struct	SurfaceAllignement {
+	static constexpr const char	*label = "Surface Allignement";
+
 	glm::vec3	localUp{0., 1., 0.};
 
 	bool	isDynamic{false};
 };
 
 struct	Model {
+	static constexpr const char	*label = "Model";
+
 	std::string	filePath{""};
 };
 
 struct	Camera {
-	float		fov{glm::radians<float>(70)};
+	static constexpr const char	*label = "Camera";
+
+	float		fov{70};
 	float		aspect{1.f};
 	float		near{0.1f};
 	float		far{100.f};
@@ -67,6 +83,8 @@ struct	Camera {
 };
 
 struct	Controller {
+	static constexpr const char	*label = "Controller";
+
 	float	mouseSensivity{0.001f};
 	float	movementSpeed{1.f};
 
@@ -78,8 +96,11 @@ struct	Controller {
 	int		downKey{GLFW_KEY_LEFT_SHIFT};
 };
 
-struct	Parent {
-//TODO -> for future implementation of hierarchy, but for the moment I need a placeholder.
+struct	Hierarchy {
+	static constexpr const char	*label = "Hierarchy";
+
+	Entity::id				parentId{Entity::NOT_REGISTERED};
+	std::vector<Entity::id>	childrenId{};
 };
 
 

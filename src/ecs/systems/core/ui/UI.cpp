@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: ComponentList.hpp                                                   */
+/*  File: UI.cpp                                                              */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/28 16:53:03 by hle-hena                                  */
+/*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 17:47:08                                        */
+/*  Last Modified: 2026/03/02 15:30:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,28 +14,29 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#pragma once
 
-# include <vector>
-# include <string>
+#include "ecs/systems/core/ui/UI.hpp"
+#include "ecs/Registry.hpp"
+#include "api/ImGui/imgui.h"
+#include "api/ImGui/imgui_stdlib.h"
+#include "core/Engine.hpp"
 
-# include "ecs/Entity.hpp"
-# include "ecs/Registry.hpp"
-# include "ecs/Component.hpp"
+namespace	hel::sys {
 
-namespace	hel {
+UI::UI(Device &device, Registry &registry)
+	:	ISystem(device, registry),
+		_inspectorUI{registry},
+		_entityHierarchyUI{registry} {
+	_inspectorUI.setBuiltInDrawFunc();
+}
 
-class	ComponentList {
-	public:
-		static const void	*addComponent(Registry &registry, Entity::id handle,
-							const char *componentName);
+UI::~UI(void) {
+}
 
-		static std::vector<const char *>	&getComponentList(void) {
-			return (_componentList);
-		}
-
-	private:
-		static std::vector<const char *>	_componentList;
-};
+void	UI::render(VkRenderPass renderPass, WindowResources &resources,
+				uint32_t currentFrame) {
+	_inspectorUI.render(resources.window);
+	_entityHierarchyUI.render(resources.window);
+}
 
 }
