@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/04 18:31:08                                        */
+/*  Last Modified: 2026/03/02 15:15:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,6 +45,25 @@ void	Pool<Component>::resetDirtyFlag(void) {
 	}
 }
 
+template <typename Component>
+bool	Pool<Component>::has(Entity::id handle) const {
+	uint32_t	idx = Entity::getIndex(handle);
+	return (idx < indices.size() && indices[idx] != Entity::NOT_REGISTERED);
+}
+
+template <typename Component>
+void	*Pool<Component>::getRaw(Entity::id handle) {
+	uint32_t	idx = Entity::getIndex(handle);
+	return (&components[indices[idx]]);
+}
+
+template <typename Component>
+const char	*Pool<Component>::getTypeName(void) const {
+	if constexpr (requires { Component::label; })
+		return (Component::label);
+	return (typeid(Component).name());
+}
+
 
 
 template <typename Component, typename... Args>
@@ -81,7 +100,7 @@ template <typename Component>
 void	Registry::removeComponent(Entity::id handle) {
 	if (!isValidHandle(handle))	{ return ; }
 	Pool<Component>	&pool = getPool<Component>();
-	pool.tryRemoveEntity(handle);
+	pool.removeEntity(handle);
 }
 
 

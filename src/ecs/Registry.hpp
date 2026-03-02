@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 20:48:44                                        */
+/*  Last Modified: 2026/03/02 14:30:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,6 +24,7 @@
 # include <memory>
 
 # include "ecs/Entity.hpp"
+# include "ecs/Component.hpp"
 # include "platform/input/InputState.hpp"
 
 namespace	hel {
@@ -47,6 +48,10 @@ struct	IPool {
 	virtual ~IPool(void) = default;
 	virtual void	removeEntity(Entity::id handle) = 0;
 	virtual void	resetDirtyFlag(void) = 0;
+
+	virtual bool		has(Entity::id handle) const = 0;
+	virtual void		*getRaw(Entity::id handle) = 0;
+	virtual const char	*getTypeName(void) const = 0;
 };
 
 template <typename Component>
@@ -57,6 +62,10 @@ struct	Pool : IPool {
 
 	void	removeEntity(Entity::id handle) override;
 	void	resetDirtyFlag(void) override;
+
+	bool		has(Entity::id handle) const override;
+	void		*getRaw(Entity::id handle) override;
+	const char	*getTypeName(void) const override;
 };
 
 template <typename Component>
@@ -64,8 +73,10 @@ struct	ModificationProxy {
 	Component	*component;
 	ModificationProxy(Component *comp) : component(comp) {}
 	~ModificationProxy(void) {
-		if constexpr (requires { component->isDirty = true; })
-			component->isDirty = true;
+		if constexpr (requires { component->isDirty = true; }) {
+			if (component)
+				component->isDirty = true;
+		}
 	}
 	Component	*operator->(void) { return component; };
 	explicit operator bool() const { return (component != nullptr); }
@@ -73,6 +84,9 @@ struct	ModificationProxy {
 
 class	Registry {
 	public:
+		using PoolMap = std::unordered_map<std::type_index,
+										std::unique_ptr<IPool>>;
+
 		Registry(AssetManager &assetManager);
 		~Registry(void) = default;
 		Registry(const Registry &) = delete;
@@ -81,10 +95,13 @@ class	Registry {
 		AssetManager	&getAssetManager(void) const {
 			return (_assetManager);
 		}
-
 		InputState		&getInputState(void) {
 			return (_inputState);
 		}
+		PoolMap			&getPools(void) {
+			return (_pools);
+		}
+		
 
 		template <typename Component, typename... Args>
 		const Component	*addComponent(Entity::id handle, Args&&... args);
@@ -114,10 +131,10 @@ class	Registry {
 
 		bool	isValidHandle(Entity::id handle);
 
-		std::vector<Entity::id>										_aliveEntities{};
-		std::unordered_map<std::type_index, std::unique_ptr<IPool>>	_pools;
-		AssetManager												&_assetManager;
-		InputState													_inputState;
+		std::vector<Entity::id>		_aliveEntities{};
+		PoolMap						_pools;
+		AssetManager				&_assetManager;
+		InputState					_inputState;
 
 	template <typename... Components>
 	friend class View;

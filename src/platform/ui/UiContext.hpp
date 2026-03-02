@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:09 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 16:57:34                                        */
+/*  Last Modified: 2026/02/28 13:20:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,6 +34,7 @@ class	UiContext {
 		UiContext	&operator=(const UiContext &other) = delete;
 
 		void	newFrame(VkRenderPass);
+		void	endFrame(void);
 		void	renderFrame(VkCommandBuffer commandBuffer);
 
 		ImGuiContext	*get(void) const	{ return (_context); }

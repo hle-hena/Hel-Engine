@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 17:57:58                                        */
+/*  Last Modified: 2026/02/28 13:34:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -88,19 +88,30 @@ void	UiContext::newFrame(VkRenderPass renderPass) {
 	_fullyInitialised = true;
 }
 
+void	UiContext::endFrame(void) {
+	ImGui::EndFrame();
+}
+
 void	UiContext::renderFrame(VkCommandBuffer commandBuffer) {
+	ImGui::SetCurrentContext(_context);
 	ImGui::Render();
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 }
 
 bool	UiContext::capturesKeyboard(void) {
-	ImGuiIO	&io = ImGui::GetIO();
-	return (io.WantCaptureKeyboard);
+	if (_fullyInitialised) {
+		ImGuiIO	&io = ImGui::GetIO();
+		return (io.WantCaptureKeyboard);
+	}
+	return (false);
 }
 
 bool	UiContext::capturesMouse() {
-	ImGuiIO	&io = ImGui::GetIO();
-	return (io.WantCaptureMouse);
+	if (_fullyInitialised) {
+		ImGuiIO	&io = ImGui::GetIO();
+		return (io.WantCaptureMouse);
+	}
+	return (false);
 }
 
 }

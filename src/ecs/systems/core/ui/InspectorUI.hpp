@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: ComponentList.hpp                                                   */
+/*  File: EditorUI.hpp                                                        */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/28 16:53:03 by hle-hena                                  */
+/*  Created: 2026/02/27 21:55:02 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 17:47:08                                        */
+/*  Last Modified: 2026/02/28 17:48:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,26 +16,45 @@
 
 #pragma once
 
-# include <vector>
-# include <string>
+# include <unordered_map>
+# include <typeindex>
+# include <functional>
 
 # include "ecs/Entity.hpp"
-# include "ecs/Registry.hpp"
-# include "ecs/Component.hpp"
 
 namespace	hel {
 
-class	ComponentList {
-	public:
-		static const void	*addComponent(Registry &registry, Entity::id handle,
-							const char *componentName);
+class	Registry;
+class	Window;
 
-		static std::vector<const char *>	&getComponentList(void) {
-			return (_componentList);
+}
+
+namespace	hel::sys {
+
+class	InspectorUI {
+	public:
+		using UIDrawFunc = std::function<void(void *)>;
+
+		InspectorUI(Registry &registry) : _registry{registry} {}
+		~InspectorUI(void) = default;
+
+		template <typename Component>
+		void	setDrawFunc(UIDrawFunc func) {
+			_drawFuncs[typeid(Component)] = func;
 		}
+		void	setBuiltInDrawFunc(void);
+
+		void	render(Window *window);
 
 	private:
-		static std::vector<const char *>	_componentList;
+		void	addNewComponentPopup(Entity::id handle);
+		void	removeEntity(Entity::id handle);
+
+		Registry	&_registry;
+		bool		_addNewComp{false};
+		int			_newCompTypeIndex{0};
+
+		std::unordered_map<std::type_index, UIDrawFunc>	_drawFuncs;
 };
 
 }

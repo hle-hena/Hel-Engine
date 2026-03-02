@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: UI.cpp                                                              */
+/*  File: EntityHierarchyUI.hpp                                               */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
+/*  Created: 2026/02/28 13:55:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 17:57:07                                        */
+/*  Last Modified: 2026/02/28 14:07:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,24 +14,34 @@
 /*                                                                            */
 /* *************************************************************************  */
 
+#pragma once
 
-#include "ecs/systems/core/UI.hpp"
-#include "ecs/Registry.hpp"
-#include "api/ImGui/imgui.h"
+# include "ecs/View.hpp"
+# include "ecs/Entity.hpp"
+
+namespace	hel {
+
+class	Window;
+class	Registry;
+
+}
 
 namespace	hel::sys {
 
-UI::UI(Device &device, Registry &registry)
-	:	ISystem(device, registry),
-		_assetManager{registry.getAssetManager()} {
-}
+class	EntityHierarchyUI {
+	public:
+		EntityHierarchyUI(Registry &registry) : _registry{registry} {}
+		~EntityHierarchyUI(void) = default;
 
-UI::~UI(void) {
-}
+		void	render(Window *window);
 
-void	UI::render(VkRenderPass renderPass, WindowResources &resources,
-				uint32_t currentFrame) {
-	ImGui::ShowDemoWindow();
-}
+	private:
+		void	moveEntity(Window *window, View<comp::Hierarchy> &view,
+					Entity::id srcHandle, Entity::id dstHandle);
+		void	showEntity(Window *window, View<comp::Hierarchy> view,
+					Entity::id handle);
+
+		Registry	&_registry;
+};
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:12 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/11 15:26:17                                        */
+/*  Last Modified: 2026/03/02 14:44:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,6 +37,7 @@ class	Application {
 
 		void	run(void);
 		void	addNewWindow(int width, int height, const std::string &windowName);
+		bool	isHandleAlreadyAssigned(Entity::id handle) const;
 
 		std::string		getReason(void) const {
 			return (_reason);

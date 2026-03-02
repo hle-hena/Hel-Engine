@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 18:40:16                                        */
+/*  Last Modified: 2026/02/28 13:23:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -72,7 +72,7 @@ void	Camera::update(float deltaTime) {
 			glm::mat4 translate = glm::translate(glm::mat4(1.0f), -constTransform->position);
 			glm::mat4 view = rotate * translate;
 
-			glm::mat4 projection = glm::perspective(camera->fov, camera->aspect, camera->near, camera->far);
+			glm::mat4 projection = glm::perspective(glm::radians(camera->fov), camera->aspect, camera->near, camera->far);
 			projection[1][1] *= -1; 
 
 			camera->viewProjection = projection * view;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 17:54:45                                        */
+/*  Last Modified: 2026/02/28 13:21:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -141,6 +141,17 @@ WindowResources *Engine::getWindowResources(Window& window) {
 	return (&_perWindowResources[&window]);
 }
 
+void	Engine::renderUI(Window &window, uint32_t currentFrame) {
+	WindowResources *resources = getWindowResources(window);
+	if (!resources)
+		return ;
+	VkRenderPass	renderPass = _passes.getRenderPasss(window.getFormat(),
+												window.getDepthFormat());
+	window.getUI().newFrame(renderPass);
+	_uiSystem.render(nullptr, *resources, currentFrame);
+	window.getUI().endFrame();
+}
+
 void	Engine::updateFrame(void) {
 	_lastFrameTime = _timer.lapTime();
 	_timer.lap();
@@ -182,13 +193,11 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	VkCommandBuffer	commandBuffer = resources->commandBuffers[currentFrame];
 	vkResetCommandBuffer(commandBuffer, 0);
 
-	UiContext	&ui = window.getUi();
+	UiContext	&ui = window.getUI();
 	beginFrame(renderPass, commandBuffer,
 		swap.getFrameBuffer(imageIndex, renderPass), swap.getExtent());
-	ui.newFrame(renderPass);
 	_renderSystem.render(renderPass, *resources, currentFrame);
 	_cameraSystem.render(renderPass, *resources, currentFrame);
-	_uiSystem.render(renderPass, *resources, currentFrame);
 	ui.renderFrame(commandBuffer);
 	endFrame(commandBuffer);
 
