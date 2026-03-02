@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/28 13:55:54 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/02 16:53:25                                        */
+/*  Last Modified: 2026/03/02 16:59:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -47,7 +47,6 @@ void	EntityHierarchyUI::showEntity(Window *window, View<comp::Hierarchy> view,
 	if (nameComp)
 		name = nameComp->name;
 	ImGuiTreeNodeFlags	nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow;
-    if (window->getEntityFocus() == handle) nodeFlags |= ImGuiTreeNodeFlags_Selected;
     if (hierarchy->childrenId.empty()) nodeFlags |= ImGuiTreeNodeFlags_Leaf;
 
 	bool	nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)handle, nodeFlags, "");
