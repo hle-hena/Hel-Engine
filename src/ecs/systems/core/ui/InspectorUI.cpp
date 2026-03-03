@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/02 15:24:37                                        */
+/*  Last Modified: 2026/03/03 11:17:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,7 +27,13 @@ void	InspectorUI::render(Window *window) {
 	auto	handle = window->getEntityFocus();
 	if (handle == Entity::NOT_REGISTERED)
 		return ;
-	ImGui::Begin("Inspector");
+	ImGuiWindowFlags	windowFlags = ImGuiWindowFlags_NoCollapse |
+									ImGuiWindowFlags_NoTitleBar |
+									ImGuiWindowFlags_NoResize;
+	auto extent = window->getSwapchain().getExtent();
+	ImGui::SetNextWindowSize({extent.width * 0.25, extent.height});
+	ImGui::SetNextWindowPos({extent.width * 0.75, 0});
+	ImGui::Begin("Inspector", nullptr, windowFlags);
 	if (ImGui::Button("Remove entity")) {
 		removeEntity(handle);
 		ImGui::End();

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 13:34:56                                        */
+/*  Last Modified: 2026/03/03 11:09:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -63,6 +63,12 @@ void	UiContext::initImGui(Device &device, VkRenderPass renderPass) {
 	initInfo.MinImageCount = Swapchain::MAX_FRAMES_IN_FLIGHT;
 	initInfo.PipelineInfoMain.RenderPass = renderPass;
 	ImGui_ImplVulkan_Init(&initInfo);
+	
+	initImGuiStyle();
+}
+
+void	UiContext::initImGuiStyle(void) {
+	auto	&style = ImGui::GetStyle();
 }
 
 void	UiContext::initDescriptorPool(Device &device) {
