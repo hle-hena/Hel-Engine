@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/28 13:55:54 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/03 13:51:38                                        */
+/*  Last Modified: 2026/03/03 15:11:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,6 +27,10 @@ void	EntityHierarchyUI::moveEntity(Window *window, View<comp::Hierarchy> &view,
 	auto	srcHierarchy = _registry.modify(view.get
 								<comp::Hierarchy>(srcHandle));
 
+	if (std::find(srcHierarchy->childrenId.begin(),
+				srcHierarchy->childrenId.end(), dstHandle) !=
+				srcHierarchy->childrenId.end())
+		return ;
 	if (auto prevHierarchy = _registry.modify<comp::Hierarchy>
 										(srcHierarchy->parentId)) {
 		auto	it = std::find(prevHierarchy->childrenId.begin(),
