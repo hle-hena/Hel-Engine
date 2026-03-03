@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/28 13:55:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 14:07:56                                        */
+/*  Last Modified: 2026/03/03 12:09:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -42,6 +42,7 @@ class	EntityHierarchyUI {
 					Entity::id handle);
 
 		Registry	&_registry;
+		float		_windowWidth{300.f};
 };
 
 }

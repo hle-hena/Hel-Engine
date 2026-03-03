@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:55:02 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 17:48:11                                        */
+/*  Last Modified: 2026/03/03 13:36:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -53,6 +53,7 @@ class	InspectorUI {
 		Registry	&_registry;
 		bool		_addNewComp{false};
 		int			_newCompTypeIndex{0};
+		float		_windowWidth{300.f};
 
 		std::unordered_map<std::type_index, UIDrawFunc>	_drawFuncs;
 };

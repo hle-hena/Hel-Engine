@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 13:34:56                                        */
+/*  Last Modified: 2026/03/03 15:04:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -63,6 +63,16 @@ void	UiContext::initImGui(Device &device, VkRenderPass renderPass) {
 	initInfo.MinImageCount = Swapchain::MAX_FRAMES_IN_FLIGHT;
 	initInfo.PipelineInfoMain.RenderPass = renderPass;
 	ImGui_ImplVulkan_Init(&initInfo);
+	
+	initImGuiStyle();
+}
+
+void	UiContext::initImGuiStyle(void) {
+	auto	&style = ImGui::GetStyle();
+
+	ImGui::StyleColorsClassic(&style);
+	style.TreeLinesFlags = ImGuiTreeNodeFlags_DrawLinesFull;
+	style.TreeLinesRounding = 3.f;
 }
 
 void	UiContext::initDescriptorPool(Device &device) {
