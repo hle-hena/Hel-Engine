@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/03 13:31:19                                        */
+/*  Last Modified: 2026/03/03 14:15:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,7 @@
 #include "ecs/systems/core/ui/UIHelper.hpp"
 
 #include <algorithm>
+#include <iostream>
 
 namespace	hel::sys {
 
@@ -59,14 +60,13 @@ Splitter	&Splitter::setId(const std::string &id) {
 }
 
 void	Splitter::build(void) {
-	if (_dir == Vertical) {
-		ImGui::SetNextWindowSize({_hitBox, _size});
-		_pos.x -= _hitBox / 2.f;
-	} else {
+	if (isHorizontal(_dir)) {
 		ImGui::SetNextWindowSize({_size, _hitBox});
-		_pos.y -= _hitBox / 2.f;
+		ImGui::SetNextWindowPos(_pos, ImGuiCond_Always, {0.f, 0.5f});
+	} else {
+		ImGui::SetNextWindowSize({_hitBox, _size});
+		ImGui::SetNextWindowPos(_pos, ImGuiCond_Always, {0.5f, 0.f});
 	}
-	ImGui::SetNextWindowPos(_pos);
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar |
 							ImGuiWindowFlags_NoResize |
 							ImGuiWindowFlags_NoMove |
@@ -80,14 +80,14 @@ void	Splitter::build(void) {
 	ImGui::InvisibleButton("##hitarea", ImGui::GetContentRegionAvail());
 	bool	active = ImGui::IsItemActive();
 	if (active) {
-		*_updateVal += (_dir == Vertical) ?
-									ImGui::GetIO().MouseDelta.x :
-									ImGui::GetIO().MouseDelta.y;
+		*_updateVal += (isHorizontal(_dir)) ?
+						IsPositive(_dir) * ImGui::GetIO().MouseDelta.y :
+						IsPositive(_dir) * ImGui::GetIO().MouseDelta.x;
 	}
 	if (active || ImGui::IsItemHovered()) {
-		ImGui::SetMouseCursor((_dir == Vertical) ?
-									ImGuiMouseCursor_ResizeEW :
-									ImGuiMouseCursor_ResizeNS);
+		ImGui::SetMouseCursor(isHorizontal(_dir) ?
+									ImGuiMouseCursor_ResizeNS :
+									ImGuiMouseCursor_ResizeEW);
 
 		ImGui::GetForegroundDrawList()->AddRectFilled(
 			ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), 

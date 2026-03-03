@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/28 13:55:54 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/03 13:31:55                                        */
+/*  Last Modified: 2026/03/03 13:51:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -118,6 +118,7 @@ void	EntityHierarchyUI::render(Window *window) {
 		.setPos(_windowWidth, 0.f)
 		.setSize(extent.height)
 		.setVal(&_windowWidth)
+		.setDir(Splitter::Right)
 		.build();
 }
 
