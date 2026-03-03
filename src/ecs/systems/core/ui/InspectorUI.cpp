@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/02 15:24:37                                        */
+/*  Last Modified: 2026/03/03 13:59:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "ecs/systems/core/ui/InspectorUI.hpp"
+#include "ecs/systems/core/ui/UIHelper.hpp"
 #include "ecs/Registry.hpp"
 #include "api/ImGui/imgui.h"
 #include "api/ImGui/imgui_stdlib.h"
@@ -27,7 +28,14 @@ void	InspectorUI::render(Window *window) {
 	auto	handle = window->getEntityFocus();
 	if (handle == Entity::NOT_REGISTERED)
 		return ;
-	ImGui::Begin("Inspector");
+	ImGuiWindowFlags	windowFlags = ImGuiWindowFlags_NoCollapse |
+									ImGuiWindowFlags_NoTitleBar |
+									ImGuiWindowFlags_NoMove |
+									ImGuiWindowFlags_NoResize;
+	auto extent = window->getSwapchain().getExtent();
+	ImGui::SetNextWindowSize({_windowWidth, extent.height});
+	ImGui::SetNextWindowPos({extent.width - _windowWidth, 0});
+	ImGui::Begin("Inspector", nullptr, windowFlags);
 	if (ImGui::Button("Remove entity")) {
 		removeEntity(handle);
 		ImGui::End();
@@ -74,6 +82,15 @@ void	InspectorUI::render(Window *window) {
 		_addNewComp = true;
 	addNewComponentPopup(handle);
 	ImGui::End();
+
+	Splitter()
+		.setId("Inspector splitter")
+		.setLimits(50.f, extent.width * 0.25f)
+		.setPos(extent.width - _windowWidth, 0)
+		.setVal(&_windowWidth)
+		.setSize(extent.height)
+		.setDir(Splitter::Left)
+		.build();
 }
 
 void	InspectorUI::removeEntity(Entity::id handle) {

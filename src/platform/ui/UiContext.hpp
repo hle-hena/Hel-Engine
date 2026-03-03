@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:09 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 13:20:44                                        */
+/*  Last Modified: 2026/03/03 11:01:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -47,6 +47,7 @@ class	UiContext {
 		void	init(VkRenderPass renderPass);
 		void	initDescriptorPool(Device &device);
 		void	initImGui(Device &device, VkRenderPass renderPass);
+		void	initImGuiStyle(void);
 
 		bool							_fullyInitialised{false};
 		std::unique_ptr<DescriptorPool>	_pool;
