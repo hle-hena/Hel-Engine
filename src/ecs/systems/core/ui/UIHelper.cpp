@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/03 14:15:34                                        */
+/*  Last Modified: 2026/03/03 14:25:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -79,21 +79,14 @@ void	Splitter::build(void) {
 
 	ImGui::InvisibleButton("##hitarea", ImGui::GetContentRegionAvail());
 	bool	active = ImGui::IsItemActive();
-	if (active) {
+	if (active)
 		*_updateVal += (isHorizontal(_dir)) ?
 						IsPositive(_dir) * ImGui::GetIO().MouseDelta.y :
 						IsPositive(_dir) * ImGui::GetIO().MouseDelta.x;
-	}
-	if (active || ImGui::IsItemHovered()) {
+	if (active || ImGui::IsItemHovered())
 		ImGui::SetMouseCursor(isHorizontal(_dir) ?
 									ImGuiMouseCursor_ResizeNS :
 									ImGuiMouseCursor_ResizeEW);
-
-		ImGui::GetForegroundDrawList()->AddRectFilled(
-			ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), 
-			ImGui::GetColorU32(ImGuiCol_SeparatorHovered)
-		);
-	}
 
 	ImGui::End();
 	ImGui::PopStyleVar(2);
