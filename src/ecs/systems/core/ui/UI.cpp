@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/03 10:51:35                                        */
+/*  Last Modified: 2026/03/03 15:06:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,10 +35,6 @@ UI::~UI(void) {
 
 void	UI::render(VkRenderPass renderPass, WindowResources &resources,
 				uint32_t currentFrame) {
-	ImGui::Begin("Style Editor");
-	ImGui::ShowStyleEditor();
-	ImGui::End();
-
 	_inspectorUI.render(resources.window);
 	_entityHierarchyUI.render(resources.window);
 }
