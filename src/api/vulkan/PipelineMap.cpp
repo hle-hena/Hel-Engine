@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 15:07:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 19:23:17                                        */
+/*  Last Modified: 2026/03/04 20:48:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,24 +22,15 @@
 
 #include <iostream>
 
-namespace	std {
-
-template <>
-struct hash<hel::RenderingConfig>
-{
-	size_t	operator()(const hel::RenderingConfig &config) const
-	{
-		size_t	seed = 0;
-		for (const auto &colorFormat: config.colorFormats)
-			hel::mathUtils::hashCombine(seed, colorFormat);
-		hel::mathUtils::hashCombine(seed, config.depthFormat);
-		return (seed);
-	}	
-};
-
-}
-
 namespace	hel {
+
+size_t	RenderingConfigHasher::operator()(const RenderingConfig &config) const {
+	size_t	seed = 0;
+	for (const auto &colorFormat: config.colorFormats)
+		hel::mathUtils::hashCombine(seed, colorFormat);
+	hel::mathUtils::hashCombine(seed, config.depthFormat);
+	return (seed);
+}
 
 bool	RenderingConfig::operator==(const RenderingConfig &other) const {
 	if (colorFormats.size() != other.colorFormats.size())

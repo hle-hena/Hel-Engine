@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/03 15:06:17                                        */
+/*  Last Modified: 2026/03/04 19:41:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,7 +33,7 @@ UI::UI(Device &device, Registry &registry)
 UI::~UI(void) {
 }
 
-void	UI::render(VkRenderPass renderPass, WindowResources &resources,
+void	UI::render(const RenderingConfig &conf, WindowResources &resources,
 				uint32_t currentFrame) {
 	_inspectorUI.render(resources.window);
 	_entityHierarchyUI.render(resources.window);

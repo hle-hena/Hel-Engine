@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 19:20:58                                        */
+/*  Last Modified: 2026/03/04 20:07:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -44,6 +44,7 @@ struct	PipelineConfigInfo {
 	VkPipelineLayout								pipelineLayout{nullptr};
 	uint32_t										subpass{0};
 
+	std::vector<VkFormat>							colorFormats{};
 	VkPipelineRenderingCreateInfo					renderingInfo{};
 };
 

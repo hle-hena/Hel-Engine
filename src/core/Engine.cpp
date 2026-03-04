@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 19:25:34                                        */
+/*  Last Modified: 2026/03/04 20:46:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -93,8 +93,11 @@ bool	Engine::beginFrame(VkCommandBuffer commandBuffer,
 	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
 		return (true);
 
-	VkClearValue	colorClear = {{{0.1f, 0.1f, 0.1f, 1.0f}}};
+	VkClearValue	colorClear = {{{0.f, 0.f, 0.f, 1.0f}}};
 	VkClearValue	depthClear = { .depthStencil = {1.0f, 0} };
+
+	colorImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	depthImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
 
 	auto	extent = colorImage->getExtent();
 	auto	colorAttach = colorImage->getRenderingInfo(colorClear,
@@ -127,8 +130,9 @@ bool	Engine::beginFrame(VkCommandBuffer commandBuffer,
 	return (false);
 }
 
-bool	Engine::endFrame(VkCommandBuffer commandBuffer) {
+bool	Engine::endFrame(VkCommandBuffer commandBuffer, Image *colorImage) {
 	vkCmdEndRendering(commandBuffer);
+	colorImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
 		return (true);
 	return (false);
@@ -177,7 +181,7 @@ void	Engine::renderUI(Window &window, uint32_t currentFrame) {
 	VkRenderPass	renderPass = nullptr/* _passes.getRenderPasss(window.getFormat(),
 												window.getDepthFormat()) */;
 	window.getUI().newFrame(renderPass);
-	_uiSystem.render(nullptr, *resources, currentFrame);
+	_uiSystem.render(RenderingConfig{}, *resources, currentFrame);
 	window.getUI().endFrame();
 }
 
@@ -231,7 +235,7 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	_renderSystem.render(config, *resources, currentFrame);
 	_cameraSystem.render(config, *resources, currentFrame);
 	// ui.renderFrame(commandBuffer);
-	endFrame(commandBuffer);
+	endFrame(commandBuffer, colorImage);
 
 	swapchain.submitCommandBuffer(&commandBuffer, imageIndex, currentFrame);
 	if (swapchain.present(window, imageIndex, currentFrame))

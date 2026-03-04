@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/03 13:59:33                                        */
+/*  Last Modified: 2026/03/04 19:41:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -32,7 +32,8 @@ void	InspectorUI::render(Window *window) {
 									ImGuiWindowFlags_NoTitleBar |
 									ImGuiWindowFlags_NoMove |
 									ImGuiWindowFlags_NoResize;
-	auto extent = window->getSwapchain().getExtent();
+	// auto extent = window->getSwapchain().getExtent();
+	VkExtent2D	extent{};
 	ImGui::SetNextWindowSize({_windowWidth, extent.height});
 	ImGui::SetNextWindowPos({extent.width - _windowWidth, 0});
 	ImGui::Begin("Inspector", nullptr, windowFlags);

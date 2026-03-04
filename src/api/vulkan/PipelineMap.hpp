@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 14:54:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 19:20:04                                        */
+/*  Last Modified: 2026/03/04 19:39:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,6 +33,10 @@ struct	RenderingConfig {
 	VkFormat				depthFormat;
 
 	bool	operator==(const RenderingConfig &other) const;
+};
+
+struct	RenderingConfigHasher {
+	size_t	operator()(const RenderingConfig &config) const;
 };
 
 class	PipelineMap {
@@ -71,7 +75,8 @@ class	PipelineMap {
 		std::vector<VkPipelineShaderStageCreateInfo>	_shaderStageInfos;
 		std::vector<VkDescriptorSetLayout>				_defaultLayouts;
 		VkPipelineLayout								_layout{VK_NULL_HANDLE};
-		std::unordered_map<RenderingConfig, Pipeline>	_pipelines;
+		std::unordered_map<RenderingConfig, Pipeline,
+								RenderingConfigHasher>	_pipelines;
 
 		LayoutCallback									_initLayout;
 		ConfigCallback									_configPipeline;
