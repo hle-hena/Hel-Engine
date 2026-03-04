@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/29 12:22:48                                        */
+/*  Last Modified: 2026/03/04 19:20:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -46,8 +46,6 @@ bool	Pipeline::createGraphicsPipeline(const PipelineConfigInfo &configInfo,
 						const std::vector<VkPipelineShaderStageCreateInfo> &stageInfo) {
 	if (configInfo.pipelineLayout == VK_NULL_HANDLE)
 		RETURN_SET_UNHEALTHY("Missing pipeline layout for pipeline creation", true);
-	if (configInfo.renderPass == VK_NULL_HANDLE)
-		RETURN_SET_UNHEALTHY("Missing render pass for pipeline creation", true);
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -55,6 +53,12 @@ bool	Pipeline::createGraphicsPipeline(const PipelineConfigInfo &configInfo,
 	vertexInputInfo.pVertexBindingDescriptions = configInfo.bindingDescription.data();
 	vertexInputInfo.vertexAttributeDescriptionCount = configInfo.attributeDescription.size();
 	vertexInputInfo.vertexBindingDescriptionCount = configInfo.bindingDescription.size();
+
+	VkPipelineRenderingCreateInfo	renderingCreateInfo{};
+	renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+	renderingCreateInfo.colorAttachmentCount = configInfo.renderingConfig.colorFormats.size();
+	renderingCreateInfo.pColorAttachmentFormats = configInfo.renderingConfig.colorFormats.data();
+	renderingCreateInfo.depthAttachmentFormat = configInfo.renderingConfig.depthFormat;
 
 	VkGraphicsPipelineCreateInfo	pipelineInfo;
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -72,7 +76,7 @@ bool	Pipeline::createGraphicsPipeline(const PipelineConfigInfo &configInfo,
 	pipelineInfo.pColorBlendState = &configInfo.colorBlendInfo;
 	pipelineInfo.pDynamicState = &configInfo.dynamicStateInfo;
 	pipelineInfo.layout = configInfo.pipelineLayout;
-	pipelineInfo.renderPass = configInfo.renderPass;
+	pipelineInfo.renderPass = VK_NULL_HANDLE;
 	pipelineInfo.subpass = configInfo.subpass;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 	pipelineInfo.basePipelineIndex = -1;

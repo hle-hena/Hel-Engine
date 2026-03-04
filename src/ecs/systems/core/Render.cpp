@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 18:40:25                                        */
+/*  Last Modified: 2026/03/04 18:59:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -57,9 +57,10 @@ void	Render::configurePipeline(PipelineConfigInfo &config) {
 	Pipeline::setVertexInputDescriptions<Vertex>(config);
 }
 
-void	Render::render(VkRenderPass renderPass, WindowResources &resources, uint32_t currentFrame) {
+void	Render::render(const RenderingConfig &conf, WindowResources &resources,
+					uint32_t currentFrame) {
 	auto	commandBuffer = resources.commandBuffers[currentFrame];
-	if (!commandBuffer || _pipelines->bindPipeline(renderPass, commandBuffer))
+	if (!commandBuffer || _pipelines->bindPipeline(conf, commandBuffer))
 		return ;
 	auto	pipelineLayout = _pipelines->getLayout();
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 18:40:31                                        */
+/*  Last Modified: 2026/03/04 19:25:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -222,11 +222,14 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 
 	auto	colorImage = swap.getNextColorImage(imageIndex);
 	auto	depthImage = swap.getDepthImage();
+	RenderingConfig	config{};
+	config.colorFormats.push_back(colorImage->getFormat());
+	config.depthFormat = depthImage->getFormat();
 
 	UiContext	&ui = window.getUI();
 	beginFrame(commandBuffer, colorImage, depthImage);
-	_renderSystem.render(renderPass, *resources, currentFrame);
-	_cameraSystem.render(renderPass, *resources, currentFrame);
+	_renderSystem.render(config, *resources, currentFrame);
+	_cameraSystem.render(config, *resources, currentFrame);
 	// ui.renderFrame(commandBuffer);
 	endFrame(commandBuffer);
 

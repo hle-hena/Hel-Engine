@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 15:07:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 18:38:12                                        */
+/*  Last Modified: 2026/03/04 19:23:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,10 +18,36 @@
 #include "api/vulkan/Device.hpp"
 #include "ecs/AssetManager.hpp"
 #include "ecs/assets/Shader.hpp"
+#include "utils/mathUtils.hpp"
 
 #include <iostream>
 
+namespace	std {
+
+template <>
+struct hash<hel::RenderingConfig>
+{
+	size_t	operator()(const hel::RenderingConfig &config) const
+	{
+		size_t	seed = 0;
+		for (const auto &colorFormat: config.colorFormats)
+			hel::mathUtils::hashCombine(seed, colorFormat);
+		hel::mathUtils::hashCombine(seed, config.depthFormat);
+		return (seed);
+	}	
+};
+
+}
+
 namespace	hel {
+
+bool	RenderingConfig::operator==(const RenderingConfig &other) const {
+	if (colorFormats.size() != other.colorFormats.size())
+		return (false);
+	if (depthFormat != other.depthFormat)
+		return (false);
+	return (colorFormats == other.colorFormats);
+}
 
 PipelineMap::PipelineMap(const Config &conf)
 	:	_device{*conf.device},
@@ -79,9 +105,9 @@ bool	PipelineMap::getStageInfo(void) {
 	return (!_shaderStageInfos.empty());
 }
 
-bool	PipelineMap::bindPipeline(VkRenderPass renderPass,
+bool	PipelineMap::bindPipeline(const RenderingConfig &renderingConfig,
 								VkCommandBuffer commandBuffer) {
-	auto	[it, inserted] = _pipelines.try_emplace(renderPass, _device);
+	auto	[it, inserted] = _pipelines.try_emplace(renderingConfig, _device);
 	auto	&pipeline = it->second;
 	if (inserted) {
 		if (!getLayout() || !getStageInfo())
@@ -90,7 +116,12 @@ bool	PipelineMap::bindPipeline(VkRenderPass renderPass,
 		Pipeline::defaultPipelineConfigInfo(config);
 		_configPipeline(config);
 		config.pipelineLayout = _layout;
-		config.renderPass = renderPass;
+
+		config.renderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+		config.renderingInfo.colorAttachmentCount = renderingConfig.colorFormats.size();
+		config.renderingInfo.pColorAttachmentFormats = renderingConfig.colorFormats.data();
+		config.renderingInfo.depthAttachmentFormat = renderingConfig.depthFormat;
+
 		if (pipeline.createGraphicsPipeline(config, _shaderStageInfos))
 			return (true);
 	}
