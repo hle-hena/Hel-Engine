@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 15:51:54                                        */
+/*  Last Modified: 2026/03/04 16:03:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -90,9 +90,6 @@ class	Swapchain
 		VkFormat			selectDepthFormat(const std::vector<VkFormat> &candidates,
 										VkImageTiling tiling,
 										VkFormatFeatureFlags features);
-
-		bool				createImageView(VkImage &image, VkImageView &imageView,
-										VkFormat format, VkImageAspectFlags aspectFlag);
 
 		bool				createSwapchainImageView(void);
 		bool				createFramebuffersForRenderPass(VkRenderPass renderPass);
