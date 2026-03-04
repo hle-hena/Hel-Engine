@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/04 19:21:17                                        */
+/*  Last Modified: 2026/03/04 15:51:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,6 +22,8 @@
 # include <string>
 # include <unordered_map>
 # include <array>
+
+# include "api/vulkan/Image.hpp"
 
 namespace	hel {
 
@@ -89,10 +91,6 @@ class	Swapchain
 										VkImageTiling tiling,
 										VkFormatFeatureFlags features);
 
-		bool				createImage(VkImage &image, VkDeviceMemory &memory,
-										VkExtent3D extent, VkFormat format,
-										VkImageTiling tiling, VkImageUsageFlags usage,
-										VkMemoryPropertyFlags properties);
 		bool				createImageView(VkImage &image, VkImageView &imageView,
 										VkFormat format, VkImageAspectFlags aspectFlag);
 
@@ -108,9 +106,7 @@ class	Swapchain
 		std::vector<VkImage>		_images;
 		std::vector<VkImageView>	_imagesView;
 		VkFormat					_depthFormat;
-		VkImage						_depthImage{VK_NULL_HANDLE};
-		VkDeviceMemory				_depthImageMemory{VK_NULL_HANDLE};
-		VkImageView					_depthImageView{VK_NULL_HANDLE};
+		std::unique_ptr<Image>		_depthImage;
 		framebuffersMap				_frameBufferCache;
 		VkFormat					_format;
 		VkExtent2D					_extent;

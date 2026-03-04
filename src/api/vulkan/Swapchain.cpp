@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/04 19:47:07                                        */
+/*  Last Modified: 2026/03/04 15:51:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,12 +34,6 @@ Swapchain::~Swapchain(void) {
 
 void	Swapchain::deleteSwapChain(void) {
 	vkDeviceWaitIdle(_device.getLogical());
-	if (_depthImageView != VK_NULL_HANDLE)
-		vkDestroyImageView(_device.getLogical(), _depthImageView, nullptr);
-	if (_depthImage != VK_NULL_HANDLE)
-		vkDestroyImage(_device.getLogical(), _depthImage, nullptr);
-	if (_depthImageMemory != VK_NULL_HANDLE)
-		vkFreeMemory(_device.getLogical(), _depthImageMemory, nullptr);
 	for (auto it : _frameBufferCache) {
 		for (auto frameBuffer : it.second) {
 			vkDestroyFramebuffer(_device.getLogical(), frameBuffer, nullptr);
@@ -173,33 +167,6 @@ VkExtent2D	Swapchain::selectSwapExtent(const VkSurfaceCapabilitiesKHR &capabilit
 	return (extent);
 }
 
-bool	Swapchain::createImage(VkImage &image, VkDeviceMemory &memory,
-							VkExtent3D extent, VkFormat format,
-							VkImageTiling tiling, VkImageUsageFlags usage,
-							VkMemoryPropertyFlags properties) {
-	VkImageCreateInfo	createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	createInfo.imageType = VK_IMAGE_TYPE_2D;
-	createInfo.extent = extent;
-	createInfo.format = format;
-	createInfo.mipLevels = 1;
-	createInfo.arrayLayers = 1;
-	createInfo.tiling = tiling;
-	createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	createInfo.usage = usage;
-	createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-	if (vkCreateImage(_device.getLogical(), &createInfo, nullptr, &image))
-		return (true);
-	VkMemoryRequirements	memRequirements;
-	vkGetImageMemoryRequirements(_device.getLogical(), image, &memRequirements);
-	if (MemoryHelper::allocate(_device, memRequirements, properties, memory))
-		return (true);
-	vkBindImageMemory(_device.getLogical(), image, memory, 0);
-	return (false);
-}
-
 bool	Swapchain::createImageView(VkImage &image, VkImageView &imageView,
 								VkFormat format, VkImageAspectFlags aspectFlag) {
 	VkImageViewCreateInfo	createInfo;
@@ -239,13 +206,15 @@ bool	Swapchain::createDepthResources(void) {
 		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
 	);
 
-	if (createImage(_depthImage, _depthImageMemory, {_extent.width, _extent.height, 1},
-				_depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))
-		return (true);
-	if (createImageView(_depthImage, _depthImageView, _depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT))
-		return (true);
-	return (false);
+	Image::Config	config{};
+	config.format = _depthFormat;
+	config.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+	config.width = _extent.width;
+	config.height = _extent.height;
+	config.properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+	config.aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
+	_depthImage = Image::create(_device, config);
+	return (!_depthImage);
 }
 
 VkFormat	Swapchain::selectDepthFormat(const std::vector<VkFormat> &candidates,
@@ -278,7 +247,7 @@ bool	Swapchain::createFramebuffersForRenderPass(VkRenderPass renderPass) {
 	for (size_t i = 0; i < _imagesView.size(); i++) {
 		std::array<VkImageView, 2>	attachments = {
 			_imagesView[i],
-			_depthImageView
+			_depthImage->getView()
 		};
 
 		VkFramebufferCreateInfo framebufferInfo{};
