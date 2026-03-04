@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 17:14:20                                        */
+/*  Last Modified: 2026/03/04 18:12:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,6 +25,7 @@ class	Device;
 
 class Image {
 	public:
+		using ptr = std::unique_ptr<Image>;
 		struct	Config {
 			uint32_t				width, height;
 			VkFormat				format;
@@ -34,6 +35,9 @@ class Image {
 		};
 		static std::unique_ptr<Image>	create(Device &device,
 											const Config &config);
+		static std::unique_ptr<Image>	wrapSwapchainImages(Device &device,
+											VkImage image, VkFormat format,
+											VkExtent2D extent);
 		~Image(void);
 
 		Image(const Image &) = delete;
@@ -56,11 +60,13 @@ class Image {
 
 	private:
 		Image(Device &device, const Config &config);
+		Image(Device &device, VkImage img, VkFormat format, VkExtent2D extent);
 
 		void	createImage(void);
 		void	allocateMemory(void);
 		void	createView(void);
 
+		bool			_owned{true};
 		Device			&_device;
 		Config			_config;
 		VkImage			_image{VK_NULL_HANDLE};

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 17:30:45                                        */
+/*  Last Modified: 2026/03/04 18:40:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,7 +34,6 @@ namespace hel {
 Engine::Engine(Device &device, Registry &registry)
 	:	_device{device},
 		_registry{registry},
-		_passes{device},
 		_renderSystem{device, registry},
 		_transformSystem{device, registry},
 		_cameraSystem{device, registry},
@@ -86,18 +85,6 @@ void	Engine::createDescriptorPool(void) {
 		.build();
 }
 
-bool	Engine::beginFrame(VkRenderPass renderPass,
-						VkCommandBuffer commandBuffer,
-						VkFramebuffer framebuffer, VkExtent2D extent) {
-	VkCommandBufferBeginInfo	beginInfo{};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
-		return (true);
-	_passes.beginRenderPass(renderPass, commandBuffer, framebuffer, extent);
-	return (false);
-}
-
 bool	Engine::beginFrame(VkCommandBuffer commandBuffer,
 						Image *colorImage, Image *depthImage) {
 	VkCommandBufferBeginInfo	beginInfo{};
@@ -127,13 +114,16 @@ bool	Engine::beginFrame(VkCommandBuffer commandBuffer,
 
 	vkCmdBeginRendering(commandBuffer, &renderingInfo);
 
-	return (false);
-}
+	VkViewport	viewport{};
+	viewport.height = static_cast<float>(extent.height);
+	viewport.width = static_cast<float>(extent.width);
+	viewport.maxDepth = 1.f;
+	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
-bool	Engine::endFrame(VkCommandBuffer commandBuffer) {
-	_passes.endRenderPass(commandBuffer);
-	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
-		return (true);
+	VkRect2D	scissor{};
+	scissor.extent = extent;
+	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
 	return (false);
 }
 
@@ -184,8 +174,8 @@ void	Engine::renderUI(Window &window, uint32_t currentFrame) {
 	WindowResources *resources = getWindowResources(window);
 	if (!resources)
 		return ;
-	VkRenderPass	renderPass = _passes.getRenderPasss(window.getFormat(),
-												window.getDepthFormat());
+	VkRenderPass	renderPass = nullptr/* _passes.getRenderPasss(window.getFormat(),
+												window.getDepthFormat()) */;
 	window.getUI().newFrame(renderPass);
 	_uiSystem.render(nullptr, *resources, currentFrame);
 	window.getUI().endFrame();
@@ -227,14 +217,14 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	if (!resources)
 		return ;
 	Swapchain		&swap = window.getSwapchain();
-	VkRenderPass	renderPass = _passes.getRenderPasss(window.getFormat(),
-													window.getDepthFormat());
 	VkCommandBuffer	commandBuffer = resources->commandBuffers[currentFrame];
 	vkResetCommandBuffer(commandBuffer, 0);
 
+	auto	colorImage = swap.getNextColorImage(imageIndex);
+	auto	depthImage = swap.getDepthImage();
+
 	UiContext	&ui = window.getUI();
-	beginFrame(renderPass, commandBuffer,
-		swap.getFrameBuffer(imageIndex, renderPass), swap.getExtent());
+	beginFrame(commandBuffer, colorImage, depthImage);
 	_renderSystem.render(renderPass, *resources, currentFrame);
 	_cameraSystem.render(renderPass, *resources, currentFrame);
 	// ui.renderFrame(commandBuffer);

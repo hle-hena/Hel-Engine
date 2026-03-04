@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 17:20:19                                        */
+/*  Last Modified: 2026/03/04 17:39:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -83,9 +83,6 @@ class	Engine {
 		void			updateGlobalUBO(Window &window, uint32_t currentFrame);
 		bool			beginFrame(VkCommandBuffer commandBuffer,
 								Image *colorImage, Image *depthImage);
-		bool			beginFrame(VkRenderPass renderPass,
-								VkCommandBuffer commandBuffer,
-								VkFramebuffer framebuffer, VkExtent2D extent);
 		bool			endFrame(VkCommandBuffer commandBuffer);
 		WindowResources	*getWindowResources(Window& window);
 
@@ -96,7 +93,6 @@ class	Engine {
 		Timer											_timer;
 		float											_lastFrameTime;
 		VkCommandPool									_commandPool{VK_NULL_HANDLE};
-		RenderPass										_passes;
 		std::unique_ptr<DescriptorPool>					_staticPool;
 		std::unordered_map<Window*, WindowResources>	_perWindowResources;
 		sys::Render										_renderSystem;

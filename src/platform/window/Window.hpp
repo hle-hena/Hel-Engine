@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/02 14:59:53                                        */
+/*  Last Modified: 2026/03/04 18:14:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -71,12 +71,6 @@ class	Window {
 		}
 		std::string		getWindowName(void) const {
 			return (_windowName);
-		}
-		VkFormat		getFormat(void) const {
-			return (_swapchain.getFormat());
-		}
-		VkFormat		getDepthFormat(void) const {
-			return (_swapchain.getDepthFormat());
 		}
 		void			setEntityReference(Entity::id handle);
 		void			updateEntityReference(void);

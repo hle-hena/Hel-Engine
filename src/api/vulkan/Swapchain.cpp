@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 16:03:27                                        */
+/*  Last Modified: 2026/03/04 18:38:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,16 +34,6 @@ Swapchain::~Swapchain(void) {
 
 void	Swapchain::deleteSwapChain(void) {
 	vkDeviceWaitIdle(_device.getLogical());
-	for (auto it : _frameBufferCache) {
-		for (auto frameBuffer : it.second) {
-			vkDestroyFramebuffer(_device.getLogical(), frameBuffer, nullptr);
-		}
-	}
-	_frameBufferCache.clear();
-	for (auto imageView : _imagesView) {
-		vkDestroyImageView(_device.getLogical(), imageView, nullptr);
-	}
-	_imagesView.clear();
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		if (_renderFinished[i] != VK_NULL_HANDLE)
 			vkDestroySemaphore(_device.getLogical(), _renderFinished[i], nullptr);
@@ -118,11 +108,11 @@ bool	Swapchain::initiateSwapChain(Window &window) {
 	if (vkCreateSwapchainKHR(_device.getLogical(), &createInfo, nullptr, &_swapchain) != VK_SUCCESS)
 		RETURN_SET_UNHEALTHY("Couldn't create the swap chain", true);
 	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, nullptr);
-	_images.resize(imageCount);
-	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, _images.data());
-	_format = format.format;
-	_extent = extent;
-	return (createSwapchainImageView() || createDepthResources() || createSyncObjects());
+	std::vector<VkImage>	images(imageCount);
+	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, images.data());
+
+	return (createSwapchainImageViews(images, format.format, extent) ||
+		createDepthResources(extent) || createSyncObjects());
 }
 
 bool	Swapchain::recreateSwapChain(Window &window) {
@@ -167,44 +157,27 @@ VkExtent2D	Swapchain::selectSwapExtent(const VkSurfaceCapabilitiesKHR &capabilit
 	return (extent);
 }
 
-bool	Swapchain::createSwapchainImageView(void) {
-	_imagesView.resize(_images.size());
-	for (size_t i = 0; i < _images.size(); i++) {
-		VkImageViewCreateInfo	createInfo;
-		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		createInfo.pNext = nullptr;
-		createInfo.flags = 0;
-		createInfo.image = _images[i];
-		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		createInfo.format = _format;
-		createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		createInfo.subresourceRange.baseMipLevel = 0;
-		createInfo.subresourceRange.levelCount = 1;
-		createInfo.subresourceRange.baseArrayLayer = 0;
-		createInfo.subresourceRange.layerCount = 1;
-		if (vkCreateImageView(_device.getLogical(), &createInfo,
-							nullptr, &_imagesView[i]))
+bool	Swapchain::createSwapchainImageViews(std::vector<VkImage> &images,
+									VkFormat format, VkExtent2D extent) {
+	for (auto image: images) {
+		_colorImages.emplace_back(Image::wrapSwapchainImages(_device, image, format, extent));
+		if (!_colorImages.back())
 			RETURN_SET_UNHEALTHY("Couldn't create an image view", true);
 	}
-	return (false);
 }
 
-bool	Swapchain::createDepthResources(void) {
-	_depthFormat = selectDepthFormat(
+bool	Swapchain::createDepthResources(VkExtent2D extent) {
+	auto	depthFormat = selectDepthFormat(
 		{VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
 		VK_IMAGE_TILING_OPTIMAL,
 		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
 	);
 
 	Image::Config	config{};
-	config.format = _depthFormat;
+	config.format = depthFormat;
 	config.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-	config.width = _extent.width;
-	config.height = _extent.height;
+	config.width = extent.width;
+	config.height = extent.height;
 	config.properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 	config.aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
 	_depthImage = Image::create(_device, config);
@@ -229,38 +202,6 @@ VkFormat	Swapchain::selectDepthFormat(const std::vector<VkFormat> &candidates,
 	return (VK_FORMAT_UNDEFINED);
 }
 
-VkFramebuffer	Swapchain::getFrameBuffer(uint32_t imageIndex, VkRenderPass renderPass) {
-	if (_frameBufferCache.find(renderPass) == _frameBufferCache.end() &&
-		createFramebuffersForRenderPass(renderPass))
-		return (VK_NULL_HANDLE);
-	return (_frameBufferCache[renderPass][imageIndex]);
-}
-
-bool	Swapchain::createFramebuffersForRenderPass(VkRenderPass renderPass) {
-	_frameBufferCache[renderPass] = std::vector<VkFramebuffer>(_imagesView.size());
-	for (size_t i = 0; i < _imagesView.size(); i++) {
-		std::array<VkImageView, 2>	attachments = {
-			_imagesView[i],
-			_depthImage->getView()
-		};
-
-		VkFramebufferCreateInfo framebufferInfo{};
-		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass = renderPass;
-		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-		framebufferInfo.pAttachments = attachments.data();
-		framebufferInfo.width = _extent.width;
-		framebufferInfo.height = _extent.height;
-		framebufferInfo.layers = 1;
-
-		if (vkCreateFramebuffer(_device.getLogical(), &framebufferInfo,
-								nullptr, &_frameBufferCache[renderPass][i])
-								!= VK_SUCCESS)
-			return (true);
-	}
-	return (false);
-}
-
 bool	Swapchain::createSyncObjects(void) {
 	VkSemaphoreCreateInfo	semaphoreInfo{};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -277,6 +218,14 @@ bool	Swapchain::createSyncObjects(void) {
 	}
 
 	return (false);
+}
+
+Image	*Swapchain::getDepthImage(void) {
+	return (_depthImage.get());
+}
+
+Image	*Swapchain::getNextColorImage(uint32_t imageIndex) {
+	return (_colorImages[imageIndex].get());
 }
 
 bool	Swapchain::acquireNextImage(Window &window, uint32_t currentFrame, uint32_t *imageIndex) {
@@ -328,10 +277,8 @@ bool	Swapchain::submitCommandBuffer(VkCommandBuffer *commandBuffer,
 bool	Swapchain::present(Window &window, uint32_t imageIndex, uint32_t currentFrame) {
 	VkPresentInfoKHR	presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
 	presentInfo.waitSemaphoreCount = 1;
 	presentInfo.pWaitSemaphores = &_renderFinished[currentFrame];
-
 	VkSwapchainKHR	swapChains[] = {_swapchain};
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapChains;
