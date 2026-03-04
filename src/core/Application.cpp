@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 18:25:49                                        */
+/*  Last Modified: 2026/03/04 20:54:04                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -53,6 +53,7 @@ void	Application::loadPrimaryScene(void) {
 	transform->position = {1.f, 1.f, 1.f};
 	_registry.addComponent<comp::Controller>(cameraHandle);
 	_registry.addComponent<comp::EditorControllerTag>(cameraHandle);
+	_registry.addComponent<comp::Camera>(cameraHandle);
 	_appWindows.back()->setEntityReference(cameraHandle);
 	_appWindows.back()->updateEntityReference();
 
