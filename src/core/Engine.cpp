@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 13:21:32                                        */
+/*  Last Modified: 2026/03/04 17:30:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -98,8 +98,47 @@ bool	Engine::beginFrame(VkRenderPass renderPass,
 	return (false);
 }
 
+bool	Engine::beginFrame(VkCommandBuffer commandBuffer,
+						Image *colorImage, Image *depthImage) {
+	VkCommandBufferBeginInfo	beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
+		return (true);
+
+	VkClearValue	colorClear = {{{0.1f, 0.1f, 0.1f, 1.0f}}};
+	VkClearValue	depthClear = { .depthStencil = {1.0f, 0} };
+
+	auto	extent = colorImage->getExtent();
+	auto	colorAttach = colorImage->getRenderingInfo(colorClear,
+									VK_ATTACHMENT_LOAD_OP_CLEAR,
+									VK_ATTACHMENT_STORE_OP_STORE);
+	auto	depthAttach = depthImage->getRenderingInfo(depthClear,
+									VK_ATTACHMENT_LOAD_OP_CLEAR,
+									VK_ATTACHMENT_STORE_OP_DONT_CARE);
+
+	VkRenderingInfo renderingInfo{};
+	renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+	renderingInfo.renderArea = {{0, 0}, colorImage->getExtent()};
+	renderingInfo.layerCount = 1;
+	renderingInfo.colorAttachmentCount = 1;
+	renderingInfo.pColorAttachments = &colorAttach;
+	renderingInfo.pDepthAttachment = &depthAttach;
+
+	vkCmdBeginRendering(commandBuffer, &renderingInfo);
+
+	return (false);
+}
+
 bool	Engine::endFrame(VkCommandBuffer commandBuffer) {
 	_passes.endRenderPass(commandBuffer);
+	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
+		return (true);
+	return (false);
+}
+
+bool	Engine::endFrame(VkCommandBuffer commandBuffer) {
+	vkCmdEndRendering(commandBuffer);
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
 		return (true);
 	return (false);
@@ -198,7 +237,7 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 		swap.getFrameBuffer(imageIndex, renderPass), swap.getExtent());
 	_renderSystem.render(renderPass, *resources, currentFrame);
 	_cameraSystem.render(renderPass, *resources, currentFrame);
-	ui.renderFrame(commandBuffer);
+	// ui.renderFrame(commandBuffer);
 	endFrame(commandBuffer);
 
 	swapchain.submitCommandBuffer(&commandBuffer, imageIndex, currentFrame);

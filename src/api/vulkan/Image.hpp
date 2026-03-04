@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/25 18:58:54                                        */
+/*  Last Modified: 2026/03/04 17:14:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -49,6 +49,10 @@ class Image {
 			{ return (_image); }
 		VkImageView				getView(void) const
 			{ return (_view); }
+		VkExtent2D				getExtent(void) const
+			{ return {_config.width, _config.height}; }
+		VkRenderingAttachmentInfo	getRenderingInfo(VkClearValue clearValue,
+				VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp) const;
 
 	private:
 		Image(Device &device, const Config &config);

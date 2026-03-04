@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/25 19:16:52                                        */
+/*  Last Modified: 2026/03/04 17:14:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -155,6 +155,19 @@ void	Image::setData(void *data, VkDeviceSize size) {
 						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 	transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	_device.endSingleTimeCommand(commandBuffer);
+}
+
+VkRenderingAttachmentInfo	Image::getRenderingInfo(VkClearValue clearValue,
+				VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp) const {
+	VkRenderingAttachmentInfo	info{};
+	info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+	info.imageView = _view;
+	info.imageLayout = _currentLayout;
+	info.clearValue = clearValue;
+	info.loadOp = loadOp;
+	info.storeOp = storeOp;
+
+	return (info);
 }
 
 }

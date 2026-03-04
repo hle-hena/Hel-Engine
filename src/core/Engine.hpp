@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 13:02:33                                        */
+/*  Last Modified: 2026/03/04 17:20:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -81,6 +81,8 @@ class	Engine {
 		void			createDescriptorPool(void);
 
 		void			updateGlobalUBO(Window &window, uint32_t currentFrame);
+		bool			beginFrame(VkCommandBuffer commandBuffer,
+								Image *colorImage, Image *depthImage);
 		bool			beginFrame(VkRenderPass renderPass,
 								VkCommandBuffer commandBuffer,
 								VkFramebuffer framebuffer, VkExtent2D extent);
