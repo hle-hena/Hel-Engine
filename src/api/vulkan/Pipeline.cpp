@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 19:20:33                                        */
+/*  Last Modified: 2026/03/04 19:27:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -54,15 +54,9 @@ bool	Pipeline::createGraphicsPipeline(const PipelineConfigInfo &configInfo,
 	vertexInputInfo.vertexAttributeDescriptionCount = configInfo.attributeDescription.size();
 	vertexInputInfo.vertexBindingDescriptionCount = configInfo.bindingDescription.size();
 
-	VkPipelineRenderingCreateInfo	renderingCreateInfo{};
-	renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
-	renderingCreateInfo.colorAttachmentCount = configInfo.renderingConfig.colorFormats.size();
-	renderingCreateInfo.pColorAttachmentFormats = configInfo.renderingConfig.colorFormats.data();
-	renderingCreateInfo.depthAttachmentFormat = configInfo.renderingConfig.depthFormat;
-
 	VkGraphicsPipelineCreateInfo	pipelineInfo;
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	pipelineInfo.pNext = nullptr;
+	pipelineInfo.pNext = &configInfo.renderingInfo;
 	pipelineInfo.flags = 0;
 	pipelineInfo.stageCount = stageInfo.size();
 	pipelineInfo.pStages = stageInfo.data();
