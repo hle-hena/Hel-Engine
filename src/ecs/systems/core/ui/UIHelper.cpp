@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 18:58:17                                        */
+/*  Last Modified: 2026/03/05 19:27:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -111,13 +111,15 @@ Table::~Table(void) {
 bool	Table::beginNewTable(void) {
 	if (_tableOpened)
 		return (false);
-	if (ImGui::BeginTable(_name, _nbCol * 2 + 1, ImGuiTableFlags_SizingFixedFit)) {
+	std::string	indexedName = std::string(_name) + "###Table" + std::to_string(_nbCol);
+	if (ImGui::BeginTable(indexedName.c_str(), _nbCol * 2 + 1, ImGuiTableFlags_SizingFixedFit)) {
 		ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthFixed);
 		for (uint32_t i = 0; i < _nbCol; i++) {
 			ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch);
 		}
 		_tableOpened = true;
+		_nbTables++;
 		return (true);
 	}
 	return (false);

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:48:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 18:46:28                                        */
+/*  Last Modified: 2026/03/05 19:23:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -106,6 +106,7 @@ class	Table {
 
 		const char	*_name;
 		bool		_tableOpened{false};
+		uint32_t	_nbTables{0};
 		uint32_t	_nbCol{0};
 	
 	friend class	TableRow;
