@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 18:37:34                                        */
+/*  Last Modified: 2026/03/05 19:02:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -86,7 +86,7 @@ void	InspectorUI::render(Window *window) {
 	Splitter(&_windowWidth)
 		.setLabel("Inspector splitter")
 		.setMin(50.f)
-		.setMax(extent.width * 0.25f)
+		.setMax(extent.width * 0.4f)
 		.setPos({extent.width - _windowWidth, 0.f})
 		.setSize(extent.height)
 		.setDir(Splitter::Left)
@@ -157,13 +157,15 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 			.setStart(&camera->near)
 			.setMin(0.001f)
 			.setMax(10000.f)
+			.setSpeed({0.001f, 1.f})
 			.setValueName({"Near:", "Far:"})
 			.build();
 		changed |= TableRow(table, window, "FOV")
 			.setType(TableRow::Type::VecDrag)
 			.setStart(&camera->fov)
 			.setMin(1.f)
-			.setMax(1.f)
+			.setMax(179.f)
+			.setSpeed(0.1f)
 			.build();
 		changed |= TableRow(table, window, "AspectRatio")
 			.setType(TableRow::Type::SimpleText)

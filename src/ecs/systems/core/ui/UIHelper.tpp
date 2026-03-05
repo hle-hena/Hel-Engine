@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/05 15:22:31 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 18:04:34                                        */
+/*  Last Modified: 2026/03/05 18:52:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,7 +25,7 @@ void	Table::setNextCell(const char *label, Func&& drawAction) {
 	ImGui::TableNextColumn();
 	if (label != nullptr) {
 		ImGui::AlignTextToFramePadding();
-		ImGui::Text("%s", label);
+		ImGui::Text(label);
 	}
 
 	ImGui::TableNextColumn();
@@ -35,6 +35,12 @@ void	Table::setNextCell(const char *label, Func&& drawAction) {
 	drawAction();
 	ImGui::PopID();
 	ImGui::PopItemWidth();
+}
+
+template <typename T>
+void	TableRow::fillVec(std::vector<T> &vec, size_t wantedSize) {
+	if (vec.size() != wantedSize)
+		vec = std::vector<T>(wantedSize, vec[0]);
 }
 
 }

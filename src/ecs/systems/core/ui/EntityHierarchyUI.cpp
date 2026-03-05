@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/28 13:55:54 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 13:47:20                                        */
+/*  Last Modified: 2026/03/05 18:39:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -119,7 +119,7 @@ void	EntityHierarchyUI::render(Window *window) {
 	Splitter(&_windowWidth)
 		.setLabel("Hierarchy splitter")
 		.setMin(50.f)
-		.setMax(extent.width * 0.5f)
+		.setMax(extent.width * 0.35f)
 		.setPos({_windowWidth, 0.f})
 		.setSize(extent.height)
 		.setDir(Splitter::Right)

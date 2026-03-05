@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:48:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 18:33:14                                        */
+/*  Last Modified: 2026/03/05 18:46:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -134,10 +134,7 @@ class	TableRow {
 
 	private:
 		template <typename T>
-		void	fillVec(std::vector<T> &vec, size_t wantedSize) {
-			if (vec.size() != wantedSize)
-				vec = std::vector<T>(wantedSize, vec[0]);
-		}
+		void	fillVec(std::vector<T> &vec, size_t wantedSize);
 
 		bool	buildVecDrag(void);
 		bool	buildDragRange(void);

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 18:36:28                                        */
+/*  Last Modified: 2026/03/05 18:58:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -198,33 +198,31 @@ bool	TableRow::buildVecDrag(void) {
 bool	TableRow::buildDragRange(void) {
 	if (!_start)
 		return (false);
-	size_t	sRange = static_cast<size_t>(2);
+	_range = 2;
+	size_t	sRange = static_cast<size_t>(_range);
 	fillVec(_valueNames, sRange);
 	fillVec(_mins, sRange);
 	fillVec(_maxs, sRange);
 	fillVec(_speeds, sRange);
+	_maxs[0] = *(_start + 1);
+	_mins[1] = *(_start);
 
 	bool	changed = false;
 	if (!_table.newRow(_rowName, 2))
 		return (false);
-
 	ImGui::PushID(_rowName);
-	_table.setNextCell(_valueNames[0], [&]{
-		changed |= DragFloat(_window->getWindow(), _start)
-						.setSpeed(_speeds[0])
-						.setMin(_mins[0])
-						.setMax(*(_start + 1))
-						.build();
-		}
-	);
-	_table.setNextCell(_valueNames[1], [&]{
-		changed |= DragFloat(_window->getWindow(), _start + 1)
-						.setSpeed(_speeds[1])
-						.setMin(*(_start))
-						.setMax(_maxs[1])
-						.build();
-		}
-	);
+
+	for (uint32_t i = 0; i < _range; i++) {
+		_table.setNextCell(_valueNames[i], [&]{
+			changed |= DragFloat(_window->getWindow(), _start + i)
+							.setSpeed(_speeds[i])
+							.setMin(_mins[i])
+							.setMax(_maxs[i])
+							.build();
+			}
+		);
+	}
+
 	ImGui::PopID();
 	return (changed);
 }
