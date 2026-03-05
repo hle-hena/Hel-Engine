@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 19:41:39                                        */
+/*  Last Modified: 2026/03/05 19:51:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -155,7 +155,8 @@ const std::unordered_map<TableRow::Type, TableRow::BuildFunc>
 		TableRow::_buildFunctions = {
 			{ TableRow::Type::VecDrag, &TableRow::buildVecDrag },
 			{ TableRow::Type::DragRange, &TableRow::buildDragRange },
-			{ TableRow::Type::SimpleText, &TableRow::buildSimpleText }
+			{ TableRow::Type::SimpleText, &TableRow::buildSimpleText },
+			{ TableRow::Type::InputText, &TableRow::buildInputText }
 		};
 
 TableRow::TableRow(Table &table, Window *window, const char *rowName)
@@ -169,7 +170,7 @@ bool	TableRow::build(void) {
 }
 
 bool	TableRow::buildVecDrag(void) {
-	if (!_start)
+	if (!_startFloat)
 		return (false);
 	size_t	sRange = static_cast<size_t>(_range);
 	fillVec(_valueNames, sRange);
@@ -186,12 +187,12 @@ bool	TableRow::buildVecDrag(void) {
 	for (uint32_t i = 0; i < _range; i++) {
 		ImGui::PushID(i);
 		_table.setNextCell(_valueNames[i], [&]{
-			changed |= DragFloat(_window->getWindow(), _start + i)
-							.setSpeed(_speeds[i])
-							.setMin(_mins[i])
-							.setMax(_maxs[i])
-							.setFormat(_fmts[i])
-							.build();
+				changed |= DragFloat(_window->getWindow(), _startFloat + i)
+								.setSpeed(_speeds[i])
+								.setMin(_mins[i])
+								.setMax(_maxs[i])
+								.setFormat(_fmts[i])
+								.build();
 			}
 		);
 		ImGui::PopID();
@@ -202,7 +203,7 @@ bool	TableRow::buildVecDrag(void) {
 }
 
 bool	TableRow::buildDragRange(void) {
-	if (!_start)
+	if (!_startFloat)
 		return (false);
 	_range = 2;
 	size_t	sRange = static_cast<size_t>(_range);
@@ -211,8 +212,8 @@ bool	TableRow::buildDragRange(void) {
 	fillVec(_mins, sRange);
 	fillVec(_maxs, sRange);
 	fillVec(_speeds, sRange);
-	_maxs[0] = *(_start + 1);
-	_mins[1] = *(_start);
+	_maxs[0] = *(_startFloat + 1);
+	_mins[1] = *(_startFloat);
 
 	bool	changed = false;
 	if (!_table.newRow(_rowName, 2))
@@ -222,12 +223,12 @@ bool	TableRow::buildDragRange(void) {
 	for (uint32_t i = 0; i < _range; i++) {
 		ImGui::PushID(i);
 		_table.setNextCell(_valueNames[i], [&]{
-			changed |= DragFloat(_window->getWindow(), _start + i)
-							.setSpeed(_speeds[i])
-							.setMin(_mins[i])
-							.setMax(_maxs[i])
-							.setFormat(_fmts[i])
-							.build();
+				changed |= DragFloat(_window->getWindow(), _startFloat + i)
+								.setSpeed(_speeds[i])
+								.setMin(_mins[i])
+								.setMax(_maxs[i])
+								.setFormat(_fmts[i])
+								.build();
 			}
 		);
 		ImGui::PopID();
@@ -238,7 +239,7 @@ bool	TableRow::buildDragRange(void) {
 }
 
 bool	TableRow::buildSimpleText(void) {
-	if (!_start)
+	if (!_startFloat)
 		return (false);
 	size_t	sRange = static_cast<size_t>(_range);
 	fillVec(_valueNames, sRange);
@@ -252,7 +253,7 @@ bool	TableRow::buildSimpleText(void) {
 		ImGui::PushID(i);
 		_table.setNextCell(_valueNames[i], [&]{
 				ImGui::AlignTextToFramePadding();
-				ImGui::Text(_fmts[i], *(_start + i));
+				ImGui::Text(_fmts[i], *(_startFloat + i));
 			}
 		);
 		ImGui::PopID();
@@ -260,6 +261,30 @@ bool	TableRow::buildSimpleText(void) {
 
 	ImGui::PopID();
 	return (false);
+}
+
+bool	TableRow::buildInputText(void) {
+	if (!_startString)
+		return (false);
+	size_t	sRange = static_cast<size_t>(_range);
+	fillVec(_valueNames, sRange);
+
+	bool	changed = false;
+	if (!_table.newRow(_rowName, _range))
+		return (false);
+	ImGui::PushID(_rowName);
+
+	for (uint32_t i = 0; i < _range; i++) {
+		ImGui::PushID(i);
+		_table.setNextCell(_valueNames[i], [&]{
+				changed |= ImGui::InputText("##", _startString + i);
+			}
+		);
+		ImGui::PopID();
+	}
+
+	ImGui::PopID();
+	return (changed);
 }
 
 }

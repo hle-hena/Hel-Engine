@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:48:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 19:23:41                                        */
+/*  Last Modified: 2026/03/05 19:47:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -114,7 +114,7 @@ class	Table {
 
 class	TableRow {
 	public:
-		enum	Type { VecDrag, DragRange, SimpleText };
+		enum	Type { VecDrag, DragRange, SimpleText, InputText };
 
 		TableRow(Table &table, Window *window, const char *rowName);
 
@@ -130,7 +130,8 @@ class	TableRow {
 		SETTER(Format, std::initializer_list<const char *>, _fmts)
 		SETTER(ValueName, std::initializer_list<const char *>, _valueNames)
 		SETTER(Range, uint32_t, _range)
-		SETTER(Start, float *, _start)
+		SETTER(Start, float *, _startFloat)
+		SETTER(Start, std::string *, _startString)
 		bool	build(void);
 
 	private:
@@ -140,6 +141,7 @@ class	TableRow {
 		bool	buildVecDrag(void);
 		bool	buildDragRange(void);
 		bool	buildSimpleText(void);
+		bool	buildInputText(void);
 
 		Table						&_table;
 		Window						*_window;
@@ -151,7 +153,9 @@ class	TableRow {
 		std::vector<const char *>	_fmts{"%.3f"};
 		std::vector<const char *>	_valueNames{nullptr};
 		uint32_t					_range{1};
-		float						*_start{nullptr};
+		float						*_startFloat{nullptr};
+		std::string					*_startString{nullptr};
+		
 
 		using BuildFunc = bool (TableRow::*)();
 		static const std::unordered_map<Type, BuildFunc>	_buildFunctions;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 19:45:45                                        */
+/*  Last Modified: 2026/03/05 20:06:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -126,25 +126,38 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 		changed |= TableRow(table, window, "Position")
 			.setType(TableRow::Type::VecDrag)
 			.setSpeed(0.1f)
-			.setStart(&transform->position.x)
+			.setStart(&transform->position[0])
 			.setRange(3)
 			.setValueName({"X:", "Y:", "Z:"})
 			.build();
 		changed |= TableRow(table, window, "Scale")
 			.setType(TableRow::Type::VecDrag)
 			.setSpeed(0.1f)
-			.setStart(&transform->scale.x)
+			.setStart(&transform->scale[0])
 			.setRange(3)
 			.setValueName({"X:", "Y:", "Z:"})
+			.build();
+		changed |= TableRow(table, window, "Rotation")
+			.setType(TableRow::Type::VecDrag)
+			.setSpeed(0.001f)
+			.setMin(-1.f)
+			.setMax(1.f)
+			.setRange(4)
+			.setValueName({"X:", "Y:", "Z:", "W:"})
+			.setStart(&transform->rotation[0])
 			.build();
 		if (changed)
 			transform->isDirty = true;
 	});
 
-	setDrawFunc<comp::Model>([](Window *, void *raw){
+	setDrawFunc<comp::Model>([](Window *window, void *raw){
 		auto	*model = static_cast<comp::Model *>(raw);
 
-		ImGui::InputText("Model filepath", &model->filePath);
+		auto	table = Table("Model");
+		TableRow(table, window, "Model filepath")
+			.setType(TableRow::Type::InputText)
+			.setStart(&model->filePath)
+			.build();
 	});
 
 	setDrawFunc<comp::Camera>([](Window *window, void *raw){
@@ -178,10 +191,14 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 			camera->isDirty = true;
 	});
 
-	setDrawFunc<comp::Name>([](Window *, void *raw){
+	setDrawFunc<comp::Name>([](Window *window, void *raw){
 		auto	name = static_cast<comp::Name *>(raw);
 
-		ImGui::InputText("Entity's name", &name->name);
+		auto	table = Table("Name");
+		TableRow(table, window, "Entity's name")
+			.setType(TableRow::Type::InputText)
+			.setStart(&name->name)
+			.build();
 	});
 
 	setDrawFunc<comp::Hierarchy>([](Window *, void *raw){
