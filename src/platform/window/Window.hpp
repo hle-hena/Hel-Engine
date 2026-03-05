@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 18:14:47                                        */
+/*  Last Modified: 2026/03/05 11:34:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -82,6 +82,9 @@ class	Window {
 		}
 		Entity::id		getEntityFocus(void) const {
 			return (_focusHandle.value_or(Entity::NOT_REGISTERED));
+		}
+		VkExtent2D		getExtent(void) const {
+			return {_width, _height};
 		}
 
 

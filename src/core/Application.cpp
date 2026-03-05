@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 20:54:04                                        */
+/*  Last Modified: 2026/03/05 11:35:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -98,7 +98,7 @@ void	Application::run(void) {
 				i--;
 				continue ;
 			}
-			// _engine.renderUI(*_appWindows[i], currentFrame);
+			_engine.renderUI(*_appWindows[i], currentFrame);
 		}
 		_engine.updateFrame();
 		for (size_t i = 0; i < _appWindows.size(); i++) {

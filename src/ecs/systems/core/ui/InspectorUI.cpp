@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 19:41:40                                        */
+/*  Last Modified: 2026/03/05 12:17:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -32,8 +32,7 @@ void	InspectorUI::render(Window *window) {
 									ImGuiWindowFlags_NoTitleBar |
 									ImGuiWindowFlags_NoMove |
 									ImGuiWindowFlags_NoResize;
-	// auto extent = window->getSwapchain().getExtent();
-	VkExtent2D	extent{};
+	VkExtent2D	extent = window->getExtent();
 	ImGui::SetNextWindowSize({_windowWidth, extent.height});
 	ImGui::SetNextWindowPos({extent.width - _windowWidth, 0});
 	ImGui::Begin("Inspector", nullptr, windowFlags);
@@ -139,9 +138,9 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 		auto	camera = static_cast<comp::Camera *>(raw);
 		bool	changed = false;
 
-		changed |= ImGui::DragFloat("near plane", &camera->near, .001f, 0.001f, 1.f);
-		changed |= ImGui::DragFloat("far plane", &camera->far,
-									.1f, 0.1f, 10000.f);
+		changed |= ImGui::DragFloatRange2("Render distance", &camera->near,
+									&camera->far, 1.f, 0.001f, 10000.f,
+									"Near %.3f", "Far %.3f", ImGuiSliderFlags_AlwaysClamp);
 		changed |= ImGui::DragFloat("FOV", &camera->fov, 1.f, 1.f, 180.f);
 		ImGui::Text("Aspect ratio :%f", camera->aspect);
 

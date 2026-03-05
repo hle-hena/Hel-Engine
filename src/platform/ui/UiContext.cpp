@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/03 15:04:38                                        */
+/*  Last Modified: 2026/03/04 21:24:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,17 +39,25 @@ void	UiContext::destroy(void) {
 	}
 }
 
-void	UiContext::init(VkRenderPass renderPass) {
+void	UiContext::init() {
 	Device	&device = _window->_app.getVkContext().getDevice();
 	initDescriptorPool(device);
-	initImGui(device, renderPass);
+	initImGui(device);
 }
 
-void	UiContext::initImGui(Device &device, VkRenderPass renderPass) {
+void	UiContext::initImGui(Device &device) {
 	_context = ImGui::CreateContext();
 	ImGui::SetCurrentContext(_context);
 
 	ImGui_ImplGlfw_InitForVulkan(_window->_windowPtr, true);
+
+	auto	colorFormat = _window->getSwapchain().getNextColorImage(0)->getFormat();
+	auto	depthFormat = _window->getSwapchain().getDepthImage()->getFormat();
+	VkPipelineRenderingCreateInfo	renderingCreateInfo{};
+	renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+	renderingCreateInfo.colorAttachmentCount = 1;
+	renderingCreateInfo.pColorAttachmentFormats = &colorFormat;
+	renderingCreateInfo.depthAttachmentFormat = depthFormat;
 
 	ImGui_ImplVulkan_InitInfo	initInfo{};
 	initInfo.ApiVersion = VK_API_VERSION_1_3;
@@ -61,9 +69,10 @@ void	UiContext::initImGui(Device &device, VkRenderPass renderPass) {
 	initInfo.DescriptorPool = _pool->getActivePool();
 	initInfo.ImageCount = Swapchain::MAX_FRAMES_IN_FLIGHT;
 	initInfo.MinImageCount = Swapchain::MAX_FRAMES_IN_FLIGHT;
-	initInfo.PipelineInfoMain.RenderPass = renderPass;
+	initInfo.UseDynamicRendering = true;
+	initInfo.PipelineInfoMain.PipelineRenderingCreateInfo = renderingCreateInfo;
 	ImGui_ImplVulkan_Init(&initInfo);
-	
+
 	initImGuiStyle();
 }
 
@@ -83,7 +92,7 @@ void	UiContext::initDescriptorPool(Device &device) {
 		.build();
 }
 
-void	UiContext::newFrame(VkRenderPass renderPass) {
+void	UiContext::newFrame() {
 	if (_fullyInitialised) {
 		ImGui::SetCurrentContext(_context);
 		ImGui_ImplVulkan_NewFrame();
@@ -91,7 +100,7 @@ void	UiContext::newFrame(VkRenderPass renderPass) {
 		ImGui::NewFrame();
 		return ;
 	}
-	init(renderPass);
+	init();
 	ImGui_ImplVulkan_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 20:46:40                                        */
+/*  Last Modified: 2026/03/05 11:35:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -178,9 +178,7 @@ void	Engine::renderUI(Window &window, uint32_t currentFrame) {
 	WindowResources *resources = getWindowResources(window);
 	if (!resources)
 		return ;
-	VkRenderPass	renderPass = nullptr/* _passes.getRenderPasss(window.getFormat(),
-												window.getDepthFormat()) */;
-	window.getUI().newFrame(renderPass);
+	window.getUI().newFrame();
 	_uiSystem.render(RenderingConfig{}, *resources, currentFrame);
 	window.getUI().endFrame();
 }
@@ -234,7 +232,7 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	beginFrame(commandBuffer, colorImage, depthImage);
 	_renderSystem.render(config, *resources, currentFrame);
 	_cameraSystem.render(config, *resources, currentFrame);
-	// ui.renderFrame(commandBuffer);
+	ui.renderFrame(commandBuffer);
 	endFrame(commandBuffer, colorImage);
 
 	swapchain.submitCommandBuffer(&commandBuffer, imageIndex, currentFrame);
