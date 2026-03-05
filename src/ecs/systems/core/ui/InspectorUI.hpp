@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:55:02 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/03 13:36:28                                        */
+/*  Last Modified: 2026/03/05 13:22:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,7 +33,7 @@ namespace	hel::sys {
 
 class	InspectorUI {
 	public:
-		using UIDrawFunc = std::function<void(void *)>;
+		using UIDrawFunc = std::function<void(Window *, void *)>;
 
 		InspectorUI(Registry &registry) : _registry{registry} {}
 		~InspectorUI(void) = default;

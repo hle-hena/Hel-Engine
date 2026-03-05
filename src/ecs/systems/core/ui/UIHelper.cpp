@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/03 14:25:06                                        */
+/*  Last Modified: 2026/03/05 13:27:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -92,6 +92,40 @@ void	Splitter::build(void) {
 	ImGui::PopStyleVar(2);
 
 	*_updateVal = std::clamp(*_updateVal, _limits.x, _limits.y);
+}
+
+
+
+DragFloat::DragFloat(GLFWwindow *windowPtr, float *val)
+	:	_windowPtr{windowPtr},
+		_val{val} {
+}
+
+bool	DragFloat::build(void) {
+	bool	changed = ImGui::DragFloat(_label, _val, _speed, _min, _max, _format,
+					ImGuiSliderFlags_AlwaysClamp);
+
+	if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
+		ImGuiIO	&io= ImGui::GetIO();
+		ImVec2	mousePos = io.MousePos;
+
+		float	padding = 3.f;
+		float	leftBound = 0.0f;
+		float	rightBound = io.DisplaySize.x;
+
+		if (mousePos.x <= leftBound) {
+			float newX = rightBound - padding;
+			glfwSetCursorPos(_windowPtr, newX, mousePos.y);
+			io.MousePosPrev = ImVec2(newX, mousePos.y); 
+			io.MousePos = ImVec2(newX, mousePos.y);
+		} else if (mousePos.x >= rightBound - 1) {
+			float newX = leftBound + padding;
+			glfwSetCursorPos(_windowPtr, newX, mousePos.y);
+			io.MousePosPrev = ImVec2(newX, mousePos.y);
+			io.MousePos = ImVec2(newX, mousePos.y);
+		}
+	}
+	return (changed);
 }
 
 }

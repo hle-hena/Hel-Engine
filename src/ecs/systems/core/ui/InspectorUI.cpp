@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 12:17:46                                        */
+/*  Last Modified: 2026/03/05 13:24:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -71,7 +71,7 @@ void	InspectorUI::render(Window *window) {
 			if (uiOpened) {
 				auto	it = _drawFuncs.find(type);
 				if (it != _drawFuncs.end())
-					_drawFuncs[type](pool->getRaw(handle));
+					_drawFuncs[type](window, pool->getRaw(handle));
 				else
 					ImGui::TextDisabled("No UI integration for %s", label);
 			}
@@ -115,10 +115,10 @@ void	InspectorUI::addNewComponentPopup(Entity::id handle) {
 }
 
 void	InspectorUI::setBuiltInDrawFunc(void) {
-	setDrawFunc<comp::BaseControllerTag>([](void *){});
-	setDrawFunc<comp::EditorControllerTag>([](void *){});
+	setDrawFunc<comp::BaseControllerTag>([](Window *, void *){});
+	setDrawFunc<comp::EditorControllerTag>([](Window *, void *){});
 
-	setDrawFunc<comp::Transform>([](void *raw){
+	setDrawFunc<comp::Transform>([](Window *, void *raw){
 		auto	transform = static_cast<comp::Transform *>(raw);
 		bool	changed = false;
 
@@ -128,33 +128,40 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 			transform->isDirty = true;
 	});
 
-	setDrawFunc<comp::Model>([](void *raw){
+	setDrawFunc<comp::Model>([](Window *, void *raw){
 		auto	*model = static_cast<comp::Model *>(raw);
 
 		ImGui::InputText("Model filepath", &model->filePath);
 	});
 
-	setDrawFunc<comp::Camera>([](void *raw){
+	setDrawFunc<comp::Camera>([](Window *window, void *raw){
 		auto	camera = static_cast<comp::Camera *>(raw);
 		bool	changed = false;
 
 		changed |= ImGui::DragFloatRange2("Render distance", &camera->near,
 									&camera->far, 1.f, 0.001f, 10000.f,
 									"Near %.3f", "Far %.3f", ImGuiSliderFlags_AlwaysClamp);
-		changed |= ImGui::DragFloat("FOV", &camera->fov, 1.f, 1.f, 180.f);
+		// changed |= ImGui::DragFloat("FOV", &camera->fov, 1.f, 1.f, 180.f);
+		changed |= DragFloat(window->getWindow(), &camera->fov)
+					.setSpeed(0.001f)
+					.setMin(1.f)
+					.setMax(179.f)
+					.setFormat("%.3f°")
+					.setLabel("FOV")
+					.build();
 		ImGui::Text("Aspect ratio :%f", camera->aspect);
 
 		if (changed)
 			camera->isDirty = true;
 	});
 
-	setDrawFunc<comp::Name>([](void *raw){
+	setDrawFunc<comp::Name>([](Window *, void *raw){
 		auto	name = static_cast<comp::Name *>(raw);
 
 		ImGui::InputText("Entity's name", &name->name);
 	});
 
-	setDrawFunc<comp::Hierarchy>([](void *raw){
+	setDrawFunc<comp::Hierarchy>([](Window *, void *raw){
 		auto	hier = static_cast<comp::Hierarchy *>(raw);
 
 		if (hier->parentId != Entity::NOT_REGISTERED)
@@ -165,7 +172,7 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 			ImGui::BulletText("Child entity %d", Entity::getIndex(childHandle));
 	});
 
-	setDrawFunc<comp::SurfaceAllignement>([](void *raw){
+	setDrawFunc<comp::SurfaceAllignement>([](Window *, void *raw){
 		auto	surface = static_cast<comp::SurfaceAllignement *>(raw);
 
 		if (ImGui::DragFloat3("Up vector", &surface->localUp.x, 0.1f))
@@ -173,7 +180,7 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 		ImGui::Checkbox("Dynamic allignement", &surface->isDynamic);
 	});
 
-	setDrawFunc<comp::Controller>([](void *raw){
+	setDrawFunc<comp::Controller>([](Window *, void *raw){
 		auto	controller = static_cast<comp::Controller *>(raw);
 
 		ImGui::DragFloat("Mouse sensitivity", &controller->mouseSensivity);
