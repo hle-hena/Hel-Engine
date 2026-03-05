@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 13:47:56                                        */
+/*  Last Modified: 2026/03/05 13:52:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -141,7 +141,6 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 		changed |= ImGui::DragFloatRange2("Render distance", &camera->near,
 									&camera->far, 1.f, 0.001f, 10000.f,
 									"Near %.3f", "Far %.3f", ImGuiSliderFlags_AlwaysClamp);
-		// changed |= ImGui::DragFloat("FOV", &camera->fov, 1.f, 1.f, 180.f);
 		changed |= DragFloat(window->getWindow(), &camera->fov)
 					.setSpeed(0.001f)
 					.setMin(1.f)
@@ -180,11 +179,15 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 		ImGui::Checkbox("Dynamic allignement", &surface->isDynamic);
 	});
 
-	setDrawFunc<comp::Controller>([](Window *, void *raw){
+	setDrawFunc<comp::Controller>([](Window *window, void *raw){
 		auto	controller = static_cast<comp::Controller *>(raw);
 
-		ImGui::DragFloat("Mouse sensitivity", &controller->mouseSensivity);
-		ImGui::DragFloat("Movement speed", &controller->movementSpeed);
+		DragFloat(window->getWindow(), &controller->mouseSensivity)
+			.setLabel("Mouse sensitivity")
+			.build();
+		DragFloat(window->getWindow(), &controller->movementSpeed)
+			.setLabel("Movement speed")
+			.build();
 	});
 }
 
