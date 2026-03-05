@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 18:38:38                                        */
+/*  Last Modified: 2026/03/04 18:58:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,10 +45,12 @@ class	ISystem {
 		virtual void	initAllPipelines(WindowResources &initResources) final;
 
 		virtual void	update(float) {}
-		virtual void	render(VkRenderPass, WindowResources &, uint32_t) {}
+		virtual void	render(const RenderingConfig &,
+							WindowResources &, uint32_t) {}
 
 	protected:
-		virtual PipelineMap	*createPipeline(const PipelineMap::Config &config) final;
+		virtual PipelineMap	*createPipeline(const
+								PipelineMap::Config &config) final;
 
 		Device										&_device;
 		Registry									&_registry;

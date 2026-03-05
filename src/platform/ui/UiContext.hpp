@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:09 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/03 11:01:16                                        */
+/*  Last Modified: 2026/03/04 21:24:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,7 +33,7 @@ class	UiContext {
 		UiContext(const UiContext &other) = delete;
 		UiContext	&operator=(const UiContext &other) = delete;
 
-		void	newFrame(VkRenderPass);
+		void	newFrame();
 		void	endFrame(void);
 		void	renderFrame(VkCommandBuffer commandBuffer);
 
@@ -44,9 +44,9 @@ class	UiContext {
 		bool	capturesKeyboard(void);
 
 		void	destroy(void);
-		void	init(VkRenderPass renderPass);
+		void	init();
 		void	initDescriptorPool(Device &device);
-		void	initImGui(Device &device, VkRenderPass renderPass);
+		void	initImGui(Device &device);
 		void	initImGuiStyle(void);
 
 		bool							_fullyInitialised{false};

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 13:23:14                                        */
+/*  Last Modified: 2026/03/04 18:58:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -80,11 +80,11 @@ void	Camera::update(float deltaTime) {
 	}
 }
 
-void	Camera::render(VkRenderPass renderPass, WindowResources &resources,
+void	Camera::render(const RenderingConfig &conf, WindowResources &resources,
 					uint32_t currentFrame) {
 	auto	selfHandle = resources.window->getEntityReference();
 	auto	commandBuffer = resources.commandBuffers[currentFrame];
-	if (_frustumPipelines->bindPipeline(renderPass, commandBuffer) ||
+	if (_frustumPipelines->bindPipeline(conf, commandBuffer) ||
 		!commandBuffer)	{ return ; }
 	auto	pipelineLayout = _frustumPipelines->getLayout();
 
