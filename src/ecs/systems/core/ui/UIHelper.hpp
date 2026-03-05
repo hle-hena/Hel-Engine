@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:48:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 12:59:29                                        */
+/*  Last Modified: 2026/03/05 13:46:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,8 +22,8 @@
 
 # include <string>
 
-#define SETTER(type, name, member) \
-    type& set##name(auto val) { member = val; return *this; }
+#define	SETTER(name, type, member)	\
+	auto	&set##name(type val)	{ member = val; return (*this); }
 
 namespace	hel::sys {
 
@@ -31,17 +31,16 @@ class	Splitter {
 	public:
 		enum	Dir { Left, Right, Up, Down };
 
-		Splitter(void) = default;
-		~Splitter(void) = default;
+		Splitter(float *val);
 
-		Splitter	&setSize(float size);
-		Splitter	&setHitBox(float size);
-		Splitter	&setPos(float x, float y);
-		Splitter	&setLimits(float minSize, float maxSize);
-		Splitter	&setDir(Dir dir);
-		Splitter	&setVal(float *val);
-		Splitter	&setId(const std::string &id);
-		void		build(void);
+		SETTER(Size, float, _size)
+		SETTER(Hitbox, float, _hitbox)
+		SETTER(Min, float, _min)
+		SETTER(Max, float, _max)
+		SETTER(Dir, Dir, _dir)
+		SETTER(Label, const char *, _label)
+		SETTER(Pos, ImVec2, _pos)
+		void	build(void);
 
 	private:
 		static constexpr bool	isHorizontal(Dir a) { 
@@ -52,24 +51,25 @@ class	Splitter {
 			return ((static_cast<int>(a) & 1) ? 1.f : -1.f); 
 		}
 
-		std::string	_id;
+		float		*_val;
+		const char	*_label{"##splitter"};
 		ImVec2		_pos{0.f, 0.f};
-		ImVec2		_limits{0.f, 0.f};
 		Dir			_dir{Right};
-		float		*_updateVal{nullptr};
+		float		_min{0.f};
+		float		_max{100.f};
 		float		_size{0.f};
-		float		_hitBox{6.f};
+		float		_hitbox{6.f};
 };
 
 class	DragFloat {
 	public:
 		DragFloat(GLFWwindow *windowPtr, float *val);
 
-		SETTER(DragFloat, Label, _label)
-		SETTER(DragFloat, Format, _format)
-		SETTER(DragFloat, Speed, _speed)
-		SETTER(DragFloat, Min, _min)
-		SETTER(DragFloat, Max, _max)
+		SETTER(Label, const char *, _label)
+		SETTER(Format, const char *, _format)
+		SETTER(Speed, float, _speed)
+		SETTER(Min, float, _min)
+		SETTER(Max, float, _max)
 		bool	build(void);
 
 	private:

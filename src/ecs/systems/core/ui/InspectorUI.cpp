@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 13:24:28                                        */
+/*  Last Modified: 2026/03/05 13:47:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -83,11 +83,11 @@ void	InspectorUI::render(Window *window) {
 	addNewComponentPopup(handle);
 	ImGui::End();
 
-	Splitter()
-		.setId("Inspector splitter")
-		.setLimits(50.f, extent.width * 0.25f)
-		.setPos(extent.width - _windowWidth, 0)
-		.setVal(&_windowWidth)
+	Splitter(&_windowWidth)
+		.setLabel("Inspector splitter")
+		.setMin(50.f)
+		.setMax(extent.width * 0.25f)
+		.setPos({extent.width - _windowWidth, 0.f})
 		.setSize(extent.height)
 		.setDir(Splitter::Left)
 		.build();
