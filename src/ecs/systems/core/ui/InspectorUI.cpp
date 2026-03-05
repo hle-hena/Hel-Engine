@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 13:52:01                                        */
+/*  Last Modified: 2026/03/05 16:29:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -118,12 +118,28 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 	setDrawFunc<comp::BaseControllerTag>([](Window *, void *){});
 	setDrawFunc<comp::EditorControllerTag>([](Window *, void *){});
 
-	setDrawFunc<comp::Transform>([](Window *, void *raw){
+	setDrawFunc<comp::Transform>([](Window *window, void *raw){
 		auto	transform = static_cast<comp::Transform *>(raw);
 		bool	changed = false;
 
-		changed |= ImGui::DragFloat3("Position", &transform->position.x, 0.1f);
-		changed |= ImGui::DragFloat3("Scale", &transform->scale.x, 0.1f);
+		auto	table = Table("Transform");
+		if (table.begin(3)) {
+			TableRow(table, window, "Position")
+				.setType(TableRow::Type::VecDrag)
+				.setSpeed(0.1f)
+				.setStart(&transform->position.x)
+				.setRange(3)
+				.setValueNames({"X:", "Y:", "Z:"})
+				.build();
+			TableRow(table, window, "Scale")
+				.setType(TableRow::Type::VecDrag)
+				.setSpeed(0.1f)
+				.setStart(&transform->scale.x)
+				.setRange(3)
+				.setValueNames({"X:", "Y:", "Z:"})
+				.build();
+			table.end();
+		}
 		if (changed)
 			transform->isDirty = true;
 	});

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:48:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 13:46:33                                        */
+/*  Last Modified: 2026/03/05 16:29:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,9 +18,11 @@
 
 # define GLFW_INCLUDE_VULKAN
 # include <GLFW/glfw3.h>
-# include "api/ImGui/imgui.h"
-
 # include <string>
+# include <math.h>
+
+# include "api/ImGui/imgui.h"
+# include "platform/window/Window.hpp"
 
 #define	SETTER(name, type, member)	\
 	auto	&set##name(type val)	{ member = val; return (*this); }
@@ -61,6 +63,8 @@ class	Splitter {
 		float		_hitbox{6.f};
 };
 
+
+
 class	DragFloat {
 	public:
 		DragFloat(GLFWwindow *windowPtr, float *val);
@@ -82,4 +86,56 @@ class	DragFloat {
 		float		_max{-(1./0.)};
 };
 
+
+
+class	Table {
+	public:
+		Table(const char *name);
+
+		bool	begin(uint32_t col);
+		void	end(void);
+
+		void	newRow(const char *rowName);
+		template <typename Func>
+		void	setNextCell(const char *label, Func&& drawAction);
+
+	private:
+		const char	*_name;
+};
+
+class	TableRow {
+	public:
+		enum	Type { VecDrag, DragRange };
+
+		TableRow(Table &table, Window *window, const char *rowName);
+
+		SETTER(Type, Type, _type)
+		SETTER(Speed, float, _speed)
+		SETTER(Min, float, _min)
+		SETTER(Max, float, _max)
+		SETTER(Range, uint32_t, _range)
+		SETTER(Start, float *, _start)
+		SETTER(ValueNames, std::initializer_list<const char *>, _valueNames)
+		bool	build(void);
+
+	private:
+		bool	buildVecDrag(void);
+
+		Table						&_table;
+		Window						*_window;
+		const char					*_rowName;
+		Type						_type{VecDrag};
+		float						_speed{1.f};
+		float						_min{-INFINITY};
+		float						_max{+INFINITY};
+		uint32_t					_range{1};
+		float						*_start{nullptr};
+		std::vector<const char *>	_valueNames{};
+
+		using BuildFunc = bool (TableRow::*)();
+		static const std::unordered_map<Type, BuildFunc>	_buildFunctions;
+};
+
 }
+
+#include "ecs/systems/core/ui/UIHelper.tpp"

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 13:43:31                                        */
+/*  Last Modified: 2026/03/05 16:24:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -91,6 +91,77 @@ bool	DragFloat::build(void) {
 			io.MousePos = ImVec2(newX, mousePos.y);
 		}
 	}
+	return (changed);
+}
+
+
+
+Table::Table(const char *name)
+	:	_name{name} {
+}
+
+
+
+bool	Table::begin(uint32_t col) {
+	if (ImGui::BeginTable(_name, col * 2 + 1, ImGuiTableFlags_SizingFixedFit)) {
+		ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthFixed);
+		for (uint32_t i = 0; i < col; i++) {
+			ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch);
+		}
+		return (true);
+	}
+	return (false);
+}
+
+void	Table::end(void) {
+	ImGui::EndTable();
+}
+
+void	Table::newRow(const char *rowName) {
+	ImGui::TableNextRow();
+	ImGui::TableNextColumn();
+	ImGui::AlignTextToFramePadding();
+	ImGui::Text(rowName);
+	ImGui::SameLine();
+	ImGui::Dummy(ImVec2(10.0f, 0.0f));
+}
+
+
+
+const std::unordered_map<TableRow::Type, TableRow::BuildFunc>
+		TableRow::_buildFunctions = {
+			{ VecDrag, &TableRow::buildVecDrag }
+		};
+
+TableRow::TableRow(Table &table, Window *window, const char *rowName)
+	:	_table{table},
+		_window{window},
+		_rowName{rowName} {
+}
+
+bool	TableRow::build(void) {
+	return ((this->*_buildFunctions.at(_type))());
+}
+
+bool	TableRow::buildVecDrag(void) {
+	if (!_start || _valueNames.empty())
+		return (false);
+
+	bool	changed = false;
+	ImGui::PushID(_rowName);
+
+	_table.newRow(_rowName);
+	for (uint32_t i = 0; i < _range; i++) {
+		_table.setNextCell(_valueNames[i], [&]{
+			changed |= DragFloat(_window->getWindow(), _start + i)
+							.setSpeed(_speed)
+							.build();
+			}
+		);
+	}
+
+	ImGui::PopID();
 	return (changed);
 }
 
