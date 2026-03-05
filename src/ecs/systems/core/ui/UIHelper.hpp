@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:48:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 17:52:21                                        */
+/*  Last Modified: 2026/03/05 18:33:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -94,16 +94,21 @@ class	DragFloat {
 class	Table {
 	public:
 		Table(const char *name);
+		~Table(void);
 
-		bool	begin(uint32_t col);
-		void	end(void);
-
-		void	newRow(const char *rowName);
+	private:
+		bool	newRow(const char *rowName, uint32_t nbCol);
 		template <typename Func>
 		void	setNextCell(const char *label, Func&& drawAction);
 
-	private:
+		bool	beginNewTable(void);
+		void	endTable(void);
+
 		const char	*_name;
+		bool		_tableOpened{false};
+		uint32_t	_nbCol{0};
+	
+	friend class	TableRow;
 };
 
 class	TableRow {

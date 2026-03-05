@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 18:00:37                                        */
+/*  Last Modified: 2026/03/05 18:37:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -123,23 +123,20 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 		bool	changed = false;
 
 		auto	table = Table("Transform");
-		if (table.begin(3)) {
-			changed |= TableRow(table, window, "Position")
-				.setType(TableRow::Type::VecDrag)
-				.setSpeed(0.1f)
-				.setStart(&transform->position.x)
-				.setRange(3)
-				.setValueName({"X:", "Y:", "Z:"})
-				.build();
-			changed |= TableRow(table, window, "Scale")
-				.setType(TableRow::Type::VecDrag)
-				.setSpeed(0.1f)
-				.setStart(&transform->scale.x)
-				.setRange(3)
-				.setValueName({"X:", "Y:", "Z:"})
-				.build();
-			table.end();
-		}
+		changed |= TableRow(table, window, "Position")
+			.setType(TableRow::Type::VecDrag)
+			.setSpeed(0.1f)
+			.setStart(&transform->position.x)
+			.setRange(3)
+			.setValueName({"X:", "Y:", "Z:"})
+			.build();
+		changed |= TableRow(table, window, "Scale")
+			.setType(TableRow::Type::VecDrag)
+			.setSpeed(0.1f)
+			.setStart(&transform->scale.x)
+			.setRange(3)
+			.setValueName({"X:", "Y:", "Z:"})
+			.build();
 		if (changed)
 			transform->isDirty = true;
 	});
@@ -154,31 +151,24 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 		auto	camera = static_cast<comp::Camera *>(raw);
 		bool	changed = false;
 
-		auto	tableRender = Table("Camera");
-		if (tableRender.begin(2)) {
-			changed |= TableRow(tableRender, window, "Render distance")
-				.setType(TableRow::Type::DragRange)
-				.setStart(&camera->near)
-				.setMin(0.001f)
-				.setMax(10000.f)
-				.setValueName({"Near:", "Far:"})
-				.build();
-			tableRender.end();
-		}
-		auto	tableFOV = Table("FOV");
-		if (tableFOV.begin(1)) {
-			changed |= TableRow(tableFOV, window, "FOV")
-				.setType(TableRow::Type::VecDrag)
-				.setStart(&camera->fov)
-				.setMin(1.f)
-				.setMax(1.f)
-				.build();
-			changed |= TableRow(tableFOV, window, "AspectRatio")
-				.setType(TableRow::Type::SimpleText)
-				.setStart(&camera->aspect)
-				.build();
-			tableFOV.end();
-		}
+		auto	table = Table("Camera");
+		changed |= TableRow(table, window, "Render distance")
+			.setType(TableRow::Type::DragRange)
+			.setStart(&camera->near)
+			.setMin(0.001f)
+			.setMax(10000.f)
+			.setValueName({"Near:", "Far:"})
+			.build();
+		changed |= TableRow(table, window, "FOV")
+			.setType(TableRow::Type::VecDrag)
+			.setStart(&camera->fov)
+			.setMin(1.f)
+			.setMax(1.f)
+			.build();
+		changed |= TableRow(table, window, "AspectRatio")
+			.setType(TableRow::Type::SimpleText)
+			.setStart(&camera->aspect)
+			.build();
 
 		if (changed)
 			camera->isDirty = true;

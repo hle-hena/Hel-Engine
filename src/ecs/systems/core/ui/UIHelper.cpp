@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 17:59:28                                        */
+/*  Last Modified: 2026/03/05 18:36:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -101,31 +101,50 @@ Table::Table(const char *name)
 	:	_name{name} {
 }
 
+Table::~Table(void) {
+	if (_tableOpened) {
+		ImGui::EndTable();
+		_tableOpened = false;
+	}
+}
 
-
-bool	Table::begin(uint32_t col) {
-	if (ImGui::BeginTable(_name, col * 2 + 1, ImGuiTableFlags_SizingFixedFit)) {
+bool	Table::beginNewTable(void) {
+	if (_tableOpened)
+		return (false);
+	if (ImGui::BeginTable(_name, _nbCol * 2 + 1, ImGuiTableFlags_SizingFixedFit)) {
 		ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthFixed);
-		for (uint32_t i = 0; i < col; i++) {
+		for (uint32_t i = 0; i < _nbCol; i++) {
 			ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch);
 		}
+		_tableOpened = true;
 		return (true);
 	}
 	return (false);
 }
 
-void	Table::end(void) {
-	ImGui::EndTable();
+void	Table::endTable(void) {
+	if (_tableOpened) {
+		ImGui::EndTable();
+		ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, 10.f));
+		_tableOpened = false;
+	}
 }
 
-void	Table::newRow(const char *rowName) {
+bool	Table::newRow(const char *rowName, uint32_t nbCol) {
+	if (nbCol != _nbCol || !_tableOpened) {
+		_nbCol = nbCol;
+		endTable();
+		if (!beginNewTable())
+			return (false);
+	}
 	ImGui::TableNextRow();
 	ImGui::TableNextColumn();
 	ImGui::AlignTextToFramePadding();
 	ImGui::Text(rowName);
 	ImGui::SameLine();
 	ImGui::Dummy(ImVec2(10.0f, 0.0f));
+	return (true);
 }
 
 
@@ -157,9 +176,10 @@ bool	TableRow::buildVecDrag(void) {
 	fillVec(_speeds, sRange);
 
 	bool	changed = false;
+	if (!_table.newRow(_rowName, _range))
+		return (false);
 	ImGui::PushID(_rowName);
 
-	_table.newRow(_rowName);
 	for (uint32_t i = 0; i < _range; i++) {
 		_table.setNextCell(_valueNames[i], [&]{
 			changed |= DragFloat(_window->getWindow(), _start + i)
@@ -185,9 +205,10 @@ bool	TableRow::buildDragRange(void) {
 	fillVec(_speeds, sRange);
 
 	bool	changed = false;
-	ImGui::PushID(_rowName);
+	if (!_table.newRow(_rowName, 2))
+		return (false);
 
-	_table.newRow(_rowName);
+	ImGui::PushID(_rowName);
 	_table.setNextCell(_valueNames[0], [&]{
 		changed |= DragFloat(_window->getWindow(), _start)
 						.setSpeed(_speeds[0])
@@ -215,9 +236,10 @@ bool	TableRow::buildSimpleText(void) {
 	fillVec(_valueNames, sRange);
 	fillVec(_fmts, sRange);
 
+	if (!_table.newRow(_rowName, _range))
+		return (false);
 	ImGui::PushID(_rowName);
 
-	_table.newRow(_rowName);
 	for (uint32_t i = 0; i < _range; i++) {
 		_table.setNextCell(_valueNames[i], [&]{
 				ImGui::AlignTextToFramePadding();
@@ -227,7 +249,7 @@ bool	TableRow::buildSimpleText(void) {
 	}
 
 	ImGui::PopID();
-	return false;
+	return (false);
 }
 
 }
