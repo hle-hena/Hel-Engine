@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/25 19:16:52                                        */
+/*  Last Modified: 2026/03/04 20:49:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,18 +33,41 @@ std::unique_ptr<Image>	Image::create(Device &device, const Config &config) {
 	}
 }
 
+std::unique_ptr<Image>	Image::wrapSwapchainImages(Device &device, VkImage img,
+										VkFormat format, VkExtent2D extent) {
+	try {
+		return (std::unique_ptr<Image>(new Image(device, img,
+											format, extent)));
+	} catch (const std::exception &e) {
+		std::cerr << e.what() << std::endl;
+		return (nullptr);
+	}
+}
+
 Image::Image(Device &device, const Config &config)
 	:	_device{device},
 		_config{config} {
 	createImage(), allocateMemory(), createView();
 }
 
+Image::Image(Device &device, VkImage img, VkFormat format, VkExtent2D extent)
+	:	_device{device} {
+	_image = img;
+	_owned = false;
+	_config.format = format;
+	_config.width = extent.width;
+	_config.height = extent.height;
+	_config.aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
+	_config.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+	createView();
+}
+
 Image::~Image(void) {
 	if (_view)
 		vkDestroyImageView(_device.getLogical(), _view, nullptr);
-	if (_memory)
+	if (_owned && _memory)
 		vkFreeMemory(_device.getLogical(), _memory, nullptr);
-	if (_image)
+	if (_owned && _image)
 		vkDestroyImage(_device.getLogical(), _image, nullptr);
 }
 
@@ -155,6 +178,19 @@ void	Image::setData(void *data, VkDeviceSize size) {
 						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 	transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	_device.endSingleTimeCommand(commandBuffer);
+}
+
+VkRenderingAttachmentInfo	Image::getRenderingInfo(VkClearValue clearValue,
+				VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp) const {
+	VkRenderingAttachmentInfo	info{};
+	info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+	info.imageView = _view;
+	info.imageLayout = _currentLayout;
+	info.clearValue = clearValue;
+	info.loadOp = loadOp;
+	info.storeOp = storeOp;
+
+	return (info);
 }
 
 }

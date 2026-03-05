@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 13:02:33                                        */
+/*  Last Modified: 2026/03/04 19:51:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -81,10 +81,10 @@ class	Engine {
 		void			createDescriptorPool(void);
 
 		void			updateGlobalUBO(Window &window, uint32_t currentFrame);
-		bool			beginFrame(VkRenderPass renderPass,
-								VkCommandBuffer commandBuffer,
-								VkFramebuffer framebuffer, VkExtent2D extent);
-		bool			endFrame(VkCommandBuffer commandBuffer);
+		bool			beginFrame(VkCommandBuffer commandBuffer,
+								Image *colorImage, Image *depthImage);
+		bool			endFrame(VkCommandBuffer commandBuffer,
+								Image *colorImage);
 		WindowResources	*getWindowResources(Window& window);
 
 		bool											_healthy{true};
@@ -94,7 +94,6 @@ class	Engine {
 		Timer											_timer;
 		float											_lastFrameTime;
 		VkCommandPool									_commandPool{VK_NULL_HANDLE};
-		RenderPass										_passes;
 		std::unique_ptr<DescriptorPool>					_staticPool;
 		std::unordered_map<Window*, WindowResources>	_perWindowResources;
 		sys::Render										_renderSystem;

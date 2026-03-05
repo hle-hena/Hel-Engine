@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 14:54:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 18:37:19                                        */
+/*  Last Modified: 2026/03/04 19:39:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,6 +28,17 @@ namespace	sys	{ class	ISystem; }
 
 class	AssetManager;
 
+struct	RenderingConfig {
+	std::vector<VkFormat>	colorFormats;
+	VkFormat				depthFormat;
+
+	bool	operator==(const RenderingConfig &other) const;
+};
+
+struct	RenderingConfigHasher {
+	size_t	operator()(const RenderingConfig &config) const;
+};
+
 class	PipelineMap {
 	public:
 		using LayoutVec = std::vector<VkDescriptorSetLayout>;
@@ -48,7 +59,7 @@ class	PipelineMap {
 		PipelineMap(const PipelineMap &other) = delete;
 		PipelineMap	&operator=(const PipelineMap &other) = delete;
 
-		bool				bindPipeline(VkRenderPass renderPass,
+		bool				bindPipeline(const RenderingConfig &config,
 										VkCommandBuffer commandBuffer);
 		VkPipelineLayout	getLayout(void);
 
@@ -64,7 +75,8 @@ class	PipelineMap {
 		std::vector<VkPipelineShaderStageCreateInfo>	_shaderStageInfos;
 		std::vector<VkDescriptorSetLayout>				_defaultLayouts;
 		VkPipelineLayout								_layout{VK_NULL_HANDLE};
-		std::unordered_map<VkRenderPass, Pipeline>		_pipelines;
+		std::unordered_map<RenderingConfig, Pipeline,
+								RenderingConfigHasher>	_pipelines;
 
 		LayoutCallback									_initLayout;
 		ConfigCallback									_configPipeline;

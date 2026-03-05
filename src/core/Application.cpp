@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/02 15:45:05                                        */
+/*  Last Modified: 2026/03/05 11:35:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -53,10 +53,9 @@ void	Application::loadPrimaryScene(void) {
 	transform->position = {1.f, 1.f, 1.f};
 	_registry.addComponent<comp::Controller>(cameraHandle);
 	_registry.addComponent<comp::EditorControllerTag>(cameraHandle);
-	auto	camera = _registry.modify(_registry.addComponent<comp::Camera>(cameraHandle));
-	auto	extent = _appWindows.back()->getSwapchain().getExtent();
-	camera->aspect = static_cast<float>(extent.width) / static_cast<float>(extent.height);
+	_registry.addComponent<comp::Camera>(cameraHandle);
 	_appWindows.back()->setEntityReference(cameraHandle);
+	_appWindows.back()->updateEntityReference();
 
 	Entity::id	handle = _registry.createEntity();
 	if (auto mesh = _registry.modify(_registry.addComponent<comp::Model>(handle))) {

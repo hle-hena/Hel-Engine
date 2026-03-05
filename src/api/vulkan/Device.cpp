@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 12:00:45                                        */
+/*  Last Modified: 2026/03/04 16:51:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -130,14 +130,18 @@ bool	Device::createLogicalDevice(void) {
 	sync2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
 	sync2Features.synchronization2 = VK_TRUE;
 
+	VkPhysicalDeviceDynamicRenderingFeatures	dynamicFeature{};
+	dynamicFeature.pNext = &sync2Features;
+	dynamicFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
+	dynamicFeature.dynamicRendering = VK_TRUE;
+
 	VkPhysicalDeviceFeatures2 features2{};
 	features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-	features2.pNext = &sync2Features;
+	features2.pNext = &dynamicFeature;
 
 	features2.features.geometryShader = VK_TRUE;
-	if (supportedFeatures.samplerAnisotropy) {
+	if (supportedFeatures.samplerAnisotropy)
 		features2.features.samplerAnisotropy = VK_TRUE;
-	}
 
 	VkDeviceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
