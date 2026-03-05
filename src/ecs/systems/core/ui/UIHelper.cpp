@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 19:27:39                                        */
+/*  Last Modified: 2026/03/05 19:31:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -183,6 +183,7 @@ bool	TableRow::buildVecDrag(void) {
 	ImGui::PushID(_rowName);
 
 	for (uint32_t i = 0; i < _range; i++) {
+		ImGui::PushID(i);
 		_table.setNextCell(_valueNames[i], [&]{
 			changed |= DragFloat(_window->getWindow(), _start + i)
 							.setSpeed(_speeds[i])
@@ -191,6 +192,7 @@ bool	TableRow::buildVecDrag(void) {
 							.build();
 			}
 		);
+		ImGui::PopID();
 	}
 
 	ImGui::PopID();
@@ -215,6 +217,7 @@ bool	TableRow::buildDragRange(void) {
 	ImGui::PushID(_rowName);
 
 	for (uint32_t i = 0; i < _range; i++) {
+		ImGui::PushID(i);
 		_table.setNextCell(_valueNames[i], [&]{
 			changed |= DragFloat(_window->getWindow(), _start + i)
 							.setSpeed(_speeds[i])
@@ -223,6 +226,7 @@ bool	TableRow::buildDragRange(void) {
 							.build();
 			}
 		);
+		ImGui::PopID();
 	}
 
 	ImGui::PopID();
@@ -241,11 +245,13 @@ bool	TableRow::buildSimpleText(void) {
 	ImGui::PushID(_rowName);
 
 	for (uint32_t i = 0; i < _range; i++) {
+		ImGui::PushID(i);
 		_table.setNextCell(_valueNames[i], [&]{
 				ImGui::AlignTextToFramePadding();
 				ImGui::Text(_fmts[i], *(_start + i));
 			}
 		);
+		ImGui::PopID();
 	}
 
 	ImGui::PopID();
