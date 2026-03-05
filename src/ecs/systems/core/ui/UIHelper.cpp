@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 19:31:10                                        */
+/*  Last Modified: 2026/03/05 19:41:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -173,6 +173,7 @@ bool	TableRow::buildVecDrag(void) {
 		return (false);
 	size_t	sRange = static_cast<size_t>(_range);
 	fillVec(_valueNames, sRange);
+	fillVec(_fmts, sRange);
 	fillVec(_mins, sRange);
 	fillVec(_maxs, sRange);
 	fillVec(_speeds, sRange);
@@ -189,6 +190,7 @@ bool	TableRow::buildVecDrag(void) {
 							.setSpeed(_speeds[i])
 							.setMin(_mins[i])
 							.setMax(_maxs[i])
+							.setFormat(_fmts[i])
 							.build();
 			}
 		);
@@ -205,6 +207,7 @@ bool	TableRow::buildDragRange(void) {
 	_range = 2;
 	size_t	sRange = static_cast<size_t>(_range);
 	fillVec(_valueNames, sRange);
+	fillVec(_fmts, sRange);
 	fillVec(_mins, sRange);
 	fillVec(_maxs, sRange);
 	fillVec(_speeds, sRange);
@@ -223,6 +226,7 @@ bool	TableRow::buildDragRange(void) {
 							.setSpeed(_speeds[i])
 							.setMin(_mins[i])
 							.setMax(_maxs[i])
+							.setFormat(_fmts[i])
 							.build();
 			}
 		);

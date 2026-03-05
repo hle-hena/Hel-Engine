@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 19:02:47                                        */
+/*  Last Modified: 2026/03/05 19:45:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -158,6 +158,7 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 			.setMin(0.001f)
 			.setMax(10000.f)
 			.setSpeed({0.001f, 1.f})
+			.setFormat({"%.3f", "%.0f"})
 			.setValueName({"Near:", "Far:"})
 			.build();
 		changed |= TableRow(table, window, "FOV")
@@ -166,6 +167,7 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 			.setMin(1.f)
 			.setMax(179.f)
 			.setSpeed(0.1f)
+			.setFormat("%.1f°")
 			.build();
 		changed |= TableRow(table, window, "AspectRatio")
 			.setType(TableRow::Type::SimpleText)
@@ -204,11 +206,21 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 	setDrawFunc<comp::Controller>([](Window *window, void *raw){
 		auto	controller = static_cast<comp::Controller *>(raw);
 
-		DragFloat(window->getWindow(), &controller->mouseSensivity)
-			.setLabel("Mouse sensitivity")
+		auto	table = Table("Controller");
+		TableRow(table, window, "Mouse sensitivity")
+			.setType(TableRow::Type::VecDrag)
+			.setStart(&controller->mouseSensivity)
+			.setMin(0.0001f)
+			.setMax(1.f)
+			.setSpeed(0.0001f)
+			.setFormat("%.4f")
 			.build();
-		DragFloat(window->getWindow(), &controller->movementSpeed)
-			.setLabel("Movement speed")
+		TableRow(table, window, "Movement speed")
+			.setType(TableRow::Type::VecDrag)
+			.setStart(&controller->movementSpeed)
+			.setMin(0.f)
+			.setSpeed(0.1f)
+			.setFormat("%.1f")
 			.build();
 	});
 }
