@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:48:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 16:29:07                                        */
+/*  Last Modified: 2026/03/05 17:52:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,6 +26,9 @@
 
 #define	SETTER(name, type, member)	\
 	auto	&set##name(type val)	{ member = val; return (*this); }
+
+#define	SETTER_INIT(name, type, member)	\
+	auto	&set##name(type val)	{ member = {val}; return (*this); }
 
 namespace	hel::sys {
 
@@ -82,8 +85,8 @@ class	DragFloat {
 		const char	*_label{"##v"};
 		const char	*_format{"%.3f"};
 		float		_speed{1.f};
-		float		_min{+(1./0.)};
-		float		_max{-(1./0.)};
+		float		_min{-INFINITY};
+		float		_max{+INFINITY};
 };
 
 
@@ -105,32 +108,47 @@ class	Table {
 
 class	TableRow {
 	public:
-		enum	Type { VecDrag, DragRange };
+		enum	Type { VecDrag, DragRange, SimpleText };
 
 		TableRow(Table &table, Window *window, const char *rowName);
 
 		SETTER(Type, Type, _type)
-		SETTER(Speed, float, _speed)
-		SETTER(Min, float, _min)
-		SETTER(Max, float, _max)
+		SETTER_INIT(Speed, float, _speeds)
+		SETTER_INIT(Min, float, _mins)
+		SETTER_INIT(Max, float, _maxs)
+		SETTER_INIT(Format, const char *, _fmts)
+		SETTER_INIT(ValueName, const char *, _valueNames)
+		SETTER(Speed, std::initializer_list<float>, _speeds)
+		SETTER(Min, std::initializer_list<float>, _mins)
+		SETTER(Max, std::initializer_list<float>, _maxs)
+		SETTER(Format, std::initializer_list<const char *>, _fmts)
+		SETTER(ValueName, std::initializer_list<const char *>, _valueNames)
 		SETTER(Range, uint32_t, _range)
 		SETTER(Start, float *, _start)
-		SETTER(ValueNames, std::initializer_list<const char *>, _valueNames)
 		bool	build(void);
 
 	private:
+		template <typename T>
+		void	fillVec(std::vector<T> &vec, size_t wantedSize) {
+			if (vec.size() != wantedSize)
+				vec = std::vector<T>(wantedSize, vec[0]);
+		}
+
 		bool	buildVecDrag(void);
+		bool	buildDragRange(void);
+		bool	buildSimpleText(void);
 
 		Table						&_table;
 		Window						*_window;
 		const char					*_rowName;
 		Type						_type{VecDrag};
-		float						_speed{1.f};
-		float						_min{-INFINITY};
-		float						_max{+INFINITY};
+		std::vector<float>			_speeds{1.f};
+		std::vector<float>			_mins{-INFINITY};
+		std::vector<float>			_maxs{+INFINITY};
+		std::vector<const char *>	_fmts{"%.3f"};
+		std::vector<const char *>	_valueNames{nullptr};
 		uint32_t					_range{1};
 		float						*_start{nullptr};
-		std::vector<const char *>	_valueNames{};
 
 		using BuildFunc = bool (TableRow::*)();
 		static const std::unordered_map<Type, BuildFunc>	_buildFunctions;

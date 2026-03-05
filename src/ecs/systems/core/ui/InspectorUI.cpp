@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 16:29:27                                        */
+/*  Last Modified: 2026/03/05 18:00:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -124,19 +124,19 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 
 		auto	table = Table("Transform");
 		if (table.begin(3)) {
-			TableRow(table, window, "Position")
+			changed |= TableRow(table, window, "Position")
 				.setType(TableRow::Type::VecDrag)
 				.setSpeed(0.1f)
 				.setStart(&transform->position.x)
 				.setRange(3)
-				.setValueNames({"X:", "Y:", "Z:"})
+				.setValueName({"X:", "Y:", "Z:"})
 				.build();
-			TableRow(table, window, "Scale")
+			changed |= TableRow(table, window, "Scale")
 				.setType(TableRow::Type::VecDrag)
 				.setSpeed(0.1f)
 				.setStart(&transform->scale.x)
 				.setRange(3)
-				.setValueNames({"X:", "Y:", "Z:"})
+				.setValueName({"X:", "Y:", "Z:"})
 				.build();
 			table.end();
 		}
@@ -154,17 +154,31 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 		auto	camera = static_cast<comp::Camera *>(raw);
 		bool	changed = false;
 
-		changed |= ImGui::DragFloatRange2("Render distance", &camera->near,
-									&camera->far, 1.f, 0.001f, 10000.f,
-									"Near %.3f", "Far %.3f", ImGuiSliderFlags_AlwaysClamp);
-		changed |= DragFloat(window->getWindow(), &camera->fov)
-					.setSpeed(0.001f)
-					.setMin(1.f)
-					.setMax(179.f)
-					.setFormat("%.3f°")
-					.setLabel("FOV")
-					.build();
-		ImGui::Text("Aspect ratio :%f", camera->aspect);
+		auto	tableRender = Table("Camera");
+		if (tableRender.begin(2)) {
+			changed |= TableRow(tableRender, window, "Render distance")
+				.setType(TableRow::Type::DragRange)
+				.setStart(&camera->near)
+				.setMin(0.001f)
+				.setMax(10000.f)
+				.setValueName({"Near:", "Far:"})
+				.build();
+			tableRender.end();
+		}
+		auto	tableFOV = Table("FOV");
+		if (tableFOV.begin(1)) {
+			changed |= TableRow(tableFOV, window, "FOV")
+				.setType(TableRow::Type::VecDrag)
+				.setStart(&camera->fov)
+				.setMin(1.f)
+				.setMax(1.f)
+				.build();
+			changed |= TableRow(tableFOV, window, "AspectRatio")
+				.setType(TableRow::Type::SimpleText)
+				.setStart(&camera->aspect)
+				.build();
+			tableFOV.end();
+		}
 
 		if (changed)
 			camera->isDirty = true;

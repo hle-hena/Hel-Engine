@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 16:24:11                                        */
+/*  Last Modified: 2026/03/05 17:59:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "ecs/systems/core/ui/UIHelper.hpp"
+#include "api/ImGui/imgui_stdlib.h"
 
 #include <algorithm>
 #include <iostream>
@@ -131,7 +132,9 @@ void	Table::newRow(const char *rowName) {
 
 const std::unordered_map<TableRow::Type, TableRow::BuildFunc>
 		TableRow::_buildFunctions = {
-			{ VecDrag, &TableRow::buildVecDrag }
+			{ TableRow::Type::VecDrag, &TableRow::buildVecDrag },
+			{ TableRow::Type::DragRange, &TableRow::buildDragRange },
+			{ TableRow::Type::SimpleText, &TableRow::buildSimpleText }
 		};
 
 TableRow::TableRow(Table &table, Window *window, const char *rowName)
@@ -145,8 +148,13 @@ bool	TableRow::build(void) {
 }
 
 bool	TableRow::buildVecDrag(void) {
-	if (!_start || _valueNames.empty())
+	if (!_start)
 		return (false);
+	size_t	sRange = static_cast<size_t>(_range);
+	fillVec(_valueNames, sRange);
+	fillVec(_mins, sRange);
+	fillVec(_maxs, sRange);
+	fillVec(_speeds, sRange);
 
 	bool	changed = false;
 	ImGui::PushID(_rowName);
@@ -155,7 +163,9 @@ bool	TableRow::buildVecDrag(void) {
 	for (uint32_t i = 0; i < _range; i++) {
 		_table.setNextCell(_valueNames[i], [&]{
 			changed |= DragFloat(_window->getWindow(), _start + i)
-							.setSpeed(_speed)
+							.setSpeed(_speeds[i])
+							.setMin(_mins[i])
+							.setMax(_maxs[i])
 							.build();
 			}
 		);
@@ -163,6 +173,61 @@ bool	TableRow::buildVecDrag(void) {
 
 	ImGui::PopID();
 	return (changed);
+}
+
+bool	TableRow::buildDragRange(void) {
+	if (!_start)
+		return (false);
+	size_t	sRange = static_cast<size_t>(2);
+	fillVec(_valueNames, sRange);
+	fillVec(_mins, sRange);
+	fillVec(_maxs, sRange);
+	fillVec(_speeds, sRange);
+
+	bool	changed = false;
+	ImGui::PushID(_rowName);
+
+	_table.newRow(_rowName);
+	_table.setNextCell(_valueNames[0], [&]{
+		changed |= DragFloat(_window->getWindow(), _start)
+						.setSpeed(_speeds[0])
+						.setMin(_mins[0])
+						.setMax(*(_start + 1))
+						.build();
+		}
+	);
+	_table.setNextCell(_valueNames[1], [&]{
+		changed |= DragFloat(_window->getWindow(), _start + 1)
+						.setSpeed(_speeds[1])
+						.setMin(*(_start))
+						.setMax(_maxs[1])
+						.build();
+		}
+	);
+	ImGui::PopID();
+	return (changed);
+}
+
+bool	TableRow::buildSimpleText(void) {
+	if (!_start)
+		return (false);
+	size_t	sRange = static_cast<size_t>(_range);
+	fillVec(_valueNames, sRange);
+	fillVec(_fmts, sRange);
+
+	ImGui::PushID(_rowName);
+
+	_table.newRow(_rowName);
+	for (uint32_t i = 0; i < _range; i++) {
+		_table.setNextCell(_valueNames[i], [&]{
+				ImGui::AlignTextToFramePadding();
+				ImGui::Text(_fmts[i], *(_start + i));
+			}
+		);
+	}
+
+	ImGui::PopID();
+	return false;
 }
 
 }
