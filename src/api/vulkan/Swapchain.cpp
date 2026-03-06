@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 21:00:47                                        */
+/*  Last Modified: 2026/03/06 14:21:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -70,7 +70,7 @@ Swapchain::SupportDetails	Swapchain::querySwapChainSupport(VkPhysicalDevice &dev
 	return (details);
 }
 
-bool	Swapchain::initiateSwapChain(Window &window) {
+bool	Swapchain::initiateSwapChain(Window &window, bool recreating) {
 	Swapchain::SupportDetails	details = querySwapChainSupport(_device.getPhysical(), window.getSurface());
 
 	VkSurfaceFormatKHR	format = selectSwapSurfaceFormat(details.formats);
@@ -112,8 +112,10 @@ bool	Swapchain::initiateSwapChain(Window &window) {
 	std::vector<VkImage>	images(imageCount);
 	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, images.data());
 
+	if (!recreating)
+		createDepthResources();
 	return (createSwapchainImageViews(images, format.format, extent) ||
-		createDepthResources(extent) || createSyncObjects());
+		createSyncObjects());
 }
 
 bool	Swapchain::recreateSwapChain(Window &window) {
@@ -121,7 +123,7 @@ bool	Swapchain::recreateSwapChain(Window &window) {
 
 	deleteSwapChain();
 
-	return (initiateSwapChain(window));
+	return (initiateSwapChain(window, true));
 }
 
 VkSurfaceFormatKHR	Swapchain::selectSwapSurfaceFormat(std::vector<VkSurfaceFormatKHR> &formats) {
@@ -167,7 +169,7 @@ bool	Swapchain::createSwapchainImageViews(std::vector<VkImage> &images,
 	}
 }
 
-bool	Swapchain::createDepthResources(VkExtent2D extent) {
+bool	Swapchain::createDepthResources() {
 	auto	depthFormat = selectDepthFormat(
 		{VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
 		VK_IMAGE_TILING_OPTIMAL,
@@ -177,8 +179,8 @@ bool	Swapchain::createDepthResources(VkExtent2D extent) {
 	Image::Config	config{};
 	config.format = depthFormat;
 	config.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-	config.width = extent.width;
-	config.height = extent.height;
+	config.width = 4096;
+	config.height = 4096;
 	config.properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 	config.aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
 	_depthImage = Image::create(_device, config);

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 18:39:08                                        */
+/*  Last Modified: 2026/03/06 14:20:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -59,7 +59,7 @@ class	Swapchain
 		static SupportDetails		querySwapChainSupport(VkPhysicalDevice &device,
 														VkSurfaceKHR surface);
 
-		bool			initiateSwapChain(Window &window);
+		bool			initiateSwapChain(Window &window, bool recreating = false);
 		bool			recreateSwapChain(Window &window);
 		void			deleteSwapChain(void);
 
@@ -83,7 +83,7 @@ class	Swapchain
 
 		bool	createSwapchainImageViews(std::vector<VkImage> &images,
 									VkFormat format, VkExtent2D extent);
-		bool	createDepthResources(VkExtent2D extent);
+		bool	createDepthResources(void);
 		bool	createSyncObjects(void);
 
 		bool						_healthy{true};
