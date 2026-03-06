@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 11:35:29                                        */
+/*  Last Modified: 2026/03/05 18:16:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -49,8 +49,8 @@ Application::~Application(void) {
 
 void	Application::loadPrimaryScene(void) {
 	Entity::id	cameraHandle = _registry.createEntity();
-	auto	transform = _registry.modify(_registry.addComponent<comp::Transform>(cameraHandle));
-	transform->position = {1.f, 1.f, 1.f};
+	if (auto transform = _registry.modify(_registry.addComponent<comp::Transform>(cameraHandle)))
+		transform->position = {1.f, 1.f, 1.f};
 	_registry.addComponent<comp::Controller>(cameraHandle);
 	_registry.addComponent<comp::EditorControllerTag>(cameraHandle);
 	_registry.addComponent<comp::Camera>(cameraHandle);
@@ -100,6 +100,8 @@ void	Application::run(void) {
 			}
 			_engine.renderUI(*_appWindows[i], currentFrame);
 		}
+		if (_appWindows.empty())
+			break ;
 		_engine.updateFrame();
 		for (size_t i = 0; i < _appWindows.size(); i++) {
 			_engine.renderFrame(*_appWindows[i], currentFrame);

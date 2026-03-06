@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 12:17:46                                        */
+/*  Last Modified: 2026/03/05 20:06:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -71,7 +71,7 @@ void	InspectorUI::render(Window *window) {
 			if (uiOpened) {
 				auto	it = _drawFuncs.find(type);
 				if (it != _drawFuncs.end())
-					_drawFuncs[type](pool->getRaw(handle));
+					_drawFuncs[type](window, pool->getRaw(handle));
 				else
 					ImGui::TextDisabled("No UI integration for %s", label);
 			}
@@ -83,11 +83,11 @@ void	InspectorUI::render(Window *window) {
 	addNewComponentPopup(handle);
 	ImGui::End();
 
-	Splitter()
-		.setId("Inspector splitter")
-		.setLimits(50.f, extent.width * 0.25f)
-		.setPos(extent.width - _windowWidth, 0)
-		.setVal(&_windowWidth)
+	Splitter(&_windowWidth)
+		.setLabel("Inspector splitter")
+		.setMin(50.f)
+		.setMax(extent.width * 0.4f)
+		.setPos({extent.width - _windowWidth, 0.f})
 		.setSize(extent.height)
 		.setDir(Splitter::Left)
 		.build();
@@ -115,46 +115,93 @@ void	InspectorUI::addNewComponentPopup(Entity::id handle) {
 }
 
 void	InspectorUI::setBuiltInDrawFunc(void) {
-	setDrawFunc<comp::BaseControllerTag>([](void *){});
-	setDrawFunc<comp::EditorControllerTag>([](void *){});
+	setDrawFunc<comp::BaseControllerTag>([](Window *, void *){});
+	setDrawFunc<comp::EditorControllerTag>([](Window *, void *){});
 
-	setDrawFunc<comp::Transform>([](void *raw){
+	setDrawFunc<comp::Transform>([](Window *window, void *raw){
 		auto	transform = static_cast<comp::Transform *>(raw);
 		bool	changed = false;
 
-		changed |= ImGui::DragFloat3("Position", &transform->position.x, 0.1f);
-		changed |= ImGui::DragFloat3("Scale", &transform->scale.x, 0.1f);
+		auto	table = Table("Transform");
+		changed |= TableRow(table, window, "Position")
+			.setType(TableRow::Type::VecDrag)
+			.setSpeed(0.1f)
+			.setStart(&transform->position[0])
+			.setRange(3)
+			.setValueName({"X:", "Y:", "Z:"})
+			.build();
+		changed |= TableRow(table, window, "Scale")
+			.setType(TableRow::Type::VecDrag)
+			.setSpeed(0.1f)
+			.setStart(&transform->scale[0])
+			.setRange(3)
+			.setValueName({"X:", "Y:", "Z:"})
+			.build();
+		changed |= TableRow(table, window, "Rotation")
+			.setType(TableRow::Type::VecDrag)
+			.setSpeed(0.001f)
+			.setMin(-1.f)
+			.setMax(1.f)
+			.setRange(4)
+			.setValueName({"X:", "Y:", "Z:", "W:"})
+			.setStart(&transform->rotation[0])
+			.build();
 		if (changed)
 			transform->isDirty = true;
 	});
 
-	setDrawFunc<comp::Model>([](void *raw){
+	setDrawFunc<comp::Model>([](Window *window, void *raw){
 		auto	*model = static_cast<comp::Model *>(raw);
 
-		ImGui::InputText("Model filepath", &model->filePath);
+		auto	table = Table("Model");
+		TableRow(table, window, "Model filepath")
+			.setType(TableRow::Type::InputText)
+			.setStart(&model->filePath)
+			.build();
 	});
 
-	setDrawFunc<comp::Camera>([](void *raw){
+	setDrawFunc<comp::Camera>([](Window *window, void *raw){
 		auto	camera = static_cast<comp::Camera *>(raw);
 		bool	changed = false;
 
-		changed |= ImGui::DragFloatRange2("Render distance", &camera->near,
-									&camera->far, 1.f, 0.001f, 10000.f,
-									"Near %.3f", "Far %.3f", ImGuiSliderFlags_AlwaysClamp);
-		changed |= ImGui::DragFloat("FOV", &camera->fov, 1.f, 1.f, 180.f);
-		ImGui::Text("Aspect ratio :%f", camera->aspect);
+		auto	table = Table("Camera");
+		changed |= TableRow(table, window, "Render distance")
+			.setType(TableRow::Type::DragRange)
+			.setStart(&camera->near)
+			.setMin(0.001f)
+			.setMax(10000.f)
+			.setSpeed({0.001f, 1.f})
+			.setFormat({"%.3f", "%.0f"})
+			.setValueName({"Near:", "Far:"})
+			.build();
+		changed |= TableRow(table, window, "FOV")
+			.setType(TableRow::Type::VecDrag)
+			.setStart(&camera->fov)
+			.setMin(1.f)
+			.setMax(179.f)
+			.setSpeed(0.1f)
+			.setFormat("%.1f°")
+			.build();
+		changed |= TableRow(table, window, "AspectRatio")
+			.setType(TableRow::Type::SimpleText)
+			.setStart(&camera->aspect)
+			.build();
 
 		if (changed)
 			camera->isDirty = true;
 	});
 
-	setDrawFunc<comp::Name>([](void *raw){
+	setDrawFunc<comp::Name>([](Window *window, void *raw){
 		auto	name = static_cast<comp::Name *>(raw);
 
-		ImGui::InputText("Entity's name", &name->name);
+		auto	table = Table("Name");
+		TableRow(table, window, "Entity's name")
+			.setType(TableRow::Type::InputText)
+			.setStart(&name->name)
+			.build();
 	});
 
-	setDrawFunc<comp::Hierarchy>([](void *raw){
+	setDrawFunc<comp::Hierarchy>([](Window *, void *raw){
 		auto	hier = static_cast<comp::Hierarchy *>(raw);
 
 		if (hier->parentId != Entity::NOT_REGISTERED)
@@ -165,7 +212,7 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 			ImGui::BulletText("Child entity %d", Entity::getIndex(childHandle));
 	});
 
-	setDrawFunc<comp::SurfaceAllignement>([](void *raw){
+	setDrawFunc<comp::SurfaceAllignement>([](Window *, void *raw){
 		auto	surface = static_cast<comp::SurfaceAllignement *>(raw);
 
 		if (ImGui::DragFloat3("Up vector", &surface->localUp.x, 0.1f))
@@ -173,11 +220,25 @@ void	InspectorUI::setBuiltInDrawFunc(void) {
 		ImGui::Checkbox("Dynamic allignement", &surface->isDynamic);
 	});
 
-	setDrawFunc<comp::Controller>([](void *raw){
+	setDrawFunc<comp::Controller>([](Window *window, void *raw){
 		auto	controller = static_cast<comp::Controller *>(raw);
 
-		ImGui::DragFloat("Mouse sensitivity", &controller->mouseSensivity);
-		ImGui::DragFloat("Movement speed", &controller->movementSpeed);
+		auto	table = Table("Controller");
+		TableRow(table, window, "Mouse sensitivity")
+			.setType(TableRow::Type::VecDrag)
+			.setStart(&controller->mouseSensivity)
+			.setMin(0.0001f)
+			.setMax(1.f)
+			.setSpeed(0.0001f)
+			.setFormat("%.4f")
+			.build();
+		TableRow(table, window, "Movement speed")
+			.setType(TableRow::Type::VecDrag)
+			.setStart(&controller->movementSpeed)
+			.setMin(0.f)
+			.setSpeed(0.1f)
+			.setFormat("%.1f")
+			.build();
 	});
 }
 
