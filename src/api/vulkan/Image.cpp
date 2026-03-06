@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/06 15:30:23                                        */
+/*  Last Modified: 2026/03/06 21:32:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -135,6 +135,8 @@ void	Image::allocateMemory(void) {
 
 void	Image::transitionLayout(VkCommandBuffer commandBuffer,
 								VkImageLayout newLayout) {
+	if (newLayout == _currentLayout)
+		return ;
 	VkImageMemoryBarrier2	barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
 	barrier.srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;

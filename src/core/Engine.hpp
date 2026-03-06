@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 19:51:07                                        */
+/*  Last Modified: 2026/03/06 21:51:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,7 +35,6 @@
 
 #include "api/vulkan/Swapchain.hpp"
 #include "api/vulkan/Buffer.hpp"
-#include "api/vulkan/RenderPass.hpp"
 #include "api/vulkan/Descriptors.hpp"
 
 namespace hel {
@@ -81,10 +80,8 @@ class	Engine {
 		void			createDescriptorPool(void);
 
 		void			updateGlobalUBO(Window &window, uint32_t currentFrame);
-		bool			beginFrame(VkCommandBuffer commandBuffer,
-								Image *colorImage, Image *depthImage);
-		bool			endFrame(VkCommandBuffer commandBuffer,
-								Image *colorImage);
+		bool			beginFrame(VkCommandBuffer commandBuffer);
+		bool			endFrame(VkCommandBuffer commandBuffer);
 		WindowResources	*getWindowResources(Window& window);
 
 		bool											_healthy{true};

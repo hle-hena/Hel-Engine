@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/06 16:07:45                                        */
+/*  Last Modified: 2026/03/06 22:36:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -51,13 +51,11 @@ void	UiContext::initImGui(Device &device) {
 
 	ImGui_ImplGlfw_InitForVulkan(_window->_windowPtr, true);
 
-	auto	colorFormat = _window->getSwapchain().getNextSwapImage(0)->getFormat();
-	auto	depthFormat = _window->getSwapchain().getDepthImage()->getFormat();
+	auto	colorFormat = VK_FORMAT_B8G8R8A8_UNORM;
 	VkPipelineRenderingCreateInfo	renderingCreateInfo{};
 	renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
 	renderingCreateInfo.colorAttachmentCount = 1;
 	renderingCreateInfo.pColorAttachmentFormats = &colorFormat;
-	renderingCreateInfo.depthAttachmentFormat = depthFormat;
 
 	ImGui_ImplVulkan_InitInfo	initInfo{};
 	initInfo.ApiVersion = VK_API_VERSION_1_3;

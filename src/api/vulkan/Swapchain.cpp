@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/06 16:08:47                                        */
+/*  Last Modified: 2026/03/06 22:30:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -89,7 +89,7 @@ bool	Swapchain::initiateSwapChain(Window &window, bool recreating) {
 	createInfo.imageColorSpace = format.colorSpace;
 	createInfo.imageExtent = extent;
 	createInfo.imageArrayLayers = 1;
-	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	QueuesFamilyIndices	indices = _device.getQueueFamily();
 	uint32_t			pIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 	if (indices.graphicsFamily != indices.presentFamily) {
@@ -108,9 +108,9 @@ bool	Swapchain::initiateSwapChain(Window &window, bool recreating) {
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 	if (vkCreateSwapchainKHR(_device.getLogical(), &createInfo, nullptr, &_swapchain) != VK_SUCCESS)
 		RETURN_SET_UNHEALTHY("Couldn't create the swap chain", true);
-	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, nullptr);
-	std::vector<VkImage>	images(imageCount);
-	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, images.data());
+	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &_imageCount, nullptr);
+	std::vector<VkImage>	images(_imageCount);
+	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &_imageCount, images.data());
 
 	if (!recreating && createStaticResources())
 		return (true);
@@ -170,7 +170,7 @@ bool	Swapchain::createSwapchainImageViews(std::vector<VkImage> &images,
 }
 
 bool	Swapchain::createStaticResources() {
-	return (createDepthResources() && createStaticImages());
+	return (createDepthResources() || createStaticImages());
 }
 
 bool	Swapchain::createDepthResources(void) {
@@ -198,8 +198,8 @@ bool	Swapchain::createStaticImages() {
 	config.aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
 	config.format = {VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM};
 	config.properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-	config.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-	for (size_t i = 0; i < 5; i++) {
+	config.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+	for (auto i = 0; i < _imageCount; i++) {
 		_offscreenImages.emplace_back(Image::create(_device, config));
 		if (!_offscreenImages.back())
 			return (true);

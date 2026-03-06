@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/06 15:42:09                                        */
+/*  Last Modified: 2026/03/06 22:38:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,6 +19,7 @@
 #include "api/vulkan/Swapchain.hpp"
 #include "api/vulkan/Sampler.hpp"
 #include "api/vulkan/Descriptors.hpp"
+#include "api/vulkan/Renderer.hpp"
 #include "utils/healthHelper.hpp"
 #include "platform/window/Window.hpp"
 #include "platform/window/GLFW.hpp"
@@ -85,57 +86,15 @@ void	Engine::createDescriptorPool(void) {
 		.build();
 }
 
-bool	Engine::beginFrame(VkCommandBuffer commandBuffer,
-						Image *colorImage, Image *depthImage) {
+bool	Engine::beginFrame(VkCommandBuffer commandBuffer) {
 	VkCommandBufferBeginInfo	beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
-		return (true);
-
-	VkClearValue	colorClear = {{{0.f, 0.f, 0.f, 1.0f}}};
-	VkClearValue	depthClear = { .depthStencil = {1.0f, 0} };
-
-	colorImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-	depthImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
-
-	auto	extent = colorImage->getExtent();
-	auto	colorAttach = colorImage->getRenderingInfo(colorClear,
-									VK_ATTACHMENT_LOAD_OP_CLEAR,
-									VK_ATTACHMENT_STORE_OP_STORE, colorImage->getFormat());
-	auto	depthAttach = depthImage->getRenderingInfo(depthClear,
-									VK_ATTACHMENT_LOAD_OP_CLEAR,
-									VK_ATTACHMENT_STORE_OP_DONT_CARE, depthImage->getFormat());
-
-	VkRenderingInfo renderingInfo{};
-	renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-	renderingInfo.renderArea = {{0, 0}, colorImage->getExtent()};
-	renderingInfo.layerCount = 1;
-	renderingInfo.colorAttachmentCount = 1;
-	renderingInfo.pColorAttachments = &colorAttach;
-	renderingInfo.pDepthAttachment = &depthAttach;
-
-	vkCmdBeginRendering(commandBuffer, &renderingInfo);
-
-	VkViewport	viewport{};
-	viewport.height = static_cast<float>(extent.height);
-	viewport.width = static_cast<float>(extent.width);
-	viewport.maxDepth = 1.f;
-	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-	VkRect2D	scissor{};
-	scissor.extent = extent;
-	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-	return (false);
+	return (vkBeginCommandBuffer(commandBuffer, &beginInfo));
 }
 
-bool	Engine::endFrame(VkCommandBuffer commandBuffer, Image *colorImage) {
-	vkCmdEndRendering(commandBuffer);
-	colorImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
-		return (true);
-	return (false);
+bool	Engine::endFrame(VkCommandBuffer commandBuffer) {
+	return (vkEndCommandBuffer(commandBuffer));
 }
 
 WindowResources *Engine::getWindowResources(Window& window) {
@@ -222,18 +181,61 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	VkCommandBuffer	commandBuffer = resources->commandBuffers[currentFrame];
 	vkResetCommandBuffer(commandBuffer, 0);
 
-	auto	colorImage = swap.getNextSwapImage(imageIndex);
+	auto	swapImage = swap.getNextSwapImage(imageIndex);
+	auto	offImage = swap.getNextOffscreenImage(imageIndex);
 	auto	depthImage = swap.getDepthImage();
-	RenderingConfig	config{};
-	config.colorFormats.push_back(colorImage->getFormat());
-	config.depthFormat = depthImage->getFormat();
 
 	UiContext	&ui = window.getUI();
-	beginFrame(commandBuffer, colorImage, depthImage);
-	_renderSystem.render(config, *resources, currentFrame);
-	_cameraSystem.render(config, *resources, currentFrame);
-	ui.renderFrame(commandBuffer);
-	endFrame(commandBuffer, colorImage);
+	beginFrame(commandBuffer);
+	if (auto pass = Renderer(commandBuffer, swapImage->getExtent())
+					.addColor(offImage, VK_FORMAT_B8G8R8A8_SRGB)
+					.addDepth(depthImage, depthImage->getFormat())
+					.beginPass()) {
+		RenderingConfig	config{};
+		config.colorFormats.push_back(VK_FORMAT_B8G8R8A8_SRGB);
+		config.depthFormat = depthImage->getFormat();
+
+		_renderSystem.render(config, *resources, currentFrame);
+		_cameraSystem.render(config, *resources, currentFrame);
+	}
+
+	if (auto pass = Renderer(commandBuffer, swapImage->getExtent())
+					.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+					.addColor(offImage, VK_FORMAT_B8G8R8A8_UNORM)
+					.beginPass()) {
+		RenderingConfig	config{};
+		config.colorFormats.push_back(VK_FORMAT_B8G8R8A8_UNORM);
+
+		ui.renderFrame(commandBuffer);
+	}
+
+	offImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+	swapImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+	auto	offExtent = offImage->getExtent();
+	auto	swapExtent = swapImage->getExtent();
+	VkImageBlit2 region{};
+	region.sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2;
+	region.srcSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+	region.srcOffsets[0] = {0, 0, 0};
+	region.srcOffsets[1] = {(int)swapExtent.width, (int)swapExtent.height, 1};
+	region.dstSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+	region.dstOffsets[0] = {0, 0, 0};
+	region.dstOffsets[1] = {(int)swapExtent.width, (int)swapExtent.height, 1};
+
+	VkBlitImageInfo2 blitInfo{};
+	blitInfo.sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2;
+	blitInfo.srcImage = offImage->getImage();
+	blitInfo.srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+	blitInfo.dstImage = swapImage->getImage();
+	blitInfo.dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	blitInfo.regionCount = 1;
+	blitInfo.pRegions = &region;
+	blitInfo.filter = VK_FILTER_LINEAR;
+	vkCmdBlitImage2(commandBuffer, &blitInfo);
+
+	swapImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	endFrame(commandBuffer);
 
 	swapchain.submitCommandBuffer(&commandBuffer, imageIndex, currentFrame);
 	if (swapchain.present(window, imageIndex, currentFrame))
