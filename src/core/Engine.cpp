@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 11:35:17                                        */
+/*  Last Modified: 2026/03/06 15:42:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -102,10 +102,10 @@ bool	Engine::beginFrame(VkCommandBuffer commandBuffer,
 	auto	extent = colorImage->getExtent();
 	auto	colorAttach = colorImage->getRenderingInfo(colorClear,
 									VK_ATTACHMENT_LOAD_OP_CLEAR,
-									VK_ATTACHMENT_STORE_OP_STORE);
+									VK_ATTACHMENT_STORE_OP_STORE, colorImage->getFormat());
 	auto	depthAttach = depthImage->getRenderingInfo(depthClear,
 									VK_ATTACHMENT_LOAD_OP_CLEAR,
-									VK_ATTACHMENT_STORE_OP_DONT_CARE);
+									VK_ATTACHMENT_STORE_OP_DONT_CARE, depthImage->getFormat());
 
 	VkRenderingInfo renderingInfo{};
 	renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
@@ -222,7 +222,7 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	VkCommandBuffer	commandBuffer = resources->commandBuffers[currentFrame];
 	vkResetCommandBuffer(commandBuffer, 0);
 
-	auto	colorImage = swap.getNextColorImage(imageIndex);
+	auto	colorImage = swap.getNextSwapImage(imageIndex);
 	auto	depthImage = swap.getDepthImage();
 	RenderingConfig	config{};
 	config.colorFormats.push_back(colorImage->getFormat());

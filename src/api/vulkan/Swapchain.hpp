@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/06 14:20:15                                        */
+/*  Last Modified: 2026/03/06 16:08:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -64,7 +64,8 @@ class	Swapchain
 		void			deleteSwapChain(void);
 
 		Image			*getDepthImage(void);
-		Image			*getNextColorImage(uint32_t imageIndex);
+		Image			*getNextSwapImage(uint32_t imageIndex);
+		Image			*getNextOffscreenImage(uint32_t imageIndex);
 		bool			acquireNextImage(Window &window, uint32_t currentFrame, uint32_t *imageIndex);
 		bool			submitCommandBuffer(VkCommandBuffer *commandBuffer,
 									uint32_t imageIndex, uint32_t currentFrame);
@@ -83,14 +84,18 @@ class	Swapchain
 
 		bool	createSwapchainImageViews(std::vector<VkImage> &images,
 									VkFormat format, VkExtent2D extent);
-		bool	createDepthResources(void);
 		bool	createSyncObjects(void);
+
+		bool	createStaticResources(void);
+		bool	createDepthResources(void);
+		bool	createStaticImages(void);
 
 		bool						_healthy{true};
 		std::string					_reason{""};
 		Device						&_device;
 		VkSwapchainKHR				_swapchain{VK_NULL_HANDLE};
-		std::vector<Image::ptr>		_colorImages;
+		std::vector<Image::ptr>		_offscreenImages;
+		std::vector<Image::ptr>		_swapImages;
 		Image::ptr					_depthImage;
 		std::array<VkSemaphore,	MAX_FRAMES_IN_FLIGHT>	_imageAvailable{VK_NULL_HANDLE};
 		std::array<VkSemaphore,	MAX_FRAMES_IN_FLIGHT>	_renderFinished{VK_NULL_HANDLE};

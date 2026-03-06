@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/06 15:28:53                                        */
+/*  Last Modified: 2026/03/06 15:39:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -51,8 +51,8 @@ class Image {
 
 		VkImage						getImage(void) const
 			{ return (_image); }
-		VkImageView					getView(void) const
-			{ return (_views.at(_config.format[0])); }
+		VkImageView					getView(VkFormat format) const
+			{ return (_views.at(format)); }
 		VkExtent2D					getExtent(void) const
 			{ return {_config.width, _config.height}; }
 		VkFormat					getFormat(void) const

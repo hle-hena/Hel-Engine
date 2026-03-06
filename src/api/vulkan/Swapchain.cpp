@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/06 14:21:03                                        */
+/*  Last Modified: 2026/03/06 16:08:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,7 +34,7 @@ Swapchain::~Swapchain(void) {
 
 void	Swapchain::deleteSwapChain(void) {
 	vkDeviceWaitIdle(_device.getLogical());
-	_colorImages.clear();
+	_swapImages.clear();
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		if (_renderFinished[i] != VK_NULL_HANDLE)
 			vkDestroySemaphore(_device.getLogical(), _renderFinished[i], nullptr);
@@ -112,8 +112,8 @@ bool	Swapchain::initiateSwapChain(Window &window, bool recreating) {
 	std::vector<VkImage>	images(imageCount);
 	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, images.data());
 
-	if (!recreating)
-		createDepthResources();
+	if (!recreating && createStaticResources())
+		return (true);
 	return (createSwapchainImageViews(images, format.format, extent) ||
 		createSyncObjects());
 }
@@ -163,13 +163,17 @@ VkExtent2D	Swapchain::selectSwapExtent(const VkSurfaceCapabilitiesKHR &capabilit
 bool	Swapchain::createSwapchainImageViews(std::vector<VkImage> &images,
 									VkFormat format, VkExtent2D extent) {
 	for (auto image: images) {
-		_colorImages.emplace_back(Image::wrapSwapchainImages(_device, image, format, extent));
-		if (!_colorImages.back())
+		_swapImages.emplace_back(Image::wrapSwapchainImages(_device, image, format, extent));
+		if (!_swapImages.back())
 			RETURN_SET_UNHEALTHY("Couldn't create an image view", true);
 	}
 }
 
-bool	Swapchain::createDepthResources() {
+bool	Swapchain::createStaticResources() {
+	return (createDepthResources() && createStaticImages());
+}
+
+bool	Swapchain::createDepthResources(void) {
 	auto	depthFormat = selectDepthFormat(
 		{VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
 		VK_IMAGE_TILING_OPTIMAL,
@@ -177,7 +181,7 @@ bool	Swapchain::createDepthResources() {
 	);
 
 	Image::Config	config{};
-	config.format = depthFormat;
+	config.format = {depthFormat};
 	config.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 	config.width = 4096;
 	config.height = 4096;
@@ -185,6 +189,22 @@ bool	Swapchain::createDepthResources() {
 	config.aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
 	_depthImage = Image::create(_device, config);
 	return (!_depthImage);
+}
+
+bool	Swapchain::createStaticImages() {
+	Image::Config	config{};
+	config.height = 4096;
+	config.width = 4096;
+	config.aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
+	config.format = {VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM};
+	config.properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+	config.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	for (size_t i = 0; i < 5; i++) {
+		_offscreenImages.emplace_back(Image::create(_device, config));
+		if (!_offscreenImages.back())
+			return (true);
+	}
+	return (false);
 }
 
 VkFormat	Swapchain::selectDepthFormat(const std::vector<VkFormat> &candidates,
@@ -227,8 +247,12 @@ Image	*Swapchain::getDepthImage(void) {
 	return (_depthImage.get());
 }
 
-Image	*Swapchain::getNextColorImage(uint32_t imageIndex) {
-	return (_colorImages[imageIndex].get());
+Image	*Swapchain::getNextSwapImage(uint32_t imageIndex) {
+	return (_swapImages[imageIndex].get());
+}
+
+Image	*Swapchain::getNextOffscreenImage(uint32_t imageIndex) {
+	return (_offscreenImages[imageIndex].get());
 }
 
 bool	Swapchain::acquireNextImage(Window &window, uint32_t currentFrame, uint32_t *imageIndex) {
