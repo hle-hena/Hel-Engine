@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/03 14:25:06                                        */
+/*  Last Modified: 2026/03/05 19:51:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,56 +15,23 @@
 /* *************************************************************************  */
 
 #include "ecs/systems/core/ui/UIHelper.hpp"
+#include "api/ImGui/imgui_stdlib.h"
 
 #include <algorithm>
 #include <iostream>
 
 namespace	hel::sys {
 
-Splitter	&Splitter::setPos(float x, float y) {
-	_pos.x = x;
-	_pos.y = y;
-	return (*this);
-}
-
-Splitter	&Splitter::setSize(float size) {
-	_size = size;
-	return (*this);
-}
-
-
-Splitter	&Splitter::setHitBox(float size) {
-	_hitBox = size;
-	return (*this);
-}
-
-Splitter	&Splitter::setLimits(float minSize, float maxSize) {
-	_limits.x = minSize;
-	_limits.y = maxSize;
-	return (*this);
-}
-
-Splitter	&Splitter::setDir(Dir dir) {
-	_dir = dir;
-	return (*this);
-}
-
-Splitter	&Splitter::setVal(float *val) {
-	_updateVal = val;
-	return (*this);
-}
-
-Splitter	&Splitter::setId(const std::string &id) {
-	_id = id;
-	return (*this);
+Splitter::Splitter(float *val)
+	:	_val{val} {
 }
 
 void	Splitter::build(void) {
 	if (isHorizontal(_dir)) {
-		ImGui::SetNextWindowSize({_size, _hitBox});
+		ImGui::SetNextWindowSize({_size, _hitbox});
 		ImGui::SetNextWindowPos(_pos, ImGuiCond_Always, {0.f, 0.5f});
 	} else {
-		ImGui::SetNextWindowSize({_hitBox, _size});
+		ImGui::SetNextWindowSize({_hitbox, _size});
 		ImGui::SetNextWindowPos(_pos, ImGuiCond_Always, {0.5f, 0.f});
 	}
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar |
@@ -75,12 +42,12 @@ void	Splitter::build(void) {
 							ImGuiWindowFlags_NoSavedSettings;
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, {0, 0});
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-	ImGui::Begin(_id.c_str(), nullptr, flags);
+	ImGui::Begin(_label, nullptr, flags);
 
 	ImGui::InvisibleButton("##hitarea", ImGui::GetContentRegionAvail());
 	bool	active = ImGui::IsItemActive();
 	if (active)
-		*_updateVal += (isHorizontal(_dir)) ?
+		*_val += (isHorizontal(_dir)) ?
 						IsPositive(_dir) * ImGui::GetIO().MouseDelta.y :
 						IsPositive(_dir) * ImGui::GetIO().MouseDelta.x;
 	if (active || ImGui::IsItemHovered())
@@ -91,7 +58,233 @@ void	Splitter::build(void) {
 	ImGui::End();
 	ImGui::PopStyleVar(2);
 
-	*_updateVal = std::clamp(*_updateVal, _limits.x, _limits.y);
+	*_val = std::clamp(*_val, _min, _max);
+}
+
+
+
+DragFloat::DragFloat(GLFWwindow *windowPtr, float *val)
+	:	_windowPtr{windowPtr},
+		_val{val} {
+}
+
+bool	DragFloat::build(void) {
+	bool	changed = ImGui::DragFloat(_label, _val, _speed, _min, _max, _format,
+					ImGuiSliderFlags_AlwaysClamp);
+
+	if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
+		ImGuiIO	&io= ImGui::GetIO();
+		ImVec2	mousePos = io.MousePos;
+
+		float	padding = 3.f;
+		float	leftBound = 0.0f;
+		float	rightBound = io.DisplaySize.x;
+
+		if (mousePos.x <= leftBound) {
+			float newX = rightBound - padding;
+			glfwSetCursorPos(_windowPtr, newX, mousePos.y);
+			io.MousePosPrev = ImVec2(newX, mousePos.y); 
+			io.MousePos = ImVec2(newX, mousePos.y);
+		} else if (mousePos.x >= rightBound - 1) {
+			float newX = leftBound + padding;
+			glfwSetCursorPos(_windowPtr, newX, mousePos.y);
+			io.MousePosPrev = ImVec2(newX, mousePos.y);
+			io.MousePos = ImVec2(newX, mousePos.y);
+		}
+	}
+	return (changed);
+}
+
+
+
+Table::Table(const char *name)
+	:	_name{name} {
+}
+
+Table::~Table(void) {
+	if (_tableOpened) {
+		ImGui::EndTable();
+		_tableOpened = false;
+	}
+}
+
+bool	Table::beginNewTable(void) {
+	if (_tableOpened)
+		return (false);
+	std::string	indexedName = std::string(_name) + "###Table" + std::to_string(_nbCol);
+	if (ImGui::BeginTable(indexedName.c_str(), _nbCol * 2 + 1, ImGuiTableFlags_SizingFixedFit)) {
+		ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthFixed);
+		for (uint32_t i = 0; i < _nbCol; i++) {
+			ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch);
+		}
+		_tableOpened = true;
+		_nbTables++;
+		return (true);
+	}
+	return (false);
+}
+
+void	Table::endTable(void) {
+	if (_tableOpened) {
+		ImGui::EndTable();
+		ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, 10.f));
+		_tableOpened = false;
+	}
+}
+
+bool	Table::newRow(const char *rowName, uint32_t nbCol) {
+	if (nbCol != _nbCol || !_tableOpened) {
+		_nbCol = nbCol;
+		endTable();
+		if (!beginNewTable())
+			return (false);
+	}
+	ImGui::TableNextRow();
+	ImGui::TableNextColumn();
+	ImGui::AlignTextToFramePadding();
+	ImGui::Text(rowName);
+	ImGui::SameLine();
+	ImGui::Dummy(ImVec2(10.0f, 0.0f));
+	return (true);
+}
+
+
+
+const std::unordered_map<TableRow::Type, TableRow::BuildFunc>
+		TableRow::_buildFunctions = {
+			{ TableRow::Type::VecDrag, &TableRow::buildVecDrag },
+			{ TableRow::Type::DragRange, &TableRow::buildDragRange },
+			{ TableRow::Type::SimpleText, &TableRow::buildSimpleText },
+			{ TableRow::Type::InputText, &TableRow::buildInputText }
+		};
+
+TableRow::TableRow(Table &table, Window *window, const char *rowName)
+	:	_table{table},
+		_window{window},
+		_rowName{rowName} {
+}
+
+bool	TableRow::build(void) {
+	return ((this->*_buildFunctions.at(_type))());
+}
+
+bool	TableRow::buildVecDrag(void) {
+	if (!_startFloat)
+		return (false);
+	size_t	sRange = static_cast<size_t>(_range);
+	fillVec(_valueNames, sRange);
+	fillVec(_fmts, sRange);
+	fillVec(_mins, sRange);
+	fillVec(_maxs, sRange);
+	fillVec(_speeds, sRange);
+
+	bool	changed = false;
+	if (!_table.newRow(_rowName, _range))
+		return (false);
+	ImGui::PushID(_rowName);
+
+	for (uint32_t i = 0; i < _range; i++) {
+		ImGui::PushID(i);
+		_table.setNextCell(_valueNames[i], [&]{
+				changed |= DragFloat(_window->getWindow(), _startFloat + i)
+								.setSpeed(_speeds[i])
+								.setMin(_mins[i])
+								.setMax(_maxs[i])
+								.setFormat(_fmts[i])
+								.build();
+			}
+		);
+		ImGui::PopID();
+	}
+
+	ImGui::PopID();
+	return (changed);
+}
+
+bool	TableRow::buildDragRange(void) {
+	if (!_startFloat)
+		return (false);
+	_range = 2;
+	size_t	sRange = static_cast<size_t>(_range);
+	fillVec(_valueNames, sRange);
+	fillVec(_fmts, sRange);
+	fillVec(_mins, sRange);
+	fillVec(_maxs, sRange);
+	fillVec(_speeds, sRange);
+	_maxs[0] = *(_startFloat + 1);
+	_mins[1] = *(_startFloat);
+
+	bool	changed = false;
+	if (!_table.newRow(_rowName, 2))
+		return (false);
+	ImGui::PushID(_rowName);
+
+	for (uint32_t i = 0; i < _range; i++) {
+		ImGui::PushID(i);
+		_table.setNextCell(_valueNames[i], [&]{
+				changed |= DragFloat(_window->getWindow(), _startFloat + i)
+								.setSpeed(_speeds[i])
+								.setMin(_mins[i])
+								.setMax(_maxs[i])
+								.setFormat(_fmts[i])
+								.build();
+			}
+		);
+		ImGui::PopID();
+	}
+
+	ImGui::PopID();
+	return (changed);
+}
+
+bool	TableRow::buildSimpleText(void) {
+	if (!_startFloat)
+		return (false);
+	size_t	sRange = static_cast<size_t>(_range);
+	fillVec(_valueNames, sRange);
+	fillVec(_fmts, sRange);
+
+	if (!_table.newRow(_rowName, _range))
+		return (false);
+	ImGui::PushID(_rowName);
+
+	for (uint32_t i = 0; i < _range; i++) {
+		ImGui::PushID(i);
+		_table.setNextCell(_valueNames[i], [&]{
+				ImGui::AlignTextToFramePadding();
+				ImGui::Text(_fmts[i], *(_startFloat + i));
+			}
+		);
+		ImGui::PopID();
+	}
+
+	ImGui::PopID();
+	return (false);
+}
+
+bool	TableRow::buildInputText(void) {
+	if (!_startString)
+		return (false);
+	size_t	sRange = static_cast<size_t>(_range);
+	fillVec(_valueNames, sRange);
+
+	bool	changed = false;
+	if (!_table.newRow(_rowName, _range))
+		return (false);
+	ImGui::PushID(_rowName);
+
+	for (uint32_t i = 0; i < _range; i++) {
+		ImGui::PushID(i);
+		_table.setNextCell(_valueNames[i], [&]{
+				changed |= ImGui::InputText("##", _startString + i);
+			}
+		);
+		ImGui::PopID();
+	}
+
+	ImGui::PopID();
+	return (changed);
 }
 
 }

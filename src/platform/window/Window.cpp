@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/02 15:04:30                                        */
+/*  Last Modified: 2026/03/05 19:07:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -132,6 +132,8 @@ void	Window::setEntityReference(Entity::id handle) {
 }
 
 void	Window::updateEntityReference(void) {
+	if (!_entityHandle.has_value())
+		return ;
 	auto	&registry = _app.getRegistry();
 	if (auto camera = registry.modify<comp::Camera>(_entityHandle.value()))
 		camera->aspect = static_cast<float>(_width) /
