@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 20:49:03                                        */
+/*  Last Modified: 2026/03/06 15:30:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -47,24 +47,24 @@ std::unique_ptr<Image>	Image::wrapSwapchainImages(Device &device, VkImage img,
 Image::Image(Device &device, const Config &config)
 	:	_device{device},
 		_config{config} {
-	createImage(), allocateMemory(), createView();
+	createImage(), allocateMemory(), createViews();
 }
 
 Image::Image(Device &device, VkImage img, VkFormat format, VkExtent2D extent)
 	:	_device{device} {
 	_image = img;
 	_owned = false;
-	_config.format = format;
+	_config.format = {format};
 	_config.width = extent.width;
 	_config.height = extent.height;
 	_config.aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
 	_config.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
-	createView();
+	createViews();
 }
 
 Image::~Image(void) {
-	if (_view)
-		vkDestroyImageView(_device.getLogical(), _view, nullptr);
+	for (auto it: _views)
+		vkDestroyImageView(_device.getLogical(), it.second, nullptr);
 	if (_owned && _memory)
 		vkFreeMemory(_device.getLogical(), _memory, nullptr);
 	if (_owned && _image)
@@ -74,8 +74,10 @@ Image::~Image(void) {
 void	Image::createImage(void) {
 	VkImageCreateInfo	createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	createInfo.flags = _config.format.size() == 1 ? 0 :
+							VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
 	createInfo.imageType = VK_IMAGE_TYPE_2D;
-	createInfo.format = _config.format;
+	createInfo.format = _config.format[0];
 	createInfo.extent.width = _config.width;
 	createInfo.extent.height = _config.height;
 	createInfo.extent.depth = 1;
@@ -91,17 +93,22 @@ void	Image::createImage(void) {
 		throw std::runtime_error("Failed to create an Image");
 }
 
-void	Image::createView(void) {
+void	Image::createViews(void) {
 	static constexpr VkImageUsageFlags	viewFlags = VK_IMAGE_USAGE_SAMPLED_BIT |
 		VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
 	if (!(viewFlags & _config.usage))
 		return ;
+	for (auto i = 0; i < _config.format.size(); i++)
+		createView(_config.format[i]);
+}
+
+void	Image::createView(VkFormat format) {
 	VkImageViewCreateInfo	viewCreateInfo{};
 	viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	viewCreateInfo.image = _image;
 	viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	viewCreateInfo.format = _config.format;
+	viewCreateInfo.format = format;
 	viewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 	viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
 	viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -112,8 +119,8 @@ void	Image::createView(void) {
 	viewCreateInfo.subresourceRange.baseArrayLayer = 0;
 	viewCreateInfo.subresourceRange.layerCount = 1; //TODO -> support mipmaps
 	if (vkCreateImageView(_device.getLogical(), &viewCreateInfo,
-						nullptr, &_view))
-		throw std::runtime_error("Failed to create the image view");
+						nullptr, &_views[format]))
+		throw std::runtime_error("Failed to create an image view");
 }
 
 void	Image::allocateMemory(void) {
@@ -180,11 +187,17 @@ void	Image::setData(void *data, VkDeviceSize size) {
 	_device.endSingleTimeCommand(commandBuffer);
 }
 
+VkDescriptorImageInfo	Image::getDescriptorInfo(VkFormat format) const {
+	return {nullptr, _views.at(format), _currentLayout};
+}
+
 VkRenderingAttachmentInfo	Image::getRenderingInfo(VkClearValue clearValue,
-				VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp) const {
+													VkAttachmentLoadOp loadOp,
+													VkAttachmentStoreOp storeOp,
+													VkFormat format) const {
 	VkRenderingAttachmentInfo	info{};
 	info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-	info.imageView = _view;
+	info.imageView = _views.at(format);
 	info.imageLayout = _currentLayout;
 	info.clearValue = clearValue;
 	info.loadOp = loadOp;

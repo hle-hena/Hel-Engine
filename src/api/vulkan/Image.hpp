@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 19:25:02                                        */
+/*  Last Modified: 2026/03/06 15:28:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,7 +17,9 @@
 #pragma once
 
 # include <memory>
+# include <unordered_map>
 # include <vulkan/vulkan.h>
+# include "utils/mathUtils.hpp"
 
 namespace	hel {
 
@@ -28,7 +30,7 @@ class Image {
 		using ptr = std::unique_ptr<Image>;
 		struct	Config {
 			uint32_t				width, height;
-			VkFormat				format;
+			std::vector<VkFormat>	format{};
 			VkImageUsageFlags		usage;
 			VkMemoryPropertyFlags	properties;
 			VkImageAspectFlags		aspectFlags;
@@ -47,18 +49,19 @@ class Image {
 								VkImageLayout newLayout);
 		void	setData(void *data, VkDeviceSize size);
 
-		VkDescriptorImageInfo	getDescriptorInfo(void) const
-			{ return {nullptr, _view, _currentLayout}; };
-		VkImage					getImage(void) const
+		VkImage						getImage(void) const
 			{ return (_image); }
-		VkImageView				getView(void) const
-			{ return (_view); }
-		VkExtent2D				getExtent(void) const
+		VkImageView					getView(void) const
+			{ return (_views.at(_config.format[0])); }
+		VkExtent2D					getExtent(void) const
 			{ return {_config.width, _config.height}; }
-		VkFormat				getFormat(void) const
-			{ return (_config.format); }
+		VkFormat					getFormat(void) const
+			{ return (_config.format[0]); }
+		VkDescriptorImageInfo		getDescriptorInfo(VkFormat format) const;
 		VkRenderingAttachmentInfo	getRenderingInfo(VkClearValue clearValue,
-				VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp) const;
+													VkAttachmentLoadOp loadOp,
+													VkAttachmentStoreOp storeOp,
+													VkFormat format) const;
 
 	private:
 		Image(Device &device, const Config &config);
@@ -66,15 +69,18 @@ class Image {
 
 		void	createImage(void);
 		void	allocateMemory(void);
-		void	createView(void);
+		void	createViews(void);
+		void	createView(VkFormat format);
 
-		bool			_owned{true};
-		Device			&_device;
-		Config			_config;
-		VkImage			_image{VK_NULL_HANDLE};
-		VkImageView		_view{VK_NULL_HANDLE};
-		VkDeviceMemory	_memory{VK_NULL_HANDLE};
-		VkImageLayout	_currentLayout{VK_IMAGE_LAYOUT_UNDEFINED};
+		bool							_owned{true};
+		Device							&_device;
+		Config							_config;
+		VkImage							_image{VK_NULL_HANDLE};
+		std::unordered_map<VkFormat,
+				VkImageView,
+				mathUtils::EnumHash>	_views;
+		VkDeviceMemory					_memory{VK_NULL_HANDLE};
+		VkImageLayout					_currentLayout{VK_IMAGE_LAYOUT_UNDEFINED};
 };
 
 }
