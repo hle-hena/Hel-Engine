@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 19:07:42                                        */
+/*  Last Modified: 2026/03/09 12:59:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -116,18 +116,10 @@ bool	Window::shouldClose(void) {
 		inputState.setFocus(this, false);
 		return (true);
 	}
-	if (inputState.isPressed<input::Key>(GLFW_KEY_N) &&
-		inputState.hasMod(GLFW_MOD_CONTROL) &&
-		inputState.getFocused() == this) {
-		_app.addNewWindow(Window::WIDTH, Window::HEIGHT, _windowName + "_copy");
-		return (false);
-	}
 	return (glfwWindowShouldClose(_windowPtr));
 }
 
 void	Window::setEntityReference(Entity::id handle) {
-	if (_app.isHandleAlreadyAssigned(handle))
-		return ;
 	_entityHandle = handle;
 }
 
