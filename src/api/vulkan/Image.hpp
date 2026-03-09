@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/06 15:39:03                                        */
+/*  Last Modified: 2026/03/07 17:46:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,6 +48,7 @@ class Image {
 		void	transitionLayout(VkCommandBuffer commandBuffer,
 								VkImageLayout newLayout);
 		void	setData(void *data, VkDeviceSize size);
+		void	copyTo(VkCommandBuffer commandBuffer, Image *dst);
 
 		VkImage						getImage(void) const
 			{ return (_image); }

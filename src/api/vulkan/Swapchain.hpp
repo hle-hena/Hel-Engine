@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/06 22:12:14                                        */
+/*  Last Modified: 2026/03/09 11:09:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -59,7 +59,7 @@ class	Swapchain
 		static SupportDetails		querySwapChainSupport(VkPhysicalDevice &device,
 														VkSurfaceKHR surface);
 
-		bool			initiateSwapChain(Window &window, bool recreating = false);
+		bool			initiateSwapChain(Window &window);
 		bool			recreateSwapChain(Window &window);
 		void			deleteSwapChain(void);
 
@@ -86,9 +86,9 @@ class	Swapchain
 									VkFormat format, VkExtent2D extent);
 		bool	createSyncObjects(void);
 
-		bool	createStaticResources(void);
-		bool	createDepthResources(void);
-		bool	createStaticImages(void);
+		bool	createOffscreenResources(VkExtent2D extent);
+		bool	createDepthResources(VkExtent2D extent);
+		bool	createStaticImages(VkExtent2D extent);
 
 		bool						_healthy{true};
 		std::string					_reason{""};

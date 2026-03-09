@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/06 22:30:16                                        */
+/*  Last Modified: 2026/03/09 11:16:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,6 +35,7 @@ Swapchain::~Swapchain(void) {
 void	Swapchain::deleteSwapChain(void) {
 	vkDeviceWaitIdle(_device.getLogical());
 	_swapImages.clear();
+	_offscreenImages.clear();
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		if (_renderFinished[i] != VK_NULL_HANDLE)
 			vkDestroySemaphore(_device.getLogical(), _renderFinished[i], nullptr);
@@ -70,7 +71,7 @@ Swapchain::SupportDetails	Swapchain::querySwapChainSupport(VkPhysicalDevice &dev
 	return (details);
 }
 
-bool	Swapchain::initiateSwapChain(Window &window, bool recreating) {
+bool	Swapchain::initiateSwapChain(Window &window) {
 	Swapchain::SupportDetails	details = querySwapChainSupport(_device.getPhysical(), window.getSurface());
 
 	VkSurfaceFormatKHR	format = selectSwapSurfaceFormat(details.formats);
@@ -112,9 +113,8 @@ bool	Swapchain::initiateSwapChain(Window &window, bool recreating) {
 	std::vector<VkImage>	images(_imageCount);
 	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &_imageCount, images.data());
 
-	if (!recreating && createStaticResources())
-		return (true);
-	return (createSwapchainImageViews(images, format.format, extent) ||
+	return (createOffscreenResources(extent) ||
+		createSwapchainImageViews(images, format.format, extent) ||
 		createSyncObjects());
 }
 
@@ -123,7 +123,7 @@ bool	Swapchain::recreateSwapChain(Window &window) {
 
 	deleteSwapChain();
 
-	return (initiateSwapChain(window, true));
+	return (initiateSwapChain(window));
 }
 
 VkSurfaceFormatKHR	Swapchain::selectSwapSurfaceFormat(std::vector<VkSurfaceFormatKHR> &formats) {
@@ -169,11 +169,11 @@ bool	Swapchain::createSwapchainImageViews(std::vector<VkImage> &images,
 	}
 }
 
-bool	Swapchain::createStaticResources() {
-	return (createDepthResources() || createStaticImages());
+bool	Swapchain::createOffscreenResources(VkExtent2D extent) {
+	return (createDepthResources(extent) || createStaticImages(extent));
 }
 
-bool	Swapchain::createDepthResources(void) {
+bool	Swapchain::createDepthResources(VkExtent2D extent) {
 	auto	depthFormat = selectDepthFormat(
 		{VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
 		VK_IMAGE_TILING_OPTIMAL,
@@ -183,18 +183,18 @@ bool	Swapchain::createDepthResources(void) {
 	Image::Config	config{};
 	config.format = {depthFormat};
 	config.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-	config.width = 4096;
-	config.height = 4096;
+	config.width = extent.width;
+	config.height = extent.height;
 	config.properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 	config.aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
 	_depthImage = Image::create(_device, config);
 	return (!_depthImage);
 }
 
-bool	Swapchain::createStaticImages() {
+bool	Swapchain::createStaticImages(VkExtent2D extent) {
 	Image::Config	config{};
-	config.height = 4096;
-	config.width = 4096;
+	config.width = extent.width;
+	config.height = extent.height;
 	config.aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
 	config.format = {VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM};
 	config.properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;

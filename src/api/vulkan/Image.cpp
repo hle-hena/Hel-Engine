@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/06 21:32:51                                        */
+/*  Last Modified: 2026/03/09 10:55:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -187,6 +187,33 @@ void	Image::setData(void *data, VkDeviceSize size) {
 						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 	transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	_device.endSingleTimeCommand(commandBuffer);
+}
+
+void	Image::copyTo(VkCommandBuffer commandBuffer, Image *dst) {
+	this->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+	dst->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+	VkImageBlit2 region{};
+	region.sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2;
+	region.srcSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+	region.srcOffsets[0] = {0, 0, 0};
+	region.srcOffsets[1] = {(int)this->_config.width,
+							(int)this->_config.height, 1};
+	region.dstSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+	region.dstOffsets[0] = {0, 0, 0};
+	region.dstOffsets[1] = {(int)dst->_config.width,
+							(int)dst->_config.height, 1};
+
+	VkBlitImageInfo2 blitInfo{};
+	blitInfo.sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2;
+	blitInfo.srcImage = this->_image;
+	blitInfo.srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+	blitInfo.dstImage = dst->_image;
+	blitInfo.dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	blitInfo.regionCount = 1;
+	blitInfo.pRegions = &region;
+	blitInfo.filter = VK_FILTER_LINEAR;
+	vkCmdBlitImage2(commandBuffer, &blitInfo);
 }
 
 VkDescriptorImageInfo	Image::getDescriptorInfo(VkFormat format) const {

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/06 22:38:16                                        */
+/*  Last Modified: 2026/03/09 11:13:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -181,13 +181,12 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	VkCommandBuffer	commandBuffer = resources->commandBuffers[currentFrame];
 	vkResetCommandBuffer(commandBuffer, 0);
 
-	auto	swapImage = swap.getNextSwapImage(imageIndex);
 	auto	offImage = swap.getNextOffscreenImage(imageIndex);
 	auto	depthImage = swap.getDepthImage();
 
 	UiContext	&ui = window.getUI();
 	beginFrame(commandBuffer);
-	if (auto pass = Renderer(commandBuffer, swapImage->getExtent())
+	if (auto pass = Renderer(commandBuffer, offImage->getExtent())
 					.addColor(offImage, VK_FORMAT_B8G8R8A8_SRGB)
 					.addDepth(depthImage, depthImage->getFormat())
 					.beginPass()) {
@@ -199,7 +198,7 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 		_cameraSystem.render(config, *resources, currentFrame);
 	}
 
-	if (auto pass = Renderer(commandBuffer, swapImage->getExtent())
+	if (auto pass = Renderer(commandBuffer, offImage->getExtent())
 					.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
 					.addColor(offImage, VK_FORMAT_B8G8R8A8_UNORM)
 					.beginPass()) {
@@ -209,30 +208,8 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 		ui.renderFrame(commandBuffer);
 	}
 
-	offImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-	swapImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-	auto	offExtent = offImage->getExtent();
-	auto	swapExtent = swapImage->getExtent();
-	VkImageBlit2 region{};
-	region.sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2;
-	region.srcSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
-	region.srcOffsets[0] = {0, 0, 0};
-	region.srcOffsets[1] = {(int)swapExtent.width, (int)swapExtent.height, 1};
-	region.dstSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
-	region.dstOffsets[0] = {0, 0, 0};
-	region.dstOffsets[1] = {(int)swapExtent.width, (int)swapExtent.height, 1};
-
-	VkBlitImageInfo2 blitInfo{};
-	blitInfo.sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2;
-	blitInfo.srcImage = offImage->getImage();
-	blitInfo.srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-	blitInfo.dstImage = swapImage->getImage();
-	blitInfo.dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-	blitInfo.regionCount = 1;
-	blitInfo.pRegions = &region;
-	blitInfo.filter = VK_FILTER_LINEAR;
-	vkCmdBlitImage2(commandBuffer, &blitInfo);
+	auto	swapImage = swap.getNextSwapImage(imageIndex);
+	offImage->copyTo(commandBuffer, swapImage);
 
 	swapImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 	endFrame(commandBuffer);
