@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 19:51:07                                        */
+/*  Last Modified: 2026/03/09 12:56:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -95,7 +95,7 @@ class	Engine {
 		float											_lastFrameTime;
 		VkCommandPool									_commandPool{VK_NULL_HANDLE};
 		std::unique_ptr<DescriptorPool>					_staticPool;
-		std::unordered_map<Window*, WindowResources>	_perWindowResources;
+		std::unique_ptr<WindowResources>				_windowResources;
 		sys::Render										_renderSystem;
 		sys::Transform									_transformSystem;
 		sys::Camera										_cameraSystem;
