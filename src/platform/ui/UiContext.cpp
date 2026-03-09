@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/06 22:36:12                                        */
+/*  Last Modified: 2026/03/09 12:02:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,12 +18,14 @@
 #include "platform/window/Window.hpp"
 #include "api/vulkan/Descriptors.hpp"
 #include "api/vulkan/Device.hpp"
+#include "api/vulkan/Sampler.hpp"
 #include "core/Application.hpp"
 
 namespace	hel {
 
 UiContext::UiContext(Window *window)
-	:	_window{window} {
+	:	_window{window},
+		_device{window->_app.getVkContext().getDevice()} {
 }
 
 UiContext::~UiContext(void) {
@@ -31,7 +33,7 @@ UiContext::~UiContext(void) {
 
 void	UiContext::destroy(void) {
 	if (_fullyInitialised) {
-		vkDeviceWaitIdle(_window->_app.getVkContext().getDevice().getLogical());
+		vkDeviceWaitIdle(_device.getLogical());
 		ImGui::SetCurrentContext(_context);
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
@@ -40,9 +42,8 @@ void	UiContext::destroy(void) {
 }
 
 void	UiContext::init() {
-	Device	&device = _window->_app.getVkContext().getDevice();
-	initDescriptorPool(device);
-	initImGui(device);
+	initDescriptorPool(_device);
+	initImGui(_device);
 }
 
 void	UiContext::initImGui(Device &device) {
@@ -88,6 +89,18 @@ void	UiContext::initDescriptorPool(Device &device) {
 		.setPageSize(Swapchain::MAX_FRAMES_IN_FLIGHT)
 		.setCreationFlag(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
 		.build();
+}
+
+VkDescriptorSet	UiContext::registerTexture(Image *image, VkFormat format) {
+	auto	commandBuffer = _device.beginSingleTimeCommand();
+	image->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	_device.endSingleTimeCommand(commandBuffer);
+	VkDescriptorSet	id = ImGui_ImplVulkan_AddTexture(Sampler::getSampler(_device, {}),
+			image->getView(format), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+}
+
+void	UiContext::unregisterTexture(VkDescriptorSet texture) {
+	ImGui_ImplVulkan_RemoveTexture(texture);
 }
 
 void	UiContext::newFrame() {

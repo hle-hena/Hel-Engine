@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 11:32:26                                        */
+/*  Last Modified: 2026/03/09 11:37:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -198,9 +198,9 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 		_cameraSystem.render(config, *resources, currentFrame);
 	}
 
-	if (auto pass = Renderer(commandBuffer, offImage->getExtent())
-					.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
-					.addColor(offImage, VK_FORMAT_B8G8R8A8_UNORM)
+	auto	swapImage = swap.getSwapImage(imageIndex);
+	if (auto pass = Renderer(commandBuffer, swapImage->getExtent())
+					.addColor(swapImage, VK_FORMAT_B8G8R8A8_UNORM)
 					.beginPass()) {
 		RenderingConfig	config{};
 		config.colorFormats.push_back(VK_FORMAT_B8G8R8A8_UNORM);
@@ -208,8 +208,7 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 		ui.renderFrame(commandBuffer);
 	}
 
-	auto	swapImage = swap.getSwapImage(imageIndex);
-	offImage->copyTo(commandBuffer, swapImage);
+	// offImage->copyTo(commandBuffer, swapImage);
 
 	swapImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 	endFrame(commandBuffer);

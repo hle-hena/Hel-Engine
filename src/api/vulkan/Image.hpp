@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/07 17:46:38                                        */
+/*  Last Modified: 2026/03/09 12:04:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -58,6 +58,7 @@ class Image {
 			{ return {_config.width, _config.height}; }
 		VkFormat					getFormat(void) const
 			{ return (_config.format[0]); }
+		VkDescriptorSet				getTexture(VkFormat format) const;
 		VkDescriptorImageInfo		getDescriptorInfo(VkFormat format) const;
 		VkRenderingAttachmentInfo	getRenderingInfo(VkClearValue clearValue,
 													VkAttachmentLoadOp loadOp,
@@ -80,6 +81,9 @@ class Image {
 		std::unordered_map<VkFormat,
 				VkImageView,
 				mathUtils::EnumHash>	_views;
+		std::unordered_map<VkFormat,
+				VkDescriptorSet,
+				mathUtils::EnumHash>	_textures;
 		VkDeviceMemory					_memory{VK_NULL_HANDLE};
 		VkImageLayout					_currentLayout{VK_IMAGE_LAYOUT_UNDEFINED};
 };

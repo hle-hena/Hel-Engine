@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: UI.hpp                                                              */
+/*  File: SceneViewport.hpp                                                   */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
+/*  Created: 2026/03/09 11:38:39 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 11:45:47                                        */
+/*  Last Modified: 2026/03/09 11:49:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,32 +16,22 @@
 
 #pragma once
 
-# include "ecs/systems/ISystem.hpp"
-
-# include "ecs/systems/core/ui/InspectorUI.hpp"
-# include "ecs/systems/core/ui/EntityHierarchyUI.hpp"
-# include "ecs/systems/core/ui/SceneViewport.hpp"
-
 namespace	hel {
 
-class	Window;
+class	Image;
 
 }
 
 namespace	hel::sys {
 
-class	UI : public ISystem {
+class	SceneViewport {
 	public:
-		UI(Device &device, Registry &registry);
-		~UI(void) override;
+		SceneViewport(void) = default;
+		~SceneViewport(void) = default;
 
-		void	render(const RenderingConfig &conf, WindowResources &resources,
-			uint32_t currentFrame) override;
+		void	render(Image *image);
 
 	private:
-		InspectorUI					_inspectorUI;
-		EntityHierarchyUI			_entityHierarchyUI;
-		SceneViewport				_sceneViewport;
 };
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 10:55:46                                        */
+/*  Last Modified: 2026/03/09 12:44:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -63,6 +63,8 @@ Image::Image(Device &device, VkImage img, VkFormat format, VkExtent2D extent)
 }
 
 Image::~Image(void) {
+	for (auto it: _textures)
+		aaaa
 	for (auto it: _views)
 		vkDestroyImageView(_device.getLogical(), it.second, nullptr);
 	if (_owned && _memory)
