@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 12:02:15                                        */
+/*  Last Modified: 2026/03/09 14:48:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -91,11 +91,9 @@ void	UiContext::initDescriptorPool(Device &device) {
 		.build();
 }
 
-VkDescriptorSet	UiContext::registerTexture(Image *image, VkFormat format) {
-	auto	commandBuffer = _device.beginSingleTimeCommand();
-	image->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-	_device.endSingleTimeCommand(commandBuffer);
-	VkDescriptorSet	id = ImGui_ImplVulkan_AddTexture(Sampler::getSampler(_device, {}),
+VkDescriptorSet	UiContext::registerTexture(Device &device, Image *image,
+										VkFormat format) {
+	VkDescriptorSet	id = ImGui_ImplVulkan_AddTexture(Sampler::getSampler(device, {}),
 			image->getView(format), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 

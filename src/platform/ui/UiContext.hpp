@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:09 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 12:43:48                                        */
+/*  Last Modified: 2026/03/09 14:48:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,8 +35,9 @@ class	UiContext {
 		UiContext(const UiContext &other) = delete;
 		UiContext	&operator=(const UiContext &other) = delete;
 
-		static VkDescriptorSet	registerTexture(Image *image, VkFormat format);
-		static void			unregisterTexture(VkDescriptorSet texture);
+		static VkDescriptorSet	registerTexture(Device &device, Image *image,
+												VkFormat format);
+		static void				unregisterTexture(VkDescriptorSet texture);
 
 		void	newFrame();
 		void	endFrame(void);

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 11:46:16                                        */
+/*  Last Modified: 2026/03/09 14:12:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,7 +37,7 @@ void	UI::render(const RenderingConfig &, WindowResources &resources,
 				uint32_t) {
 	_inspectorUI.render(resources.window);
 	_entityHierarchyUI.render(resources.window);
-	_sceneViewport.render(resources.window);
+	_sceneViewport.render(_device, resources.window);
 }
 
 }

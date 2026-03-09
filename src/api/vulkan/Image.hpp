@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 12:04:56                                        */
+/*  Last Modified: 2026/03/09 14:19:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,8 @@
 # include <unordered_map>
 # include <vulkan/vulkan.h>
 # include "utils/mathUtils.hpp"
+
+#include <iostream>
 
 namespace	hel {
 
@@ -58,7 +60,7 @@ class Image {
 			{ return {_config.width, _config.height}; }
 		VkFormat					getFormat(void) const
 			{ return (_config.format[0]); }
-		VkDescriptorSet				getTexture(VkFormat format) const;
+		VkDescriptorSet				getTexture(VkFormat format);
 		VkDescriptorImageInfo		getDescriptorInfo(VkFormat format) const;
 		VkRenderingAttachmentInfo	getRenderingInfo(VkClearValue clearValue,
 													VkAttachmentLoadOp loadOp,

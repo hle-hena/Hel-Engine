@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 13:26:08                                        */
+/*  Last Modified: 2026/03/09 14:38:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -137,6 +137,7 @@ void	Engine::renderUI(Window &window, uint32_t currentFrame) {
 	WindowResources *resources = getWindowResources(window);
 	if (!resources)
 		return ;
+
 	window.getUI().newFrame();
 	_uiSystem.render(RenderingConfig{}, *resources, currentFrame);
 	window.getUI().endFrame();
@@ -181,7 +182,7 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	VkCommandBuffer	commandBuffer = resources->commandBuffers[currentFrame];
 	vkResetCommandBuffer(commandBuffer, 0);
 
-	auto	offImage = swap.getOffImage(imageIndex);
+	auto	offImage = swap.getOffImage();
 	auto	depthImage = swap.getDepthImage();
 
 	UiContext	&ui = window.getUI();
@@ -198,6 +199,7 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 		_cameraSystem.render(config, *resources, currentFrame);
 	}
 
+	offImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	auto	swapImage = swap.getSwapImage(imageIndex);
 	if (auto pass = Renderer(commandBuffer, swapImage->getExtent())
 					.addColor(swapImage, VK_FORMAT_B8G8R8A8_UNORM)

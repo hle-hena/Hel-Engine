@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 13:26:14                                        */
+/*  Last Modified: 2026/03/09 14:09:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -101,7 +101,6 @@ class	Engine {
 		sys::BaseController								_baseControllerSystem;
 		sys::SurfaceAllignement							_surfaceAllignementSystem;
 		sys::UI											_uiSystem;
-		uint32_t										_currentFrameIndex{0};
 };
 
 }

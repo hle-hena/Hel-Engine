@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 12:44:09                                        */
+/*  Last Modified: 2026/03/09 14:48:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,7 @@
 #include "api/vulkan/Device.hpp"
 #include "api/vulkan/MemoryHelper.hpp"
 #include "api/vulkan/Buffer.hpp"
+#include "platform/ui/UiContext.hpp"
 
 #include <iostream>
 #include <stdexcept>
@@ -64,7 +65,7 @@ Image::Image(Device &device, VkImage img, VkFormat format, VkExtent2D extent)
 
 Image::~Image(void) {
 	for (auto it: _textures)
-		aaaa
+		UiContext::unregisterTexture(it.second);
 	for (auto it: _views)
 		vkDestroyImageView(_device.getLogical(), it.second, nullptr);
 	if (_owned && _memory)
@@ -216,6 +217,13 @@ void	Image::copyTo(VkCommandBuffer commandBuffer, Image *dst) {
 	blitInfo.pRegions = &region;
 	blitInfo.filter = VK_FILTER_LINEAR;
 	vkCmdBlitImage2(commandBuffer, &blitInfo);
+}
+
+VkDescriptorSet	Image::getTexture(VkFormat format) {
+	if (_textures.find(format) != _textures.end())
+		return	 (_textures.at(format));
+	_textures[format] = UiContext::registerTexture(_device, this, format);
+	return (_textures[format]);
 }
 
 VkDescriptorImageInfo	Image::getDescriptorInfo(VkFormat format) const {

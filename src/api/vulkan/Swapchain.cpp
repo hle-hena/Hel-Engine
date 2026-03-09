@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 11:36:29                                        */
+/*  Last Modified: 2026/03/09 14:52:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,7 +35,8 @@ Swapchain::~Swapchain(void) {
 void	Swapchain::deleteSwapChain(void) {
 	vkDeviceWaitIdle(_device.getLogical());
 	_swapImages.clear();
-	_offscreenImages.clear();
+	_offscreenImage = nullptr;
+	_depthImage = nullptr;
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		if (_renderFinished[i] != VK_NULL_HANDLE)
 			vkDestroySemaphore(_device.getLogical(), _renderFinished[i], nullptr);
@@ -198,13 +199,9 @@ bool	Swapchain::createStaticImages(VkExtent2D extent) {
 	config.aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
 	config.format = {VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM};
 	config.properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-	config.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-	for (auto i = 0; i < _imageCount; i++) {
-		_offscreenImages.emplace_back(Image::create(_device, config));
-		if (!_offscreenImages.back())
-			return (true);
-	}
-	return (false);
+	config.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+	_offscreenImage = Image::create(_device, config);
+	return (!_offscreenImage);
 }
 
 VkFormat	Swapchain::selectDepthFormat(const std::vector<VkFormat> &candidates,
@@ -251,8 +248,8 @@ Image	*Swapchain::getSwapImage(uint32_t imageIndex) {
 	return (_swapImages[imageIndex].get());
 }
 
-Image	*Swapchain::getOffImage(uint32_t imageIndex) {
-	return (_offscreenImages[imageIndex].get());
+Image	*Swapchain::getOffImage(void) {
+	return (_offscreenImage.get());
 }
 
 bool	Swapchain::acquireNextImage(Window &window, uint32_t currentFrame, uint32_t *imageIndex) {
