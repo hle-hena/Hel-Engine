@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 11:16:11                                        */
+/*  Last Modified: 2026/03/09 11:32:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -247,11 +247,11 @@ Image	*Swapchain::getDepthImage(void) {
 	return (_depthImage.get());
 }
 
-Image	*Swapchain::getNextSwapImage(uint32_t imageIndex) {
+Image	*Swapchain::getSwapImage(uint32_t imageIndex) {
 	return (_swapImages[imageIndex].get());
 }
 
-Image	*Swapchain::getNextOffscreenImage(uint32_t imageIndex) {
+Image	*Swapchain::getOffImage(uint32_t imageIndex) {
 	return (_offscreenImages[imageIndex].get());
 }
 

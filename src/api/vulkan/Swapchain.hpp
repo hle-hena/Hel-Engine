@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 11:09:52                                        */
+/*  Last Modified: 2026/03/09 11:32:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -64,8 +64,8 @@ class	Swapchain
 		void			deleteSwapChain(void);
 
 		Image			*getDepthImage(void);
-		Image			*getNextSwapImage(uint32_t imageIndex);
-		Image			*getNextOffscreenImage(uint32_t imageIndex);
+		Image			*getSwapImage(uint32_t imageIndex);
+		Image			*getOffImage(uint32_t imageIndex);
 		bool			acquireNextImage(Window &window, uint32_t currentFrame, uint32_t *imageIndex);
 		bool			submitCommandBuffer(VkCommandBuffer *commandBuffer,
 									uint32_t imageIndex, uint32_t currentFrame);

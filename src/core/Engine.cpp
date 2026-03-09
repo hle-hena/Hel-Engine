@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 11:13:07                                        */
+/*  Last Modified: 2026/03/09 11:32:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -181,7 +181,7 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	VkCommandBuffer	commandBuffer = resources->commandBuffers[currentFrame];
 	vkResetCommandBuffer(commandBuffer, 0);
 
-	auto	offImage = swap.getNextOffscreenImage(imageIndex);
+	auto	offImage = swap.getOffImage(imageIndex);
 	auto	depthImage = swap.getDepthImage();
 
 	UiContext	&ui = window.getUI();
@@ -208,7 +208,7 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 		ui.renderFrame(commandBuffer);
 	}
 
-	auto	swapImage = swap.getNextSwapImage(imageIndex);
+	auto	swapImage = swap.getSwapImage(imageIndex);
 	offImage->copyTo(commandBuffer, swapImage);
 
 	swapImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
