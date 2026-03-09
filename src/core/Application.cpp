@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 18:16:09                                        */
+/*  Last Modified: 2026/03/09 13:00:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,8 +24,7 @@
 namespace hel {
 
 Application::Application(void)
-	:	_appWindows{},
-		_vkContext{*this},
+	:	_vkContext{*this},
 		_registry{_assetManager},
 		_assetManager{_vkContext.getDevice()},
 		_engine{_vkContext.getDevice(), _registry} {
@@ -37,9 +36,9 @@ Application::Application(void)
 	}
 	addNewWindow(Window::WIDTH, Window::HEIGHT, "Hel");
 	GLFW::release();
-	if (_appWindows.size() == 0)
+	if (!_appWindow)
 		RETURN_SET_UNHEALTHY("Couldn't even create one window");
-	if (_engine.init(*_appWindows.back()))
+	if (_engine.init(*_appWindow))
 		RETURN_SET_UNHEALTHY(_engine.getReason());
 	loadPrimaryScene();
 }
@@ -54,8 +53,8 @@ void	Application::loadPrimaryScene(void) {
 	_registry.addComponent<comp::Controller>(cameraHandle);
 	_registry.addComponent<comp::EditorControllerTag>(cameraHandle);
 	_registry.addComponent<comp::Camera>(cameraHandle);
-	_appWindows.back()->setEntityReference(cameraHandle);
-	_appWindows.back()->updateEntityReference();
+	_appWindow->setEntityReference(cameraHandle);
+	_appWindow->updateEntityReference();
 
 	Entity::id	handle = _registry.createEntity();
 	if (auto mesh = _registry.modify(_registry.addComponent<comp::Model>(handle))) {
@@ -88,24 +87,18 @@ void	Application::loadPrimaryScene(void) {
 void	Application::run(void) {
 	uint32_t	currentFrame = 0;
 
-	while (!_appWindows.empty() && _healthy) {
+	while (_appWindow && _healthy) {
 		_registry.getInputState().newFrame();
 		glfwPollEvents();
 
-		for (size_t i = 0; i < _appWindows.size(); i++) {
-			if (_appWindows[i]->shouldClose()) {
-				_appWindows.erase(_appWindows.begin() + i);
-				i--;
-				continue ;
-			}
-			_engine.renderUI(*_appWindows[i], currentFrame);
-		}
-		if (_appWindows.empty())
+		if (_appWindow->shouldClose()) {
+			_appWindow = nullptr;
 			break ;
-		_engine.updateFrame();
-		for (size_t i = 0; i < _appWindows.size(); i++) {
-			_engine.renderFrame(*_appWindows[i], currentFrame);
 		}
+
+		_engine.renderUI(*_appWindow, currentFrame);
+		_engine.updateFrame();
+		_engine.renderFrame(*_appWindow, currentFrame);
 
 		currentFrame = (currentFrame + 1) % Swapchain::MAX_FRAMES_IN_FLIGHT;
 		_registry.resetAllDirty();
@@ -126,15 +119,7 @@ void	Application::addNewWindow(int width, int height, const std::string &windowN
 		std::cerr << "The window surface is not supported." << std::endl;
 		return ;
 	}
-	_appWindows.push_back(std::move(window));
-}
-
-bool	Application::isHandleAlreadyAssigned(Entity::id handle) const {
-	bool	assigned = false;
-
-	for (const auto &window: _appWindows)
-		assigned |= window->getEntityReference() == handle;
-	return (assigned);
+	_appWindow = std::move(window);
 }
 
 }

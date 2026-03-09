@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 11:37:40                                        */
+/*  Last Modified: 2026/03/09 13:26:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -98,8 +98,8 @@ bool	Engine::endFrame(VkCommandBuffer commandBuffer) {
 }
 
 WindowResources *Engine::getWindowResources(Window& window) {
-	if (_perWindowResources.find(&window) != _perWindowResources.end())
-		return (&_perWindowResources[&window]);
+	if (_windowResources)
+		return (_windowResources.get());
 	uint32_t			frameCount = Swapchain::MAX_FRAMES_IN_FLIGHT;
 	WindowResources		newResources{&window};
 
@@ -129,8 +129,8 @@ WindowResources *Engine::getWindowResources(Window& window) {
 	}
 	writer.update();
 
-	_perWindowResources[&window] = std::move(newResources);
-	return (&_perWindowResources[&window]);
+	_windowResources = std::make_unique<WindowResources>(std::move(newResources));
+	return (_windowResources.get());
 }
 
 void	Engine::renderUI(Window &window, uint32_t currentFrame) {
