@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 18:57:42                                        */
+/*  Last Modified: 2026/03/10 19:04:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -87,8 +87,8 @@ class	Swapchain
 		bool	createSyncObjects(void);
 
 		bool	createOffscreenResources(VkExtent2D extent);
-		bool	createDepthResources(VkExtent2D extent);
-		bool	createStaticImages(VkExtent2D extent);
+		bool	createDepthImage(VkExtent2D extent);
+		bool	createOffscreenImage(VkExtent2D extent);
 
 		bool						_healthy{true};
 		std::string					_reason{""};

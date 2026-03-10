@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 14:19:23                                        */
+/*  Last Modified: 2026/03/10 19:02:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,8 +20,6 @@
 # include <unordered_map>
 # include <vulkan/vulkan.h>
 # include "utils/mathUtils.hpp"
-
-#include <iostream>
 
 namespace	hel {
 

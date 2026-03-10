@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 18:57:37                                        */
+/*  Last Modified: 2026/03/10 19:04:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -171,10 +171,11 @@ bool	Swapchain::createSwapchainImageViews(std::vector<VkImage> &images,
 }
 
 bool	Swapchain::createOffscreenResources(VkExtent2D extent) {
-	return (createDepthResources(extent) || createStaticImages(extent));
+	//TODO -> image pool instead of a creation in there.
+	return (createDepthImage(extent) || createOffscreenImage(extent));
 }
 
-bool	Swapchain::createDepthResources(VkExtent2D extent) {
+bool	Swapchain::createDepthImage(VkExtent2D extent) {
 	auto	depthFormat = selectDepthFormat(
 		{VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
 		VK_IMAGE_TILING_OPTIMAL,
@@ -192,7 +193,7 @@ bool	Swapchain::createDepthResources(VkExtent2D extent) {
 	return (!_depthImage);
 }
 
-bool	Swapchain::createStaticImages(VkExtent2D extent) {
+bool	Swapchain::createOffscreenImage(VkExtent2D extent) {
 	Image::Config	config{};
 	config.width = extent.width;
 	config.height = extent.height;

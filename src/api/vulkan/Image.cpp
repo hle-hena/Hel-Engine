@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 14:48:59                                        */
+/*  Last Modified: 2026/03/10 19:02:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -222,6 +222,8 @@ void	Image::copyTo(VkCommandBuffer commandBuffer, Image *dst) {
 VkDescriptorSet	Image::getTexture(VkFormat format) {
 	if (_textures.find(format) != _textures.end())
 		return	 (_textures.at(format));
+	//TODO -> The image itself probably shouldn't own that ?
+	//      Or just allocate the set
 	_textures[format] = UiContext::registerTexture(_device, this, format);
 	return (_textures[format]);
 }
