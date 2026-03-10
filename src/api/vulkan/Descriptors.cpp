@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/06 15:42:40                                        */
+/*  Last Modified: 2026/03/10 19:00:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -259,8 +259,9 @@ DescriptorWriter	&DescriptorWriter::writeImage(uint32_t setIndex,
 												uint32_t binding,
 												VkDescriptorType type,
 												Image &image,
+												VkFormat format,
 												VkSampler sampler) {
-	VkDescriptorImageInfo	imageInfo = image.getDescriptorInfo(image.getFormat());
+	VkDescriptorImageInfo	imageInfo = image.getDescriptorInfo(format);
 	imageInfo.sampler = sampler;
 	_imagesInfo.push_back(imageInfo);
 

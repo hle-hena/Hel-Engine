@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 15:14:36                                        */
+/*  Last Modified: 2026/03/10 19:00:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -133,7 +133,7 @@ class	DescriptorWriter {
 										VkDescriptorType type, Buffer &buffer);
 		DescriptorWriter	&writeImage(uint32_t setIndex, uint32_t binding,
 										VkDescriptorType type, Image &image,
-										VkSampler sampler);
+										VkFormat format, VkSampler sampler);
 		void				update(void);
 
 	private:
