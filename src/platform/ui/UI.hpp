@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: EditorUI.hpp                                                        */
+/*  File: UI.hpp                                                              */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/27 21:55:02 by hle-hena                                  */
+/*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 15:52:54                                        */
+/*  Last Modified: 2026/03/10 16:57:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,46 +16,37 @@
 
 #pragma once
 
-# include <unordered_map>
-# include <typeindex>
-# include <functional>
+# include "ecs/systems/ISystem.hpp"
 
-# include "ecs/Entity.hpp"
+# include "platform/ui/InspectorUI.hpp"
+# include "platform/ui/EntityHierarchyUI.hpp"
+# include "platform/ui/SceneViewport.hpp"
 
 namespace	hel {
 
-class	Registry;
 class	Window;
 
 }
 
 namespace	hel::sys {
 
-class	InspectorUI {
+class	UI : public ISystem {
 	public:
-		using UIDrawFunc = std::function<void(Window *, void *)>;
+		UI(Device &device, Registry &registry);
+		~UI(void) override;
 
-		InspectorUI(Registry &registry) : _registry{registry} {}
-		~InspectorUI(void) = default;
-
-		template <typename Component>
-		void	setDrawFunc(UIDrawFunc func) {
-			_drawFuncs[typeid(Component)] = func;
-		}
-		void	setBuiltInDrawFunc(void);
-
-		void	render(Window *window);
+		void	render(const RenderingConfig &conf, WindowResources &resources,
+			uint32_t currentFrame) override;
 
 	private:
-		void	addNewComponentPopup(Entity::id handle);
-		void	removeEntity(Entity::id handle);
+		void	addSplitters(float windowWidth, float windowHeight);
 
-		Registry	&_registry;
-		bool		_addNewComp{false};
-		int			_newCompTypeIndex{0};
-		float		_windowWidth{300.f};
+		float	_leftTabWidth{300.f};
+		float	_rightTabWidth{300.f};
 
-		std::unordered_map<std::type_index, UIDrawFunc>	_drawFuncs;
+		InspectorUI					_inspectorUI;
+		EntityHierarchyUI			_entityHierarchyUI;
+		SceneViewport				_sceneViewport;
 };
 
 }

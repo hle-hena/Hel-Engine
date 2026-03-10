@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: mathUtils.hpp                                                       */
+/*  File: EntityHierarchyUI.hpp                                               */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/11 14:41:39 by hle-hena                                  */
+/*  Created: 2026/02/28 13:55:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/06 15:25:55                                        */
+/*  Last Modified: 2026/03/10 16:22:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,22 +16,33 @@
 
 #pragma once
 
-# include <functional>
+# include "ecs/View.hpp"
+# include "ecs/Entity.hpp"
+# include "api/ImGui/imgui.h"
 
-namespace	hel::mathUtils {
+namespace	hel {
 
-template <typename T, typename... Rest>
-void	hashCombine(std::size_t &seed, const T &v, const Rest&... rest)
-{
-	seed ^= std::hash<T>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-	(hashCombine(seed, rest), ...);
-};
+class	Window;
+class	Registry;
 
-struct	EnumHash {
-    template<typename T>
-    size_t operator()(T t) const {
-        return std::hash<std::underlying_type_t<T>>{}(t);
-    }
+}
+
+namespace	hel::sys {
+
+class	EntityHierarchyUI {
+	public:
+		EntityHierarchyUI(Registry &registry) : _registry{registry} {}
+		~EntityHierarchyUI(void) = default;
+
+		void	render(Window *window, ImVec2 pos, ImVec2 size);
+
+	private:
+		void	moveEntity(Window *window, View<comp::Hierarchy> &view,
+					Entity::id srcHandle, Entity::id dstHandle);
+		void	showEntity(Window *window, View<comp::Hierarchy> view,
+					Entity::id handle);
+
+		Registry	&_registry;
 };
 
 }

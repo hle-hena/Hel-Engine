@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 12:59:35                                        */
+/*  Last Modified: 2026/03/09 14:51:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -62,14 +62,14 @@ Window::windowPtr	Window::createBootstrap(int width, int height,
 
 Window::Window(int width, int height, const std::string &windowName,
 			Application &app, VkInstance &instance)
-	:	_width(width),
+	:	_app{app},
+		_instance{instance},
+		_width(width),
 		_height(height),
 		_uiContext{this},
 		_windowName(windowName),
 		_windowPtr(nullptr),
-		_swapchain{app.getVkContext().getDevice()},
-		_app{app},
-		_instance{instance} {
+		_swapchain{app.getVkContext().getDevice()} {
 	initWindow();
 }
 
@@ -92,8 +92,8 @@ Window::~Window(void) {
 }
 
 void	Window::deleteWindow(void) {
-	_uiContext.destroy();
 	_swapchain.deleteSwapChain();
+	_uiContext.destroy();
 	if (_surface != VK_NULL_HANDLE)
 		vkDestroySurfaceKHR(_instance, _surface, nullptr);
 	glfwDestroyWindow(_windowPtr);

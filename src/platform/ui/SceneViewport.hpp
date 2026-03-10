@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: RenderPass.hpp                                                      */
+/*  File: SceneViewport.hpp                                                   */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/19 17:25:10 by hle-hena                                  */
+/*  Created: 2026/03/09 11:38:39 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/19 19:27:09                                        */
+/*  Last Modified: 2026/03/10 16:28:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,35 +16,25 @@
 
 #pragma once
 
-# include <vulkan/vulkan.h>
-# include <unordered_map>
+# include "api/ImGui/imgui.h"
 
 namespace	hel {
 
-class	Device;
 class	Window;
+class	Device;
 
-class	RenderPass {
+}
+
+namespace	hel::sys {
+
+class	SceneViewport {
 	public:
-		RenderPass(Device &device);
-		~RenderPass(void);
-		RenderPass(const RenderPass &) = delete;
-		RenderPass	&operator=(const RenderPass &) = delete;
+		SceneViewport(void) = default;
+		~SceneViewport(void) = default;
 
-		VkRenderPass	getRenderPasss(VkFormat imageFormat,
-											VkFormat depthFormat);
-		static void			beginRenderPass(VkRenderPass renderPass,
-										VkCommandBuffer commandBuffer,
-										VkFramebuffer frameBuffer,
-										VkExtent2D extent);
-		static void			endRenderPass(VkCommandBuffer commandBuffer);
+		void	render(Window *window, ImVec2 pos, ImVec2 size);
 
 	private:
-		VkRenderPass	createRenderPass(VkFormat imageFormat,
-										VkFormat depthFormat);
-
-		Device										&_device;
-		std::unordered_map<VkFormat, VkRenderPass>	_renderPasses;
 };
 
 }
