@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 15:43:00                                        */
+/*  Last Modified: 2026/03/10 18:27:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -96,6 +96,7 @@ VkDescriptorSet	UiContext::registerTexture(Device &device, Image *image,
 										VkFormat format) {
 	VkDescriptorSet	id = ImGui_ImplVulkan_AddTexture(Sampler::getSampler(device, {}),
 			image->getView(format), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	return (id);
 }
 
 void	UiContext::unregisterTexture(VkDescriptorSet texture) {

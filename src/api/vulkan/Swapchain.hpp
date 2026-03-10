@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 14:05:40                                        */
+/*  Last Modified: 2026/03/10 18:57:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -94,7 +94,6 @@ class	Swapchain
 		std::string					_reason{""};
 		Device						&_device;
 		VkSwapchainKHR				_swapchain{VK_NULL_HANDLE};
-		uint32_t					_imageCount;
 		std::vector<Image::ptr>		_swapImages;
 		Image::ptr					_offscreenImage;
 		Image::ptr					_depthImage;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 14:52:38                                        */
+/*  Last Modified: 2026/03/10 18:57:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -110,9 +110,9 @@ bool	Swapchain::initiateSwapChain(Window &window) {
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 	if (vkCreateSwapchainKHR(_device.getLogical(), &createInfo, nullptr, &_swapchain) != VK_SUCCESS)
 		RETURN_SET_UNHEALTHY("Couldn't create the swap chain", true);
-	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &_imageCount, nullptr);
-	std::vector<VkImage>	images(_imageCount);
-	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &_imageCount, images.data());
+	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, nullptr);
+	std::vector<VkImage>	images(imageCount);
+	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, images.data());
 
 	return (createOffscreenResources(extent) ||
 		createSwapchainImageViews(images, format.format, extent) ||
