@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 20:49:03                                        */
+/*  Last Modified: 2026/03/10 19:02:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,7 @@
 #include "api/vulkan/Device.hpp"
 #include "api/vulkan/MemoryHelper.hpp"
 #include "api/vulkan/Buffer.hpp"
+#include "platform/ui/UiContext.hpp"
 
 #include <iostream>
 #include <stdexcept>
@@ -47,24 +48,26 @@ std::unique_ptr<Image>	Image::wrapSwapchainImages(Device &device, VkImage img,
 Image::Image(Device &device, const Config &config)
 	:	_device{device},
 		_config{config} {
-	createImage(), allocateMemory(), createView();
+	createImage(), allocateMemory(), createViews();
 }
 
 Image::Image(Device &device, VkImage img, VkFormat format, VkExtent2D extent)
 	:	_device{device} {
 	_image = img;
 	_owned = false;
-	_config.format = format;
+	_config.format = {format};
 	_config.width = extent.width;
 	_config.height = extent.height;
 	_config.aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
 	_config.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
-	createView();
+	createViews();
 }
 
 Image::~Image(void) {
-	if (_view)
-		vkDestroyImageView(_device.getLogical(), _view, nullptr);
+	for (auto it: _textures)
+		UiContext::unregisterTexture(it.second);
+	for (auto it: _views)
+		vkDestroyImageView(_device.getLogical(), it.second, nullptr);
 	if (_owned && _memory)
 		vkFreeMemory(_device.getLogical(), _memory, nullptr);
 	if (_owned && _image)
@@ -74,8 +77,10 @@ Image::~Image(void) {
 void	Image::createImage(void) {
 	VkImageCreateInfo	createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	createInfo.flags = _config.format.size() == 1 ? 0 :
+							VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
 	createInfo.imageType = VK_IMAGE_TYPE_2D;
-	createInfo.format = _config.format;
+	createInfo.format = _config.format[0];
 	createInfo.extent.width = _config.width;
 	createInfo.extent.height = _config.height;
 	createInfo.extent.depth = 1;
@@ -91,17 +96,22 @@ void	Image::createImage(void) {
 		throw std::runtime_error("Failed to create an Image");
 }
 
-void	Image::createView(void) {
+void	Image::createViews(void) {
 	static constexpr VkImageUsageFlags	viewFlags = VK_IMAGE_USAGE_SAMPLED_BIT |
 		VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
 	if (!(viewFlags & _config.usage))
 		return ;
+	for (auto i = 0; i < _config.format.size(); i++)
+		createView(_config.format[i]);
+}
+
+void	Image::createView(VkFormat format) {
 	VkImageViewCreateInfo	viewCreateInfo{};
 	viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	viewCreateInfo.image = _image;
 	viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	viewCreateInfo.format = _config.format;
+	viewCreateInfo.format = format;
 	viewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 	viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
 	viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -112,8 +122,8 @@ void	Image::createView(void) {
 	viewCreateInfo.subresourceRange.baseArrayLayer = 0;
 	viewCreateInfo.subresourceRange.layerCount = 1; //TODO -> support mipmaps
 	if (vkCreateImageView(_device.getLogical(), &viewCreateInfo,
-						nullptr, &_view))
-		throw std::runtime_error("Failed to create the image view");
+						nullptr, &_views[format]))
+		throw std::runtime_error("Failed to create an image view");
 }
 
 void	Image::allocateMemory(void) {
@@ -128,6 +138,8 @@ void	Image::allocateMemory(void) {
 
 void	Image::transitionLayout(VkCommandBuffer commandBuffer,
 								VkImageLayout newLayout) {
+	if (newLayout == _currentLayout)
+		return ;
 	VkImageMemoryBarrier2	barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
 	barrier.srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
@@ -180,11 +192,53 @@ void	Image::setData(void *data, VkDeviceSize size) {
 	_device.endSingleTimeCommand(commandBuffer);
 }
 
+void	Image::copyTo(VkCommandBuffer commandBuffer, Image *dst) {
+	this->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+	dst->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+	VkImageBlit2 region{};
+	region.sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2;
+	region.srcSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+	region.srcOffsets[0] = {0, 0, 0};
+	region.srcOffsets[1] = {(int)this->_config.width,
+							(int)this->_config.height, 1};
+	region.dstSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+	region.dstOffsets[0] = {0, 0, 0};
+	region.dstOffsets[1] = {(int)dst->_config.width,
+							(int)dst->_config.height, 1};
+
+	VkBlitImageInfo2 blitInfo{};
+	blitInfo.sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2;
+	blitInfo.srcImage = this->_image;
+	blitInfo.srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+	blitInfo.dstImage = dst->_image;
+	blitInfo.dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	blitInfo.regionCount = 1;
+	blitInfo.pRegions = &region;
+	blitInfo.filter = VK_FILTER_LINEAR;
+	vkCmdBlitImage2(commandBuffer, &blitInfo);
+}
+
+VkDescriptorSet	Image::getTexture(VkFormat format) {
+	if (_textures.find(format) != _textures.end())
+		return	 (_textures.at(format));
+	//TODO -> The image itself probably shouldn't own that ?
+	//      Or just allocate the set
+	_textures[format] = UiContext::registerTexture(_device, this, format);
+	return (_textures[format]);
+}
+
+VkDescriptorImageInfo	Image::getDescriptorInfo(VkFormat format) const {
+	return {nullptr, _views.at(format), _currentLayout};
+}
+
 VkRenderingAttachmentInfo	Image::getRenderingInfo(VkClearValue clearValue,
-				VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp) const {
+													VkAttachmentLoadOp loadOp,
+													VkAttachmentStoreOp storeOp,
+													VkFormat format) const {
 	VkRenderingAttachmentInfo	info{};
 	info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-	info.imageView = _view;
+	info.imageView = _views.at(format);
 	info.imageLayout = _currentLayout;
 	info.clearValue = clearValue;
 	info.loadOp = loadOp;

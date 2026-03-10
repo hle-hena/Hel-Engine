@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 21:00:47                                        */
+/*  Last Modified: 2026/03/10 19:04:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,7 +34,9 @@ Swapchain::~Swapchain(void) {
 
 void	Swapchain::deleteSwapChain(void) {
 	vkDeviceWaitIdle(_device.getLogical());
-	_colorImages.clear();
+	_swapImages.clear();
+	_offscreenImage = nullptr;
+	_depthImage = nullptr;
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		if (_renderFinished[i] != VK_NULL_HANDLE)
 			vkDestroySemaphore(_device.getLogical(), _renderFinished[i], nullptr);
@@ -89,7 +91,7 @@ bool	Swapchain::initiateSwapChain(Window &window) {
 	createInfo.imageColorSpace = format.colorSpace;
 	createInfo.imageExtent = extent;
 	createInfo.imageArrayLayers = 1;
-	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	QueuesFamilyIndices	indices = _device.getQueueFamily();
 	uint32_t			pIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 	if (indices.graphicsFamily != indices.presentFamily) {
@@ -112,8 +114,9 @@ bool	Swapchain::initiateSwapChain(Window &window) {
 	std::vector<VkImage>	images(imageCount);
 	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, images.data());
 
-	return (createSwapchainImageViews(images, format.format, extent) ||
-		createDepthResources(extent) || createSyncObjects());
+	return (createOffscreenResources(extent) ||
+		createSwapchainImageViews(images, format.format, extent) ||
+		createSyncObjects());
 }
 
 bool	Swapchain::recreateSwapChain(Window &window) {
@@ -127,7 +130,7 @@ bool	Swapchain::recreateSwapChain(Window &window) {
 VkSurfaceFormatKHR	Swapchain::selectSwapSurfaceFormat(std::vector<VkSurfaceFormatKHR> &formats) {
 	for (const auto &format: formats) {
 		if (format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
-			&& format.format == VK_FORMAT_B8G8R8A8_SRGB)
+			&& format.format == VK_FORMAT_B8G8R8A8_UNORM) //TODO -> if no UI, SRGB
 			return (format);
 	}
 	return (formats[0]);
@@ -161,13 +164,18 @@ VkExtent2D	Swapchain::selectSwapExtent(const VkSurfaceCapabilitiesKHR &capabilit
 bool	Swapchain::createSwapchainImageViews(std::vector<VkImage> &images,
 									VkFormat format, VkExtent2D extent) {
 	for (auto image: images) {
-		_colorImages.emplace_back(Image::wrapSwapchainImages(_device, image, format, extent));
-		if (!_colorImages.back())
+		_swapImages.emplace_back(Image::wrapSwapchainImages(_device, image, format, extent));
+		if (!_swapImages.back())
 			RETURN_SET_UNHEALTHY("Couldn't create an image view", true);
 	}
 }
 
-bool	Swapchain::createDepthResources(VkExtent2D extent) {
+bool	Swapchain::createOffscreenResources(VkExtent2D extent) {
+	//TODO -> image pool instead of a creation in there.
+	return (createDepthImage(extent) || createOffscreenImage(extent));
+}
+
+bool	Swapchain::createDepthImage(VkExtent2D extent) {
 	auto	depthFormat = selectDepthFormat(
 		{VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
 		VK_IMAGE_TILING_OPTIMAL,
@@ -175,7 +183,7 @@ bool	Swapchain::createDepthResources(VkExtent2D extent) {
 	);
 
 	Image::Config	config{};
-	config.format = depthFormat;
+	config.format = {depthFormat};
 	config.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 	config.width = extent.width;
 	config.height = extent.height;
@@ -183,6 +191,18 @@ bool	Swapchain::createDepthResources(VkExtent2D extent) {
 	config.aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
 	_depthImage = Image::create(_device, config);
 	return (!_depthImage);
+}
+
+bool	Swapchain::createOffscreenImage(VkExtent2D extent) {
+	Image::Config	config{};
+	config.width = extent.width;
+	config.height = extent.height;
+	config.aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
+	config.format = {VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM};
+	config.properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+	config.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+	_offscreenImage = Image::create(_device, config);
+	return (!_offscreenImage);
 }
 
 VkFormat	Swapchain::selectDepthFormat(const std::vector<VkFormat> &candidates,
@@ -225,8 +245,12 @@ Image	*Swapchain::getDepthImage(void) {
 	return (_depthImage.get());
 }
 
-Image	*Swapchain::getNextColorImage(uint32_t imageIndex) {
-	return (_colorImages[imageIndex].get());
+Image	*Swapchain::getSwapImage(uint32_t imageIndex) {
+	return (_swapImages[imageIndex].get());
+}
+
+Image	*Swapchain::getOffImage(void) {
+	return (_offscreenImage.get());
 }
 
 bool	Swapchain::acquireNextImage(Window &window, uint32_t currentFrame, uint32_t *imageIndex) {

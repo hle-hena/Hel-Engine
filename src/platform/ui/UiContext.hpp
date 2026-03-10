@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:09 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 21:24:51                                        */
+/*  Last Modified: 2026/03/09 14:48:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,6 +24,8 @@
 namespace	hel {
 
 class	Window;
+class	Device;
+class	Image;
 
 class	UiContext {
 	public:
@@ -32,6 +34,10 @@ class	UiContext {
 
 		UiContext(const UiContext &other) = delete;
 		UiContext	&operator=(const UiContext &other) = delete;
+
+		static VkDescriptorSet	registerTexture(Device &device, Image *image,
+												VkFormat format);
+		static void				unregisterTexture(VkDescriptorSet texture);
 
 		void	newFrame();
 		void	endFrame(void);
@@ -53,6 +59,7 @@ class	UiContext {
 		std::unique_ptr<DescriptorPool>	_pool;
 		ImGuiContext					*_context;
 		Window							*_window;
+		Device							&_device;
 
 	friend class Window;
 };

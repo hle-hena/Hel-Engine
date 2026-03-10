@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: UIHelper.tpp                                                        */
+/*  File: Setters.hpp                                                         */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/03/05 15:22:31 by hle-hena                                  */
+/*  Created: 2026/03/06 21:22:56 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 18:52:26                                        */
+/*  Last Modified: 2026/03/06 21:23:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,33 +14,10 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/systems/core/ui/UIHelper.hpp"
+#pragma once
 
-# include <iostream>
+#define	SETTER(name, type, member)	\
+	auto	&set##name(type val)	{ member = val; return (*this); }
 
-namespace	hel::sys {
-
-template <typename Func>
-void	Table::setNextCell(const char *label, Func&& drawAction) {
-	ImGui::TableNextColumn();
-	if (label != nullptr) {
-		ImGui::AlignTextToFramePadding();
-		ImGui::Text(label);
-	}
-
-	ImGui::TableNextColumn();
-	ImGui::PushItemWidth(-1.0f);
-	if (label)	{ ImGui::PushID(label); }
-	else		{ ImGui::PushID("##"); }
-	drawAction();
-	ImGui::PopID();
-	ImGui::PopItemWidth();
-}
-
-template <typename T>
-void	TableRow::fillVec(std::vector<T> &vec, size_t wantedSize) {
-	if (vec.size() != wantedSize)
-		vec = std::vector<T>(wantedSize, vec[0]);
-}
-
-}
+#define	SETTER_INIT(name, type, member)	\
+	auto	&set##name(type val)	{ member = {val}; return (*this); }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 21:24:45                                        */
+/*  Last Modified: 2026/03/10 18:27:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,12 +18,14 @@
 #include "platform/window/Window.hpp"
 #include "api/vulkan/Descriptors.hpp"
 #include "api/vulkan/Device.hpp"
+#include "api/vulkan/Sampler.hpp"
 #include "core/Application.hpp"
 
 namespace	hel {
 
 UiContext::UiContext(Window *window)
-	:	_window{window} {
+	:	_window{window},
+		_device{window->_app.getVkContext().getDevice()} {
 }
 
 UiContext::~UiContext(void) {
@@ -31,7 +33,7 @@ UiContext::~UiContext(void) {
 
 void	UiContext::destroy(void) {
 	if (_fullyInitialised) {
-		vkDeviceWaitIdle(_window->_app.getVkContext().getDevice().getLogical());
+		vkDeviceWaitIdle(_device.getLogical());
 		ImGui::SetCurrentContext(_context);
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
@@ -40,24 +42,22 @@ void	UiContext::destroy(void) {
 }
 
 void	UiContext::init() {
-	Device	&device = _window->_app.getVkContext().getDevice();
-	initDescriptorPool(device);
-	initImGui(device);
+	initDescriptorPool(_device);
+	initImGui(_device);
 }
 
 void	UiContext::initImGui(Device &device) {
 	_context = ImGui::CreateContext();
 	ImGui::SetCurrentContext(_context);
+	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
 	ImGui_ImplGlfw_InitForVulkan(_window->_windowPtr, true);
 
-	auto	colorFormat = _window->getSwapchain().getNextColorImage(0)->getFormat();
-	auto	depthFormat = _window->getSwapchain().getDepthImage()->getFormat();
+	auto	colorFormat = VK_FORMAT_B8G8R8A8_UNORM;
 	VkPipelineRenderingCreateInfo	renderingCreateInfo{};
 	renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
 	renderingCreateInfo.colorAttachmentCount = 1;
 	renderingCreateInfo.pColorAttachmentFormats = &colorFormat;
-	renderingCreateInfo.depthAttachmentFormat = depthFormat;
 
 	ImGui_ImplVulkan_InitInfo	initInfo{};
 	initInfo.ApiVersion = VK_API_VERSION_1_3;
@@ -90,6 +90,17 @@ void	UiContext::initDescriptorPool(Device &device) {
 		.setPageSize(Swapchain::MAX_FRAMES_IN_FLIGHT)
 		.setCreationFlag(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
 		.build();
+}
+
+VkDescriptorSet	UiContext::registerTexture(Device &device, Image *image,
+										VkFormat format) {
+	VkDescriptorSet	id = ImGui_ImplVulkan_AddTexture(Sampler::getSampler(device, {}),
+			image->getView(format), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	return (id);
+}
+
+void	UiContext::unregisterTexture(VkDescriptorSet texture) {
+	ImGui_ImplVulkan_RemoveTexture(texture);
 }
 
 void	UiContext::newFrame() {

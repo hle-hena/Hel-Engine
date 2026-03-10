@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 12:56:21                                        */
+/*  Last Modified: 2026/03/10 16:56:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,7 +26,7 @@
 #include "ecs/systems/core/Camera.hpp"
 #include "ecs/systems/core/EditorController.hpp"
 #include "ecs/systems/core/HideMouse.hpp"
-#include "ecs/systems/core/ui/UI.hpp"
+#include "platform/ui/UI.hpp"
 
 #include "ecs/systems/runtime/BaseController.hpp"
 #include "ecs/systems/runtime/SurfaceAllignement.hpp"
@@ -35,7 +35,6 @@
 
 #include "api/vulkan/Swapchain.hpp"
 #include "api/vulkan/Buffer.hpp"
-#include "api/vulkan/RenderPass.hpp"
 #include "api/vulkan/Descriptors.hpp"
 
 namespace hel {
@@ -81,10 +80,8 @@ class	Engine {
 		void			createDescriptorPool(void);
 
 		void			updateGlobalUBO(Window &window, uint32_t currentFrame);
-		bool			beginFrame(VkCommandBuffer commandBuffer,
-								Image *colorImage, Image *depthImage);
-		bool			endFrame(VkCommandBuffer commandBuffer,
-								Image *colorImage);
+		bool			beginFrame(VkCommandBuffer commandBuffer);
+		bool			endFrame(VkCommandBuffer commandBuffer);
 		WindowResources	*getWindowResources(Window& window);
 
 		bool											_healthy{true};
@@ -104,7 +101,6 @@ class	Engine {
 		sys::BaseController								_baseControllerSystem;
 		sys::SurfaceAllignement							_surfaceAllignementSystem;
 		sys::UI											_uiSystem;
-		uint32_t										_currentFrameIndex{0};
 };
 
 }

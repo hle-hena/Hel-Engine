@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: EntityHierarchyUI.hpp                                               */
+/*  File: EditorUI.hpp                                                        */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/28 13:55:43 by hle-hena                                  */
+/*  Created: 2026/02/27 21:55:02 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/03 12:09:39                                        */
+/*  Last Modified: 2026/03/10 16:24:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,33 +16,46 @@
 
 #pragma once
 
-# include "ecs/View.hpp"
+# include <unordered_map>
+# include <typeindex>
+# include <functional>
+
 # include "ecs/Entity.hpp"
+# include "api/ImGui/imgui.h"
 
 namespace	hel {
 
-class	Window;
 class	Registry;
+class	Window;
 
 }
 
 namespace	hel::sys {
 
-class	EntityHierarchyUI {
+class	InspectorUI {
 	public:
-		EntityHierarchyUI(Registry &registry) : _registry{registry} {}
-		~EntityHierarchyUI(void) = default;
+		using UIDrawFunc = std::function<void(Window *, void *)>;
 
-		void	render(Window *window);
+		InspectorUI(Registry &registry) : _registry{registry} {}
+		~InspectorUI(void) = default;
+
+		template <typename Component>
+		void	setDrawFunc(UIDrawFunc func) {
+			_drawFuncs[typeid(Component)] = func;
+		}
+		void	setBuiltInDrawFunc(void);
+
+		void	render(Window *window, ImVec2 pos, ImVec2 size);
 
 	private:
-		void	moveEntity(Window *window, View<comp::Hierarchy> &view,
-					Entity::id srcHandle, Entity::id dstHandle);
-		void	showEntity(Window *window, View<comp::Hierarchy> view,
-					Entity::id handle);
+		void	addNewComponentPopup(Entity::id handle);
+		void	removeEntity(Entity::id handle);
 
 		Registry	&_registry;
-		float		_windowWidth{300.f};
+		bool		_addNewComp{false};
+		int			_newCompTypeIndex{0};
+
+		std::unordered_map<std::type_index, UIDrawFunc>	_drawFuncs;
 };
 
 }

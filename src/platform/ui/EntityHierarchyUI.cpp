@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/28 13:55:54 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 18:39:55                                        */
+/*  Last Modified: 2026/03/10 16:56:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,9 +14,8 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/systems/core/ui/EntityHierarchyUI.hpp"
-#include "ecs/systems/core/ui/UIHelper.hpp"
-#include "api/ImGui/imgui.h"
+#include "platform/ui/EntityHierarchyUI.hpp"
+#include "platform/ui/UIHelper.hpp"
 #include "api/ImGui/imgui_stdlib.h"
 #include "platform/window/Window.hpp"
 
@@ -81,13 +80,12 @@ void	EntityHierarchyUI::showEntity(Window *window, View<comp::Hierarchy> view,
 	}
 }
 
-void	EntityHierarchyUI::render(Window *window) {
+void	EntityHierarchyUI::render(Window *window, ImVec2 pos, ImVec2 size) {
 	ImGuiWindowFlags	windowFlags = ImGuiWindowFlags_NoCollapse |
 									ImGuiWindowFlags_NoMove |
 									ImGuiWindowFlags_NoResize;
-	VkExtent2D	extent = window->getExtent();
-	ImGui::SetNextWindowSize({_windowWidth, extent.height});
-	ImGui::SetNextWindowPos({0, 0});
+	ImGui::SetNextWindowSize(size);
+	ImGui::SetNextWindowPos(pos);
 	ImGui::Begin("Entities in scene", nullptr, windowFlags);
 
 	if (ImGui::Button("Add a new Entity"))
@@ -95,7 +93,7 @@ void	EntityHierarchyUI::render(Window *window) {
 	ImGui::Separator();
 
 	auto	view = _registry.view<comp::Hierarchy>();
-	ImVec2	pos = ImGui::GetCursorPos();
+	ImVec2	cursorPos = ImGui::GetCursorPos();
 	ImGui::Dummy(ImGui::GetContentRegionAvail());
 	if (ImGui::BeginDragDropTarget()) {
 		if (auto payload = ImGui::AcceptDragDropPayload
@@ -104,7 +102,7 @@ void	EntityHierarchyUI::render(Window *window) {
 		}
 		ImGui::EndDragDropTarget();
 	}
-	ImGui::SetCursorPos(pos);
+	ImGui::SetCursorPos(cursorPos);
 
 	for (auto handle: view) {
 		auto	hierarchy = view.get<comp::Hierarchy>(handle);
@@ -115,15 +113,6 @@ void	EntityHierarchyUI::render(Window *window) {
 		window->setEntityFocus(Entity::NOT_REGISTERED);
 
 	ImGui::End();
-
-	Splitter(&_windowWidth)
-		.setLabel("Hierarchy splitter")
-		.setMin(50.f)
-		.setMax(extent.width * 0.35f)
-		.setPos({_windowWidth, 0.f})
-		.setSize(extent.height)
-		.setDir(Splitter::Right)
-		.build();
 }
 
 }

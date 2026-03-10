@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 11:34:26                                        */
+/*  Last Modified: 2026/03/09 15:36:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -109,18 +109,18 @@ class	Window {
 
 		bool						_healthy{true};
 		std::string					_reason{""};
+		Application					&_app;
+		VkInstance					&_instance;
 		int							_width;
 		int							_height;
-		UiContext					_uiContext;
 		int							_lastMouseX{-1};
 		int							_lastMouseY{-1};
 		bool						_frameBufferResized{false};
 		std::string					_windowName;
 		GLFWwindow					*_windowPtr;
 		VkSurfaceKHR				_surface{VK_NULL_HANDLE};
+		UiContext					_uiContext;
 		Swapchain					_swapchain;
-		Application					&_app;
-		VkInstance					&_instance;
 		std::optional<Entity::id>	_entityHandle;
 		std::optional<Entity::id>	_focusHandle;
 
