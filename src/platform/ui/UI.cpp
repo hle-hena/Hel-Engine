@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 16:30:42                                        */
+/*  Last Modified: 2026/03/10 16:56:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,8 +15,8 @@
 /* *************************************************************************  */
 
 
-#include "ecs/systems/core/ui/UI.hpp"
-#include "ecs/systems/core/ui/UIHelper.hpp"
+#include "platform/ui/UI.hpp"
+#include "platform/ui/UIHelper.hpp"
 #include "ecs/Registry.hpp"
 #include "api/ImGui/imgui.h"
 #include "api/ImGui/imgui_stdlib.h"

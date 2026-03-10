@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: UIHelper.tpp                                                        */
+/*  File: UI.hpp                                                              */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/03/05 15:22:31 by hle-hena                                  */
+/*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 18:52:26                                        */
+/*  Last Modified: 2026/03/10 16:57:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,33 +14,39 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/systems/core/ui/UIHelper.hpp"
+#pragma once
 
-# include <iostream>
+# include "ecs/systems/ISystem.hpp"
+
+# include "platform/ui/InspectorUI.hpp"
+# include "platform/ui/EntityHierarchyUI.hpp"
+# include "platform/ui/SceneViewport.hpp"
+
+namespace	hel {
+
+class	Window;
+
+}
 
 namespace	hel::sys {
 
-template <typename Func>
-void	Table::setNextCell(const char *label, Func&& drawAction) {
-	ImGui::TableNextColumn();
-	if (label != nullptr) {
-		ImGui::AlignTextToFramePadding();
-		ImGui::Text(label);
-	}
+class	UI : public ISystem {
+	public:
+		UI(Device &device, Registry &registry);
+		~UI(void) override;
 
-	ImGui::TableNextColumn();
-	ImGui::PushItemWidth(-1.0f);
-	if (label)	{ ImGui::PushID(label); }
-	else		{ ImGui::PushID("##"); }
-	drawAction();
-	ImGui::PopID();
-	ImGui::PopItemWidth();
-}
+		void	render(const RenderingConfig &conf, WindowResources &resources,
+			uint32_t currentFrame) override;
 
-template <typename T>
-void	TableRow::fillVec(std::vector<T> &vec, size_t wantedSize) {
-	if (vec.size() != wantedSize)
-		vec = std::vector<T>(wantedSize, vec[0]);
-}
+	private:
+		void	addSplitters(float windowWidth, float windowHeight);
+
+		float	_leftTabWidth{300.f};
+		float	_rightTabWidth{300.f};
+
+		InspectorUI					_inspectorUI;
+		EntityHierarchyUI			_entityHierarchyUI;
+		SceneViewport				_sceneViewport;
+};
 
 }

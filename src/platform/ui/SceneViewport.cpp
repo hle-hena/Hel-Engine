@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 16:40:23                                        */
+/*  Last Modified: 2026/03/10 16:56:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,7 +14,7 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/systems/core/ui/SceneViewport.hpp"
+#include "platform/ui/SceneViewport.hpp"
 #include "api/vulkan/Image.hpp"
 #include "api/vulkan/Swapchain.hpp"
 #include "platform/window/Window.hpp"
