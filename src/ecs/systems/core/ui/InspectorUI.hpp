@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:55:02 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 15:52:54                                        */
+/*  Last Modified: 2026/03/10 16:24:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,7 @@
 # include <functional>
 
 # include "ecs/Entity.hpp"
+# include "api/ImGui/imgui.h"
 
 namespace	hel {
 
@@ -44,7 +45,7 @@ class	InspectorUI {
 		}
 		void	setBuiltInDrawFunc(void);
 
-		void	render(Window *window);
+		void	render(Window *window, ImVec2 pos, ImVec2 size);
 
 	private:
 		void	addNewComponentPopup(Entity::id handle);
@@ -53,7 +54,6 @@ class	InspectorUI {
 		Registry	&_registry;
 		bool		_addNewComp{false};
 		int			_newCompTypeIndex{0};
-		float		_windowWidth{300.f};
 
 		std::unordered_map<std::type_index, UIDrawFunc>	_drawFuncs;
 };

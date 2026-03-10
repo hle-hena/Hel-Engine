@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 11:45:47                                        */
+/*  Last Modified: 2026/03/10 16:22:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,6 +39,11 @@ class	UI : public ISystem {
 			uint32_t currentFrame) override;
 
 	private:
+		void	addSplitters(float windowWidth, float windowHeight);
+
+		float	_leftTabWidth{300.f};
+		float	_rightTabWidth{300.f};
+
 		InspectorUI					_inspectorUI;
 		EntityHierarchyUI			_entityHierarchyUI;
 		SceneViewport				_sceneViewport;

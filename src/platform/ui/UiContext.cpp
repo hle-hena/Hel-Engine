@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 14:48:25                                        */
+/*  Last Modified: 2026/03/10 15:43:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -49,6 +49,7 @@ void	UiContext::init() {
 void	UiContext::initImGui(Device &device) {
 	_context = ImGui::CreateContext();
 	ImGui::SetCurrentContext(_context);
+	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
 	ImGui_ImplGlfw_InitForVulkan(_window->_windowPtr, true);
 

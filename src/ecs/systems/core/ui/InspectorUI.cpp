@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 20:06:10                                        */
+/*  Last Modified: 2026/03/10 16:24:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,14 +17,13 @@
 #include "ecs/systems/core/ui/InspectorUI.hpp"
 #include "ecs/systems/core/ui/UIHelper.hpp"
 #include "ecs/Registry.hpp"
-#include "api/ImGui/imgui.h"
 #include "api/ImGui/imgui_stdlib.h"
 #include "platform/window/Window.hpp"
 #include "ecs/ComponentList.hpp"
 
 namespace	hel::sys {
 
-void	InspectorUI::render(Window *window) {
+void	InspectorUI::render(Window *window, ImVec2 pos, ImVec2 size) {
 	auto	handle = window->getEntityFocus();
 	if (handle == Entity::NOT_REGISTERED)
 		return ;
@@ -32,9 +31,8 @@ void	InspectorUI::render(Window *window) {
 									ImGuiWindowFlags_NoTitleBar |
 									ImGuiWindowFlags_NoMove |
 									ImGuiWindowFlags_NoResize;
-	VkExtent2D	extent = window->getExtent();
-	ImGui::SetNextWindowSize({_windowWidth, extent.height});
-	ImGui::SetNextWindowPos({extent.width - _windowWidth, 0});
+	ImGui::SetNextWindowSize(size);
+	ImGui::SetNextWindowPos(pos);
 	ImGui::Begin("Inspector", nullptr, windowFlags);
 	if (ImGui::Button("Remove entity")) {
 		removeEntity(handle);
@@ -82,15 +80,6 @@ void	InspectorUI::render(Window *window) {
 		_addNewComp = true;
 	addNewComponentPopup(handle);
 	ImGui::End();
-
-	Splitter(&_windowWidth)
-		.setLabel("Inspector splitter")
-		.setMin(50.f)
-		.setMax(extent.width * 0.4f)
-		.setPos({extent.width - _windowWidth, 0.f})
-		.setSize(extent.height)
-		.setDir(Splitter::Left)
-		.build();
 }
 
 void	InspectorUI::removeEntity(Entity::id handle) {
