@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 14:38:07                                        */
+/*  Last Modified: 2026/03/10 19:06:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -209,8 +209,6 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 
 		ui.renderFrame(commandBuffer);
 	}
-
-	// offImage->copyTo(commandBuffer, swapImage);
 
 	swapImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 	endFrame(commandBuffer);
