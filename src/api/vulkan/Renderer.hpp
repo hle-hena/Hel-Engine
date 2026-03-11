@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/06 22:05:29                                        */
+/*  Last Modified: 2026/03/11 10:58:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,8 +37,8 @@ class	Renderer {
 		SETTER(ColorStoreOp, VkAttachmentStoreOp, _colorsStoreOp)
 		SETTER(DepthLoadOp, VkAttachmentLoadOp, _depthLoadOp)
 		SETTER(DepthStoreOp, VkAttachmentStoreOp, _depthStoreOp)
-		Renderer		&addColor(Image *color, VkFormat format);
-		Renderer		&addDepth(Image *depth, VkFormat format);
+		Renderer		&addColorWrite(Image *color, VkFormat format);
+		Renderer		&addDepthWrite(Image *depth, VkFormat format);
 
 		RendererHandle	beginPass(void);
 
@@ -57,7 +57,9 @@ class	Renderer {
 		VkAttachmentLoadOp		_depthLoadOp{VK_ATTACHMENT_LOAD_OP_CLEAR};
 		VkAttachmentStoreOp		_depthStoreOp{VK_ATTACHMENT_STORE_OP_DONT_CARE};
 
-		std::vector<Image *>						_colors{};
+		std::vector<Image *>						_colorsWrite{};
+		std::vector<Image *>						_colorsRead{};
+		Image										*_depthWrite;
 		std::vector<VkRenderingAttachmentInfo>		_colorsInfo{};
 		std::optional<VkRenderingAttachmentInfo>	_depthInfo{};
 	

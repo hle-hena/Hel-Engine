@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 19:06:01                                        */
+/*  Last Modified: 2026/03/11 10:59:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -188,8 +188,8 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	UiContext	&ui = window.getUI();
 	beginFrame(commandBuffer);
 	if (auto pass = Renderer(commandBuffer, offImage->getExtent())
-					.addColor(offImage, VK_FORMAT_B8G8R8A8_SRGB)
-					.addDepth(depthImage, depthImage->getFormat())
+					.addColorWrite(offImage, VK_FORMAT_B8G8R8A8_SRGB)
+					.addDepthWrite(depthImage, depthImage->getFormat())
 					.beginPass()) {
 		RenderingConfig	config{};
 		config.colorFormats.push_back(VK_FORMAT_B8G8R8A8_SRGB);
@@ -202,7 +202,7 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	offImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	auto	swapImage = swap.getSwapImage(imageIndex);
 	if (auto pass = Renderer(commandBuffer, swapImage->getExtent())
-					.addColor(swapImage, VK_FORMAT_B8G8R8A8_UNORM)
+					.addColorWrite(swapImage, VK_FORMAT_B8G8R8A8_UNORM)
 					.beginPass()) {
 		RenderingConfig	config{};
 		config.colorFormats.push_back(VK_FORMAT_B8G8R8A8_UNORM);
