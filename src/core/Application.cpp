@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 13:00:45                                        */
+/*  Last Modified: 2026/03/11 17:11:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -92,7 +92,6 @@ void	Application::run(void) {
 		glfwPollEvents();
 
 		if (_appWindow->shouldClose()) {
-			_appWindow = nullptr;
 			break ;
 		}
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 16:56:59                                        */
+/*  Last Modified: 2026/03/11 17:02:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -54,7 +54,7 @@ void	UI::addSplitters(float windowWidth, float windowHeight) {
 		.build();
 }
 
-void	UI::render(const RenderingConfig &, WindowResources &resources,
+void	UI::render(ImagePool *imagePool, WindowResources &resources,
 				uint32_t) {
 	auto	windowExtent = resources.window->getExtent();
 	float	windowWidth = static_cast<float>(windowExtent.width);
@@ -64,7 +64,7 @@ void	UI::render(const RenderingConfig &, WindowResources &resources,
 						{_rightTabWidth, windowHeight});
 	_entityHierarchyUI.render(resources.window, {0.f, 0.f},
 							{_leftTabWidth, windowHeight});
-	_sceneViewport.render(resources.window, {_leftTabWidth, 0.f},
+	_sceneViewport.render(imagePool, resources.window, {_leftTabWidth, 0.f},
 						{windowWidth - _rightTabWidth - _leftTabWidth, windowHeight});
 
 	addSplitters(windowWidth, windowHeight);

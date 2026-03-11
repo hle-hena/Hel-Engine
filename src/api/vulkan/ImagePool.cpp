@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/11 15:32:24                                        */
+/*  Last Modified: 2026/03/11 17:09:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,8 +16,6 @@
 
 #include "api/vulkan/ImagePool.hpp"
 #include "utils/mathUtils.hpp"
-
-# include <ranges>
 
 namespace	hel {
 
@@ -41,11 +39,10 @@ std::unique_ptr<ImagePool>	ImagePool::Builder::build(void) {
 
 ImagePool::ImagePool(Device &device, ImageDescMap<uint32_t> &&imageDescs)
 	:	_device{device} {
-	for (auto it: imageDescs) {
+	for (auto &it: imageDescs) {
 		for (auto i = 0; i < it.second; i++) {
-			Slot	slot{};
+			auto	&slot = _pools[it.first].emplace_back();
 			slot.image = Image::create(_device, it.first);
-			_pools[it.first][i] = std::move(slot);
 		}
 	}
 }
@@ -67,7 +64,7 @@ Image	*ImagePool::acquire(const Image::Config &config) {
 }
 
 void	ImagePool::release(Image *image) {
-	for (auto pool: _pools) {
+	for (auto &pool: _pools) {
 		for (auto &slot: pool.second) {
 			if (slot.image.get() == image) {
 				slot.inUse = false;

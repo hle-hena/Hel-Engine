@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/11 15:32:15                                        */
+/*  Last Modified: 2026/03/11 15:48:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,7 +36,8 @@ class	ImagePool {
 			public:
 				Builder(Device &device);
 
-				Builder	&addImage(const Image::Config &config, uint32_t count);
+				Builder	&addImage(const Image::Config &config,
+									uint32_t count = 1);
 
 				std::unique_ptr<ImagePool>	build(void);
 
@@ -52,7 +53,7 @@ class	ImagePool {
 
 	private:
 		struct	Slot {
-			std::unique_ptr<Image>	image;
+			std::unique_ptr<Image>	image{nullptr};
 			bool					inUse{false};
 		};
 
