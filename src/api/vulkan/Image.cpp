@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 19:02:38                                        */
+/*  Last Modified: 2026/03/11 14:45:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,6 +24,25 @@
 #include <stdexcept>
 
 namespace	hel {
+
+size_t	Image::ConfigHasher::operator()(const Config &conf) const {
+	size_t	seed = 0;
+	for (auto format: conf.format)
+		hel::mathUtils::hashCombine(seed, format);
+	hel::mathUtils::hashCombine(seed, conf.aspectFlags, conf.usage,
+						conf.height, conf.width, conf.properties);
+	return (seed);
+}
+
+bool	Image::Config::operator==(const Config &other) const {
+	return (this->format == other.format &&
+			this->usage == other.usage &&
+			this->width == other.width &&
+			this->height == other.height &&
+			this->properties == other.properties &&
+			this->aspectFlags == other.aspectFlags);
+}
+
 
 std::unique_ptr<Image>	Image::create(Device &device, const Config &config) {
 	try {

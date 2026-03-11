@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/11 11:55:52                                        */
+/*  Last Modified: 2026/03/11 15:32:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,37 +21,60 @@
 
 namespace	hel {
 
-size_t	ImageDescHasher::operator()(const ImageDesc &desc) const {
-	size_t	seed = 0;
-	hel::mathUtils::hashCombine(seed, desc.format, desc.usage,
-						desc.extent.height, desc.extent.width);
-	return (seed);
-}
-
-bool	ImageDesc::operator==(const ImageDesc &other) const {
-	return (this->format == other.format &&
-			this->usage == other.usage &&
-			this->extent.height == other.extent.height &&
-			this->extent.width == other.extent.width);
-}
-
 ImagePool::Builder::Builder(Device &device)
 	:	_device{device} {
 }
 
-ImagePool::Builder	&ImagePool::Builder::addImage(VkFormat format,
-												VkExtent2D extent,
-												VkImageUsageFlags usage,
+ImagePool::Builder	&ImagePool::Builder::addImage(const Image::Config &config,
 												uint32_t count) {
-	ImageDesc	desc = {.format = format, .extent = extent, .usage = usage};
-	if (_imageDescs.find(desc) == _imageDescs.end())
-		_imageDescs[desc] = 0;
-	_imageDescs[desc] += count;
+	if (_imageDescs.find(config) == _imageDescs.end())
+		_imageDescs[config] = 0;
+	_imageDescs[config] += count;
 	return (*this);
 }
 
 std::unique_ptr<ImagePool>	ImagePool::Builder::build(void) {
 	return (std::unique_ptr<ImagePool>(new ImagePool(_device, std::move(_imageDescs))));
+}
+
+
+
+ImagePool::ImagePool(Device &device, ImageDescMap<uint32_t> &&imageDescs)
+	:	_device{device} {
+	for (auto it: imageDescs) {
+		for (auto i = 0; i < it.second; i++) {
+			Slot	slot{};
+			slot.image = Image::create(_device, it.first);
+			_pools[it.first][i] = std::move(slot);
+		}
+	}
+}
+
+ImagePool::~ImagePool(void) {
+}
+
+Image	*ImagePool::acquire(const Image::Config &config) {
+	auto	it = _pools.find(config);
+	if (it == _pools.end())
+		return (nullptr);
+	for (auto &slot: it->second) {
+		if (!slot.inUse) {
+			slot.inUse = true;
+			return (slot.image.get());
+		}
+	}
+	return (nullptr);
+}
+
+void	ImagePool::release(Image *image) {
+	for (auto pool: _pools) {
+		for (auto &slot: pool.second) {
+			if (slot.image.get() == image) {
+				slot.inUse = false;
+				return ;
+			}
+		}
+	}
 }
 
 }

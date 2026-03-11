@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/11 11:55:32                                        */
+/*  Last Modified: 2026/03/11 15:32:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,48 +20,46 @@
 # include <unordered_map>
 # include <memory>
 
+# include "api/vulkan/Image.hpp"
+
 namespace	hel {
 
 class	Device;
 
-struct	ImageDesc {
-	VkFormat			format;
-	VkExtent2D			extent;
-	VkImageUsageFlags	usage;
-
-	bool	operator==(const ImageDesc &other) const;
-};
-
-struct	ImageDescHasher {
-	size_t	operator()(const ImageDesc &desc) const;
-};
-
 class	ImagePool {
 	public:
-		using ImageDescMap = std::unordered_map<ImageDesc, uint32_t,
-												ImageDescHasher>;
+		template <typename T>
+		using ImageDescMap = std::unordered_map<Image::Config, T,
+												Image::ConfigHasher>;
 
 		class	Builder {
 			public:
 				Builder(Device &device);
 
-				Builder						&addImage(VkFormat format,
-													VkExtent2D extent,
-													VkImageUsageFlags usage,
-													uint32_t count);
+				Builder	&addImage(const Image::Config &config, uint32_t count);
+
 				std::unique_ptr<ImagePool>	build(void);
 
 			private:
-				Device			&_device;
-				ImageDescMap	_imageDescs;
+				Device					&_device;
+				ImageDescMap<uint32_t>	_imageDescs;
 		};
+
+		Image	*acquire(const Image::Config &config);
+		void	release(Image *);
 
 		~ImagePool(void);
 
 	private:
-		ImagePool(Device &device, ImageDescMap &&imageDescs);
+		struct	Slot {
+			std::unique_ptr<Image>	image;
+			bool					inUse{false};
+		};
 
-		Device	&_device;
+		ImagePool(Device &device, ImageDescMap<uint32_t> &&imageDescs);
+
+		Device							&_device;
+		ImageDescMap<std::vector<Slot>>	_pools;
 };
 
 }

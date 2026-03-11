@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 19:02:50                                        */
+/*  Last Modified: 2026/03/11 15:26:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,7 @@
 # include <unordered_map>
 # include <vulkan/vulkan.h>
 # include "utils/mathUtils.hpp"
+# include "utils/Setters.hpp"
 
 namespace	hel {
 
@@ -29,11 +30,24 @@ class Image {
 	public:
 		using ptr = std::unique_ptr<Image>;
 		struct	Config {
-			uint32_t				width, height;
+			SETTER(Formats, std::initializer_list<VkFormat>, format)
+			SETTER_INIT(Formats, VkFormat, format)
+			SETTER(Width, uint32_t, width)
+			SETTER(Height, uint32_t, height)
+			SETTER(Usage, VkImageUsageFlags, usage)
+			SETTER(Property, VkMemoryPropertyFlags, properties)
+			SETTER(Aspect, VkImageAspectFlags, aspectFlags)
+
+			uint32_t				width{0}, height{0};
 			std::vector<VkFormat>	format{};
-			VkImageUsageFlags		usage;
-			VkMemoryPropertyFlags	properties;
-			VkImageAspectFlags		aspectFlags;
+			VkImageUsageFlags		usage{VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT};
+			VkMemoryPropertyFlags	properties{VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
+			VkImageAspectFlags		aspectFlags{VK_IMAGE_ASPECT_COLOR_BIT};
+
+			bool	operator==(const Config &other) const;
+		};
+		struct	ConfigHasher {
+			size_t	operator()(const Config &desc) const;
 		};
 		static std::unique_ptr<Image>	create(Device &device,
 											const Config &config);
