@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 16:56:45                                        */
+/*  Last Modified: 2026/03/12 14:05:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -46,7 +46,6 @@ void	InspectorUI::render(Window *window, ImVec2 pos, ImVec2 size) {
 	} else {
 		if (ImGui::Button("Link window to entity")) {
 			window->setEntityReference(handle);
-			window->updateEntityReference();
 		}
 	}
 	ImGui::Separator();

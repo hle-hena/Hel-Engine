@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:39 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 16:28:14                                        */
+/*  Last Modified: 2026/03/11 17:02:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,6 +22,7 @@ namespace	hel {
 
 class	Window;
 class	Device;
+class	ImagePool;
 
 }
 
@@ -32,7 +33,7 @@ class	SceneViewport {
 		SceneViewport(void) = default;
 		~SceneViewport(void) = default;
 
-		void	render(Window *window, ImVec2 pos, ImVec2 size);
+		void	render(ImagePool *imagePool, Window *window, ImVec2 pos, ImVec2 size);
 
 	private:
 };

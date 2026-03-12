@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 16:56:20                                        */
+/*  Last Modified: 2026/03/11 17:38:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,6 +36,7 @@
 #include "api/vulkan/Swapchain.hpp"
 #include "api/vulkan/Buffer.hpp"
 #include "api/vulkan/Descriptors.hpp"
+#include "api/vulkan/ImagePool.hpp"
 
 namespace hel {
 
@@ -78,6 +79,7 @@ class	Engine {
 	private:
 		bool			createCommandPool(void);
 		void			createDescriptorPool(void);
+		void			createImagePool(void);
 
 		void			updateGlobalUBO(Window &window, uint32_t currentFrame);
 		bool			beginFrame(VkCommandBuffer commandBuffer);
@@ -92,6 +94,7 @@ class	Engine {
 		float											_lastFrameTime;
 		VkCommandPool									_commandPool{VK_NULL_HANDLE};
 		std::unique_ptr<DescriptorPool>					_staticPool;
+		std::unique_ptr<ImagePool>						_imagePool;
 		std::unique_ptr<WindowResources>				_windowResources;
 		sys::Render										_renderSystem;
 		sys::Transform									_transformSystem;
