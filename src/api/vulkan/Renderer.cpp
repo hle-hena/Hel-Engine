@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/06 22:06:34                                        */
+/*  Last Modified: 2026/03/11 10:58:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,7 +36,7 @@ Renderer::~Renderer(void) {
 }
 
 RendererHandle	Renderer::beginPass(void) {
-	if (_colors.empty())
+	if (_colorsWrite.empty())
 		return (RendererHandle(std::move(*this)));
 
 	VkRenderingInfo	renderingInfo{};
@@ -70,20 +70,21 @@ void	Renderer::endPass(void) {
 	vkCmdEndRendering(_commandBuffer);
 }
 
-Renderer	&Renderer::addColor(Image *color, VkFormat format) {
+Renderer	&Renderer::addColorWrite(Image *color, VkFormat format) {
 	color->transitionLayout(_commandBuffer,
 							VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
 	_colorsInfo.push_back(color->getRenderingInfo(_colorClear, _colorsLoadOp,
 												_colorsStoreOp, format));
-	_colors.push_back(color);
+	_colorsWrite.push_back(color);
 	return (*this);
 }
 
-Renderer	&Renderer::addDepth(Image *depth, VkFormat format) {
+Renderer	&Renderer::addDepthWrite(Image *depth, VkFormat format) {
 	depth->transitionLayout(_commandBuffer,
 							VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
+	_depthWrite = depth;
 	_depthInfo = depth->getRenderingInfo(_depthClear, _depthLoadOp,
 										_depthStoreOp, format);
 	return (*this);

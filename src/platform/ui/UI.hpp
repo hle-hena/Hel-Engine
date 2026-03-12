@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 16:57:05                                        */
+/*  Last Modified: 2026/03/11 17:07:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,6 +25,7 @@
 namespace	hel {
 
 class	Window;
+class	ImagePool;
 
 }
 
@@ -35,8 +36,9 @@ class	UI : public ISystem {
 		UI(Device &device, Registry &registry);
 		~UI(void) override;
 
-		void	render(const RenderingConfig &conf, WindowResources &resources,
-			uint32_t currentFrame) override;
+		//TODO -> Make it go into the systems
+		void	render(ImagePool *imagePool, WindowResources &resources,
+			uint32_t currentFrame);
 
 	private:
 		void	addSplitters(float windowWidth, float windowHeight);

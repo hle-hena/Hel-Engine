@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 19:06:01                                        */
+/*  Last Modified: 2026/03/12 14:13:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -57,6 +57,7 @@ bool	Engine::init(Window &window) {
 	if (createCommandPool())
 		return (true);
 	createDescriptorPool();
+	createImagePool();
 	auto	initResources = getWindowResources(window);
 	_renderSystem.initAllPipelines(*initResources);
 	_transformSystem.initAllPipelines(*initResources);
@@ -83,6 +84,27 @@ void	Engine::createDescriptorPool(void) {
 	_staticPool = DescriptorPool::Builder(_device)
 		.addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
 		.setPageSize(GLFW::_maxInstanceCount * Swapchain::MAX_FRAMES_IN_FLIGHT)
+		.build();
+}
+
+void	Engine::createImagePool(void) {
+	_imagePool = ImagePool::Builder(_device)
+		.addImage(Image::Config()
+			.setHeight(4096)
+			.setWidth(4096)
+			.setFormats({VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM})
+			.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+			.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
+			.setUsage(VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
+			.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
+			.setProperty(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))
+		.addImage(Image::Config()
+			.setHeight(4096)
+			.setWidth(4096)
+			.setFormats(VK_FORMAT_D32_SFLOAT)
+			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT)
+			.setProperty(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))
 		.build();
 }
 
@@ -139,7 +161,7 @@ void	Engine::renderUI(Window &window, uint32_t currentFrame) {
 		return ;
 
 	window.getUI().newFrame();
-	_uiSystem.render(RenderingConfig{}, *resources, currentFrame);
+	_uiSystem.render(_imagePool.get(), *resources, currentFrame);
 	window.getUI().endFrame();
 }
 
@@ -171,8 +193,10 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	Swapchain	&swapchain = window.getSwapchain();
 
 	uint32_t	imageIndex;
-	if (swapchain.acquireNextImage(window, currentFrame, &imageIndex))
+	if (swapchain.acquireNextImage(window, currentFrame, &imageIndex)) {
+		_imagePool->releaseAll();
 		return ;
+	}
 
 	updateGlobalUBO(window, currentFrame);
 	WindowResources *resources = getWindowResources(window);
@@ -182,14 +206,20 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	VkCommandBuffer	commandBuffer = resources->commandBuffers[currentFrame];
 	vkResetCommandBuffer(commandBuffer, 0);
 
-	auto	offImage = swap.getOffImage();
-	auto	depthImage = swap.getDepthImage();
+	auto	offImage = _imagePool->get("mainViewport");
+	auto	depthImage = _imagePool->acquire(Image::Config()
+			.setFormats(VK_FORMAT_D32_SFLOAT)
+			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT)
+			.setProperty(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
+
+	auto	swapImage = swap.getSwapImage(imageIndex);
 
 	UiContext	&ui = window.getUI();
 	beginFrame(commandBuffer);
 	if (auto pass = Renderer(commandBuffer, offImage->getExtent())
-					.addColor(offImage, VK_FORMAT_B8G8R8A8_SRGB)
-					.addDepth(depthImage, depthImage->getFormat())
+					.addColorWrite(offImage, VK_FORMAT_B8G8R8A8_SRGB)
+					.addDepthWrite(depthImage, depthImage->getFormat())
 					.beginPass()) {
 		RenderingConfig	config{};
 		config.colorFormats.push_back(VK_FORMAT_B8G8R8A8_SRGB);
@@ -200,9 +230,8 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	}
 
 	offImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-	auto	swapImage = swap.getSwapImage(imageIndex);
 	if (auto pass = Renderer(commandBuffer, swapImage->getExtent())
-					.addColor(swapImage, VK_FORMAT_B8G8R8A8_UNORM)
+					.addColorWrite(swapImage, VK_FORMAT_B8G8R8A8_UNORM)
 					.beginPass()) {
 		RenderingConfig	config{};
 		config.colorFormats.push_back(VK_FORMAT_B8G8R8A8_UNORM);
@@ -212,6 +241,9 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 
 	swapImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 	endFrame(commandBuffer);
+
+	_imagePool->release(offImage);
+	_imagePool->release(depthImage);
 
 	swapchain.submitCommandBuffer(&commandBuffer, imageIndex, currentFrame);
 	if (swapchain.present(window, imageIndex, currentFrame))

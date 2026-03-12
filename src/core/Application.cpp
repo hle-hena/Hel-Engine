@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 13:00:45                                        */
+/*  Last Modified: 2026/03/12 14:04:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -54,7 +54,6 @@ void	Application::loadPrimaryScene(void) {
 	_registry.addComponent<comp::EditorControllerTag>(cameraHandle);
 	_registry.addComponent<comp::Camera>(cameraHandle);
 	_appWindow->setEntityReference(cameraHandle);
-	_appWindow->updateEntityReference();
 
 	Entity::id	handle = _registry.createEntity();
 	if (auto mesh = _registry.modify(_registry.addComponent<comp::Model>(handle))) {
@@ -92,7 +91,6 @@ void	Application::run(void) {
 		glfwPollEvents();
 
 		if (_appWindow->shouldClose()) {
-			_appWindow = nullptr;
 			break ;
 		}
 
