@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/12 10:52:15                                        */
+/*  Last Modified: 2026/03/12 13:27:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -47,6 +47,9 @@ class	ImagePool {
 		};
 
 		Image	*acquire(const Image::Config &requested);
+		Image	*acquire(const std::string &referenceID,
+						const Image::Config &requested);
+		Image	*get(const std::string &referenceID);
 		void	release(Image *);
 
 		~ImagePool(void);
@@ -64,8 +67,13 @@ class	ImagePool {
 		uint64_t	candidateScore(const Image::Config &requested,
 						const Image::Config &candidate);
 
-		Device							&_device;
-		ImageDescMap<std::vector<Slot>>	_pools;
+		auto	findNamed(const std::string &referenceID);
+		auto	findNamed(Image *image);
+		void	removeIfNamed(Image *image);
+
+		Device											&_device;
+		ImageDescMap<std::vector<Slot>>					_pools;
+		std::vector<std::pair<std::string, Image *>>	_namedImages;
 };
 
 }

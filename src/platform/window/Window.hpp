@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 15:36:24                                        */
+/*  Last Modified: 2026/03/12 14:02:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -73,7 +73,7 @@ class	Window {
 			return (_windowName);
 		}
 		void			setEntityReference(Entity::id handle);
-		void			updateEntityReference(void);
+		void			updateEntityReference(float aspect);
 		Entity::id		getEntityReference(void) const {
 			return (_entityHandle.value_or(Entity::NOT_REGISTERED));
 		}

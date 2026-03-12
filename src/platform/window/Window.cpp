@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 14:51:25                                        */
+/*  Last Modified: 2026/03/12 14:04:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -123,13 +123,15 @@ void	Window::setEntityReference(Entity::id handle) {
 	_entityHandle = handle;
 }
 
-void	Window::updateEntityReference(void) {
+void	Window::updateEntityReference(float aspect) {
 	if (!_entityHandle.has_value())
 		return ;
 	auto	&registry = _app.getRegistry();
-	if (auto camera = registry.modify<comp::Camera>(_entityHandle.value()))
-		camera->aspect = static_cast<float>(_width) /
-						static_cast<float>(_height);
+	auto	constCam = registry.getComponent<comp::Camera>(_entityHandle.value());
+	if (!constCam || constCam->aspect == aspect)
+		return ;
+	if (auto camera = registry.modify(constCam))
+		camera->aspect = aspect;
 }
 
 void	Window::frameBufferResizedCallback(GLFWwindow *window,
@@ -139,7 +141,6 @@ void	Window::frameBufferResizedCallback(GLFWwindow *window,
 
 	appWindow->_width = width;
 	appWindow->_height = height;
-	appWindow->updateEntityReference();
 }
 
 void	Window::focusCallback(GLFWwindow *window, int focused) {

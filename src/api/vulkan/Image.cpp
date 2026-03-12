@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/12 10:34:43                                        */
+/*  Last Modified: 2026/03/12 13:48:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -69,6 +69,7 @@ Image::Image(Device &device, const Config &config)
 	:	_device{device},
 		_config{config} {
 	createImage(), allocateMemory(), createViews();
+	_extent = {config.width, config.height};
 }
 
 Image::Image(Device &device, VkImage img, VkFormat format, VkExtent2D extent)
@@ -81,6 +82,7 @@ Image::Image(Device &device, VkImage img, VkFormat format, VkExtent2D extent)
 	_config.aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
 	_config.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
 	createViews();
+	_extent = extent;
 }
 
 Image::~Image(void) {

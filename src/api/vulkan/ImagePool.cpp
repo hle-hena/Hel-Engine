@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/12 11:02:43                                        */
+/*  Last Modified: 2026/03/12 13:56:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,9 @@
 #include "utils/mathUtils.hpp"
 
 #include <bit>
+
+
+#include <iostream>
 
 namespace	hel {
 
@@ -87,6 +90,20 @@ uint64_t	ImagePool::candidateScore(const Image::Config &requested,
 	return (waste);
 }
 
+auto	ImagePool::findNamed(const std::string &referenceID) {
+	return (std::find_if(_namedImages.begin(), _namedImages.end(),
+								[&](const auto &pair){
+									return (pair.first == referenceID);
+								}));
+}
+
+auto	ImagePool::findNamed(Image *image) {
+	return (std::find_if(_namedImages.begin(), _namedImages.end(),
+								[&](const auto &pair){
+									return (pair.second == image);
+								}));
+}
+
 Image	*ImagePool::acquire(const Image::Config &requested) {
 	Slot		*bestSlot = nullptr;
 	uint64_t	bestScore = UINT64_MAX;
@@ -108,7 +125,35 @@ Image	*ImagePool::acquire(const Image::Config &requested) {
 	if (!bestSlot)
 		return (nullptr);
 	bestSlot->inUse = true;
+	bestSlot->image->setExtent({requested.width, requested.height}, {});
 	return (bestSlot->image.get());
+}
+
+Image	*ImagePool::acquire(const std::string &referenceID,
+							const Image::Config &requested) {
+	if (findNamed(referenceID) != _namedImages.end()) {
+		std::cerr << "Name already taken" << std::endl;
+		return (nullptr);
+	}
+	auto	image = acquire(requested);
+	if (image)
+		_namedImages.push_back({referenceID, image});
+	return (image);
+}
+
+Image	*ImagePool::get(const std::string &referenceID) {
+	auto	it = findNamed(referenceID);
+	if (it != _namedImages.end())
+		return (it->second);
+	return (nullptr);
+}
+
+void	ImagePool::removeIfNamed(Image *image) {
+	auto	it = findNamed(image);
+	if (it != _namedImages.end()) {
+		*it = _namedImages.back();
+		_namedImages.pop_back();
+	}
 }
 
 void	ImagePool::release(Image *image) {
@@ -116,6 +161,7 @@ void	ImagePool::release(Image *image) {
 		for (auto &slot: pool.second) {
 			if (slot.image.get() == image) {
 				slot.inUse = false;
+				removeIfNamed(image);
 				return ;
 			}
 		}

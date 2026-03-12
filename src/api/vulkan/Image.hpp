@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/12 12:57:35                                        */
+/*  Last Modified: 2026/03/12 13:44:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -64,11 +64,17 @@ class Image {
 		void	setData(void *data, VkDeviceSize size);
 		void	copyTo(VkCommandBuffer commandBuffer, Image *dst);
 
+		PASSKEY(ExtentKey, ImagePool)
+		void	setExtent(const VkExtent2D &extent, ExtentKey)
+			{ _extent = extent; }
+
 		VkImage						getImage(void) const
 			{ return (_image); }
 		VkImageView					getView(VkFormat format) const
 			{ return (_views.at(format)); }
 		VkExtent2D					getExtent(void) const
+			{ return (_extent); }
+		VkExtent2D					getPhysicalExtent(void) const
 			{ return {_config.width, _config.height}; }
 		VkFormat					getFormat(void) const
 			{ return (_config.format[0]); }
@@ -91,6 +97,7 @@ class Image {
 		bool							_owned{true};
 		Device							&_device;
 		Config							_config;
+		VkExtent2D						_extent;
 		VkImage							_image{VK_NULL_HANDLE};
 		std::unordered_map<VkFormat,
 				VkImageView,
