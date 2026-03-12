@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/11 16:36:11                                        */
+/*  Last Modified: 2026/03/12 12:57:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -38,7 +38,7 @@ class Image {
 			SETTER_OR(Property, VkMemoryPropertyFlags, properties)
 			SETTER_OR(Aspect, VkImageAspectFlags, aspectFlags)
 
-			uint32_t				width{0}, height{0};
+			uint32_t				width{4096}, height{4096};
 			std::vector<VkFormat>	format{};
 			VkImageUsageFlags		usage{0};
 			VkMemoryPropertyFlags	properties{0};

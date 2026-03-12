@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/11 17:08:25                                        */
+/*  Last Modified: 2026/03/12 13:05:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -205,17 +205,12 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	vkResetCommandBuffer(commandBuffer, 0);
 
 	auto	offImage = _imagePool->acquire(Image::Config()
-			.setHeight(4096)
-			.setWidth(4096)
 			.setFormats({VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM})
 			.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
 			.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
-			.setUsage(VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
 			.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
 			.setProperty(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
 	auto	depthImage = _imagePool->acquire(Image::Config()
-			.setHeight(4096)
-			.setWidth(4096)
 			.setFormats(VK_FORMAT_D32_SFLOAT)
 			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
 			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT)

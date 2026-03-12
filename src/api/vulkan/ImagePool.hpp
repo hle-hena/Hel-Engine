@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/11 15:48:20                                        */
+/*  Last Modified: 2026/03/12 10:52:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -46,7 +46,7 @@ class	ImagePool {
 				ImageDescMap<uint32_t>	_imageDescs;
 		};
 
-		Image	*acquire(const Image::Config &config);
+		Image	*acquire(const Image::Config &requested);
 		void	release(Image *);
 
 		~ImagePool(void);
@@ -58,6 +58,11 @@ class	ImagePool {
 		};
 
 		ImagePool(Device &device, ImageDescMap<uint32_t> &&imageDescs);
+
+		bool		candidateFits(const Image::Config &requested,
+						const Image::Config &candidate);
+		uint64_t	candidateScore(const Image::Config &requested,
+						const Image::Config &candidate);
 
 		Device							&_device;
 		ImageDescMap<std::vector<Slot>>	_pools;

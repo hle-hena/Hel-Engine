@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/11 17:09:03                                        */
+/*  Last Modified: 2026/03/12 11:02:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,6 +16,8 @@
 
 #include "api/vulkan/ImagePool.hpp"
 #include "utils/mathUtils.hpp"
+
+#include <bit>
 
 namespace	hel {
 
@@ -50,17 +52,63 @@ ImagePool::ImagePool(Device &device, ImageDescMap<uint32_t> &&imageDescs)
 ImagePool::~ImagePool(void) {
 }
 
-Image	*ImagePool::acquire(const Image::Config &config) {
-	auto	it = _pools.find(config);
-	if (it == _pools.end())
-		return (nullptr);
-	for (auto &slot: it->second) {
-		if (!slot.inUse) {
-			slot.inUse = true;
-			return (slot.image.get());
+bool	ImagePool::candidateFits(const Image::Config &requested,
+								const Image::Config &candidate) {
+	bool	sizeFit = requested.width <= candidate.width &&
+			requested.height <= candidate.height;
+	bool	usageFit = (requested.usage & candidate.usage) == requested.usage;
+	bool	propertiesFit = (requested.properties & candidate.properties)
+													== requested.properties;
+	bool	aspectFit = (requested.aspectFlags & candidate.aspectFlags)
+													== requested.aspectFlags;
+	bool	formatFit = true;
+	for (auto fmt: requested.format) {
+		if (std::find(candidate.format.begin(), candidate.format.end(), fmt)
+													== candidate.format.end())
+			formatFit = false;
+	}
+
+	return (sizeFit && usageFit && propertiesFit && aspectFit);
+}
+
+uint64_t	ImagePool::candidateScore(const Image::Config &requested,
+									const Image::Config &candidate) {
+	uint64_t	waste = 0;
+
+	waste += (candidate.width - requested.width) *
+			(candidate.height - requested.height);
+	waste += std::popcount(candidate.usage & ~requested.usage);
+	waste += std::popcount(candidate.properties & ~requested.properties);
+	waste += std::popcount(candidate.aspectFlags & ~requested.aspectFlags);
+	for (auto fmt: candidate.format) {
+		if (std::find(requested.format.begin(), requested.format.end(), fmt) == requested.format.end())
+			waste += 1;
+	}
+	return (waste);
+}
+
+Image	*ImagePool::acquire(const Image::Config &requested) {
+	Slot		*bestSlot = nullptr;
+	uint64_t	bestScore = UINT64_MAX;
+
+	for (auto &[candidate, pool]: _pools) {
+		if (!candidateFits(requested, candidate))
+			continue ;
+		uint64_t	score = candidateScore(requested, candidate);
+		if (score >= bestScore)
+			continue ;
+		for (auto &slot: pool) {
+			if (slot.inUse)
+				continue ;
+			bestSlot = &slot;
+			bestScore = score;
+			break ;
 		}
 	}
-	return (nullptr);
+	if (!bestSlot)
+		return (nullptr);
+	bestSlot->inUse = true;
+	return (bestSlot->image.get());
 }
 
 void	ImagePool::release(Image *image) {
