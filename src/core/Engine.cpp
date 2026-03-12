@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/12 14:06:23                                        */
+/*  Last Modified: 2026/03/12 14:13:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -194,7 +194,7 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 
 	uint32_t	imageIndex;
 	if (swapchain.acquireNextImage(window, currentFrame, &imageIndex)) {
-		_imagePool->release(_imagePool->get("mainViewport"));
+		_imagePool->releaseAll();
 		return ;
 	}
 

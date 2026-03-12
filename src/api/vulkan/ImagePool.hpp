@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/12 13:27:20                                        */
+/*  Last Modified: 2026/03/12 14:12:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -51,6 +51,7 @@ class	ImagePool {
 						const Image::Config &requested);
 		Image	*get(const std::string &referenceID);
 		void	release(Image *);
+		void	releaseAll(void);
 
 		~ImagePool(void);
 
