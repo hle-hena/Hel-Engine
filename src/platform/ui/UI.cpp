@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/12 14:17:13                                        */
+/*  Last Modified: 2026/03/12 16:54:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -62,12 +62,12 @@ void	UI::render(ImagePool *imagePool, WindowResources &resources,
 
 	addSplitters(windowWidth, windowHeight);
 
-	_inspectorUI.render(resources.window, {windowWidth - _rightTabWidth, 0.f},
-						{_rightTabWidth, windowHeight});
+	_inspectorUI.render(resources.window, {std::max(windowWidth - _rightTabWidth, 1.f), 0.f},
+						{_rightTabWidth, std::max(windowHeight, 1.f)});
 	_entityHierarchyUI.render(resources.window, {0.f, 0.f},
-							{_leftTabWidth, windowHeight});
+							{_leftTabWidth, std::max(windowHeight, 1.f)});
 	_sceneViewport.render(imagePool, resources.window, {_leftTabWidth, 0.f},
-						{windowWidth - _rightTabWidth - _leftTabWidth, windowHeight});
+						{std::max(windowWidth - _rightTabWidth - _leftTabWidth, 1.f), std::max(windowHeight, 1.f)});
 }
 
 }

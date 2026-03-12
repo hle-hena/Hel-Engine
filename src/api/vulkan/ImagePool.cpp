@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/12 14:13:34                                        */
+/*  Last Modified: 2026/03/12 16:42:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,11 +15,9 @@
 /* *************************************************************************  */
 
 #include "api/vulkan/ImagePool.hpp"
-#include "utils/mathUtils.hpp"
 
+#include <algorithm>
 #include <bit>
-
-
 #include <iostream>
 
 namespace	hel {
@@ -79,7 +77,7 @@ uint64_t	ImagePool::candidateScore(const Image::Config &requested,
 	uint64_t	waste = 0;
 
 	waste += (candidate.width - requested.width) *
-			(candidate.height - requested.height);
+			(candidate.height - requested.height) * 100;
 	waste += std::popcount(candidate.usage & ~requested.usage);
 	waste += std::popcount(candidate.properties & ~requested.properties);
 	waste += std::popcount(candidate.aspectFlags & ~requested.aspectFlags);
@@ -125,7 +123,7 @@ Image	*ImagePool::acquire(const Image::Config &requested) {
 	if (!bestSlot)
 		return (nullptr);
 	bestSlot->inUse = true;
-	bestSlot->image->setExtent({requested.width, requested.height}, {});
+	bestSlot->image->setExtent({std::max(requested.width, 1u), std::max(requested.height, 1u)}, {});
 	return (bestSlot->image.get());
 }
 

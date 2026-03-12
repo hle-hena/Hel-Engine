@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/12 13:48:45                                        */
+/*  Last Modified: 2026/03/12 16:15:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,7 +22,6 @@
 
 #include <iostream>
 #include <stdexcept>
-#include <type_traits>
 
 namespace	hel {
 
