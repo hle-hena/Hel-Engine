@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:35 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:03:33                                        */
+/*  Last Modified: 2026/03/13 19:51:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,7 +20,7 @@
 namespace	hel {
 
 tl::expected<void, std::string>	Frame::init(Device &device,
-										DescriptorPool &descriptorPool,
+										DescriptorPool *descriptorPool,
 										VkCommandPool commandPool) {
 	uint32_t			frameCount = Swapchain::MAX_FRAMES_IN_FLIGHT;
 
@@ -37,7 +37,7 @@ tl::expected<void, std::string>	Frame::init(Device &device,
 		.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 			VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
 		.setSetCount(Swapchain::MAX_FRAMES_IN_FLIGHT)
-		.build(descriptorPool);
+		.build(*descriptorPool);
 
 	DescriptorWriter	writer(device, _descriptorSets.get());
 	for (size_t i = 0; i < frameCount; i++) {
@@ -56,9 +56,11 @@ tl::expected<void, std::string>	Frame::init(Device &device,
 FrameContext	Frame::getContext(Window *window, uint32_t frameIndex,
 								float deltaTime) {
 	return {
+		.window = window,
 		.commandBuffer = _commandBuffers[frameIndex],
 		.globalSet = _descriptorSets->sets[frameIndex],
-		.globalLayout = _descriptorSets->setLayout
+		.globalLayout = _descriptorSets->setLayout,
+		.deltaTime = deltaTime
 	};
 }
 

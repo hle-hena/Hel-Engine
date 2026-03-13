@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:06:22                                        */
+/*  Last Modified: 2026/03/13 19:58:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,7 @@
 #pragma once
 
 # include "api/vulkan/PipelineMap.hpp"
+# include "core/Frame.hpp"
 
 # include <vulkan/vulkan.h>
 # include <vector>
@@ -49,6 +50,7 @@ class	ISystem {
 							const FrameContext &frameCtx) final;
 		virtual void	init(void) = 0;
 
+		virtual void	registerUI(const FrameContext &) {}
 		virtual void	update(const FrameContext &) {}
 		virtual void	render(const FrameContext &,
 							const RenderingConfig &) {}
@@ -63,7 +65,6 @@ class	ISystem {
 		std::vector<std::unique_ptr<PipelineMap>>	_pipelines;
 	
 	private:
-		EngineContext	_engineCtx;
 		FrameContext	_frameCtx;
 };
 

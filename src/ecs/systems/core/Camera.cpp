@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:12:50                                        */
+/*  Last Modified: 2026/03/13 20:03:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -38,9 +38,6 @@ void	Camera::init(void) {
 	config.initPipelineLayout = initFrustumLayout;
 	config.configurePipeline = configureFrustumPipeline;
 	_frustumPipelines = createPipeline(config);
-}
-
-Camera::~Camera(void) {
 }
 
 void	Camera::initFrustumLayout(std::vector<VkDescriptorSetLayout> &setLayouts,

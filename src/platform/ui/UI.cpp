@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:37:03                                        */
+/*  Last Modified: 2026/03/13 19:57:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -50,7 +50,7 @@ void	UI::addSplitters(float windowWidth, float windowHeight) {
 		.build();
 }
 
-void	UI::render(const FrameContext &ctx, const RenderingConfig &conf) {
+void	UI::registerUI(const FrameContext &ctx) {
 	auto	windowExtent = ctx.window->getExtent();
 	float	windowWidth = static_cast<float>(windowExtent.width);
 	float	windowHeight = static_cast<float>(windowExtent.height);

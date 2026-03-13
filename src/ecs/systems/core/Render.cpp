@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:21:41                                        */
+/*  Last Modified: 2026/03/13 20:03:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,9 +39,6 @@ void	Render::init(void) {
 	config.initPipelineLayout = initLayout;
 	config.configurePipeline = configurePipeline;
 	_pipelines = createPipeline(config);
-}
-
-Render::~Render(void) {
 }
 
 void	Render::initLayout(std::vector<VkDescriptorSetLayout> &setLayouts,

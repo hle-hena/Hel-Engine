@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/12 14:13:51                                        */
+/*  Last Modified: 2026/03/13 20:02:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,15 +34,7 @@ namespace hel {
 
 Engine::Engine(Device &device, Registry &registry)
 	:	_device{device},
-		_registry{registry},
-		_renderSystem{device, registry},
-		_transformSystem{device, registry},
-		_cameraSystem{device, registry},
-		_hideMouseSystem{device, registry},
-		_editorControllerSystem{device, registry},
-		_baseControllerSystem{device, registry},
-		_surfaceAllignementSystem{device, registry},
-		_uiSystem{device, registry} {
+		_registry{registry} {
 	_timer.start();
 }
 
@@ -57,15 +49,30 @@ bool	Engine::init(Window &window) {
 	if (createCommandPool())
 		return (true);
 	createDescriptorPool();
+	auto	frameRes = _frame.init(_device, _staticPool.get(), _commandPool);
+	if (!frameRes) {
+		std::cerr << frameRes.error() << std::endl;
+		return (true);
+	}
 	createImagePool();
-	auto	initResources = getWindowResources(window);
-	_renderSystem.initAllPipelines(*initResources);
-	_transformSystem.initAllPipelines(*initResources);
-	_cameraSystem.initAllPipelines(*initResources);
-	_hideMouseSystem.initAllPipelines(*initResources);
-	_editorControllerSystem.initAllPipelines(*initResources);
-	_baseControllerSystem.initAllPipelines(*initResources);
-	_surfaceAllignementSystem.initAllPipelines(*initResources);
+	_systems.push_back(std::make_unique<sys::HideMouse>());
+	_systems.push_back(std::make_unique<sys::SurfaceAllignement>());
+	_systems.push_back(std::make_unique<sys::EditorController>());
+	_systems.push_back(std::make_unique<sys::BaseController>());
+	_systems.push_back(std::make_unique<sys::Transform>());
+	_systems.push_back(std::make_unique<sys::Camera>());
+	_systems.push_back(std::make_unique<sys::Render>());
+	_systems.push_back(std::make_unique<sys::UI>());
+
+	auto	frameCtx = _frame.getContext(&window, 0, 0);
+	_engineCtx.device = &_device;
+	_engineCtx.imagePool = _imagePool.get();
+	_engineCtx.registry = &_registry;
+
+	for (auto &system: _systems) {
+		system->init(_engineCtx, frameCtx);
+		system->init();
+	}
 	return (false);
 }
 
@@ -161,19 +168,18 @@ void	Engine::renderUI(Window &window, uint32_t currentFrame) {
 		return ;
 
 	window.getUI().newFrame();
-	_uiSystem.render(_imagePool.get(), *resources, currentFrame);
+	auto	frameCtx = _frame.getContext(&window, currentFrame, _lastFrameTime);
+	for (auto &system: _systems)
+		system->registerUI(frameCtx);
 	window.getUI().endFrame();
 }
 
 void	Engine::updateFrame(void) {
 	_lastFrameTime = _timer.lapTime();
 	_timer.lap();
-	_hideMouseSystem.update(_lastFrameTime);
-	_surfaceAllignementSystem.update(_lastFrameTime);
-	_baseControllerSystem.update(_lastFrameTime);
-	_editorControllerSystem.update(_lastFrameTime);
-	_transformSystem.update(_lastFrameTime);
-	_cameraSystem.update(_lastFrameTime);
+	auto	frameCtx = _frame.getContext(nullptr, 0, 0);
+	for (auto &system: _systems)
+		system->update(frameCtx);
 }
 
 void	Engine::updateGlobalUBO(Window &window, uint32_t currentFrame) {
@@ -225,8 +231,10 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 		config.colorFormats.push_back(VK_FORMAT_B8G8R8A8_SRGB);
 		config.depthFormat = depthImage->getFormat();
 
-		_renderSystem.render(config, *resources, currentFrame);
-		_cameraSystem.render(config, *resources, currentFrame);
+		auto	frameCtx = _frame.getContext(&window, currentFrame, _lastFrameTime);
+
+		for (auto &system: _systems)
+			system->render(frameCtx, config);
 	}
 
 	offImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

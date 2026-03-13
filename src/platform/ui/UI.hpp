@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:27:56                                        */
+/*  Last Modified: 2026/03/13 19:57:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -38,8 +38,7 @@ class	UI : public ISystem {
 
 		void	init(void) override;
 
-		void	render(const FrameContext &ctx,
-					const RenderingConfig &conf) override;
+		void	registerUI(const FrameContext &ctx) override;
 
 	private:
 		void	addSplitters(float windowWidth, float windowHeight);

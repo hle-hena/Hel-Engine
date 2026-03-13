@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 18:40:46                                        */
+/*  Last Modified: 2026/03/13 20:02:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -99,14 +99,9 @@ class	Engine {
 		std::unique_ptr<DescriptorPool>					_staticPool;
 		std::unique_ptr<ImagePool>						_imagePool;
 		std::unique_ptr<WindowResources>				_windowResources;
-		sys::Render										_renderSystem;
-		sys::Transform									_transformSystem;
-		sys::Camera										_cameraSystem;
-		sys::HideMouse									_hideMouseSystem;
-		sys::EditorController							_editorControllerSystem;
-		sys::BaseController								_baseControllerSystem;
-		sys::SurfaceAllignement							_surfaceAllignementSystem;
-		sys::UI											_uiSystem;
+		std::vector<std::unique_ptr<sys::ISystem>>		_systems;
+		Frame											_frame;
+		EngineContext									_engineCtx;
 };
 
 }

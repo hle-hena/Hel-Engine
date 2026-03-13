@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:05:09                                        */
+/*  Last Modified: 2026/03/13 19:51:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -51,7 +51,7 @@ class	Frame {
 		Frame(void) = default;
 		~Frame(void) = default;
 
-		expected<void, std::string>	init(Device &device, DescriptorPool &pool,
+		expected<void, std::string>	init(Device &device, DescriptorPool *pool,
 										VkCommandPool commandPool);
 
 		FrameContext	getContext(Window *window, uint32_t frameIndex,
