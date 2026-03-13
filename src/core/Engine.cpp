@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 20:09:40                                        */
+/*  Last Modified: 2026/03/13 20:15:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -137,7 +137,7 @@ void	Engine::renderUI(Window &window, uint32_t currentFrame) {
 void	Engine::updateFrame(void) {
 	_lastFrameTime = _timer.lapTime();
 	_timer.lap();
-	auto	frameCtx = _frame.getContext(nullptr, 0, 0);
+	auto	frameCtx = _frame.getContext(nullptr, 0, _lastFrameTime);
 	for (auto &system: _systems)
 		system->update(frameCtx);
 }
