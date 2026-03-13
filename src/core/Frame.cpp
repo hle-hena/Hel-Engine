@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:35 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 18:22:42                                        */
+/*  Last Modified: 2026/03/13 19:03:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -53,12 +53,13 @@ tl::expected<void, std::string>	Frame::init(Device &device,
 	return {};
 }
 
-FrameContext	Frame::getContext(Window *window, uint32_t frameIndex) {
-	FrameContext	ctx{};
-	ctx.window = window;
-	ctx.commandBuffer = _commandBuffers[frameIndex];
-	ctx.globalSet = _descriptorSets->sets[frameIndex];
-	ctx.globalLayout = _descriptorSets->setLayout;
+FrameContext	Frame::getContext(Window *window, uint32_t frameIndex,
+								float deltaTime) {
+	return {
+		.commandBuffer = _commandBuffers[frameIndex],
+		.globalSet = _descriptorSets->sets[frameIndex],
+		.globalLayout = _descriptorSets->setLayout
+	};
 }
 
 }

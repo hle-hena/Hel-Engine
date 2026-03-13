@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 16:54:46                                        */
+/*  Last Modified: 2026/03/13 18:40:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -38,15 +38,18 @@
 #include "api/vulkan/Descriptors.hpp"
 #include "api/vulkan/ImagePool.hpp"
 
+#include "core/Frame.hpp"
+
 namespace hel {
 
 class	Window;
 class	Device;
 class	Registry;
 
-struct	GlobalUBO {
-	glm::mat4	viewProjection;
-	float		elapsedTime;
+struct	EngineContext {
+	Device		*device;
+	Registry	*registry;
+	ImagePool	*imagePool;
 };
 
 struct	WindowResources {

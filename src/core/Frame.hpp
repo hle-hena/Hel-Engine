@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 18:22:21                                        */
+/*  Last Modified: 2026/03/13 19:05:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,10 +37,11 @@ struct	GlobalUBO {
 };
 
 struct	FrameContext {
-	Window					*window;
+	Window					*window{nullptr};
 	VkCommandBuffer			commandBuffer;
 	VkDescriptorSet			globalSet;
 	VkDescriptorSetLayout	globalLayout;
+	float					deltaTime{0.f};
 };
 
 
@@ -50,14 +51,18 @@ class	Frame {
 		Frame(void) = default;
 		~Frame(void) = default;
 
-		expected<void, std::string>	init(Device &device, DescriptorPool &pool, VkCommandPool commandPool);
+		expected<void, std::string>	init(Device &device, DescriptorPool &pool,
+										VkCommandPool commandPool);
 
-		FrameContext	getContext(Window *window, uint32_t frameIndex);
+		FrameContext	getContext(Window *window, uint32_t frameIndex,
+								float deltaTime);
 
 	private:
-		std::array<VkCommandBuffer, Swapchain::MAX_FRAMES_IN_FLIGHT>			_commandBuffers{};
-		std::array<std::unique_ptr<Buffer>, Swapchain::MAX_FRAMES_IN_FLIGHT>	_globalUbos{};
-		std::unique_ptr<DescriptorSet>											_descriptorSets{};
+		std::array<VkCommandBuffer,
+				Swapchain::MAX_FRAMES_IN_FLIGHT>	_commandBuffers{};
+		std::array<std::unique_ptr<Buffer>,
+				Swapchain::MAX_FRAMES_IN_FLIGHT>	_globalUbos{};
+		std::unique_ptr<DescriptorSet>				_descriptorSets{};
 };
 
 }
