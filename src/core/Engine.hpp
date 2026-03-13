@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 20:05:12                                        */
+/*  Last Modified: 2026/03/13 22:50:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,6 +45,7 @@ namespace hel {
 class	Window;
 class	Device;
 class	Registry;
+class	UiContext;
 
 struct	EngineContext {
 	Device		*device;
@@ -68,18 +69,21 @@ class	Engine {
 		}
 
 		bool			init(Window &window);
-		void			renderUI(Window &window, uint32_t currentFrame);
-		void			updateFrame(void);
-		void			renderFrame(Window &window, uint32_t currentFrame);
+		void			tick(Window *window, uint32_t currentFrame);
 
 	private:
 		bool			createCommandPool(void);
 		void			createDescriptorPool(void);
 		void			createImagePool(void);
 
+		void			UITick(UiContext &ui, const FrameContext &frameCtx);
+		void			updateTick(const FrameContext &frameCtx);
+		void			renderTick(Window *window, UiContext &ui,
+								const FrameContext &frameCtx,
+								uint32_t frameIndex);
+
 		void			updateGlobalUBO(Window &window, uint32_t currentFrame);
-		bool			beginFrame(VkCommandBuffer commandBuffer);
-		bool			endFrame(VkCommandBuffer commandBuffer);
+
 		bool											_healthy{true};
 		std::string										_reason{""};
 		Device											&_device;

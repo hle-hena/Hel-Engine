@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/12 14:04:53                                        */
+/*  Last Modified: 2026/03/13 22:39:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -94,9 +94,10 @@ void	Application::run(void) {
 			break ;
 		}
 
-		_engine.renderUI(*_appWindow, currentFrame);
-		_engine.updateFrame();
-		_engine.renderFrame(*_appWindow, currentFrame);
+		_engine.tick(_appWindow.get(), currentFrame);
+		// _engine.renderUI(*_appWindow, currentFrame);
+		// _engine.updateFrame();
+		// _engine.renderFrame(*_appWindow, currentFrame);
 
 		currentFrame = (currentFrame + 1) % Swapchain::MAX_FRAMES_IN_FLIGHT;
 		_registry.resetAllDirty();

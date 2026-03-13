@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 20:15:24                                        */
+/*  Last Modified: 2026/03/13 22:50:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -115,31 +115,74 @@ void	Engine::createImagePool(void) {
 		.build();
 }
 
-bool	Engine::beginFrame(VkCommandBuffer commandBuffer) {
+void	Engine::tick(Window *window, uint32_t frameIndex) {
+	auto	frameCtx = _frame.getContext(window, frameIndex, _lastFrameTime);
+	auto	&ui = window->getUI();
+	_lastFrameTime = _timer.lap();
+	_imagePool->releaseAll();
+
+	UITick(ui, frameCtx);
+	updateTick(frameCtx);
+	renderTick(window, ui, frameCtx, frameIndex);
+}
+
+void	Engine::UITick(UiContext &ui, const FrameContext &frameCtx) {
+	ui.newFrame();
+	for (auto &system: _systems)
+		system->registerUI(frameCtx);
+	ui.endFrame();
+}
+
+void	Engine::updateTick(const FrameContext &frameCtx) {
+	for (auto &system: _systems)
+		system->update(frameCtx);
+}
+
+void	Engine::renderTick(Window *window, UiContext &ui, const FrameContext &frameCtx, uint32_t frameIndex) {
+	Swapchain	&swapchain = window->getSwapchain();
+	uint32_t	imageIndex;
+
+	if (swapchain.acquireNextImage(*window, frameIndex, &imageIndex))
+		return ;
+	updateGlobalUBO(*window, frameIndex);
+	vkResetCommandBuffer(frameCtx.commandBuffer, 0);
+
+	auto	offImage = _imagePool->get("mainViewport");
+	auto	depthImage = _imagePool->acquire(Image::Config()
+			.setFormats(VK_FORMAT_D32_SFLOAT)
+			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT)
+			.setProperty(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
+	auto	swapImage = swapchain.getSwapImage(imageIndex);
+
 	VkCommandBufferBeginInfo	beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-	return (vkBeginCommandBuffer(commandBuffer, &beginInfo));
-}
+	if (vkBeginCommandBuffer(frameCtx.commandBuffer, &beginInfo))
+		return ;
+	if (auto pass = Renderer(frameCtx.commandBuffer, offImage->getExtent())
+					.addColorWrite(offImage, VK_FORMAT_B8G8R8A8_SRGB)
+					.addDepthWrite(depthImage, depthImage->getFormat())
+					.beginPass()) {
+		for (auto &system: _systems)
+			system->render(frameCtx, pass._config);
+	}
 
-bool	Engine::endFrame(VkCommandBuffer commandBuffer) {
-	return (vkEndCommandBuffer(commandBuffer));
-}
+	offImage->transitionLayout(frameCtx.commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	if (auto pass = Renderer(frameCtx.commandBuffer, swapImage->getExtent())
+					.addColorWrite(swapImage, VK_FORMAT_B8G8R8A8_UNORM)
+					.beginPass()) {
+		ui.renderFrame(frameCtx.commandBuffer);
+	}
 
-void	Engine::renderUI(Window &window, uint32_t currentFrame) {
-	window.getUI().newFrame();
-	auto	frameCtx = _frame.getContext(&window, currentFrame, _lastFrameTime);
-	for (auto &system: _systems)
-		system->registerUI(frameCtx);
-	window.getUI().endFrame();
-}
+	swapImage->transitionLayout(frameCtx.commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	vkEndCommandBuffer(frameCtx.commandBuffer);
 
-void	Engine::updateFrame(void) {
-	_lastFrameTime = _timer.lapTime();
-	_timer.lap();
-	auto	frameCtx = _frame.getContext(nullptr, 0, _lastFrameTime);
-	for (auto &system: _systems)
-		system->update(frameCtx);
+	_imagePool->release(offImage);
+	_imagePool->release(depthImage);
+
+	swapchain.submitCommandBuffer(frameCtx.commandBuffer, imageIndex, frameIndex);
+	swapchain.present(*window, imageIndex, frameIndex);
 }
 
 void	Engine::updateGlobalUBO(Window &window, uint32_t currentFrame) {
@@ -150,64 +193,6 @@ void	Engine::updateGlobalUBO(Window &window, uint32_t currentFrame) {
 		data.elapsedTime = _timer.elapsedTime();
 	}
 	_frame.writeToUBO(&data, currentFrame);
-}
-
-void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
-	Swapchain	&swapchain = window.getSwapchain();
-
-	uint32_t	imageIndex;
-	if (swapchain.acquireNextImage(window, currentFrame, &imageIndex)) {
-		_imagePool->releaseAll();
-		return ;
-	}
-
-	updateGlobalUBO(window, currentFrame);
-	auto	frameCtx = _frame.getContext(&window, currentFrame, _lastFrameTime);
-	Swapchain		&swap = window.getSwapchain();
-	vkResetCommandBuffer(frameCtx.commandBuffer, 0);
-
-	auto	offImage = _imagePool->get("mainViewport");
-	auto	depthImage = _imagePool->acquire(Image::Config()
-			.setFormats(VK_FORMAT_D32_SFLOAT)
-			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT)
-			.setProperty(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
-
-	auto	swapImage = swap.getSwapImage(imageIndex);
-
-	UiContext	&ui = window.getUI();
-	beginFrame(frameCtx.commandBuffer);
-	if (auto pass = Renderer(frameCtx.commandBuffer, offImage->getExtent())
-					.addColorWrite(offImage, VK_FORMAT_B8G8R8A8_SRGB)
-					.addDepthWrite(depthImage, depthImage->getFormat())
-					.beginPass()) {
-		RenderingConfig	config{};
-		config.colorFormats.push_back(VK_FORMAT_B8G8R8A8_SRGB);
-		config.depthFormat = depthImage->getFormat();
-
-		for (auto &system: _systems)
-			system->render(frameCtx, config);
-	}
-
-	offImage->transitionLayout(frameCtx.commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-	if (auto pass = Renderer(frameCtx.commandBuffer, swapImage->getExtent())
-					.addColorWrite(swapImage, VK_FORMAT_B8G8R8A8_UNORM)
-					.beginPass()) {
-		RenderingConfig	config{};
-		config.colorFormats.push_back(VK_FORMAT_B8G8R8A8_UNORM);
-
-		ui.renderFrame(frameCtx.commandBuffer);
-	}
-
-	swapImage->transitionLayout(frameCtx.commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-	endFrame(frameCtx.commandBuffer);
-
-	_imagePool->release(offImage);
-	_imagePool->release(depthImage);
-
-	swapchain.submitCommandBuffer(&frameCtx.commandBuffer, imageIndex, currentFrame);
-	if (swapchain.present(window, imageIndex, currentFrame))
-		return ;
 }
 
 }

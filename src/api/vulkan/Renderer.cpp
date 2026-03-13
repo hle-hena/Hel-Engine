@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/11 10:58:56                                        */
+/*  Last Modified: 2026/03/13 22:34:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,6 +26,7 @@ Renderer::Renderer(VkCommandBuffer commandBuffer, VkExtent2D extent)
 
 Renderer::Renderer(Renderer &&other)
 	:	_commandBuffer{other._commandBuffer},
+		_config{other._config},
 		_isValid{other._isValid} {
 	other._commandBuffer = VK_NULL_HANDLE;
 }
@@ -77,6 +78,7 @@ Renderer	&Renderer::addColorWrite(Image *color, VkFormat format) {
 	_colorsInfo.push_back(color->getRenderingInfo(_colorClear, _colorsLoadOp,
 												_colorsStoreOp, format));
 	_colorsWrite.push_back(color);
+	_config.colorFormats.push_back(format);
 	return (*this);
 }
 
@@ -87,11 +89,13 @@ Renderer	&Renderer::addDepthWrite(Image *depth, VkFormat format) {
 	_depthWrite = depth;
 	_depthInfo = depth->getRenderingInfo(_depthClear, _depthLoadOp,
 										_depthStoreOp, format);
+	_config.depthFormat = format;
 	return (*this);
 }
 
 RendererHandle::RendererHandle(Renderer &&renderer)
 	:	_renderer{std::move(renderer)} {
+	_config = _renderer._config;
 }
 
 RendererHandle::operator	bool(void) const {
