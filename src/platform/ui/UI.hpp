@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/11 17:07:54                                        */
+/*  Last Modified: 2026/03/13 19:27:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,12 +33,13 @@ namespace	hel::sys {
 
 class	UI : public ISystem {
 	public:
-		UI(Device &device, Registry &registry);
-		~UI(void) override;
+		UI(void) = default;
+		~UI(void) = default;
 
-		//TODO -> Make it go into the systems
-		void	render(ImagePool *imagePool, WindowResources &resources,
-			uint32_t currentFrame);
+		void	init(void) override;
+
+		void	render(const FrameContext &ctx,
+					const RenderingConfig &conf) override;
 
 	private:
 		void	addSplitters(float windowWidth, float windowHeight);

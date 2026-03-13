@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/21 14:14:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 15:48:54                                        */
+/*  Last Modified: 2026/03/13 19:17:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,13 +28,15 @@ namespace	hel::sys {
 
 class	HideMouse : public ISystem {
 	public:
-		HideMouse(Device &device, Registry &registry);
-		~HideMouse(void) override = default;
+		HideMouse(void) = default;
+		~HideMouse(void) = default;
 
-		void	update(float deltaTime) override;
+		void	init(void) override;
+
+		void	update(const FrameContext &ctx) override;
 
 	private:
-		InputState	&_inputState;
+		InputState	*_inputState;
 };
 
 }

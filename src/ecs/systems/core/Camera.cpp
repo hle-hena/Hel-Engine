@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 18:58:53                                        */
+/*  Last Modified: 2026/03/13 19:12:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,12 +26,11 @@
 
 namespace	hel::sys {
 
-Camera::Camera(Device &device, Registry &registry)
-	:	ISystem(device, registry),
-		_assetManager{registry.getAssetManager()} {
+void	Camera::init(void) {
+	_assetManager = &_registry->getAssetManager();
 	PipelineMap::Config	config;
-	config.device = &device;
-	config.assetManager = &registry.getAssetManager();
+	config.device = _device;
+	config.assetManager = _assetManager;
 	config.shaderPaths = {
 		"assets/shaders/cameraFrustum.vert.spv",
 		"assets/shaders/cameraFrustum.frag.spv"
@@ -57,8 +56,8 @@ void	Camera::configureFrustumPipeline(PipelineConfigInfo &config) {
 	config.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
 }
 
-void	Camera::update(float deltaTime) {
-	auto	entities = _registry.view<comp::Transform, comp::Camera>();
+void	Camera::update(const FrameContext &) {
+	auto	entities = _registry->view<comp::Transform, comp::Camera>();
 
 	for (auto entity: entities) {
 		auto	*constTransform = entities.get<comp::Transform>(entity);
@@ -66,7 +65,7 @@ void	Camera::update(float deltaTime) {
 
 		if (!constCamera->isDirty && !constTransform->isDirty)
 			continue ;
-		if (auto camera = _registry.modify(constCamera)) {
+		if (auto camera = _registry->modify(constCamera)) {
 
 			glm::mat4 rotate = glm::mat4_cast(glm::conjugate(constTransform->rotation));
 			glm::mat4 translate = glm::translate(glm::mat4(1.0f), -constTransform->position);
@@ -80,19 +79,18 @@ void	Camera::update(float deltaTime) {
 	}
 }
 
-void	Camera::render(const RenderingConfig &conf, WindowResources &resources,
-					uint32_t currentFrame) {
-	auto	selfHandle = resources.window->getEntityReference();
-	auto	commandBuffer = resources.commandBuffers[currentFrame];
+void	Camera::render(const FrameContext &ctx, const RenderingConfig &conf) {
+	auto	selfHandle = ctx.window->getEntityReference();
+	auto	commandBuffer = ctx.commandBuffer;
 	if (_frustumPipelines->bindPipeline(conf, commandBuffer) ||
 		!commandBuffer)	{ return ; }
 	auto	pipelineLayout = _frustumPipelines->getLayout();
 
-	auto	entities = _registry.view<comp::Camera,
+	auto	entities = _registry->view<comp::Camera,
 									comp::Transform>();
 	for (auto entity : entities) {
 		if (entity == selfHandle)	{ continue ; }
-		auto	mesh = _assetManager.get<FullGeometry>("assets/models/frustum.obj");
+		auto	mesh = _assetManager->get<FullGeometry>("assets/models/frustum.obj");
 		if (!mesh)	{ continue ; }
 		auto	*transform = entities.get<comp::Transform>(entity);
 		auto	*camera = entities.get<comp::Camera>(entity);
@@ -107,7 +105,7 @@ void	Camera::render(const RenderingConfig &conf, WindowResources &resources,
 							VK_INDEX_TYPE_UINT32);
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
 							pipelineLayout, 0, 1,
-							&resources.descriptorSets->sets[currentFrame], 0,
+							&ctx.globalSet, 0,
 							nullptr);
 		vkCmdDrawIndexed(commandBuffer, mesh->lineVertexCount, 1, 0, 0, 0);
 	}

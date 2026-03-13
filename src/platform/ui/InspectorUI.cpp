@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/12 14:05:30                                        */
+/*  Last Modified: 2026/03/13 19:34:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,6 +22,10 @@
 #include "ecs/ComponentList.hpp"
 
 namespace	hel::sys {
+
+void	InspectorUI::init(Registry *registry) {
+	_registry = registry;
+}
 
 void	InspectorUI::render(Window *window, ImVec2 pos, ImVec2 size) {
 	auto	handle = window->getEntityFocus();
@@ -49,7 +53,7 @@ void	InspectorUI::render(Window *window, ImVec2 pos, ImVec2 size) {
 		}
 	}
 	ImGui::Separator();
-	for (auto &[type, pool]: _registry.getPools()) {
+	for (auto &[type, pool]: _registry->getPools()) {
 		if (pool->has(handle)) {
 			auto	label = pool->getTypeName();
 
@@ -82,10 +86,10 @@ void	InspectorUI::render(Window *window, ImVec2 pos, ImVec2 size) {
 }
 
 void	InspectorUI::removeEntity(Entity::id handle) {
-	auto	hierarchy = _registry.getComponent<comp::Hierarchy>(handle);
+	auto	hierarchy = _registry->getComponent<comp::Hierarchy>(handle);
 	for (auto childHandle: hierarchy->childrenId)
 		removeEntity(childHandle);
-	_registry.removeEntity(handle);
+	_registry->removeEntity(handle);
 }
 
 void	InspectorUI::addNewComponentPopup(Entity::id handle) {
@@ -96,7 +100,7 @@ void	InspectorUI::addNewComponentPopup(Entity::id handle) {
 			_addNewComp = false;
 		ImGui::SameLine();
 		if (ImGui::Button("Add")) {
-			ComponentList::addComponent(_registry, handle, items[_newCompTypeIndex]);
+			ComponentList::addComponent(*_registry, handle, items[_newCompTypeIndex]);
 			_addNewComp = false;
 		}
 	}

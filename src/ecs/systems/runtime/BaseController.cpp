@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:14:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 15:49:23                                        */
+/*  Last Modified: 2026/03/13 19:25:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,25 +19,22 @@
 #include "ecs/Component.hpp"
 #include "platform/input/InputState.hpp"
 #include "platform/window/Window.hpp"
+#include "core/Frame.hpp"
 
 namespace	hel::sys {
 
-BaseController::BaseController(Device &device, Registry &registry)
-	:	ISystem(device, registry),
-		_input{registry.getInputState()} {
-}
-
-BaseController::~BaseController(void) {
+void	BaseController::init(void) {
+	_input = &_registry->getInputState();
 }
 
 void	BaseController::handleKeyboardInput(Entity::id handle, float deltaTime) {
-	auto	*constTransform = _registry.getComponent<comp::Transform>(handle);
-	auto	*constController = _registry.getComponent<comp::Controller>(handle);
-	auto	*tag = _registry.getComponent<comp::BaseControllerTag>(handle);
+	auto	*constTransform = _registry->getComponent<comp::Transform>(handle);
+	auto	*constController = _registry->getComponent<comp::Controller>(handle);
+	auto	*tag = _registry->getComponent<comp::BaseControllerTag>(handle);
 	if (!constTransform || !constController || !tag)	{ return ; }
 
 	glm::vec3	upVector = glm::vec3(0., 1., 0.);
-	if (auto *surface = _registry.getComponent<comp::SurfaceAllignement>(handle))
+	if (auto *surface = _registry->getComponent<comp::SurfaceAllignement>(handle))
 		upVector = surface->localUp;
 
 	glm::vec3	forwardVec = constTransform->rotation * glm::vec3(0.f, 0.f, -1.f);
@@ -57,7 +54,7 @@ void	BaseController::handleKeyboardInput(Entity::id handle, float deltaTime) {
 	bool	moved = false;
 
 	for (const auto& [key, dir] : moveConfig) {
-		if (_input.isDown<input::Key>(key)) {
+		if (_input->isDown<input::Key>(key)) {
 			delta += dir;
 			moved = true;
 		}
@@ -67,24 +64,24 @@ void	BaseController::handleKeyboardInput(Entity::id handle, float deltaTime) {
 		return ;
 	delta = glm::normalize(delta);
 	delta *= constController->movementSpeed * deltaTime;
-	if (auto transform = _registry.modify(constTransform))
+	if (auto transform = _registry->modify(constTransform))
 		transform->position += delta;
 }
 
 void	BaseController::handleMouseMove(Entity::id handle) {
-	if (!_input.mouseMoved())	{ return ; }
-	auto	*constTransform = _registry.getComponent<comp::Transform>(handle);
-	auto	*constController = _registry.getComponent<comp::Controller>(handle);
-	auto	*tag = _registry.getComponent<comp::BaseControllerTag>(handle);
+	if (!_input->mouseMoved())	{ return ; }
+	auto	*constTransform = _registry->getComponent<comp::Transform>(handle);
+	auto	*constController = _registry->getComponent<comp::Controller>(handle);
+	auto	*tag = _registry->getComponent<comp::BaseControllerTag>(handle);
 	if (!constTransform || !constController || !tag)	{ return ; }
 
 	int	dx, dy;
-	_input.getMouseDelta(dx, dy);
+	_input->getMouseDelta(dx, dy);
 	float	sensitivity = constController->mouseSensivity;
 
-	auto		transform = _registry.modify<comp::Transform>(handle);
+	auto		transform = _registry->modify<comp::Transform>(handle);
 	glm::vec3	upVector = glm::vec3(0., 1., 0.);
-	if (auto *allign = _registry.getComponent<comp::SurfaceAllignement>(handle))
+	if (auto *allign = _registry->getComponent<comp::SurfaceAllignement>(handle))
 		upVector = allign->localUp;
 	glm::quat	qYaw = glm::angleAxis(-static_cast<float>(dx) * sensitivity,
 					upVector);
@@ -93,13 +90,13 @@ void	BaseController::handleMouseMove(Entity::id handle) {
 	transform->rotation = glm::normalize(qYaw * qPitch * transform->rotation);
 }
 
-void	BaseController::update(float deltaTime) {
-	auto	window = _input.getFocused();
+void	BaseController::update(const FrameContext &ctx) {
+	auto	window = _input->getFocused();
 	if (!window)	{ return ; }
 
 	Entity::id	handle = window->getEntityReference();
 	handleMouseMove(handle);
-	handleKeyboardInput(handle, deltaTime);
+	handleKeyboardInput(handle, ctx.deltaTime);
 }
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:20:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 15:49:35                                        */
+/*  Last Modified: 2026/03/13 19:26:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,12 +20,11 @@
 
 namespace	hel::sys {
 
-SurfaceAllignement::SurfaceAllignement(Device &device, Registry &registry)
-	:	ISystem(device, registry) {
+void	SurfaceAllignement::init(void) {
 }
 
-void	SurfaceAllignement::update(float deltaTime) {
-	auto	entities = _registry.view<comp::Transform, comp::SurfaceAllignement>();
+void	SurfaceAllignement::update(const FrameContext &) {
+	auto	entities = _registry->view<comp::Transform, comp::SurfaceAllignement>();
 
 	for (auto entity: entities) {
 		auto	*constTransform = entities.get<comp::Transform>(entity);
@@ -45,9 +44,9 @@ void	SurfaceAllignement::update(float deltaTime) {
 			float		s = glm::sqrt((1.f + dot) * 2.f);
 			allignement = glm::quat(s * 0.5f, cross.x / s, cross.y / s, cross.z / s);
 		}
-		auto	transform = _registry.modify(constTransform);
-		_registry.modify(constTransform)->rotation = glm::normalize(allignement * transform->rotation);
-		_registry.modify(constAllign)->localUp = allignement * constAllign->localUp;
+		auto	transform = _registry->modify(constTransform);
+		_registry->modify(constTransform)->rotation = glm::normalize(allignement * transform->rotation);
+		_registry->modify(constAllign)->localUp = allignement * constAllign->localUp;
 	}
 }
 

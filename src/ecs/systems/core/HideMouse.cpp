@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/21 14:13:56 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 15:48:50                                        */
+/*  Last Modified: 2026/03/13 19:18:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,19 +20,18 @@
 
 namespace	hel::sys {
 
-HideMouse::HideMouse(Device &device, Registry &registry)
-	:	ISystem(device, registry),
-		_inputState{registry.getInputState()} {
+void	HideMouse::init(void) {
+	_inputState = &_registry->getInputState();
 }
 
-void	HideMouse::update(float deltaTime) {
-	auto	window = _inputState.getFocused();
+void	HideMouse::update(const FrameContext &ctx) {
+	auto	window = _inputState->getFocused();
 	if (!window)
 		return ;
-	if (_inputState.isPressed<input::Mouse>(GLFW_MOUSE_BUTTON_RIGHT))
+	if (_inputState->isPressed<input::Mouse>(GLFW_MOUSE_BUTTON_RIGHT))
 		glfwSetInputMode(window->getWindow(),
 			GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	else if (_inputState.isReleased<input::Mouse>(GLFW_MOUSE_BUTTON_RIGHT))
+	else if (_inputState->isReleased<input::Mouse>(GLFW_MOUSE_BUTTON_RIGHT))
 		glfwSetInputMode(window->getWindow(), GLFW_CURSOR,
 			GLFW_CURSOR_NORMAL);
 }

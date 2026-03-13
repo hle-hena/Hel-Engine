@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/03 18:58:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 15:48:29                                        */
+/*  Last Modified: 2026/03/13 19:14:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,16 +29,18 @@ namespace	hel::sys {
 
 class	EditorController : public ISystem {
 	public:
-		EditorController(Device &device, Registry &registry);
-		~EditorController(void) override;
+		EditorController(void) = default;
+		~EditorController(void) = default;
 
-		void	update(float deltaTime) override;
+		void	init(void) override;
+
+		void	update(const FrameContext &ctx) override;
 
 	private:
 		void	handleKeyboardInput(Entity::id handle, float deltaTime);
 		void	handleMouseMove(Entity::id handle);
 
-		InputState	&_input;
+		InputState	*_input;
 };
 
 }
