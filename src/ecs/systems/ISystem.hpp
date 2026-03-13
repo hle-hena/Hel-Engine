@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:58:43                                        */
+/*  Last Modified: 2026/03/13 20:04:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,9 +30,6 @@ class	Registry;
 class	ImagePool;
 struct	EngineContext;
 struct	FrameContext;
-
-
-struct	WindowResources;
 
 }
 

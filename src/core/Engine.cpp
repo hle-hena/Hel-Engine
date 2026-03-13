@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 20:02:59                                        */
+/*  Last Modified: 2026/03/13 20:09:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -126,47 +126,7 @@ bool	Engine::endFrame(VkCommandBuffer commandBuffer) {
 	return (vkEndCommandBuffer(commandBuffer));
 }
 
-WindowResources *Engine::getWindowResources(Window& window) {
-	if (_windowResources)
-		return (_windowResources.get());
-	uint32_t			frameCount = Swapchain::MAX_FRAMES_IN_FLIGHT;
-	WindowResources		newResources{&window};
-
-	VkCommandBufferAllocateInfo	cbAllocInfo{};
-	cbAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	cbAllocInfo.commandPool = _commandPool;
-	cbAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	cbAllocInfo.commandBufferCount = frameCount;
-	if (vkAllocateCommandBuffers(_device.getLogical(), &cbAllocInfo,
-		newResources.commandBuffers.data()))	{ return (nullptr); }
-
-	newResources.descriptorSets = DescriptorFactory(_device)
-		.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
-		.setSetCount(Swapchain::MAX_FRAMES_IN_FLIGHT)
-		.build(*_staticPool);
-
-	DescriptorWriter	writer(_device, newResources.descriptorSets.get());
-	for (size_t i = 0; i < frameCount; i++) {
-		newResources.globalUbos[i] = Buffer::create(_device, sizeof(GlobalUBO),
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		if (!newResources.globalUbos[i])	{ return (nullptr); }
-		newResources.globalUbos[i]->map();
-
-		writer.writeBuffer(i, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, *newResources.globalUbos[i]);
-	}
-	writer.update();
-
-	_windowResources = std::make_unique<WindowResources>(std::move(newResources));
-	return (_windowResources.get());
-}
-
 void	Engine::renderUI(Window &window, uint32_t currentFrame) {
-	WindowResources *resources = getWindowResources(window);
-	if (!resources)
-		return ;
-
 	window.getUI().newFrame();
 	auto	frameCtx = _frame.getContext(&window, currentFrame, _lastFrameTime);
 	for (auto &system: _systems)
@@ -183,16 +143,13 @@ void	Engine::updateFrame(void) {
 }
 
 void	Engine::updateGlobalUBO(Window &window, uint32_t currentFrame) {
-	WindowResources	*resources = getWindowResources(window);
-	if (!resources)
-		return ;
 	GlobalUBO	data{};
 	data.viewProjection = glm::mat4{0.f};
 	if (auto *camera = _registry.getComponent<comp::Camera>(window.getEntityReference())) {
 		data.viewProjection = camera->viewProjection;
 		data.elapsedTime = _timer.elapsedTime();
 	}
-	resources->globalUbos[currentFrame]->writeToBuffer(&data);
+	_frame.writeToUBO(&data, currentFrame);
 }
 
 void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
@@ -205,12 +162,9 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	}
 
 	updateGlobalUBO(window, currentFrame);
-	WindowResources *resources = getWindowResources(window);
-	if (!resources)
-		return ;
+	auto	frameCtx = _frame.getContext(&window, currentFrame, _lastFrameTime);
 	Swapchain		&swap = window.getSwapchain();
-	VkCommandBuffer	commandBuffer = resources->commandBuffers[currentFrame];
-	vkResetCommandBuffer(commandBuffer, 0);
+	vkResetCommandBuffer(frameCtx.commandBuffer, 0);
 
 	auto	offImage = _imagePool->get("mainViewport");
 	auto	depthImage = _imagePool->acquire(Image::Config()
@@ -222,8 +176,8 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 	auto	swapImage = swap.getSwapImage(imageIndex);
 
 	UiContext	&ui = window.getUI();
-	beginFrame(commandBuffer);
-	if (auto pass = Renderer(commandBuffer, offImage->getExtent())
+	beginFrame(frameCtx.commandBuffer);
+	if (auto pass = Renderer(frameCtx.commandBuffer, offImage->getExtent())
 					.addColorWrite(offImage, VK_FORMAT_B8G8R8A8_SRGB)
 					.addDepthWrite(depthImage, depthImage->getFormat())
 					.beginPass()) {
@@ -231,29 +185,27 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 		config.colorFormats.push_back(VK_FORMAT_B8G8R8A8_SRGB);
 		config.depthFormat = depthImage->getFormat();
 
-		auto	frameCtx = _frame.getContext(&window, currentFrame, _lastFrameTime);
-
 		for (auto &system: _systems)
 			system->render(frameCtx, config);
 	}
 
-	offImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-	if (auto pass = Renderer(commandBuffer, swapImage->getExtent())
+	offImage->transitionLayout(frameCtx.commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	if (auto pass = Renderer(frameCtx.commandBuffer, swapImage->getExtent())
 					.addColorWrite(swapImage, VK_FORMAT_B8G8R8A8_UNORM)
 					.beginPass()) {
 		RenderingConfig	config{};
 		config.colorFormats.push_back(VK_FORMAT_B8G8R8A8_UNORM);
 
-		ui.renderFrame(commandBuffer);
+		ui.renderFrame(frameCtx.commandBuffer);
 	}
 
-	swapImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-	endFrame(commandBuffer);
+	swapImage->transitionLayout(frameCtx.commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	endFrame(frameCtx.commandBuffer);
 
 	_imagePool->release(offImage);
 	_imagePool->release(depthImage);
 
-	swapchain.submitCommandBuffer(&commandBuffer, imageIndex, currentFrame);
+	swapchain.submitCommandBuffer(&frameCtx.commandBuffer, imageIndex, currentFrame);
 	if (swapchain.present(window, imageIndex, currentFrame))
 		return ;
 }

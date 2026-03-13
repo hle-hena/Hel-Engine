@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:51:05                                        */
+/*  Last Modified: 2026/03/13 20:07:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -56,6 +56,7 @@ class	Frame {
 
 		FrameContext	getContext(Window *window, uint32_t frameIndex,
 								float deltaTime);
+		void			writeToUBO(GlobalUBO *data, uint32_t currentFrame);
 
 	private:
 		std::array<VkCommandBuffer,

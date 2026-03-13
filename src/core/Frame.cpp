@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:35 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:51:30                                        */
+/*  Last Modified: 2026/03/13 20:10:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -62,6 +62,10 @@ FrameContext	Frame::getContext(Window *window, uint32_t frameIndex,
 		.globalLayout = _descriptorSets->setLayout,
 		.deltaTime = deltaTime
 	};
+}
+
+void	Frame::writeToUBO(GlobalUBO *data, uint32_t frameIndex) {
+	_globalUbos[frameIndex]->writeToBuffer(data);
 }
 
 }

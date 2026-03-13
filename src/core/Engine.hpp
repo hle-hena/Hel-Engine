@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 20:02:41                                        */
+/*  Last Modified: 2026/03/13 20:05:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -52,13 +52,6 @@ struct	EngineContext {
 	ImagePool	*imagePool;
 };
 
-struct	WindowResources {
-	Window																	*window;
-	std::array<VkCommandBuffer, Swapchain::MAX_FRAMES_IN_FLIGHT>			commandBuffers{};
-	std::array<std::unique_ptr<Buffer>, Swapchain::MAX_FRAMES_IN_FLIGHT>	globalUbos{};
-	std::unique_ptr<DescriptorSet>											descriptorSets{};
-};
-
 class	Engine {
 	public:
 		Engine(Device &device, Registry &registry);
@@ -87,8 +80,6 @@ class	Engine {
 		void			updateGlobalUBO(Window &window, uint32_t currentFrame);
 		bool			beginFrame(VkCommandBuffer commandBuffer);
 		bool			endFrame(VkCommandBuffer commandBuffer);
-		WindowResources	*getWindowResources(Window& window);
-
 		bool											_healthy{true};
 		std::string										_reason{""};
 		Device											&_device;
@@ -98,7 +89,6 @@ class	Engine {
 		VkCommandPool									_commandPool{VK_NULL_HANDLE};
 		std::unique_ptr<DescriptorPool>					_staticPool;
 		std::unique_ptr<ImagePool>						_imagePool;
-		std::unique_ptr<WindowResources>				_windowResources;
 		std::vector<std::unique_ptr<sys::ISystem>>		_systems;
 		Frame											_frame;
 		EngineContext									_engineCtx;
