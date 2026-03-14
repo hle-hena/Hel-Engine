@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 18:57:21                                        */
+/*  Last Modified: 2026/03/13 19:10:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,12 +34,14 @@ namespace	hel::sys {
 
 class	Camera : public ISystem {
 	public:
-		Camera(Device &device, Registry &registry);
-		~Camera(void) override;
+		Camera(void) = default;
+		~Camera(void) = default;
 
-		void	update(float deltaTime) override;
-		void	render(const RenderingConfig &conf, WindowResources &resources,
-					uint32_t currentFrame) override;
+		void	init(void) override;
+
+		void	update(const FrameContext &ctx) override;
+		void	render(const FrameContext &ctx,
+					const RenderingConfig &conf) override;
 
 	private:
 		struct	PushConstantData {
@@ -51,7 +53,7 @@ class	Camera : public ISystem {
 				std::vector<VkPushConstantRange> &pushConstants);
 		static void	configureFrustumPipeline(PipelineConfigInfo &config);
 
-		AssetManager	&_assetManager;
+		AssetManager	*_assetManager;
 		PipelineMap		*_frustumPipelines;
 };
 

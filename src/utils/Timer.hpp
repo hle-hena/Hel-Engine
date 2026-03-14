@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/17 16:36:44 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 11:21:35                                        */
+/*  Last Modified: 2026/03/13 22:13:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,7 +27,13 @@ class	Timer {
 		void	start(void)	{	_startTime = clock::now();
 								_lapStartTime = _startTime;	}
 
-		void	lap(void)	{	_lapStartTime = clock::now();	}
+		template <typename Ratio = std::ratio<1>>
+		float	lap(void) {
+			auto	now = clock::now();
+			float	dt = std::chrono::duration<float, Ratio>(now - _lapStartTime).count();
+			_lapStartTime = now;
+			return (dt);
+		}
 
 		template <typename Ratio = std::ratio<1>>
 		float	elapsedTime(void) {

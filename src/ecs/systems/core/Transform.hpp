@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 15:49:12                                        */
+/*  Last Modified: 2026/03/13 19:22:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,10 +22,12 @@ namespace	hel::sys {
 
 class	Transform : public ISystem {
 	public:
-		Transform(Device &device, Registry &registry);
-		~Transform(void) override;
+		Transform(void) = default;
+		~Transform(void) = default;
 
-		void	update(float deltaTime) override;
+		void	init(void) override;
+
+		void	update(const FrameContext &ctx) override;
 
 	private:
 };

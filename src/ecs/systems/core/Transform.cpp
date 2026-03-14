@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 20:03:36                                        */
+/*  Last Modified: 2026/03/13 19:22:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,18 +20,14 @@
 
 namespace	hel::sys {
 
-Transform::Transform(Device &device, Registry &registry)
-	:	ISystem(device, registry) {
+void	Transform::init(void) {
 }
 
-Transform::~Transform(void) {
-}
-
-void	Transform::update(float deltaTime) {
-	auto	entities = _registry.view<comp::Transform>();
+void	Transform::update(const FrameContext &ctx) {
+	auto	entities = _registry->view<comp::Transform>();
 
 	for (auto entity: entities) {
-		auto	transform = _registry.modify(
+		auto	transform = _registry->modify(
 								entities.get<comp::Transform>(entity));
 		if (!transform->isDirty)
 			continue ;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 21:55:02 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 16:24:44                                        */
+/*  Last Modified: 2026/03/13 19:35:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,8 +36,10 @@ class	InspectorUI {
 	public:
 		using UIDrawFunc = std::function<void(Window *, void *)>;
 
-		InspectorUI(Registry &registry) : _registry{registry} {}
+		InspectorUI(void) = default;
 		~InspectorUI(void) = default;
+
+		void	init(Registry *registry);
 
 		template <typename Component>
 		void	setDrawFunc(UIDrawFunc func) {
@@ -51,7 +53,7 @@ class	InspectorUI {
 		void	addNewComponentPopup(Entity::id handle);
 		void	removeEntity(Entity::id handle);
 
-		Registry	&_registry;
+		Registry	*_registry;
 		bool		_addNewComp{false};
 		int			_newCompTypeIndex{0};
 

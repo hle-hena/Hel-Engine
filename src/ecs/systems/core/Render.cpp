@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 20:40:08                                        */
+/*  Last Modified: 2026/03/13 20:03:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,12 +27,11 @@
 
 namespace	hel::sys {
 
-Render::Render(Device &device, Registry &registry)
-	:	ISystem(device, registry),
-		_assetManager{registry.getAssetManager()} {
+void	Render::init(void) {
+	_assetManager = &_registry->getAssetManager();
 	PipelineMap::Config	config;
-	config.device = &device;
-	config.assetManager = &registry.getAssetManager();
+	config.device = _device;
+	config.assetManager = &_registry->getAssetManager();
 	config.shaderPaths = {
 		"assets/shaders/basic.vert.spv",
 		"assets/shaders/basic.frag.spv"
@@ -40,9 +39,6 @@ Render::Render(Device &device, Registry &registry)
 	config.initPipelineLayout = initLayout;
 	config.configurePipeline = configurePipeline;
 	_pipelines = createPipeline(config);
-}
-
-Render::~Render(void) {
 }
 
 void	Render::initLayout(std::vector<VkDescriptorSetLayout> &setLayouts,
@@ -57,32 +53,30 @@ void	Render::configurePipeline(PipelineConfigInfo &config) {
 	Pipeline::setVertexInputDescriptions<Vertex>(config);
 }
 
-void	Render::render(const RenderingConfig &conf, WindowResources &resources,
-					uint32_t currentFrame) {
-	auto	commandBuffer = resources.commandBuffers[currentFrame];
-	if (!commandBuffer || _pipelines->bindPipeline(conf, commandBuffer))
+void	Render::render(const FrameContext &ctx, const RenderingConfig &conf) {
+	if (!ctx.commandBuffer || _pipelines->bindPipeline(conf, ctx.commandBuffer))
 		return ;
 	auto	pipelineLayout = _pipelines->getLayout();
 
-	auto	entities = _registry.view<comp::Transform, comp::Model>();
+	auto	entities = _registry->view<comp::Transform, comp::Model>();
 	for (auto entity: entities) {
-		auto	mesh = _assetManager.get<Geometry>(entities.get<comp::Model>(entity)->filePath);
+		auto	mesh = _assetManager->get<Geometry>(entities.get<comp::Model>(entity)->filePath);
 		if (!mesh)	{ continue ; }
 		auto	*transform = entities.get<comp::Transform>(entity);
 		PushConstantData	push{transform->worldMatrix, transform->normalMatrix};
 
-		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
+		vkCmdPushConstants(ctx.commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
 							0, sizeof(PushConstantData), &push);
 		VkBuffer	buffers[] = {mesh->vertexBuffer->getBuffer()};
 		VkDeviceSize	offset[] = {0};
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offset);
-		vkCmdBindIndexBuffer(commandBuffer, mesh->triangleIndexBuffer->getBuffer(), 0,
+		vkCmdBindVertexBuffers(ctx.commandBuffer, 0, 1, buffers, offset);
+		vkCmdBindIndexBuffer(ctx.commandBuffer, mesh->triangleIndexBuffer->getBuffer(), 0,
 							VK_INDEX_TYPE_UINT32);
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+		vkCmdBindDescriptorSets(ctx.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
 							pipelineLayout, 0, 1,
-							&resources.descriptorSets->sets[currentFrame], 0,
+							&ctx.globalSet, 0,
 							nullptr);
-		vkCmdDrawIndexed(commandBuffer, mesh->triangleVertexCount, 1, 0, 0, 0);
+		vkCmdDrawIndexed(ctx.commandBuffer, mesh->triangleVertexCount, 1, 0, 0, 0);
 	}
 }
 
