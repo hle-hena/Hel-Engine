@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 19:04:26                                        */
+/*  Last Modified: 2026/03/13 22:36:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -273,7 +273,7 @@ bool	Swapchain::acquireNextImage(Window &window, uint32_t currentFrame, uint32_t
 	return (false);
 }
 
-bool	Swapchain::submitCommandBuffer(VkCommandBuffer *commandBuffer,
+bool	Swapchain::submitCommandBuffer(VkCommandBuffer commandBuffer,
 									uint32_t imageIndex, uint32_t currentFrame) {
 	VkSubmitInfo	submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -285,7 +285,7 @@ bool	Swapchain::submitCommandBuffer(VkCommandBuffer *commandBuffer,
 	submitInfo.pWaitDstStageMask = waitStages;
 
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = commandBuffer;
+	submitInfo.pCommandBuffers = &commandBuffer;
 
 	VkSemaphore	signalSemaphores[] = {_renderFinished[currentFrame]};
 	submitInfo.signalSemaphoreCount = 1;

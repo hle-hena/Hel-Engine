@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/11 10:58:12                                        */
+/*  Last Modified: 2026/03/13 22:32:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,7 @@
 # include <vector>
 
 # include "utils/Setters.hpp"
+# include "api/vulkan/PipelineMap.hpp"
 
 namespace	hel {
 
@@ -62,6 +63,7 @@ class	Renderer {
 		Image										*_depthWrite;
 		std::vector<VkRenderingAttachmentInfo>		_colorsInfo{};
 		std::optional<VkRenderingAttachmentInfo>	_depthInfo{};
+		RenderingConfig								_config;
 	
 	friend class	RendererHandle;
 };
@@ -70,9 +72,11 @@ class RendererHandle {
 	public:
 		explicit RendererHandle(Renderer &&renderer);
 		explicit operator	bool(void) const;
+		
+		RenderingConfig		_config;
 
 	private:
-		Renderer	_renderer;
+		Renderer			_renderer;
 };
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/12 14:13:51                                        */
+/*  Last Modified: 2026/03/14 17:46:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,15 +34,7 @@ namespace hel {
 
 Engine::Engine(Device &device, Registry &registry)
 	:	_device{device},
-		_registry{registry},
-		_renderSystem{device, registry},
-		_transformSystem{device, registry},
-		_cameraSystem{device, registry},
-		_hideMouseSystem{device, registry},
-		_editorControllerSystem{device, registry},
-		_baseControllerSystem{device, registry},
-		_surfaceAllignementSystem{device, registry},
-		_uiSystem{device, registry} {
+		_registry{registry} {
 	_timer.start();
 }
 
@@ -57,15 +49,30 @@ bool	Engine::init(Window &window) {
 	if (createCommandPool())
 		return (true);
 	createDescriptorPool();
+	auto	frameRes = _frame.init(_device, _staticPool.get(), _commandPool);
+	if (!frameRes) {
+		std::cerr << frameRes.error() << std::endl;
+		return (true);
+	}
 	createImagePool();
-	auto	initResources = getWindowResources(window);
-	_renderSystem.initAllPipelines(*initResources);
-	_transformSystem.initAllPipelines(*initResources);
-	_cameraSystem.initAllPipelines(*initResources);
-	_hideMouseSystem.initAllPipelines(*initResources);
-	_editorControllerSystem.initAllPipelines(*initResources);
-	_baseControllerSystem.initAllPipelines(*initResources);
-	_surfaceAllignementSystem.initAllPipelines(*initResources);
+	_systems.push_back(std::make_unique<sys::HideMouse>());
+	_systems.push_back(std::make_unique<sys::SurfaceAllignement>());
+	_systems.push_back(std::make_unique<sys::EditorController>());
+	_systems.push_back(std::make_unique<sys::BaseController>());
+	_systems.push_back(std::make_unique<sys::Transform>());
+	_systems.push_back(std::make_unique<sys::Camera>());
+	_systems.push_back(std::make_unique<sys::Render>());
+	_systems.push_back(std::make_unique<sys::UI>());
+
+	auto	frameCtx = _frame.getContext(&window, 0, 0);
+	_engineCtx.device = &_device;
+	_engineCtx.imagePool = _imagePool.get();
+	_engineCtx.registry = &_registry;
+
+	for (auto &system: _systems) {
+		system->init(_engineCtx, frameCtx);
+		system->init();
+	}
 	return (false);
 }
 
@@ -108,103 +115,37 @@ void	Engine::createImagePool(void) {
 		.build();
 }
 
-bool	Engine::beginFrame(VkCommandBuffer commandBuffer) {
-	VkCommandBufferBeginInfo	beginInfo{};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+void	Engine::tick(Window *window, uint32_t frameIndex) {
+	auto	frameCtx = _frame.getContext(window, frameIndex, _lastFrameTime);
+	auto	&ui = window->getUI();
+	_lastFrameTime = _timer.lap();
+	_imagePool->releaseAll();
 
-	return (vkBeginCommandBuffer(commandBuffer, &beginInfo));
+	UITick(ui, frameCtx);
+	updateTick(frameCtx);
+	renderTick(window, ui, frameCtx, frameIndex);
 }
 
-bool	Engine::endFrame(VkCommandBuffer commandBuffer) {
-	return (vkEndCommandBuffer(commandBuffer));
+void	Engine::UITick(UiContext &ui, const FrameContext &frameCtx) {
+	ui.newFrame();
+	for (auto &system: _systems)
+		system->registerUI(frameCtx);
+	ui.endFrame();
 }
 
-WindowResources *Engine::getWindowResources(Window& window) {
-	if (_windowResources)
-		return (_windowResources.get());
-	uint32_t			frameCount = Swapchain::MAX_FRAMES_IN_FLIGHT;
-	WindowResources		newResources{&window};
-
-	VkCommandBufferAllocateInfo	cbAllocInfo{};
-	cbAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	cbAllocInfo.commandPool = _commandPool;
-	cbAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	cbAllocInfo.commandBufferCount = frameCount;
-	if (vkAllocateCommandBuffers(_device.getLogical(), &cbAllocInfo,
-		newResources.commandBuffers.data()))	{ return (nullptr); }
-
-	newResources.descriptorSets = DescriptorFactory(_device)
-		.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
-		.setSetCount(Swapchain::MAX_FRAMES_IN_FLIGHT)
-		.build(*_staticPool);
-
-	DescriptorWriter	writer(_device, newResources.descriptorSets.get());
-	for (size_t i = 0; i < frameCount; i++) {
-		newResources.globalUbos[i] = Buffer::create(_device, sizeof(GlobalUBO),
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		if (!newResources.globalUbos[i])	{ return (nullptr); }
-		newResources.globalUbos[i]->map();
-
-		writer.writeBuffer(i, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, *newResources.globalUbos[i]);
-	}
-	writer.update();
-
-	_windowResources = std::make_unique<WindowResources>(std::move(newResources));
-	return (_windowResources.get());
+void	Engine::updateTick(const FrameContext &frameCtx) {
+	for (auto &system: _systems)
+		system->update(frameCtx);
 }
 
-void	Engine::renderUI(Window &window, uint32_t currentFrame) {
-	WindowResources *resources = getWindowResources(window);
-	if (!resources)
-		return ;
-
-	window.getUI().newFrame();
-	_uiSystem.render(_imagePool.get(), *resources, currentFrame);
-	window.getUI().endFrame();
-}
-
-void	Engine::updateFrame(void) {
-	_lastFrameTime = _timer.lapTime();
-	_timer.lap();
-	_hideMouseSystem.update(_lastFrameTime);
-	_surfaceAllignementSystem.update(_lastFrameTime);
-	_baseControllerSystem.update(_lastFrameTime);
-	_editorControllerSystem.update(_lastFrameTime);
-	_transformSystem.update(_lastFrameTime);
-	_cameraSystem.update(_lastFrameTime);
-}
-
-void	Engine::updateGlobalUBO(Window &window, uint32_t currentFrame) {
-	WindowResources	*resources = getWindowResources(window);
-	if (!resources)
-		return ;
-	GlobalUBO	data{};
-	data.viewProjection = glm::mat4{0.f};
-	if (auto *camera = _registry.getComponent<comp::Camera>(window.getEntityReference())) {
-		data.viewProjection = camera->viewProjection;
-		data.elapsedTime = _timer.elapsedTime();
-	}
-	resources->globalUbos[currentFrame]->writeToBuffer(&data);
-}
-
-void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
-	Swapchain	&swapchain = window.getSwapchain();
-
+void	Engine::renderTick(Window *window, UiContext &ui, const FrameContext &frameCtx, uint32_t frameIndex) {
+	Swapchain	&swapchain = window->getSwapchain();
 	uint32_t	imageIndex;
-	if (swapchain.acquireNextImage(window, currentFrame, &imageIndex)) {
-		_imagePool->releaseAll();
-		return ;
-	}
 
-	updateGlobalUBO(window, currentFrame);
-	WindowResources *resources = getWindowResources(window);
-	if (!resources)
+	if (swapchain.acquireNextImage(*window, frameIndex, &imageIndex))
 		return ;
-	Swapchain		&swap = window.getSwapchain();
-	VkCommandBuffer	commandBuffer = resources->commandBuffers[currentFrame];
-	vkResetCommandBuffer(commandBuffer, 0);
+	updateGlobalUBO(*window, frameIndex);
+	vkResetCommandBuffer(frameCtx.commandBuffer, 0);
 
 	auto	offImage = _imagePool->get("mainViewport");
 	auto	depthImage = _imagePool->acquire(Image::Config()
@@ -212,42 +153,43 @@ void	Engine::renderFrame(Window &window, uint32_t currentFrame) {
 			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
 			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT)
 			.setProperty(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
+	auto	swapImage = swapchain.getSwapImage(imageIndex);
 
-	auto	swapImage = swap.getSwapImage(imageIndex);
+	VkCommandBufferBeginInfo	beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-	UiContext	&ui = window.getUI();
-	beginFrame(commandBuffer);
-	if (auto pass = Renderer(commandBuffer, offImage->getExtent())
+	if (vkBeginCommandBuffer(frameCtx.commandBuffer, &beginInfo))
+		return ;
+	if (auto pass = Renderer(frameCtx.commandBuffer, offImage->getExtent())
 					.addColorWrite(offImage, VK_FORMAT_B8G8R8A8_SRGB)
 					.addDepthWrite(depthImage, depthImage->getFormat())
 					.beginPass()) {
-		RenderingConfig	config{};
-		config.colorFormats.push_back(VK_FORMAT_B8G8R8A8_SRGB);
-		config.depthFormat = depthImage->getFormat();
-
-		_renderSystem.render(config, *resources, currentFrame);
-		_cameraSystem.render(config, *resources, currentFrame);
+		for (auto &system: _systems)
+			system->render(frameCtx, pass._config);
 	}
 
-	offImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-	if (auto pass = Renderer(commandBuffer, swapImage->getExtent())
+	offImage->transitionLayout(frameCtx.commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	if (auto pass = Renderer(frameCtx.commandBuffer, swapImage->getExtent())
 					.addColorWrite(swapImage, VK_FORMAT_B8G8R8A8_UNORM)
 					.beginPass()) {
-		RenderingConfig	config{};
-		config.colorFormats.push_back(VK_FORMAT_B8G8R8A8_UNORM);
-
-		ui.renderFrame(commandBuffer);
+		ui.renderFrame(frameCtx.commandBuffer);
 	}
 
-	swapImage->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-	endFrame(commandBuffer);
+	swapImage->transitionLayout(frameCtx.commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	vkEndCommandBuffer(frameCtx.commandBuffer);
 
-	_imagePool->release(offImage);
-	_imagePool->release(depthImage);
+	swapchain.submitCommandBuffer(frameCtx.commandBuffer, imageIndex, frameIndex);
+	swapchain.present(*window, imageIndex, frameIndex);
+}
 
-	swapchain.submitCommandBuffer(&commandBuffer, imageIndex, currentFrame);
-	if (swapchain.present(window, imageIndex, currentFrame))
-		return ;
+void	Engine::updateGlobalUBO(Window &window, uint32_t currentFrame) {
+	GlobalUBO	data{};
+	data.viewProjection = glm::mat4{0.f};
+	if (auto *camera = _registry.getComponent<comp::Camera>(window.getEntityReference())) {
+		data.viewProjection = camera->viewProjection;
+		data.elapsedTime = _timer.elapsedTime();
+	}
+	_frame.writeToUBO(&data, currentFrame);
 }
 
 }

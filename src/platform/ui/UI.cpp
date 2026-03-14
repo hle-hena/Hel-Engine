@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/12 16:54:38                                        */
+/*  Last Modified: 2026/03/13 19:57:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,14 +24,10 @@
 
 namespace	hel::sys {
 
-UI::UI(Device &device, Registry &registry)
-	:	ISystem(device, registry),
-		_inspectorUI{registry},
-		_entityHierarchyUI{registry} {
+void	UI::init(void) {
+	_inspectorUI.init(_registry);
 	_inspectorUI.setBuiltInDrawFunc();
-}
-
-UI::~UI(void) {
+	_entityHierarchyUI.init(_registry);
 }
 
 void	UI::addSplitters(float windowWidth, float windowHeight) {
@@ -54,19 +50,18 @@ void	UI::addSplitters(float windowWidth, float windowHeight) {
 		.build();
 }
 
-void	UI::render(ImagePool *imagePool, WindowResources &resources,
-				uint32_t) {
-	auto	windowExtent = resources.window->getExtent();
+void	UI::registerUI(const FrameContext &ctx) {
+	auto	windowExtent = ctx.window->getExtent();
 	float	windowWidth = static_cast<float>(windowExtent.width);
 	float	windowHeight = static_cast<float>(windowExtent.height);
 
 	addSplitters(windowWidth, windowHeight);
 
-	_inspectorUI.render(resources.window, {std::max(windowWidth - _rightTabWidth, 1.f), 0.f},
+	_inspectorUI.render(ctx.window, {std::max(windowWidth - _rightTabWidth, 1.f), 0.f},
 						{_rightTabWidth, std::max(windowHeight, 1.f)});
-	_entityHierarchyUI.render(resources.window, {0.f, 0.f},
+	_entityHierarchyUI.render(ctx.window, {0.f, 0.f},
 							{_leftTabWidth, std::max(windowHeight, 1.f)});
-	_sceneViewport.render(imagePool, resources.window, {_leftTabWidth, 0.f},
+	_sceneViewport.render(_imagePool, ctx.window, {_leftTabWidth, 0.f},
 						{std::max(windowWidth - _rightTabWidth - _leftTabWidth, 1.f), std::max(windowHeight, 1.f)});
 }
 

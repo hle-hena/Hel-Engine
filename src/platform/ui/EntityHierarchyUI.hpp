@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/28 13:55:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 16:22:12                                        */
+/*  Last Modified: 2026/03/13 19:36:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -31,8 +31,10 @@ namespace	hel::sys {
 
 class	EntityHierarchyUI {
 	public:
-		EntityHierarchyUI(Registry &registry) : _registry{registry} {}
+		EntityHierarchyUI(void) = default;
 		~EntityHierarchyUI(void) = default;
+
+		void	init(Registry *registry);
 
 		void	render(Window *window, ImVec2 pos, ImVec2 size);
 
@@ -42,7 +44,7 @@ class	EntityHierarchyUI {
 		void	showEntity(Window *window, View<comp::Hierarchy> view,
 					Entity::id handle);
 
-		Registry	&_registry;
+		Registry	*_registry;
 };
 
 }

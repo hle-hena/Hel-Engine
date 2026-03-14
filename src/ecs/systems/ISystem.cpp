@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/26 18:12:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 18:39:56                                        */
+/*  Last Modified: 2026/03/13 19:58:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,13 +19,18 @@
 
 namespace	hel::sys {
 
-void	ISystem::initAllPipelines(WindowResources &resources) {
-	for (auto &pipelineMap: _pipelines)
-		pipelineMap->initDefaultSets({resources.descriptorSets->setLayout});
+void	ISystem::init(const EngineContext &engineCtx,
+					const FrameContext &frameCtx) {
+	_device = engineCtx.device;
+	_registry = engineCtx.registry;
+	_imagePool = engineCtx.imagePool;
+
+	_frameCtx = frameCtx;
 }
 
 PipelineMap	*ISystem::createPipeline(const PipelineMap::Config &config) {
 	auto	pipeline = std::unique_ptr<PipelineMap>(new PipelineMap(config));
+	pipeline->initDefaultSets({_frameCtx.globalLayout});
 	auto	pipelinePtr = pipeline.get();
 	_pipelines.push_back(std::move(pipeline));
 	return (pipelinePtr);

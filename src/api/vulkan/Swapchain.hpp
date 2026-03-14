@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 19:04:09                                        */
+/*  Last Modified: 2026/03/13 22:37:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -67,7 +67,7 @@ class	Swapchain
 		Image			*getOffImage(void);
 		Image			*getSwapImage(uint32_t imageIndex);
 		bool			acquireNextImage(Window &window, uint32_t currentFrame, uint32_t *imageIndex);
-		bool			submitCommandBuffer(VkCommandBuffer *commandBuffer,
+		bool			submitCommandBuffer(VkCommandBuffer commandBuffer,
 									uint32_t imageIndex, uint32_t currentFrame);
 		bool			present(Window &window, uint32_t imageIndex, uint32_t currentFrame);
 

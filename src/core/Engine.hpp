@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/11 17:38:02                                        */
+/*  Last Modified: 2026/03/13 22:50:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -38,22 +38,19 @@
 #include "api/vulkan/Descriptors.hpp"
 #include "api/vulkan/ImagePool.hpp"
 
+#include "core/Frame.hpp"
+
 namespace hel {
 
 class	Window;
 class	Device;
 class	Registry;
+class	UiContext;
 
-struct	GlobalUBO {
-	glm::mat4	viewProjection;
-	float		elapsedTime;
-};
-
-struct	WindowResources {
-	Window																	*window;
-	std::array<VkCommandBuffer, Swapchain::MAX_FRAMES_IN_FLIGHT>			commandBuffers{};
-	std::array<std::unique_ptr<Buffer>, Swapchain::MAX_FRAMES_IN_FLIGHT>	globalUbos{};
-	std::unique_ptr<DescriptorSet>											descriptorSets{};
+struct	EngineContext {
+	Device		*device;
+	Registry	*registry;
+	ImagePool	*imagePool;
 };
 
 class	Engine {
@@ -72,19 +69,20 @@ class	Engine {
 		}
 
 		bool			init(Window &window);
-		void			renderUI(Window &window, uint32_t currentFrame);
-		void			updateFrame(void);
-		void			renderFrame(Window &window, uint32_t currentFrame);
+		void			tick(Window *window, uint32_t currentFrame);
 
 	private:
 		bool			createCommandPool(void);
 		void			createDescriptorPool(void);
 		void			createImagePool(void);
 
+		void			UITick(UiContext &ui, const FrameContext &frameCtx);
+		void			updateTick(const FrameContext &frameCtx);
+		void			renderTick(Window *window, UiContext &ui,
+								const FrameContext &frameCtx,
+								uint32_t frameIndex);
+
 		void			updateGlobalUBO(Window &window, uint32_t currentFrame);
-		bool			beginFrame(VkCommandBuffer commandBuffer);
-		bool			endFrame(VkCommandBuffer commandBuffer);
-		WindowResources	*getWindowResources(Window& window);
 
 		bool											_healthy{true};
 		std::string										_reason{""};
@@ -95,15 +93,9 @@ class	Engine {
 		VkCommandPool									_commandPool{VK_NULL_HANDLE};
 		std::unique_ptr<DescriptorPool>					_staticPool;
 		std::unique_ptr<ImagePool>						_imagePool;
-		std::unique_ptr<WindowResources>				_windowResources;
-		sys::Render										_renderSystem;
-		sys::Transform									_transformSystem;
-		sys::Camera										_cameraSystem;
-		sys::HideMouse									_hideMouseSystem;
-		sys::EditorController							_editorControllerSystem;
-		sys::BaseController								_baseControllerSystem;
-		sys::SurfaceAllignement							_surfaceAllignementSystem;
-		sys::UI											_uiSystem;
+		std::vector<std::unique_ptr<sys::ISystem>>		_systems;
+		Frame											_frame;
+		EngineContext									_engineCtx;
 };
 
 }
