@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/12 16:42:46                                        */
+/*  Last Modified: 2026/03/14 17:46:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -171,7 +171,6 @@ void	ImagePool::releaseAll(void) {
 		for (auto &slot: pool.second) {
 			slot.inUse = false;
 			removeIfNamed(slot.image.get());
-			return ;
 		}
 	}
 }

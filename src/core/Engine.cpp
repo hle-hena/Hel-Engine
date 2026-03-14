@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 22:50:20                                        */
+/*  Last Modified: 2026/03/14 17:46:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -177,9 +177,6 @@ void	Engine::renderTick(Window *window, UiContext &ui, const FrameContext &frame
 
 	swapImage->transitionLayout(frameCtx.commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 	vkEndCommandBuffer(frameCtx.commandBuffer);
-
-	_imagePool->release(offImage);
-	_imagePool->release(depthImage);
 
 	swapchain.submitCommandBuffer(frameCtx.commandBuffer, imageIndex, frameIndex);
 	swapchain.present(*window, imageIndex, frameIndex);
