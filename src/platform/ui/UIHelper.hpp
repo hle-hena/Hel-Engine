@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:48:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/16 15:32:37                                        */
+/*  Last Modified: 2026/03/17 19:46:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,6 +45,7 @@ class	Splitter {
 		SETTER(Dir, Dir, _dir)
 		SETTER(Label, const char *, _label)
 		SETTER(Pos, ImVec2, _pos)
+		SETTER(Normalizer, float, _normalizer)
 		void	build(void);
 
 	private:
@@ -64,6 +65,7 @@ class	Splitter {
 		float		_max{100.f};
 		float		_size{0.f};
 		float		_hitbox{6.f};
+		float		_normalizer{1.f};
 };
 
 

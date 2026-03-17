@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/16 15:38:32                                        */
+/*  Last Modified: 2026/03/17 19:47:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,8 +48,8 @@ void	Splitter::build(void) {
 	bool	active = ImGui::IsItemActive();
 	if (active)
 		*_val += (isHorizontal(_dir)) ?
-						IsPositive(_dir) * ImGui::GetIO().MouseDelta.y :
-						IsPositive(_dir) * ImGui::GetIO().MouseDelta.x;
+						IsPositive(_dir) * ImGui::GetIO().MouseDelta.y / _normalizer :
+						IsPositive(_dir) * ImGui::GetIO().MouseDelta.x / _normalizer;
 	if (active || ImGui::IsItemHovered())
 		ImGui::SetMouseCursor(isHorizontal(_dir) ?
 									ImGuiMouseCursor_ResizeNS :

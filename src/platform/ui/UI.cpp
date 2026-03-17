@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/17 16:41:07                                        */
+/*  Last Modified: 2026/03/17 19:57:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,8 +33,8 @@ void	UI::init(void) {
 	_styleEditor.setup(_registry, _imagePool);
 	_styleEditor.onInit();
 
-	_leftDock = std::unique_ptr<Dock>(new Dock({}));
-	_rightDock = std::unique_ptr<Dock>(new Dock({}));
+	_leftDock = std::unique_ptr<Dock>(new Dock("Left dock"));
+	_rightDock = std::unique_ptr<Dock>(new Dock("Right dock"));
 }
 
 void	UI::addSplitters(float windowWidth, float windowHeight) {
@@ -74,17 +74,13 @@ void	UI::addDockSpaces(Window *window, float windowWidth, float windowHeight) {
 	ImGui::SetNextWindowPos({0.f, 0.f});
 	ImGui::SetNextWindowSize({_leftTabWidth, windowHeight});
 	ImGui::Begin("##LeftDockHost", nullptr, hostFlags);
-	ImGui::BeginChild("Left dock child", {_leftTabWidth, windowHeight});
-	_leftDock->render(window);
-	ImGui::EndChild();
+	_leftDock->render(window, {_leftTabWidth, windowHeight});
 	ImGui::End();
 
 	ImGui::SetNextWindowPos({windowWidth - _rightTabWidth, 0.f});
 	ImGui::SetNextWindowSize({_rightTabWidth, windowHeight});
 	ImGui::Begin("##RightDockHost", nullptr, hostFlags);
-	ImGui::BeginChild("Right dock child", {_rightTabWidth, windowHeight});
-	_rightDock->render(window);
-	ImGui::EndChild();
+	_rightDock->render(window, {_rightTabWidth, windowHeight});
 	ImGui::End();
 
 	ImGui::PopStyleVar(2);

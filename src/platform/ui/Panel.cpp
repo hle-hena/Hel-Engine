@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 12:54:54 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/16 13:30:49                                        */
+/*  Last Modified: 2026/03/17 18:50:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,8 +33,12 @@ void	IPanel::changeOwner(Dock *newOwner) {
 }
 
 void	IPanel::setOwner(Dock *newOwner) {
-	_owner = newOwner;
-	_owner->_panels.push_back(this);
+	if (!_owner) {
+		_owner = newOwner;
+		_owner->_panels.push_back(this);
+		return ;
+	}
+	changeOwner(newOwner);
 }
 
 }
