@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:48:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 16:57:11                                        */
+/*  Last Modified: 2026/03/16 15:32:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -159,6 +159,30 @@ class	TableRow {
 
 		using BuildFunc = bool (TableRow::*)();
 		static const std::unordered_map<Type, BuildFunc>	_buildFunctions;
+};
+
+class	DropTarget {
+	public:
+		DropTarget(const char *type);
+
+		SETTER(Size, ImVec2, _size)
+		SETTER(ResetPosition, bool, _shouldGoBack)
+
+		DropTarget	&addDummy(void);
+		template <typename Func>
+		void	build(Func &&dropAction);
+
+	private:
+		const char	*_type;
+		ImVec2		_size;
+		ImVec2		_baseCursorPos;
+		bool		_shouldGoBack;
+};
+
+class	Dummy {
+	public:
+		template <typename Func>
+		Dummy(Func &&dummyAction);
 };
 
 }

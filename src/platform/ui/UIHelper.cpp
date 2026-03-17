@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 16:57:08                                        */
+/*  Last Modified: 2026/03/16 15:38:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -285,6 +285,22 @@ bool	TableRow::buildInputText(void) {
 
 	ImGui::PopID();
 	return (changed);
+}
+
+
+
+DropTarget::DropTarget(const char *type)
+	:	_type{type} {
+	_baseCursorPos = ImGui::GetCursorPos();
+	_shouldGoBack = true;
+	_size = ImGui::GetContentRegionAvail();
+}
+
+DropTarget	&DropTarget::addDummy(void) {
+	ImGui::Dummy(_size);
+	if (_shouldGoBack)
+		ImGui::SetCursorPos(_baseCursorPos);
+	return (*this);
 }
 
 }

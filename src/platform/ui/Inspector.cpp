@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: InspectorUI.cpp                                                     */
+/*  File: Inspector.cpp                                                       */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/27 21:54:51 by hle-hena                                  */
+/*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:34:52                                        */
+/*  Last Modified: 2026/03/16 11:41:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,7 +14,7 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "platform/ui/InspectorUI.hpp"
+#include "platform/ui/Inspector.hpp"
 #include "platform/ui/UIHelper.hpp"
 #include "ecs/Registry.hpp"
 #include "api/ImGui/imgui_stdlib.h"
@@ -23,21 +23,15 @@
 
 namespace	hel::sys {
 
-void	InspectorUI::init(Registry *registry) {
-	_registry = registry;
+expected<void, std::string>	Inspector::onInit(void) {
+	setBuiltInDrawFunc();
+	return {};
 }
 
-void	InspectorUI::render(Window *window, ImVec2 pos, ImVec2 size) {
+void	Inspector::render(Window *window) {
 	auto	handle = window->getEntityFocus();
 	if (handle == Entity::NOT_REGISTERED)
 		return ;
-	ImGuiWindowFlags	windowFlags = ImGuiWindowFlags_NoCollapse |
-									ImGuiWindowFlags_NoTitleBar |
-									ImGuiWindowFlags_NoMove |
-									ImGuiWindowFlags_NoResize;
-	ImGui::SetNextWindowSize(size);
-	ImGui::SetNextWindowPos(pos);
-	ImGui::Begin("Inspector", nullptr, windowFlags);
 	if (ImGui::Button("Remove entity")) {
 		removeEntity(handle);
 		ImGui::End();
@@ -82,17 +76,16 @@ void	InspectorUI::render(Window *window, ImVec2 pos, ImVec2 size) {
 	if (!_addNewComp && ImGui::Button("Add a component"))
 		_addNewComp = true;
 	addNewComponentPopup(handle);
-	ImGui::End();
 }
 
-void	InspectorUI::removeEntity(Entity::id handle) {
+void	Inspector::removeEntity(Entity::id handle) {
 	auto	hierarchy = _registry->getComponent<comp::Hierarchy>(handle);
 	for (auto childHandle: hierarchy->childrenId)
 		removeEntity(childHandle);
 	_registry->removeEntity(handle);
 }
 
-void	InspectorUI::addNewComponentPopup(Entity::id handle) {
+void	Inspector::addNewComponentPopup(Entity::id handle) {
 	if (_addNewComp) {
 		auto	items = ComponentList::getComponentList();
 		ImGui::Combo("Component type", &_newCompTypeIndex, items.data(), items.size());
@@ -106,7 +99,7 @@ void	InspectorUI::addNewComponentPopup(Entity::id handle) {
 	}
 }
 
-void	InspectorUI::setBuiltInDrawFunc(void) {
+void	Inspector::setBuiltInDrawFunc(void) {
 	setDrawFunc<comp::BaseControllerTag>([](Window *, void *){});
 	setDrawFunc<comp::EditorControllerTag>([](Window *, void *){});
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/14 19:43:41                                        */
+/*  Last Modified: 2026/03/16 13:09:04                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -235,10 +235,11 @@ void	ImBlue(ImGuiStyle &style) {
 void	UiContext::initImGuiStyle(void) {
 	auto	&style = ImGui::GetStyle();
 
-	style.TreeLinesFlags = ImGuiTreeNodeFlags_DrawLinesFull;
+	style.TreeLinesFlags = ImGuiTreeNodeFlags_DrawLinesToNodes;
 	style.TreeLinesRounding = 3.f;
 
-	embraceTheDarkness(style);
+	// embraceTheDarkness(style);
+	ImBlue(style);
 }
 
 void	UiContext::initDescriptorPool(Device &device) {

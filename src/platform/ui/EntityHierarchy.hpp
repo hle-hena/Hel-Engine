@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: EditorUI.hpp                                                        */
+/*  File: EntityHierarchy.hpp                                                 */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/27 21:55:02 by hle-hena                                  */
+/*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:35:08                                        */
+/*  Last Modified: 2026/03/16 11:37:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,48 +16,28 @@
 
 #pragma once
 
-# include <unordered_map>
-# include <typeindex>
-# include <functional>
-
+# include "ecs/View.hpp"
 # include "ecs/Entity.hpp"
 # include "api/ImGui/imgui.h"
-
-namespace	hel {
-
-class	Registry;
-class	Window;
-
-}
+# include "platform/ui/Panel.hpp"
 
 namespace	hel::sys {
 
-class	InspectorUI {
+class	EntityHierarchy : public Panel<EntityHierarchy> {
 	public:
-		using UIDrawFunc = std::function<void(Window *, void *)>;
+		static constexpr const char	*label = "Entity";
+		EntityHierarchy(void) = default;
+		~EntityHierarchy(void) = default;
 
-		InspectorUI(void) = default;
-		~InspectorUI(void) = default;
+		expected<void, std::string>	onInit(void) override;
 
-		void	init(Registry *registry);
-
-		template <typename Component>
-		void	setDrawFunc(UIDrawFunc func) {
-			_drawFuncs[typeid(Component)] = func;
-		}
-		void	setBuiltInDrawFunc(void);
-
-		void	render(Window *window, ImVec2 pos, ImVec2 size);
+		void	render(Window *window) override;
 
 	private:
-		void	addNewComponentPopup(Entity::id handle);
-		void	removeEntity(Entity::id handle);
-
-		Registry	*_registry;
-		bool		_addNewComp{false};
-		int			_newCompTypeIndex{0};
-
-		std::unordered_map<std::type_index, UIDrawFunc>	_drawFuncs;
+		void	moveEntity(Window *window, View<comp::Hierarchy> &view,
+					Entity::id srcHandle, Entity::id dstHandle);
+		void	showEntity(Window *window, View<comp::Hierarchy> view,
+					Entity::id handle);
 };
 
 }

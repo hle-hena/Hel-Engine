@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: EntityHierarchyUI.hpp                                               */
+/*  File: Panel.cpp                                                           */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/28 13:55:43 by hle-hena                                  */
+/*  Created: 2026/03/16 12:54:54 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:36:12                                        */
+/*  Last Modified: 2026/03/16 13:30:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,37 +14,27 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#pragma once
-
-# include "ecs/View.hpp"
-# include "ecs/Entity.hpp"
-# include "api/ImGui/imgui.h"
-
-namespace	hel {
-
-class	Window;
-class	Registry;
-
-}
+#include "platform/ui/Panel.hpp"
+#include "platform/ui/Dock.hpp"
 
 namespace	hel::sys {
 
-class	EntityHierarchyUI {
-	public:
-		EntityHierarchyUI(void) = default;
-		~EntityHierarchyUI(void) = default;
-
-		void	init(Registry *registry);
-
-		void	render(Window *window, ImVec2 pos, ImVec2 size);
-
-	private:
-		void	moveEntity(Window *window, View<comp::Hierarchy> &view,
-					Entity::id srcHandle, Entity::id dstHandle);
-		void	showEntity(Window *window, View<comp::Hierarchy> view,
-					Entity::id handle);
-
-		Registry	*_registry;
+void	IPanel::setup(Registry *registry, ImagePool *imagePool) {
+	_registry = registry;
+	_imagePool = imagePool;
 };
+
+void	IPanel::changeOwner(Dock *newOwner) {
+	auto	it = std::find(_owner->_panels.begin(),
+						_owner->_panels.end(), this);
+	if (it != _owner->_panels.end())	{ _owner->_panels.erase(it); }
+	_owner = newOwner;
+	_owner->_panels.push_back(this);
+}
+
+void	IPanel::setOwner(Dock *newOwner) {
+	_owner = newOwner;
+	_owner->_panels.push_back(this);
+}
 
 }
