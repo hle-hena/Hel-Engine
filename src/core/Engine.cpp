@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/14 17:46:38                                        */
+/*  Last Modified: 2026/03/18 12:55:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -138,16 +138,15 @@ void	Engine::updateTick(const FrameContext &frameCtx) {
 		system->update(frameCtx);
 }
 
-void	Engine::renderTick(Window *window, UiContext &ui, const FrameContext &frameCtx, uint32_t frameIndex) {
+void	Engine::renderTick(Window *window, UiContext &ui, const FrameContext &ctx, uint32_t frameIndex) {
 	Swapchain	&swapchain = window->getSwapchain();
 	uint32_t	imageIndex;
 
 	if (swapchain.acquireNextImage(*window, frameIndex, &imageIndex))
 		return ;
 	updateGlobalUBO(*window, frameIndex);
-	vkResetCommandBuffer(frameCtx.commandBuffer, 0);
+	vkResetCommandBuffer(ctx.commandBuffer, 0);
 
-	auto	offImage = _imagePool->get("mainViewport");
 	auto	depthImage = _imagePool->acquire(Image::Config()
 			.setFormats(VK_FORMAT_D32_SFLOAT)
 			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
@@ -158,27 +157,30 @@ void	Engine::renderTick(Window *window, UiContext &ui, const FrameContext &frame
 	VkCommandBufferBeginInfo	beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-	if (vkBeginCommandBuffer(frameCtx.commandBuffer, &beginInfo))
+	if (vkBeginCommandBuffer(ctx.commandBuffer, &beginInfo))
 		return ;
-	if (auto pass = Renderer(frameCtx.commandBuffer, offImage->getExtent())
-					.addColorWrite(offImage, VK_FORMAT_B8G8R8A8_SRGB)
-					.addDepthWrite(depthImage, depthImage->getFormat())
-					.beginPass()) {
-		for (auto &system: _systems)
-			system->render(frameCtx, pass._config);
+	for (auto [renderImg, entityHandle]: _imagePool->getRequestedRenders()) {
+		if (auto pass = Renderer(ctx.commandBuffer, renderImg->getExtent())
+						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
+						.addDepthWrite(depthImage, depthImage->getFormat())
+						.beginPass()) {
+			for (auto &system: _systems)
+				system->render(ctx, pass._config);
+		}
+		renderImg->transitionLayout(ctx.commandBuffer,
+					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	}
 
-	offImage->transitionLayout(frameCtx.commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-	if (auto pass = Renderer(frameCtx.commandBuffer, swapImage->getExtent())
+	if (auto pass = Renderer(ctx.commandBuffer, swapImage->getExtent())
 					.addColorWrite(swapImage, VK_FORMAT_B8G8R8A8_UNORM)
 					.beginPass()) {
-		ui.renderFrame(frameCtx.commandBuffer);
+		ui.renderFrame(ctx.commandBuffer);
 	}
 
-	swapImage->transitionLayout(frameCtx.commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-	vkEndCommandBuffer(frameCtx.commandBuffer);
+	swapImage->transitionLayout(ctx.commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	vkEndCommandBuffer(ctx.commandBuffer);
 
-	swapchain.submitCommandBuffer(frameCtx.commandBuffer, imageIndex, frameIndex);
+	swapchain.submitCommandBuffer(ctx.commandBuffer, imageIndex, frameIndex);
 	swapchain.present(*window, imageIndex, frameIndex);
 }
 

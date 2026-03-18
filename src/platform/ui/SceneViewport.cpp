@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 11:43:21                                        */
+/*  Last Modified: 2026/03/18 12:35:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,7 +29,7 @@ expected<void, std::string>	SceneViewport::onInit(void) {
 }
 
 void	SceneViewport::render(Window *window, const ImVec2 &size) {
-	auto	image = _imagePool->acquire("mainViewport", Image::Config()
+	auto	image = _imagePool->requestRender(Entity::NOT_REGISTERED, Image::Config()
 			.setWidth(static_cast<uint32_t>(std::max(size.x, 1.f)))
 			.setHeight(static_cast<uint32_t>(std::max(size.y, 1.f)))
 			.setFormats({VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM})
