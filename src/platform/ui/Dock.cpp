@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 16:08:58                                        */
+/*  Last Modified: 2026/03/18 16:13:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,7 +39,8 @@ void	Dock::split(Splitter::Dir dir, IPanel *splitPanel) {
 												: _childOne.get();
 
 	splitPanel->changeOwner(target);
-	for (auto panel: _panels)
+	auto	panels = std::move(_panels);
+	for (auto panel: panels)
 		panel->changeOwner(keep);
 	_panels.clear();
 }
