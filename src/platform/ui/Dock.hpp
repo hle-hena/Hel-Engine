@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:30:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 13:56:41                                        */
+/*  Last Modified: 2026/03/18 16:33:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -62,9 +62,10 @@ class	Dock {
 								ImDrawList *draw, IPanel *panel);
 		void	renderTabBarZone(const RenderDragDropContext &ctx,
 								ImDrawList *draw, IPanel *panel);
-		void	renderDragDrop(const ImVec2 &size);
+		void	renderDragDrop(const RenderDragDropContext &ctx);
 		void	renderPanels(Window *window, const ImVec2 &size);
 		std::vector<IPanel *>	_panels{};
+		std::vector<float>		_gaps{};
 
 		void	renderSplits(Window *window, const ImVec2 &size);
 		std::unique_ptr<Dock>	_childOne{nullptr};

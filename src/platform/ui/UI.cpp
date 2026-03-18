@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 16:03:39                                        */
+/*  Last Modified: 2026/03/18 17:20:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,6 +35,12 @@ void	UI::init(void) {
 	_sceneViewport.setup(_registry, _imagePool);
 	_sceneViewport.onInit();
 
+	_entityHierarchy1 = _entityHierarchy;
+	_entityHierarchy2 = _entityHierarchy;
+	_entityHierarchy3 = _entityHierarchy;
+	_entityHierarchy4 = _entityHierarchy;
+	_entityHierarchy5 = _entityHierarchy;
+
 	_dock = std::make_unique<Dock>("Dock");
 
 	_inspector.setOwner(_dock.get());
@@ -43,6 +49,12 @@ void	UI::init(void) {
 	dockLeft->forceSplit(Splitter::Dir::Left, &_entityHierarchy, {});
 	auto	dockLeftLeft = dockLeft->forceGetChildOne({});
 	_styleEditor.setOwner(dockLeftLeft);
+
+	_entityHierarchy1.setOwner(dockLeftLeft);
+	_entityHierarchy2.setOwner(dockLeftLeft);
+	_entityHierarchy3.setOwner(dockLeftLeft);
+	_entityHierarchy4.setOwner(dockLeftLeft);
+	_entityHierarchy5.setOwner(dockLeftLeft);
 }
 
 void	UI::addDock(Window *window, const ImVec2 &size) {

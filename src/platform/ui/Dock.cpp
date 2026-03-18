@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 16:13:39                                        */
+/*  Last Modified: 2026/03/18 17:24:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -79,8 +79,9 @@ void	Dock::render(Window *window, const ImVec2 &size) {
 		renderSplits(window, size);
 	} else {
 		ImGui::BeginChild(_dockName.c_str(), size, ImGuiChildFlags_Borders);
-		renderDragDrop(size);
+		RenderDragDropContext	ctx(size);
 		renderPanels(window, size);
+		renderDragDrop(ctx);
 		ImGui::EndChild();
 	}
 }
@@ -150,19 +151,31 @@ void	Dock::renderTabBarZone(const RenderDragDropContext &ctx,
 							ImDrawList *draw, IPanel *panel) {
 	auto	&rectMin = ctx.origin;
 	auto	&rectMax = ctx.topRight;
+
+	size_t	closestIdx = 0;
+	float	closestDist = FLT_MAX;
+
 	if (ctx.mouse.x >= rectMin.x && ctx.mouse.x <= rectMax.x &&
 		ctx.mouse.y >= rectMin.y && ctx.mouse.y <= rectMax.y) {
-		draw->AddRectFilled(rectMin, rectMax, IM_COL32(255, 0, 0, 50));
-		if (ctx.released)	{ panel->changeOwner(this); }
+		for (size_t i = 0; i < _gaps.size(); i++) {
+			if (std::abs(ctx.mouse.x - _gaps[i]) < closestDist) {
+				closestDist = std::abs(ctx.mouse.x - _gaps[i]);
+				closestIdx = i;
+			}
+		}
+		draw->AddRectFilled({_gaps[closestIdx] - 1.f, rectMin.y},
+							{_gaps[closestIdx] + 1.f, rectMax.y},
+							IM_COL32(255, 0, 0, 175));
+		if (ctx.released)
+			panel->changeOwner(this, closestIdx);
 	}
 }
 
-void	Dock::renderDragDrop(const ImVec2 &size) {
+void	Dock::renderDragDrop(const RenderDragDropContext &ctx) {
 	auto	*payload = ImGui::GetDragDropPayload();
 	if (!payload || !payload->IsDataType("TAB_MOVE"))
 		return ;
 
-	RenderDragDropContext	ctx(size);
 	IPanel	*panel = *static_cast<IPanel**>(payload->Data);
 	auto	draw = ImGui::GetForegroundDrawList();
 
@@ -170,51 +183,37 @@ void	Dock::renderDragDrop(const ImVec2 &size) {
 		return ;
 	if (renderTriangleZones(ctx, draw, panel))
 		return ;
-	// renderTabBarZone(ctx, draw, panel);
+	renderTabBarZone(ctx, draw, panel);
 }
 
 void	Dock::renderPanels(Window *window, const ImVec2 &size) {
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, {8.f, 0.f});
+	float	innerSpacing = ImGui::GetStyle().ItemInnerSpacing.x;
 	if (ImGui::BeginTabBar("##tabs", ImGuiTabBarFlags_NoTabListScrollingButtons)) {
 		ImVec2	effectiveSize = ImGui::GetContentRegionAvail();
-		DropTarget("TAB_MOVE")
-			.setSize({5.f, ImGui::GetFrameHeight()})
-			.setEndPos(ImGui::GetCursorScreenPos())
-			.addDummy()
-			.build([this](const ImGuiPayload *payload){
-				IPanel* panel = *static_cast<IPanel**>(payload->Data);
-				panel->changeOwner(this);
-			});
+		_gaps.clear();
+		_gaps.push_back(ImGui::GetCursorScreenPos().x);
 
+		int	i = 0;
 		for (auto panel: _panels) {
+			ImGui::PushID(i++);
 			bool	open = ImGui::BeginTabItem(panel->getLabel());
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 				ImGui::SetDragDropPayload("TAB_MOVE", &panel, sizeof(IPanel *));
 				ImGui::Text(panel->getLabel());
 				ImGui::EndDragDropSource();
 			}
-			float	width = 10.f;
-			DropTarget("TAB_MOVE")
-				.setPos({(ImGui::GetStyle().ItemInnerSpacing.x - width) / 2 +
-						ImGui::GetItemRectMax().x, ImGui::GetItemRectMin().y})
-				.setSize({width, ImGui::GetFrameHeight()})
-				.setEndPos(ImGui::GetCursorScreenPos())
-				.addDummy()
-				.build([this](const ImGuiPayload *payload){
-					IPanel* panel = *static_cast<IPanel**>(payload->Data);
-					panel->changeOwner(this);
-				});
+			_gaps.push_back(ImGui::GetItemRectMax().x + innerSpacing / 2);
 			if (open) {
 				panel->render(window, effectiveSize);
 				ImGui::EndTabItem();
 			}
+			ImGui::PopID();
 		}
 		if (ImGui::TabItemButton("+", ImGuiTabItemFlags_Trailing)) {
 			std::cout << "Open a new tab\n";
 		}
 		ImGui::EndTabBar();
 	}
-	ImGui::PopStyleVar();
 	if (_panels.empty() && !ImGui::GetDragDropPayload())
 		_askForMerge = true;
 }

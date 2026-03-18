@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 10:44:58                                        */
+/*  Last Modified: 2026/03/18 17:19:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -50,6 +50,11 @@ class	UI : public ISystem {
 		std::unique_ptr<Dock>	_dock;
 
 		EntityHierarchy				_entityHierarchy;
+		EntityHierarchy				_entityHierarchy1;
+		EntityHierarchy				_entityHierarchy2;
+		EntityHierarchy				_entityHierarchy3;
+		EntityHierarchy				_entityHierarchy4;
+		EntityHierarchy				_entityHierarchy5;
 		Inspector					_inspector;
 		StyleEditor					_styleEditor;
 		SceneViewport				_sceneViewport;

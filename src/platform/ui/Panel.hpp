@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:19:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 14:04:20                                        */
+/*  Last Modified: 2026/03/18 17:14:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,7 +39,7 @@ class	IPanel {
 		virtual ~IPanel(void) = default;
 
 		virtual void	setup(Registry *registry, ImagePool *imagePool) final;
-		virtual void	changeOwner(Dock *newOwner) final;
+		virtual void	changeOwner(Dock *newOwner, size_t insertIdx = -1) final;
 		virtual void	setOwner(Dock *newOwner) final;
 		virtual expected<void, std::string>	onInit(void) { return {}; }
 
