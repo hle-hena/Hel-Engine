@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:30:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 10:37:27                                        */
+/*  Last Modified: 2026/03/18 13:05:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -69,7 +69,7 @@ class	Dock {
 		void	renderSplits(Window *window, const ImVec2 &size);
 		std::unique_ptr<Dock>	_childOne{nullptr};
 		std::unique_ptr<Dock>	_childTwo{nullptr};
-		float					_splitRatio{0.5f};
+		std::optional<float>	_splitRatio;
 		Splitter::Dir			_splitDir;
 		bool					_askForMerge{false};
 

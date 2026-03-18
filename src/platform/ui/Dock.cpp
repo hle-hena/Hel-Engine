@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 10:25:33                                        */
+/*  Last Modified: 2026/03/18 13:08:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,7 +24,7 @@ void	Dock::split(Splitter::Dir dir, IPanel *splitPanel) {
 	_type = Type::Split;
 	_splitDir = (dir == Splitter::Dir::Left) ? Splitter::Dir::Right :
 				(dir == Splitter::Dir::Up) ? Splitter::Dir::Down : dir;
-	_splitRatio = 0.5f;
+	_splitRatio.reset();
 
 	bool	isVertical = (_splitDir == Splitter::Dir::Right);
 	_childOne = std::make_unique<Dock>(_dockName +
@@ -82,18 +82,19 @@ void	Dock::renderSplits(Window *window, const ImVec2 &size) {
 	ImVec2	origin = ImGui::GetCursorScreenPos();
 	bool	isVertical = (_splitDir == Splitter::Dir::Right);
 
-	Splitter(&_splitRatio)
+	if (!_splitRatio)
+		_splitRatio = 0.5f * (isVertical ? size.x : size.y);
+	Splitter(&*_splitRatio)
 		.setLabel((_dockName + "_splitter").c_str())
-		.setPos(isVertical ? ImVec2(origin.x + size.x * _splitRatio, origin.y)
-						: ImVec2(origin.x, origin.y + size.y * _splitRatio))
-		.setNormalizer(isVertical ? size.x : size.y)
+		.setPos(isVertical ? ImVec2(origin.x + *_splitRatio, origin.y)
+						: ImVec2(origin.x, origin.y + *_splitRatio))
 		.setSize(isVertical ? size.y : size.x)
-		.setMin(0.f).setMax(1.f)
+		.setMin(0.f).setMax(isVertical ? size.x : size.y)
 		.setDir(_splitDir)
 		.build();
 
-	auto	oneSize = isVertical ? ImVec2(size.x * _splitRatio, size.y)
-								: ImVec2(size.x, size.y * _splitRatio);
+	auto	oneSize = isVertical ? ImVec2(*_splitRatio, size.y)
+								: ImVec2(size.x, *_splitRatio);
 	auto	twoSize = isVertical ? ImVec2(size.x - oneSize.x, size.y)
 								: ImVec2(size.x, size.y - oneSize.y);
 	ImVec2	start = ImGui::GetCursorScreenPos();
