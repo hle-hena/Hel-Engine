@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 13:08:14                                        */
+/*  Last Modified: 2026/03/18 13:30:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -66,7 +66,9 @@ void	Dock::merge(void) {
 }
 
 void	Dock::render(Window *window, const ImVec2 &size) {
-	if (_type == Type::Split && (_childOne->_askForMerge || _childTwo->_askForMerge))
+
+	if (_type == Type::Split &&
+			(_childOne->_askForMerge || _childTwo->_askForMerge))
 		merge();
 	if (_type == Type::Split) {
 		renderSplits(window, size);
@@ -173,6 +175,7 @@ void	Dock::renderPanels(Window *window, const ImVec2 &size) {
 		});
 
 	if (ImGui::BeginTabBar("##tabs", ImGuiTabBarFlags_NoTabListScrollingButtons)) {
+		ImVec2	effectiveSize = ImGui::GetContentRegionAvail();
 		for (auto panel: _panels) {
 			bool	open = ImGui::BeginTabItem(panel->getLabel());
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
@@ -181,7 +184,7 @@ void	Dock::renderPanels(Window *window, const ImVec2 &size) {
 				ImGui::EndDragDropSource();
 			}
 			if (open) {
-				panel->render(window, size);
+				panel->render(window, effectiveSize);
 				ImGui::EndTabItem();
 			}
 		}
