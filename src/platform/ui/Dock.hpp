@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:30:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/17 23:25:26                                        */
+/*  Last Modified: 2026/03/18 10:01:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -53,7 +53,7 @@ class	Dock {
 		void	renderTabBarZone(const RenderDragDropContext &ctx,
 								ImDrawList *draw, IPanel *panel);
 		void	renderDragDrop(void);
-		void	renderPanels(Window *window);
+		void	renderPanels(Window *window, ImVec2 size);
 		std::vector<IPanel *>	_panels{};
 
 		void	renderSplits(Window *window, ImVec2 size);
@@ -61,6 +61,7 @@ class	Dock {
 		std::unique_ptr<Dock>	_childTwo{nullptr};
 		float					_splitRatio{0.5f};
 		Splitter::Dir			_splitDir;
+		bool					_askForMerge{false};
 
 	friend class	IPanel;
 };
