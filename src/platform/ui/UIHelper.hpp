@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:48:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/17 19:46:20                                        */
+/*  Last Modified: 2026/03/18 16:06:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -167,8 +167,10 @@ class	DropTarget {
 	public:
 		DropTarget(const char *type);
 
-		SETTER(Size, ImVec2, _size)
-		SETTER(ResetPosition, bool, _shouldGoBack)
+		SETTER(Size, const ImVec2 &, _size)
+		SETTER(ResetPosition, bool, _setToEndPos)
+		SETTER(Pos, const ImVec2 &, _startPos)
+		DropTarget	&setEndPos(const ImVec2 &val);
 
 		DropTarget	&addDummy(void);
 		template <typename Func>
@@ -177,14 +179,25 @@ class	DropTarget {
 	private:
 		const char	*_type;
 		ImVec2		_size;
-		ImVec2		_baseCursorPos;
-		bool		_shouldGoBack;
+		ImVec2		_startPos;
+		ImVec2		_endPos;
+		bool		_setToEndPos;
 };
 
-class	Dummy {
+class	ColoredDummy {
 	public:
-		template <typename Func>
-		Dummy(Func &&dummyAction);
+		ColoredDummy(void);
+
+		SETTER(Size, ImVec2, _size)
+		SETTER(EndPos, ImVec2, _endPos)
+		SETTER(Pos, ImVec2, _pos)
+
+		void	build(void);
+
+	private:
+		ImVec2	_pos;
+		ImVec2	_endPos;
+		ImVec2	_size;
 };
 
 }

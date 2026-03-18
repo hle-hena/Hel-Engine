@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 10:22:23                                        */
+/*  Last Modified: 2026/03/18 16:07:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -88,6 +88,7 @@ void	EntityHierarchy::render(Window *window, const ImVec2 &) {
 
 	auto	view = _registry->view<comp::Hierarchy>();
 	DropTarget("MOVING_ENTITY")
+		.setResetPosition(true)
 		.addDummy()
 		.build([&](auto payload){
 			moveEntity(window, view, *static_cast<Entity::id *>(payload->Data), Entity::NOT_REGISTERED);

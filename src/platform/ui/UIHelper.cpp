@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/17 19:47:23                                        */
+/*  Last Modified: 2026/03/18 16:01:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "platform/ui/UIHelper.hpp"
+#include "api/ImGui/imgui_internal.h"
 #include "api/ImGui/imgui_stdlib.h"
 
 #include <algorithm>
@@ -291,16 +292,45 @@ bool	TableRow::buildInputText(void) {
 
 DropTarget::DropTarget(const char *type)
 	:	_type{type} {
-	_baseCursorPos = ImGui::GetCursorPos();
-	_shouldGoBack = true;
+	_startPos = ImGui::GetCursorPos();
+	_endPos = _startPos;
 	_size = ImGui::GetContentRegionAvail();
+	_setToEndPos = false;
+}
+
+DropTarget	&DropTarget::setEndPos(const ImVec2 &val) {
+	_endPos = val;
+	_setToEndPos = true;
+	return (*this);
 }
 
 DropTarget	&DropTarget::addDummy(void) {
+	ImGui::SetCursorScreenPos(_startPos);
 	ImGui::Dummy(_size);
-	if (_shouldGoBack)
-		ImGui::SetCursorPos(_baseCursorPos);
+	if (_setToEndPos) {
+		ImGui::SetCursorScreenPos(_endPos);
+		ImGui::GetCurrentWindow()->DC.IsSetPos = false;
+	}
 	return (*this);
 }
+
+
+
+ColoredDummy::ColoredDummy(void) {
+	_size = ImGui::GetContentRegionAvail();
+	_pos = ImGui::GetCursorScreenPos();
+}
+
+void	ColoredDummy::build(void) {
+	auto	draw = ImGui::GetForegroundDrawList();
+	ImVec2	rectMax = {_pos.x + _size.x, _pos.y + _size.y};
+
+	ImGui::SetCursorScreenPos(_pos);
+	ImGui::Dummy(_size);
+	draw->AddRectFilled(_pos, rectMax, IM_COL32(255, 0, 0, 100));
+	ImGui::SetCursorScreenPos(_endPos);
+	ImGui::GetCurrentWindow()->DC.IsSetPos = false;
+}
+
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 14:10:49                                        */
+/*  Last Modified: 2026/03/18 16:08:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,6 +16,7 @@
 
 #include "platform/ui/Dock.hpp"
 #include "api/ImGui/imgui.h"
+#include "api/ImGui/imgui_internal.h"
 #include "utils/mathUtils.hpp"
 
 namespace	hel::sys {
@@ -168,18 +169,22 @@ void	Dock::renderDragDrop(const ImVec2 &size) {
 		return ;
 	if (renderTriangleZones(ctx, draw, panel))
 		return ;
-	renderTabBarZone(ctx, draw, panel);
+	// renderTabBarZone(ctx, draw, panel);
 }
 
 void	Dock::renderPanels(Window *window, const ImVec2 &size) {
-	DropTarget("TAB_MOVE")
-		.build([this](const ImGuiPayload *payload){
-			IPanel* panel = *static_cast<IPanel**>(payload->Data);
-			panel->changeOwner(this);
-		});
-
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, {8.f, 0.f});
 	if (ImGui::BeginTabBar("##tabs", ImGuiTabBarFlags_NoTabListScrollingButtons)) {
 		ImVec2	effectiveSize = ImGui::GetContentRegionAvail();
+		DropTarget("TAB_MOVE")
+			.setSize({5.f, ImGui::GetFrameHeight()})
+			.setEndPos(ImGui::GetCursorScreenPos())
+			.addDummy()
+			.build([this](const ImGuiPayload *payload){
+				IPanel* panel = *static_cast<IPanel**>(payload->Data);
+				panel->changeOwner(this);
+			});
+
 		for (auto panel: _panels) {
 			bool	open = ImGui::BeginTabItem(panel->getLabel());
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
@@ -187,6 +192,17 @@ void	Dock::renderPanels(Window *window, const ImVec2 &size) {
 				ImGui::Text(panel->getLabel());
 				ImGui::EndDragDropSource();
 			}
+			float	width = 10.f;
+			DropTarget("TAB_MOVE")
+				.setPos({(ImGui::GetStyle().ItemInnerSpacing.x - width) / 2 +
+						ImGui::GetItemRectMax().x, ImGui::GetItemRectMin().y})
+				.setSize({width, ImGui::GetFrameHeight()})
+				.setEndPos(ImGui::GetCursorScreenPos())
+				.addDummy()
+				.build([this](const ImGuiPayload *payload){
+					IPanel* panel = *static_cast<IPanel**>(payload->Data);
+					panel->changeOwner(this);
+				});
 			if (open) {
 				panel->render(window, effectiveSize);
 				ImGui::EndTabItem();
@@ -197,6 +213,7 @@ void	Dock::renderPanels(Window *window, const ImVec2 &size) {
 		}
 		ImGui::EndTabBar();
 	}
+	ImGui::PopStyleVar();
 	if (_panels.empty() && !ImGui::GetDragDropPayload())
 		_askForMerge = true;
 }

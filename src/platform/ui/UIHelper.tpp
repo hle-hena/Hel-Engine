@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/05 15:22:31 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/17 16:25:17                                        */
+/*  Last Modified: 2026/03/18 16:04:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -59,14 +59,6 @@ void	DropTarget::build(Func &&dropAction) {
 		}
 		ImGui::EndDragDropTarget();
 	}
-}
-
-template <typename Func>
-Dummy::Dummy(Func &&dummyAction) {
-	ImVec2	cursorPos = ImGui::GetCursorPos();
-	ImGui::Dummy(ImGui::GetContentRegionAvail());
-	dummyAction();
-	ImGui::SetCursorPos(cursorPos);
 }
 
 }
