@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:19:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 10:22:02                                        */
+/*  Last Modified: 2026/03/18 14:04:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -43,7 +43,8 @@ class	IPanel {
 		virtual void	setOwner(Dock *newOwner) final;
 		virtual expected<void, std::string>	onInit(void) { return {}; }
 
-		virtual const char	*getLabel() const = 0;
+		virtual const char	*getLabel(void) const = 0;
+		virtual Dock		*getOwner(void) const final { return (_owner); }
 		virtual void	render(Window *window, const ImVec2 &size) = 0;
 
 	protected:

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:30:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 13:05:29                                        */
+/*  Last Modified: 2026/03/18 13:56:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -55,14 +55,14 @@ class	Dock {
 			float	tabBarH;
 			bool	released;
 
-			RenderDragDropContext(void);
+			RenderDragDropContext(const ImVec2 &size);
 		};
 
 		bool	renderTriangleZones(const RenderDragDropContext &ctx,
 								ImDrawList *draw, IPanel *panel);
 		void	renderTabBarZone(const RenderDragDropContext &ctx,
 								ImDrawList *draw, IPanel *panel);
-		void	renderDragDrop(void);
+		void	renderDragDrop(const ImVec2 &size);
 		void	renderPanels(Window *window, const ImVec2 &size);
 		std::vector<IPanel *>	_panels{};
 

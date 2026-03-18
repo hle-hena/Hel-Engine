@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 13:44:11                                        */
+/*  Last Modified: 2026/03/18 14:10:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -77,7 +77,7 @@ void	Dock::render(Window *window, const ImVec2 &size) {
 		renderSplits(window, size);
 	} else {
 		ImGui::BeginChild(_dockName.c_str(), size, ImGuiChildFlags_Borders);
-		renderDragDrop();
+		renderDragDrop(size);
 		renderPanels(window, size);
 		ImGui::EndChild();
 	}
@@ -110,18 +110,17 @@ void	Dock::renderSplits(Window *window, const ImVec2 &size) {
 	_childTwo->render(window, twoSize);
 }
 
-Dock::RenderDragDropContext::RenderDragDropContext(void) {
-	ImVec2	avail = ImGui::GetContentRegionAvail();
+Dock::RenderDragDropContext::RenderDragDropContext(const ImVec2 &size) {
 	origin = ImGui::GetCursorScreenPos();
 	mouse = ImGui::GetMousePos();
 	tabBarH = ImGui::GetFrameHeight();
 
 	topLeft = {origin.x, origin.y + tabBarH};
-	topRight = {origin.x + avail.x, origin.y + tabBarH};
-	bottomLeft = {origin.x, origin.y + avail.y};
-	bottomRight = {origin.x + avail.x, origin.y + avail.y};
-	center = {origin.x + avail.x * 0.5f,
-		origin.y + tabBarH + (avail.y - tabBarH) * 0.5f};
+	topRight = {origin.x + size.x, origin.y + tabBarH};
+	bottomLeft = {origin.x, origin.y + size.y};
+	bottomRight = {origin.x + size.x, origin.y + size.y};
+	center = {origin.x + size.x * 0.5f,
+		origin.y + tabBarH + (size.y - tabBarH) * 0.5f};
 
 	released = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
 }
@@ -156,15 +155,17 @@ void	Dock::renderTabBarZone(const RenderDragDropContext &ctx,
 	}
 }
 
-void	Dock::renderDragDrop(void) {
+void	Dock::renderDragDrop(const ImVec2 &size) {
 	auto	*payload = ImGui::GetDragDropPayload();
 	if (!payload || !payload->IsDataType("TAB_MOVE"))
 		return ;
 
-	RenderDragDropContext	ctx;
+	RenderDragDropContext	ctx(size);
 	IPanel	*panel = *static_cast<IPanel**>(payload->Data);
 	auto	draw = ImGui::GetForegroundDrawList();
 
+	if (panel->getOwner() == this && _panels.size() == 1)
+		return ;
 	if (renderTriangleZones(ctx, draw, panel))
 		return ;
 	renderTabBarZone(ctx, draw, panel);
