@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:30:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 10:01:47                                        */
+/*  Last Modified: 2026/03/18 10:37:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,13 +23,23 @@
 
 namespace	hel::sys {
 
+class	UI;
+
 class	Dock {
 	public:
 		enum class	Type { Split, TabGroup };
 
 		Dock(const std::string &dockName)	: _dockName{dockName} {}
 
-		void	render(Window *window, ImVec2 size);
+		void	render(Window *window, const ImVec2 &size);
+
+		PASSKEY(UIKey, UI)
+		void	forceSplit(Splitter::Dir dir, IPanel *splitPanel, UIKey)
+					{ split(dir, splitPanel); }
+		Dock	*forceGetChildOne(UIKey)
+					{ return (_childOne.get()); }
+		Dock	*forceGetChildTwo(UIKey)
+					{ return (_childTwo.get()); }
 
 	private:
 		Type		_type{Type::TabGroup};
@@ -53,10 +63,10 @@ class	Dock {
 		void	renderTabBarZone(const RenderDragDropContext &ctx,
 								ImDrawList *draw, IPanel *panel);
 		void	renderDragDrop(void);
-		void	renderPanels(Window *window, ImVec2 size);
+		void	renderPanels(Window *window, const ImVec2 &size);
 		std::vector<IPanel *>	_panels{};
 
-		void	renderSplits(Window *window, ImVec2 size);
+		void	renderSplits(Window *window, const ImVec2 &size);
 		std::unique_ptr<Dock>	_childOne{nullptr};
 		std::unique_ptr<Dock>	_childTwo{nullptr};
 		float					_splitRatio{0.5f};

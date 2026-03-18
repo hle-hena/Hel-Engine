@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/17 16:37:16                                        */
+/*  Last Modified: 2026/03/18 10:44:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,7 +30,6 @@
 namespace	hel {
 
 class	Window;
-class	ImagePool;
 
 }
 
@@ -46,14 +45,9 @@ class	UI : public ISystem {
 		void	registerUI(const FrameContext &ctx) override;
 
 	private:
-		void	addSplitters(float windowWidth, float windowHeight);
-		void	addDockSpaces(Window *window, float windowWidth, float windowHeight);
-		void 	initDockLayout(void);
+		void	addDock(Window *window, const ImVec2 &size);
 
-		float	_leftTabWidth{300.f};
-		float	_rightTabWidth{300.f};
-		std::unique_ptr<Dock>	_leftDock;
-		std::unique_ptr<Dock>	_rightDock;
+		std::unique_ptr<Dock>	_dock;
 
 		EntityHierarchy				_entityHierarchy;
 		Inspector					_inspector;

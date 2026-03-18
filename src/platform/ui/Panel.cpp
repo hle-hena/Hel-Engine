@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 12:54:54 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/17 18:50:34                                        */
+/*  Last Modified: 2026/03/18 10:43:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,9 +25,11 @@ void	IPanel::setup(Registry *registry, ImagePool *imagePool) {
 };
 
 void	IPanel::changeOwner(Dock *newOwner) {
-	auto	it = std::find(_owner->_panels.begin(),
-						_owner->_panels.end(), this);
-	if (it != _owner->_panels.end())	{ _owner->_panels.erase(it); }
+	if (_owner) {
+		auto	it = std::find(_owner->_panels.begin(),
+							_owner->_panels.end(), this);
+		if (it != _owner->_panels.end())	{ _owner->_panels.erase(it); }
+	}
 	_owner = newOwner;
 	_owner->_panels.push_back(this);
 }

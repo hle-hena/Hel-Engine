@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/17 15:59:40                                        */
+/*  Last Modified: 2026/03/18 10:22:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -81,7 +81,7 @@ void	EntityHierarchy::showEntity(Window *window, View<comp::Hierarchy> view,
 	}
 }
 
-void	EntityHierarchy::render(Window *window) {
+void	EntityHierarchy::render(Window *window, const ImVec2 &) {
 	if (ImGui::Button("Add a new Entity"))
 		_registry->createEntity();
 	ImGui::Separator();

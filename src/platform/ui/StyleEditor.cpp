@@ -5,7 +5,7 @@
 /*	Project: Hel Engine																											 */
 /*	Created: 2026/03/17 16:33:57 by hle-hena																	*/
 /*																																						*/
-/*  Last Modified: 2026/03/17 18:23:56                                        */
+/*  Last Modified: 2026/03/18 10:27:12                                        */
 /*						 By: hle-hena																									 */
 /*																																						*/
 /*		-----																																	 */
@@ -112,7 +112,7 @@ void	StyleEditor::renderColorRow(const char *name, Color &col) {
 	ImGui::PopID();
 }
 
-void	StyleEditor::render(Window *window) {
+void	StyleEditor::render(Window *window, const ImVec2 &) {
 	bool	paletteChanged = false;
 	paletteChanged |= ImGui::ColorEdit3("Primary",	(float*)&_primaryColor);
 	paletteChanged |= ImGui::ColorEdit3("Secondary",(float*)&_secondaryColor);

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/16 11:41:37                                        */
+/*  Last Modified: 2026/03/18 10:23:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,7 +28,7 @@ expected<void, std::string>	Inspector::onInit(void) {
 	return {};
 }
 
-void	Inspector::render(Window *window) {
+void	Inspector::render(Window *window, const ImVec2 &) {
 	auto	handle = window->getEntityFocus();
 	if (handle == Entity::NOT_REGISTERED)
 		return ;

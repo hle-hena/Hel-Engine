@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/17 16:32:44 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/17 18:20:03                                        */
+/*  Last Modified: 2026/03/18 10:26:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -42,7 +42,7 @@ class	StyleEditor : public Panel<StyleEditor> {
 
 		expected<void, std::string>	onInit(void) override;
 
-		void	render(Window *window) override;
+		void	render(Window *window, const ImVec2 &) override;
 
 	private:
 		ImVec4	resolveColor(const Color &col) const;

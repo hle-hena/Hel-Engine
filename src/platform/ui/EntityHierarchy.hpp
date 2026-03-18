@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/16 11:37:23                                        */
+/*  Last Modified: 2026/03/18 10:22:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -31,7 +31,7 @@ class	EntityHierarchy : public Panel<EntityHierarchy> {
 
 		expected<void, std::string>	onInit(void) override;
 
-		void	render(Window *window) override;
+		void	render(Window *window, const ImVec2 &) override;
 
 	private:
 		void	moveEntity(Window *window, View<comp::Hierarchy> &view,

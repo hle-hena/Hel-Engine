@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/12 14:17:32                                        */
+/*  Last Modified: 2026/03/18 11:43:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,21 +24,14 @@
 
 namespace	hel::sys {
 
-void	SceneViewport::render(ImagePool *imagePool, Window *window, ImVec2 pos, ImVec2 size) {
-	ImGuiWindowFlags	windowFlags = ImGuiWindowFlags_NoCollapse |
-								ImGuiWindowFlags_NoTitleBar |
-								ImGuiWindowFlags_NoMove |
-								ImGuiWindowFlags_NoResize |
-								ImGuiWindowFlags_NoScrollbar |
-								ImGuiWindowFlags_NoMouseInputs |
-								ImGuiWindowFlags_NoBringToFrontOnFocus;
-	ImGui::SetNextWindowSize(size);
-	ImGui::SetNextWindowPos(pos);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.f, 0.f});
-	ImGui::Begin("Viewport", nullptr, windowFlags);
-	auto	image = imagePool->acquire("mainViewport", Image::Config()
-			.setWidth(static_cast<uint32_t>(size.x))
-			.setHeight(static_cast<uint32_t>(size.y))
+expected<void, std::string>	SceneViewport::onInit(void) {
+	return {};
+}
+
+void	SceneViewport::render(Window *window, const ImVec2 &size) {
+	auto	image = _imagePool->acquire("mainViewport", Image::Config()
+			.setWidth(static_cast<uint32_t>(std::max(size.x, 1.f)))
+			.setHeight(static_cast<uint32_t>(std::max(size.y, 1.f)))
 			.setFormats({VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM})
 			.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
 			.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
@@ -50,8 +43,9 @@ void	SceneViewport::render(ImagePool *imagePool, Window *window, ImVec2 pos, ImV
 	window->updateEntityReference(aspect);
 	ImGui::Image(image->getTexture(VK_FORMAT_B8G8R8A8_UNORM),
 			size, {0.f, 0.f}, uv1);
-	ImGui::End();
-	ImGui::PopStyleVar();
+	if (glfwGetInputMode(window->getWindow(), GLFW_CURSOR) ==
+			GLFW_CURSOR_DISABLED || ImGui::IsItemHovered())
+		ImGui::SetNextFrameWantCaptureMouse(false);
 }
 
 }

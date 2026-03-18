@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 10:16:26                                        */
+/*  Last Modified: 2026/03/18 10:25:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -65,7 +65,7 @@ void	Dock::merge(void) {
 	}
 }
 
-void	Dock::render(Window *window, ImVec2 size) {
+void	Dock::render(Window *window, const ImVec2 &size) {
 	if (_type == Type::Split && (_childOne->_askForMerge || _childTwo->_askForMerge))
 		merge();
 	if (_type == Type::Split) {
@@ -78,7 +78,7 @@ void	Dock::render(Window *window, ImVec2 size) {
 	}
 }
 
-void	Dock::renderSplits(Window *window, ImVec2 size) {
+void	Dock::renderSplits(Window *window, const ImVec2 &size) {
 	ImVec2	origin = ImGui::GetCursorScreenPos();
 	bool	isVertical = (_splitDir == Splitter::Dir::Right);
 
@@ -164,7 +164,7 @@ void	Dock::renderDragDrop(void) {
 	renderTabBarZone(ctx, draw, panel);
 }
 
-void	Dock::renderPanels(Window *window, ImVec2 size) {
+void	Dock::renderPanels(Window *window, const ImVec2 &size) {
 	DropTarget("TAB_MOVE")
 		.build([this](const ImGuiPayload *payload){
 			IPanel* panel = *static_cast<IPanel**>(payload->Data);
@@ -180,7 +180,7 @@ void	Dock::renderPanels(Window *window, ImVec2 size) {
 				ImGui::EndDragDropSource();
 			}
 			if (open) {
-				panel->render(window);
+				panel->render(window, size);
 				ImGui::EndTabItem();
 			}
 		}
