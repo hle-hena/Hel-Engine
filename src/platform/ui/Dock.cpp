@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 16:15:10                                        */
+/*  Last Modified: 2026/03/19 16:19:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,6 +33,7 @@ nlohmann::json	Dock::serialize(void) const {
 		dst["childTwo"] = _childTwo->serialize();
 	} else {
 		dst["type"] = "TabGroup";
+		dst["panels"] = nlohmann::json::array();
 		for (auto panel: _panels)
 			dst["panels"].push_back(panel->getLabel());
 	}
