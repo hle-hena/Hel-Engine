@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 11:13:50                                        */
+/*  Last Modified: 2026/03/19 11:54:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,6 +34,11 @@ void	UI::init(void) {
 	addNewPanel<StyleEditor>(leftChild.first);
 	addNewPanel<SceneViewport>(leftChild.second);
 	addNewPanel<Inspector>(dockChild.second);
+
+	addNewPanelRegistry("Entity Hierarchy", PanelFactoryMacro(EntityHierarchy));
+	addNewPanelRegistry("Style Editor", PanelFactoryMacro(StyleEditor));
+	addNewPanelRegistry("Inspector", PanelFactoryMacro(Inspector));
+	addNewPanelRegistry("Viewport", PanelFactoryMacro(SceneViewport));
 }
 
 void	UI::addDock(Window *window, const ImVec2 &size) {
@@ -65,6 +70,9 @@ void	UI::registerUI(const FrameContext &ctx) {
 	float	windowHeight = static_cast<float>(windowExtent.height);
 
 	addDock(ctx.window, {windowWidth, windowHeight});
+
+	ImGui::ShowDemoWindow();
+	ImGui::ShowStyleEditor();
 }
 
 }

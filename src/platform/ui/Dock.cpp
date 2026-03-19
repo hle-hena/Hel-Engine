@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 11:11:55                                        */
+/*  Last Modified: 2026/03/19 12:02:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -209,6 +209,19 @@ void	Dock::renderDragDrop(const RenderDragDropContext &ctx) {
 	renderTabBarZone(ctx, draw, panel);
 }
 
+void	Dock::newPanelPopup(void) {
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {4.f, 4.f});
+	if (ImGui::BeginPopup("OPEN_NEW_TAB")) {
+		ImGui::SeparatorText("Panels");
+		for (auto &[panelName, factory]: _ui->getPanelRegistry()) {
+			if (ImGui::Selectable(panelName.c_str()))
+				factory(_ui, this);
+		}
+		ImGui::EndPopup();
+	}
+	ImGui::PopStyleVar();
+}
+
 void	Dock::renderPanels(Window *window, const ImVec2 &size) {
 	float	innerSpacing = ImGui::GetStyle().ItemInnerSpacing.x;
 	if (ImGui::BeginTabBar("##tabs", ImGuiTabBarFlags_NoTabListScrollingButtons)) {
@@ -232,10 +245,9 @@ void	Dock::renderPanels(Window *window, const ImVec2 &size) {
 			}
 			ImGui::PopID();
 		}
-		if (ImGui::TabItemButton("+", ImGuiTabItemFlags_Trailing)) {
-			_ui->addNewPanel<SceneViewport>(this);
-			std::cout << "Open a new tab\n";
-		}
+		newPanelPopup();
+		if (ImGui::TabItemButton("+", ImGuiTabItemFlags_Trailing))
+			ImGui::OpenPopup("OPEN_NEW_TAB");
 		ImGui::EndTabBar();
 	}
 	if (_panels.empty() && !ImGui::GetDragDropPayload())
