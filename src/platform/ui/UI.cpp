@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 11:54:56                                        */
+/*  Last Modified: 2026/03/19 12:05:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -70,9 +70,6 @@ void	UI::registerUI(const FrameContext &ctx) {
 	float	windowHeight = static_cast<float>(windowExtent.height);
 
 	addDock(ctx.window, {windowWidth, windowHeight});
-
-	ImGui::ShowDemoWindow();
-	ImGui::ShowStyleEditor();
 }
 
 }
