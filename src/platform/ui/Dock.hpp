@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:30:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 11:18:32                                        */
+/*  Last Modified: 2026/03/19 12:45:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,9 @@
 
 # include "platform/ui/Panel.hpp"
 # include "platform/ui/UIHelper.hpp"
+
+# include <api/json/json.hpp>
+
 # include <vector>
 # include <memory>
 
@@ -40,6 +43,10 @@ class	Dock {
 					{ return (_childOne.get()); }
 		Dock	*forceGetChildTwo(UIKey)
 					{ return (_childTwo.get()); }
+
+		nlohmann::json					serialize(void) const;
+		static std::unique_ptr<Dock>	deserialize(UI *ui,
+													const nlohmann::json &src);
 
 	private:
 		UI			*_ui;

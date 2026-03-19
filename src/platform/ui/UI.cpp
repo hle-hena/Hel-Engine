@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 12:05:23                                        */
+/*  Last Modified: 2026/03/19 13:12:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,22 +23,44 @@
 #include "api/ImGui/imgui_stdlib.h"
 #include "core/Engine.hpp"
 
+#include <fstream>
+
 namespace	hel::sys {
 
+UI::~UI(void) {
+	saveToFile("currentLayout.json");
+}
+
 void	UI::init(void) {
-	_dock = std::make_unique<Dock>("Dock", this);
-	auto	dockChild = _dock->forceSplit(Splitter::Dir::Left, {});
-	auto	leftChild = dockChild.first->forceSplit(Splitter::Dir::Left, {});
+	addNewPanelRegistry(EntityHierarchy::label, PanelFactoryMacro(EntityHierarchy));
+	addNewPanelRegistry(StyleEditor::label, PanelFactoryMacro(StyleEditor));
+	addNewPanelRegistry(Inspector::label, PanelFactoryMacro(Inspector));
+	addNewPanelRegistry(SceneViewport::label, PanelFactoryMacro(SceneViewport));
 
-	addNewPanel<EntityHierarchy>(leftChild.first);
-	addNewPanel<StyleEditor>(leftChild.first);
-	addNewPanel<SceneViewport>(leftChild.second);
-	addNewPanel<Inspector>(dockChild.second);
+	if (!loadFromFile("currentLayout.json")) {
+		_dock = std::make_unique<Dock>("Dock", this);
+		auto	dockChild = _dock->forceSplit(Splitter::Dir::Left, {});
+		auto	leftChild = dockChild.first->forceSplit(Splitter::Dir::Left, {});
 
-	addNewPanelRegistry("Entity Hierarchy", PanelFactoryMacro(EntityHierarchy));
-	addNewPanelRegistry("Style Editor", PanelFactoryMacro(StyleEditor));
-	addNewPanelRegistry("Inspector", PanelFactoryMacro(Inspector));
-	addNewPanelRegistry("Viewport", PanelFactoryMacro(SceneViewport));
+		addNewPanel<EntityHierarchy>(leftChild.first);
+		addNewPanel<StyleEditor>(leftChild.first);
+		addNewPanel<SceneViewport>(leftChild.second);
+		addNewPanel<Inspector>(dockChild.second);
+	}
+}
+
+void	UI::saveToFile(const std::string &path) {
+	std::ofstream	file(path);
+	file << _dock->serialize().dump(2);
+}
+
+bool	UI::loadFromFile(const std::string &path) {
+    std::ifstream	file(path);
+    if (!file.is_open())	{ return (false); }
+    nlohmann::json	src;
+    file >> src;
+	_dock = Dock::deserialize(this, src);
+	return (true);
 }
 
 void	UI::addDock(Window *window, const ImVec2 &size) {

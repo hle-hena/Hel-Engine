@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 12:35:23                                        */
+/*  Last Modified: 2026/03/19 13:14:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,6 +37,8 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 			.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
 			.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
 			.setProperty(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
+	if (!image)
+		return ;
 	auto	extent = image->getPhysicalExtent();
 	ImVec2	uv1 = {size.x / extent.width, size.y / extent.height};
 	float	aspect = size.x / size.y;

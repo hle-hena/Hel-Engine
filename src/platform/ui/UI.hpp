@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 11:43:20                                        */
+/*  Last Modified: 2026/03/19 12:54:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -44,9 +44,11 @@ class	UI : public ISystem {
 		using PanelFactory = std::function<void (UI *, Dock *)>;
 
 		UI(void) = default;
-		~UI(void) = default;
+		~UI(void);
 
 		void	init(void) override;
+		void	saveToFile(const std::string &path);
+		bool	loadFromFile(const std::string &path);
 
 		template <typename T>
 		void	addNewPanel(Dock *dock);

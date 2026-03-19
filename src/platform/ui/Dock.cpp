@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 12:02:26                                        */
+/*  Last Modified: 2026/03/19 13:05:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,44 @@
 #include "utils/mathUtils.hpp"
 
 namespace	hel::sys {
+
+nlohmann::json	Dock::serialize(void) const {
+	nlohmann::json	dst;
+	dst["name"] = _dockName;
+	if (_type == Type::Split) {
+		dst["type"] = "Split";
+		dst["splitDir"] = static_cast<int>(_splitDir);
+		dst["splitRatio"] = *_splitRatio;
+		dst["childOne"] = _childOne->serialize();
+		dst["childTwo"] = _childTwo->serialize();
+	} else {
+		dst["type"] = "TabGroup";
+		for (auto panel: _panels)
+			dst["panels"].push_back(panel->getLabel());
+	}
+	return (dst);
+}
+
+std::unique_ptr<Dock>	Dock::deserialize(UI *ui, const nlohmann::json &src) {
+	auto	dock = std::make_unique<Dock>(src["name"], ui);
+	if (src["type"] == "Split") {
+		dock->_type = Type::Split;
+		dock->_splitDir = static_cast<Splitter::Dir>(src["splitDir"].get<int>());
+		dock->_splitRatio = src["splitRatio"].get<float>();
+		dock->_childOne = Dock::deserialize(ui, src["childOne"]);
+		dock->_childTwo = Dock::deserialize(ui, src["childTwo"]);
+	} else {
+		dock->_type = Type::TabGroup;
+		for (auto &panelLabel: src["panels"]) {
+			auto	&panelRegistry = ui->getPanelRegistry();
+			auto	it = std::find_if(panelRegistry.begin(), panelRegistry.end(),
+					[&](const auto &r){ return (r.first == panelLabel); });
+			if (it != panelRegistry.end())
+				it->second(ui, dock.get());
+		}
+	}
+	return (dock);
+}
 
 std::pair<Dock *, Dock *>	Dock::forceSplit(Splitter::Dir dir, UIKey) {
 	_type = Type::Split;
