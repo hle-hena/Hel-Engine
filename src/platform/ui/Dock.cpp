@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 13:05:43                                        */
+/*  Last Modified: 2026/03/19 16:15:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -219,7 +219,7 @@ void	Dock::renderTabBarZone(const RenderDragDropContext &ctx,
 	if (ctx.mouse.x >= rectMin.x && ctx.mouse.x <= rectMax.x &&
 		ctx.mouse.y >= rectMin.y && ctx.mouse.y <= rectMax.y) {
 		for (size_t i = 0; i < _gaps.size(); i++) {
-			if (std::abs(ctx.mouse.x - _gaps[i]) < closestDist) {
+			if (_gaps[i] < rectMax.x && std::abs(ctx.mouse.x - _gaps[i]) < closestDist) {
 				closestDist = std::abs(ctx.mouse.x - _gaps[i]);
 				closestIdx = i;
 			}
@@ -261,6 +261,8 @@ void	Dock::newPanelPopup(void) {
 }
 
 void	Dock::renderPanels(Window *window, const ImVec2 &size) {
+	auto	prev = ImGui::GetStyle().ItemInnerSpacing;
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, {10.f, 0.f});
 	float	innerSpacing = ImGui::GetStyle().ItemInnerSpacing.x;
 	if (ImGui::BeginTabBar("##tabs", ImGuiTabBarFlags_NoTabListScrollingButtons)) {
 		ImVec2	effectiveSize = ImGui::GetContentRegionAvail();
@@ -271,16 +273,27 @@ void	Dock::renderPanels(Window *window, const ImVec2 &size) {
 		for (auto panel: _panels) {
 			ImGui::PushID(i++);
 			bool	open = ImGui::BeginTabItem(panel->getLabel());
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, prev);
+			_gaps.push_back(ImGui::GetItemRectMax().x + innerSpacing / 2);
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 				ImGui::SetDragDropPayload("TAB_MOVE", &panel, sizeof(IPanel *));
 				ImGui::Text(panel->getLabel());
 				ImGui::EndDragDropSource();
 			}
-			_gaps.push_back(ImGui::GetItemRectMax().x + innerSpacing / 2);
+			float	btnWidth = 12.f;
+			if (Button("x")
+					.setPos({ImGui::GetItemRectMax().x - btnWidth / 2,
+							ImGui::GetItemRectMin().y})
+					.setSize({btnWidth, btnWidth})
+					.setEndPos(ImGui::GetCursorScreenPos())
+					.showOnHover(ImGui::IsItemHovered())
+					.build())
+				panel->shouldClose(true);
 			if (open) {
 				panel->render(window, effectiveSize);
 				ImGui::EndTabItem();
 			}
+			ImGui::PopStyleVar();
 			ImGui::PopID();
 		}
 		newPanelPopup();
@@ -288,6 +301,9 @@ void	Dock::renderPanels(Window *window, const ImVec2 &size) {
 			ImGui::OpenPopup("OPEN_NEW_TAB");
 		ImGui::EndTabBar();
 	}
+	_panels.erase(std::remove_if(_panels.begin(), _panels.end(),
+		[](IPanel *panel){ return (panel->shouldClose()); }), _panels.end());
+	ImGui::PopStyleVar();
 	if (_panels.empty() && !ImGui::GetDragDropPayload())
 		_askForMerge = true;
 }

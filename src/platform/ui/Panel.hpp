@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:19:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 13:11:55                                        */
+/*  Last Modified: 2026/03/19 16:13:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -40,6 +40,10 @@ class	IPanel {
 
 		virtual expected<void, std::string>	setup(Registry *registry,
 												ImagePool *imagePool) final;
+		virtual void	shouldClose(bool closing) final
+							{ _shouldClose = closing; }
+		virtual bool	shouldClose(void) const final
+							{ return (_shouldClose); }
 
 		virtual void	changeOwner(Dock *newOwner, size_t insertIdx = -1) final;
 		virtual void	setOwner(Dock *newOwner) final;
@@ -47,13 +51,14 @@ class	IPanel {
 
 		virtual const char	*getLabel(void) const = 0;
 		virtual Dock		*getOwner(void) const final { return (_owner); }
-		virtual void	render(Window *window, const ImVec2 &size) = 0;
+		virtual void		render(Window *window, const ImVec2 &size) = 0;
 
 	protected:
 		Registry	*_registry;
 		ImagePool	*_imagePool;
 
 		Dock		*_owner;
+		bool		_shouldClose{false};
 };
 
 template <typename Derived>

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 12:54:09                                        */
+/*  Last Modified: 2026/03/19 16:06:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -52,6 +52,8 @@ class	UI : public ISystem {
 
 		template <typename T>
 		void	addNewPanel(Dock *dock);
+		void	removePanel(IPanel *panel);
+
 		void	addNewPanelRegistry(const std::string &panelName,
 									PanelFactory factory)
 					{ _panelRegistry.push_back({panelName, factory}); }

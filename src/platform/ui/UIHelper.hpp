@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:48:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 16:06:58                                        */
+/*  Last Modified: 2026/03/19 16:04:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -182,6 +182,26 @@ class	DropTarget {
 		ImVec2		_startPos;
 		ImVec2		_endPos;
 		bool		_setToEndPos;
+};
+
+class	Button {
+	public:
+		Button(const char *label);
+
+		SETTER(Size, ImVec2, _size)
+		SETTER(EndPos, ImVec2, _endPos)
+		SETTER(Pos, ImVec2, _pos)
+
+		Button	&showOnHover(bool parentHover);
+
+		bool	build(void);
+
+	private:
+		const char				*_label;
+		ImVec2					_pos;
+		std::optional<ImVec2>	_endPos;
+		ImVec2					_size;
+		bool					_hide;
 };
 
 class	ColoredDummy {

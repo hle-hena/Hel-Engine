@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 13:12:36                                        */
+/*  Last Modified: 2026/03/19 16:16:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -47,6 +47,13 @@ void	UI::init(void) {
 		addNewPanel<SceneViewport>(leftChild.second);
 		addNewPanel<Inspector>(dockChild.second);
 	}
+}
+
+void	UI::removePanel(IPanel *panel) {
+	auto	it = std::find_if(_panels.begin(), _panels.end(),
+				[panel](const auto &other){ return (panel == other.get()); });
+	if (it != _panels.end())
+		_panels.erase(it);
 }
 
 void	UI::saveToFile(const std::string &path) {

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 10:44:39                                        */
+/*  Last Modified: 2026/03/19 16:04:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -312,6 +312,34 @@ DropTarget	&DropTarget::addDummy(void) {
 		ImGui::GetCurrentWindow()->DC.IsSetPos = false;
 	}
 	return (*this);
+}
+
+
+
+Button::Button(const char *label) {
+	_label = label;
+	_size = ImGui::GetContentRegionAvail();
+	_pos = ImGui::GetCursorScreenPos();
+}
+
+Button	&Button::showOnHover(bool parentHover) {
+	_hide = parentHover;
+	_hide |= ImGui::IsMouseHoveringRect(_pos, {_pos.x + _size.x, _pos.y + _size.y});
+	return (*this);
+}
+
+bool	Button::build() {
+	if (!_hide)
+		return (false);
+	ImGui::SetCursorScreenPos(_pos);
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.f);
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.f, 0.f});
+	bool	ret = ImGui::Button(_label, _size);
+	ImGui::PopStyleVar(2);
+	if (_endPos)
+		ImGui::SetCursorScreenPos(*_endPos);
+	ImGui::GetCurrentWindow()->DC.IsSetPos = false;
+	return (ret);
 }
 
 
