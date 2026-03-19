@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 17:24:36                                        */
+/*  Last Modified: 2026/03/19 11:11:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,11 +15,34 @@
 /* *************************************************************************  */
 
 #include "platform/ui/Dock.hpp"
+#include "platform/ui/UI.hpp"
 #include "api/ImGui/imgui.h"
 #include "api/ImGui/imgui_internal.h"
 #include "utils/mathUtils.hpp"
 
 namespace	hel::sys {
+
+std::pair<Dock *, Dock *>	Dock::forceSplit(Splitter::Dir dir, UIKey) {
+	_type = Type::Split;
+	_splitDir = (dir == Splitter::Dir::Left) ? Splitter::Dir::Right :
+				(dir == Splitter::Dir::Up) ? Splitter::Dir::Down : dir;
+	_splitRatio.reset();
+
+	bool	isVertical = (_splitDir == Splitter::Dir::Right);
+	_childOne = std::make_unique<Dock>(_dockName +
+									(isVertical ? "_left" : "_up"), _ui);
+	_childTwo = std::make_unique<Dock>(_dockName +
+									(isVertical ? "_right" : "_down"), _ui);
+
+	Dock	*keep = (dir == Splitter::Dir::Left || dir == Splitter::Dir::Up)
+						? _childTwo.get() : _childTwo.get();
+
+	auto	panels = std::move(_panels);
+	for (auto panel: panels)
+		panel->changeOwner(keep);
+	_panels.clear();
+	return {_childOne.get(), _childTwo.get()};
+}
 
 void	Dock::split(Splitter::Dir dir, IPanel *splitPanel) {
 	_type = Type::Split;
@@ -29,9 +52,9 @@ void	Dock::split(Splitter::Dir dir, IPanel *splitPanel) {
 
 	bool	isVertical = (_splitDir == Splitter::Dir::Right);
 	_childOne = std::make_unique<Dock>(_dockName +
-									(isVertical ? "_left" : "_up"));
+									(isVertical ? "_left" : "_up"), _ui);
 	_childTwo = std::make_unique<Dock>(_dockName +
-									(isVertical ? "_right" : "_down"));
+									(isVertical ? "_right" : "_down"), _ui);
 
 	Dock	*target = (dir == Splitter::Dir::Left || dir == Splitter::Dir::Up)
 						? _childOne.get() : _childTwo.get();
@@ -210,6 +233,7 @@ void	Dock::renderPanels(Window *window, const ImVec2 &size) {
 			ImGui::PopID();
 		}
 		if (ImGui::TabItemButton("+", ImGuiTabItemFlags_Trailing)) {
+			_ui->addNewPanel<SceneViewport>(this);
 			std::cout << "Open a new tab\n";
 		}
 		ImGui::EndTabBar();

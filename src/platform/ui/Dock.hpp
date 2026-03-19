@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:30:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 16:33:54                                        */
+/*  Last Modified: 2026/03/19 11:08:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,19 +29,20 @@ class	Dock {
 	public:
 		enum class	Type { Split, TabGroup };
 
-		Dock(const std::string &dockName)	: _dockName{dockName} {}
+		Dock(const std::string &dockName, UI *ui)
+				:	_dockName{dockName}, _ui{ui} {}
 
 		void	render(Window *window, const ImVec2 &size);
 
 		PASSKEY(UIKey, UI)
-		void	forceSplit(Splitter::Dir dir, IPanel *splitPanel, UIKey)
-					{ split(dir, splitPanel); }
+		std::pair<Dock *, Dock *>	forceSplit(Splitter::Dir dir, UIKey);
 		Dock	*forceGetChildOne(UIKey)
 					{ return (_childOne.get()); }
 		Dock	*forceGetChildTwo(UIKey)
 					{ return (_childTwo.get()); }
 
 	private:
+		UI			*_ui;
 		Type		_type{Type::TabGroup};
 		std::string	_dockName;
 

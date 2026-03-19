@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 17:19:15                                        */
+/*  Last Modified: 2026/03/19 11:06:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -42,6 +42,9 @@ class	UI : public ISystem {
 
 		void	init(void) override;
 
+		template <typename T>
+		void	addNewPanel(Dock *dock);
+
 		void	registerUI(const FrameContext &ctx) override;
 
 	private:
@@ -49,6 +52,7 @@ class	UI : public ISystem {
 
 		std::unique_ptr<Dock>	_dock;
 
+		std::vector<std::unique_ptr<IPanel>>	_panels;
 		EntityHierarchy				_entityHierarchy;
 		EntityHierarchy				_entityHierarchy1;
 		EntityHierarchy				_entityHierarchy2;
@@ -61,3 +65,5 @@ class	UI : public ISystem {
 };
 
 }
+
+# include "platform/ui/UI.tpp"

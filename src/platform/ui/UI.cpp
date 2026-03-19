@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 17:20:00                                        */
+/*  Last Modified: 2026/03/19 11:13:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,35 +26,14 @@
 namespace	hel::sys {
 
 void	UI::init(void) {
-	_entityHierarchy.setup(_registry, _imagePool);
-	_entityHierarchy.onInit();
-	_inspector.setup(_registry, _imagePool);
-	_inspector.onInit();
-	_styleEditor.setup(_registry, _imagePool);
-	_styleEditor.onInit();
-	_sceneViewport.setup(_registry, _imagePool);
-	_sceneViewport.onInit();
+	_dock = std::make_unique<Dock>("Dock", this);
+	auto	dockChild = _dock->forceSplit(Splitter::Dir::Left, {});
+	auto	leftChild = dockChild.first->forceSplit(Splitter::Dir::Left, {});
 
-	_entityHierarchy1 = _entityHierarchy;
-	_entityHierarchy2 = _entityHierarchy;
-	_entityHierarchy3 = _entityHierarchy;
-	_entityHierarchy4 = _entityHierarchy;
-	_entityHierarchy5 = _entityHierarchy;
-
-	_dock = std::make_unique<Dock>("Dock");
-
-	_inspector.setOwner(_dock.get());
-	_dock->forceSplit(Splitter::Dir::Left, &_sceneViewport, {});
-	auto	dockLeft = _dock->forceGetChildOne({});
-	dockLeft->forceSplit(Splitter::Dir::Left, &_entityHierarchy, {});
-	auto	dockLeftLeft = dockLeft->forceGetChildOne({});
-	_styleEditor.setOwner(dockLeftLeft);
-
-	_entityHierarchy1.setOwner(dockLeftLeft);
-	_entityHierarchy2.setOwner(dockLeftLeft);
-	_entityHierarchy3.setOwner(dockLeftLeft);
-	_entityHierarchy4.setOwner(dockLeftLeft);
-	_entityHierarchy5.setOwner(dockLeftLeft);
+	addNewPanel<EntityHierarchy>(leftChild.first);
+	addNewPanel<StyleEditor>(leftChild.first);
+	addNewPanel<SceneViewport>(leftChild.second);
+	addNewPanel<Inspector>(dockChild.second);
 }
 
 void	UI::addDock(Window *window, const ImVec2 &size) {

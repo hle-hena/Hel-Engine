@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 16:01:19                                        */
+/*  Last Modified: 2026/03/19 10:44:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -292,7 +292,7 @@ bool	TableRow::buildInputText(void) {
 
 DropTarget::DropTarget(const char *type)
 	:	_type{type} {
-	_startPos = ImGui::GetCursorPos();
+	_startPos = ImGui::GetCursorScreenPos();
 	_endPos = _startPos;
 	_size = ImGui::GetContentRegionAvail();
 	_setToEndPos = false;

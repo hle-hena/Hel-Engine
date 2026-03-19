@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 12:54:54 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 17:24:52                                        */
+/*  Last Modified: 2026/03/19 10:53:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,9 +21,13 @@
 
 namespace	hel::sys {
 
-void	IPanel::setup(Registry *registry, ImagePool *imagePool) {
+expected<void, std::string>	IPanel::setup(Registry *registry, ImagePool *imagePool) {
 	_registry = registry;
 	_imagePool = imagePool;
+	auto res = onInit();
+	if (!res)
+		return unexpected(res.error());
+	return {};
 };
 
 void	IPanel::changeOwner(Dock *newOwner, size_t insertIdx) {
