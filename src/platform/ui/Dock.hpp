@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:30:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 12:45:30                                        */
+/*  Last Modified: 2026/03/19 21:24:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,7 +35,8 @@ class	Dock {
 		Dock(const std::string &dockName, UI *ui)
 				:	_dockName{dockName}, _ui{ui} {}
 
-		void	render(Window *window, const ImVec2 &size);
+		void	render(Window *window, const ImVec2 &size,
+								const ImVec2 &rescale = {-1.f, -1.f});
 
 		PASSKEY(UIKey, UI)
 		std::pair<Dock *, Dock *>	forceSplit(Splitter::Dir dir, UIKey);
@@ -44,7 +45,7 @@ class	Dock {
 		Dock	*forceGetChildTwo(UIKey)
 					{ return (_childTwo.get()); }
 
-		nlohmann::json					serialize(void) const;
+		nlohmann::json					serialize(const ImVec2 &size) const;
 		static std::unique_ptr<Dock>	deserialize(UI *ui,
 													const nlohmann::json &src);
 
@@ -76,7 +77,7 @@ class	Dock {
 		std::vector<IPanel *>	_panels{};
 		std::vector<float>		_gaps{};
 
-		void	renderSplits(Window *window, const ImVec2 &size);
+		void	renderSplits(Window *window, const ImVec2 &size, const ImVec2 &rescale);
 		std::unique_ptr<Dock>	_childOne{nullptr};
 		std::unique_ptr<Dock>	_childTwo{nullptr};
 		std::optional<float>	_splitRatio;

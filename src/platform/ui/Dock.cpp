@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 16:19:26                                        */
+/*  Last Modified: 2026/03/19 21:41:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,15 +22,20 @@
 
 namespace	hel::sys {
 
-nlohmann::json	Dock::serialize(void) const {
+nlohmann::json	Dock::serialize(const ImVec2 &size) const {
 	nlohmann::json	dst;
 	dst["name"] = _dockName;
 	if (_type == Type::Split) {
 		dst["type"] = "Split";
 		dst["splitDir"] = static_cast<int>(_splitDir);
-		dst["splitRatio"] = *_splitRatio;
-		dst["childOne"] = _childOne->serialize();
-		dst["childTwo"] = _childTwo->serialize();
+		bool	isVertical = (_splitDir == Splitter::Dir::Right);
+		dst["splitRatio"] = (*_splitRatio) / (isVertical ? size.x : size.y);
+		dst["childOne"] = _childOne->serialize(isVertical ?
+								ImVec2(*_splitRatio, size.y) :
+								ImVec2(size.x, *_splitRatio));
+		dst["childTwo"] = _childTwo->serialize(isVertical ?
+								ImVec2(size.x - *_splitRatio, size.y) :
+								ImVec2(size.y, size.y - *_splitRatio));
 	} else {
 		dst["type"] = "TabGroup";
 		dst["panels"] = nlohmann::json::array();
@@ -45,7 +50,7 @@ std::unique_ptr<Dock>	Dock::deserialize(UI *ui, const nlohmann::json &src) {
 	if (src["type"] == "Split") {
 		dock->_type = Type::Split;
 		dock->_splitDir = static_cast<Splitter::Dir>(src["splitDir"].get<int>());
-		dock->_splitRatio = src["splitRatio"].get<float>();
+		dock->_splitRatio = -src["splitRatio"].get<float>();
 		dock->_childOne = Dock::deserialize(ui, src["childOne"]);
 		dock->_childTwo = Dock::deserialize(ui, src["childTwo"]);
 	} else {
@@ -131,14 +136,14 @@ void	Dock::merge(void) {
 	}
 }
 
-void	Dock::render(Window *window, const ImVec2 &size) {
+void	Dock::render(Window *window, const ImVec2 &size, const ImVec2 &rescale) {
 
 	if (_type == Type::Split &&
 			(_childOne->_askForMerge || _childTwo->_askForMerge))
 		merge();
 
 	if (_type == Type::Split) {
-		renderSplits(window, size);
+		renderSplits(window, size, rescale);
 	} else {
 		ImGui::BeginChild(_dockName.c_str(), size, ImGuiChildFlags_Borders);
 		RenderDragDropContext	ctx(size);
@@ -148,12 +153,17 @@ void	Dock::render(Window *window, const ImVec2 &size) {
 	}
 }
 
-void	Dock::renderSplits(Window *window, const ImVec2 &size) {
+void	Dock::renderSplits(Window *window, const ImVec2 &size, const ImVec2 &rescale) {
 	ImVec2	origin = ImGui::GetCursorScreenPos();
 	bool	isVertical = (_splitDir == Splitter::Dir::Right);
 
 	if (!_splitRatio)
 		_splitRatio = 0.5f * (isVertical ? size.x : size.y);
+	else if (_splitRatio < 0.f)
+		_splitRatio = -*_splitRatio * (isVertical ? size.x : size.y);
+	if (rescale.x > 0.f && rescale.y > 0.f)
+		_splitRatio.value() *= isVertical ? rescale.x : rescale.y;
+
 	Splitter(&*_splitRatio)
 		.setLabel((_dockName + "_splitter").c_str())
 		.setPos(isVertical ? ImVec2(origin.x + *_splitRatio, origin.y)
@@ -169,10 +179,10 @@ void	Dock::renderSplits(Window *window, const ImVec2 &size) {
 								: ImVec2(size.x, size.y - oneSize.y);
 	ImVec2	start = ImGui::GetCursorScreenPos();
 
-	_childOne->render(window, oneSize);
+	_childOne->render(window, oneSize, rescale);
 	ImGui::SetCursorScreenPos(isVertical ? ImVec2(start.x + oneSize.x, start.y)
 										: ImVec2(start.x, start.y + oneSize.y));
-	_childTwo->render(window, twoSize);
+	_childTwo->render(window, twoSize, rescale);
 }
 
 Dock::RenderDragDropContext::RenderDragDropContext(const ImVec2 &size) {

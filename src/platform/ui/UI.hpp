@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 16:06:29                                        */
+/*  Last Modified: 2026/03/19 21:36:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -66,6 +66,7 @@ class	UI : public ISystem {
 		void	addDock(Window *window, const ImVec2 &size);
 
 		std::unique_ptr<Dock>	_dock;
+		std::optional<ImVec2>	_lastSize;
 
 		std::vector<std::unique_ptr<IPanel>>	_panels;
 

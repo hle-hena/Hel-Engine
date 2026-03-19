@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 16:16:19                                        */
+/*  Last Modified: 2026/03/19 21:38:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -58,7 +58,7 @@ void	UI::removePanel(IPanel *panel) {
 
 void	UI::saveToFile(const std::string &path) {
 	std::ofstream	file(path);
-	file << _dock->serialize().dump(2);
+	file << _dock->serialize(*_lastSize).dump(2);
 }
 
 bool	UI::loadFromFile(const std::string &path) {
@@ -87,7 +87,15 @@ void	UI::addDock(Window *window, const ImVec2 &size) {
 	ImGui::SetNextWindowPos({0.f, 0.f});
 	ImGui::SetNextWindowSize(size);
 	ImGui::Begin("##DockHost", nullptr, hostFlags);
-	_dock->render(window, size);
+	if (!_lastSize)
+		_lastSize = size;
+	if (size.x > 0.f && size.y > 0.f &&
+			((*_lastSize).x != size.x || (*_lastSize).y != size.y)) {
+		_dock->render(window, size, {size.x / (*_lastSize).x, size.y / (*_lastSize).y});
+		_lastSize = size;
+	}
+	else
+		_dock->render(window, size);
 	ImGui::End();
 
 	ImGui::PopStyleVar(2);
