@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 21:41:24                                        */
+/*  Last Modified: 2026/03/20 16:00:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -145,11 +145,13 @@ void	Dock::render(Window *window, const ImVec2 &size, const ImVec2 &rescale) {
 	if (_type == Type::Split) {
 		renderSplits(window, size, rescale);
 	} else {
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {6.f, 6.f});
 		ImGui::BeginChild(_dockName.c_str(), size, ImGuiChildFlags_Borders);
 		RenderDragDropContext	ctx(size);
 		renderPanels(window, size);
 		renderDragDrop(ctx);
 		ImGui::EndChild();
+		ImGui::PopStyleVar();
 	}
 }
 

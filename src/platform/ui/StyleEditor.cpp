@@ -5,7 +5,7 @@
 /*	Project: Hel Engine																											 */
 /*	Created: 2026/03/17 16:33:57 by hle-hena																	*/
 /*																																						*/
-/*  Last Modified: 2026/03/18 10:27:12                                        */
+/*  Last Modified: 2026/03/20 17:54:47                                        */
 /*						 By: hle-hena																									 */
 /*																																						*/
 /*		-----																																	 */
@@ -18,6 +18,14 @@
 #include "api/ImGui/imgui.h"
 
 namespace	hel::sys {
+
+std::vector<std::pair<const char *, ImVec4>>	StyleEditor::_baseColors = {
+	{"Primary", ImVec4(0.f, 0.f, 0.f, 1.f)},
+	{"Secondary", ImVec4(0.f, 0.f, 0.f, 1.f)},
+	{"Tertiary", ImVec4(0.f, 0.f, 0.f, 1.f)},
+	{"Shadow", ImVec4(0.f, 0.f, 0.f, 1.f)},
+	{"Highlight", ImVec4(0.f, 0.f, 0.f, 1.f)}
+};
 
 expected<void, std::string>	StyleEditor::onInit(void) {
 	using R = ReferenceColors;
@@ -112,12 +120,102 @@ void	StyleEditor::renderColorRow(const char *name, Color &col) {
 	ImGui::PopID();
 }
 
-void	StyleEditor::render(Window *window, const ImVec2 &) {
+bool	StyleEditor::colorPicker(const char *label, ImVec4 &color) {
+	ImGui::SeparatorText(label);
+
+	auto	avail = ImGui::GetContentRegionAvail();
+	float	pickerWidth = avail.x * 0.8f;
+	ImGui::SetCursorPosX((avail.x - pickerWidth) * 0.5f);
+	ImGui::SetNextItemWidth(pickerWidth);
+	ImGui::ColorPicker3(label, &color.x, ImGuiColorEditFlags_DisplayRGB |
+										ImGuiColorEditFlags_DisplayHSV |
+										ImGuiColorEditFlags_DisplayHex |
+										ImGuiColorEditFlags_PickerHueWheel |
+										ImGuiColorEditFlags_NoSidePreview |
+										ImGuiColorEditFlags_NoLabel |
+										ImGuiColorEditFlags_NoSmallPreview);
+}
+
+void	StyleEditor::addColorTab(int index, const char *label, const ImVec4 &color) {
+	bool	isSelected = (index == _colorTabSelected);
+	if (isSelected)	{ ImGui::PushStyleColor(ImGuiCol_Header,
+			ImGui::GetStyleColorVec4(ImGuiCol_TabSelected)); }
+	ImGui::PushID(index);
+
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.f, 0.f});
+	if (ImGui::Selectable("##tabs", isSelected, 0, tabSize))
+		_colorTabSelected = index;
+	ImGui::PopStyleVar();
+	if (ImGui::IsItemHovered())	{ ImGui::SetTooltip(label); }
+
+	ImGui::GetWindowDrawList()->AddRectFilled(
+		ImGui::GetItemRectMin() + tabPadding,
+		ImGui::GetItemRectMax() - tabPadding,
+		ImGui::ColorConvertFloat4ToU32(color),
+		3.f
+	);
+
+	ImGui::PopID();
+	if (isSelected)
+		ImGui::PopStyleColor();
+}
+
+bool	StyleEditor::baseColorEditor(void) {
+	static constexpr ImVec2	tabSize = {32.f, 32.f};
+	static constexpr ImVec2	tabPadding = {2.f, 3.f};
+
+	ImVec2	childSize = {tabSize.x, tabSize.y * _baseColors.size()};
+	ImGui::BeginChild("ColorTabSelection", childSize);
+	for (int i = 0; i < _baseColors.size(); i++)
+		addColorTab(i, _baseColors[i].first, _baseColors[i].second);
+	ImGui::EndChild();
+
+	ImGui::SameLine(0.f, 7.f);
+
+	ImVec2 tabMax = ImGui::GetItemRectMax();
+	ImVec2 tabMin = ImGui::GetItemRectMin();
+	ImGui::GetWindowDrawList()->AddRectFilled(
+		{tabMax.x + 4.f, tabMin.y},
+		{tabMax.x + 7.f, tabMin.y + childSize.y},
+		ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_TabSelected)));
+
+	ImGui::BeginChild("ColorPick", {0.f, 0.f}, ImGuiChildFlags_AutoResizeY);
+	colorPicker(_baseColors[_colorTabSelected].first, _baseColors[_colorTabSelected].second);
+	ImGui::EndChild();
+}
+
+void	StyleEditor::render(Window *window, const ImVec2 &size) {
+	baseColorEditor();
+	ImGui::Separator();
+
+
+
+	ImGui::Dummy({0.f, 1000.f});
+
+	ImGuiColorEditFlags	pickerFlags = ImGuiColorEditFlags_DisplayRGB |
+								ImGuiColorEditFlags_DisplayHSV |
+								ImGuiColorEditFlags_DisplayHex |
+								ImGuiColorEditFlags_PickerHueBar;
+	if (ImGui::BeginTabBar("##Colors_tab")) {
+		if (ImGui::BeginTabItem("Primary")) {
+			ImGui::ColorPicker3("Primary", &_primaryColor.x, pickerFlags);
+			ImGui::EndTabItem();
+		}
+		if (ImGui::BeginTabItem("Secondary")) {
+			ImGui::ColorPicker3("Secondary", &_secondaryColor.x, pickerFlags);
+			ImGui::EndTabItem();
+		}
+		if (ImGui::BeginTabItem("Shadow")) {
+			ImGui::ColorPicker3("Shadow", &_shadowColor.x, pickerFlags);
+			ImGui::EndTabItem();
+		}
+		if (ImGui::BeginTabItem("Highlight")) {
+			ImGui::ColorPicker3("Highlight", &_highlightColor.x, pickerFlags);
+			ImGui::EndTabItem();
+		}
+		ImGui::EndTabBar();
+	}
 	bool	paletteChanged = false;
-	paletteChanged |= ImGui::ColorEdit3("Primary",	(float*)&_primaryColor);
-	paletteChanged |= ImGui::ColorEdit3("Secondary",(float*)&_secondaryColor);
-	paletteChanged |= ImGui::ColorEdit3("Shadow",	(float*)&_shadowColor);
-	paletteChanged |= ImGui::ColorEdit3("Highlight",(float*)&_highlightColor);
 	if (paletteChanged)
 		applyPalette();
 

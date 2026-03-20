@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/17 16:32:44 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 10:26:41                                        */
+/*  Last Modified: 2026/03/20 17:57:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,6 +45,16 @@ class	StyleEditor : public Panel<StyleEditor> {
 		void	render(Window *window, const ImVec2 &) override;
 
 	private:
+		bool	colorPicker(const char *label, ImVec4 &color);
+
+		void	addColorTab(int index, const char *label, const ImVec4 &color);
+		bool	baseColorEditor(void);
+		static constexpr ImVec2			tabSize = {32.f, 32.f};
+		static constexpr ImVec2			tabPadding = {2.f, 4.f};
+		static std::vector<std::pair<
+				const char *, ImVec4>>	_baseColors;
+		int								_colorTabSelected{0};
+
 		ImVec4	resolveColor(const Color &col) const;
 		void	applyPalette(void);
 		void	renderColorRow(const char *name, Color &col);
