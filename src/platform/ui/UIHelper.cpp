@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 16:04:44                                        */
+/*  Last Modified: 2026/03/20 20:42:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -340,6 +340,60 @@ bool	Button::build() {
 		ImGui::SetCursorScreenPos(*_endPos);
 	ImGui::GetCurrentWindow()->DC.IsSetPos = false;
 	return (ret);
+}
+
+
+
+bool	Knob::build(void) {
+	float	startAngle = IM_PI * 0.75f;
+	float	endAngle = IM_PI * 2.25f;
+	float	angleRange = endAngle - startAngle;
+
+	bool	changed = false;
+	ImVec2	center = ImGui::GetCursorScreenPos() + ImVec2(_radius, _radius);
+	auto	*draw = ImGui::GetWindowDrawList();
+
+	ImGui::InvisibleButton(_label, {_radius * 2.f, _radius * 2.f});
+
+	if (ImGui::IsItemActive()) {
+		ImVec2	mouse = ImGui::GetIO().MousePos;
+		float	angle = atan2f(mouse.y - center.y, mouse.x - center.x);
+		if (angle < 0.f)	{ angle += 2.f * IM_PI; }
+
+		float	start = startAngle;
+		float	end = endAngle;
+		if (angle < end - 2.f * IM_PI)	{ angle += 2.f * IM_PI; }
+		float	t = (angle - start) / angleRange;
+
+		if (t < 0.f || t > 1.f) {
+			float	distToStart = std::abs(angle - start);
+			float	distToEnd = std::abs(angle - end);
+			if (distToStart > IM_PI)
+				distToStart = 2.f * IM_PI - distToStart;
+			if (distToEnd > IM_PI)
+				distToEnd = 2.f * IM_PI - distToEnd;
+			t = (distToEnd < distToStart) ? 1.f : 0.f;
+		}
+
+		*_val = _min + t * (_max - _min);
+		changed = true;
+	}
+
+	float	t = (*_val - _min) / (_max - _min);
+	float	valueAngle = startAngle + t * angleRange;
+
+	ImU32	bgColor = ImGui::ColorConvertFloat4ToU32(
+		ImGui::GetStyleColorVec4(ImGuiCol_FrameBg));
+	ImU32	fgColor = ImGui::ColorConvertFloat4ToU32(
+		ImGui::GetStyleColorVec4(ImGuiCol_SliderGrabActive));
+
+	draw->PathArcTo(center, _radius, startAngle, endAngle, 64);
+	draw->PathStroke(bgColor, 0, _thickness);
+
+	draw->PathArcTo(center, _radius, startAngle, valueAngle, 64);
+	draw->PathStroke(fgColor, 0, _thickness);
+
+	return (changed);
 }
 
 

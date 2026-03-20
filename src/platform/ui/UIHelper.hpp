@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:48:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 16:04:56                                        */
+/*  Last Modified: 2026/03/20 20:24:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -202,6 +202,26 @@ class	Button {
 		std::optional<ImVec2>	_endPos;
 		ImVec2					_size;
 		bool					_hide;
+};
+
+class	Knob {
+	public:
+		Knob(float *val) : _val{val} {};
+
+		SETTER(Label, const char *, _label)
+		SETTER(Min, float, _min)
+		SETTER(Max, float, _max)
+		SETTER(Width, float, _radius)
+		SETTER(Thickness, float, _thickness)
+		bool	build(void);
+
+	private:
+		float		*_val;
+		const char	*_label{"##knob"};
+		float		_min{-INFINITY};
+		float		_max{+INFINITY};
+		float		_radius{10.f};
+		float		_thickness{4.f};
 };
 
 class	ColoredDummy {
