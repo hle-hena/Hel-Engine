@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:48:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/20 20:24:12                                        */
+/*  Last Modified: 2026/03/20 20:45:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -98,11 +98,11 @@ class	Table {
 		Table(const char *name);
 		~Table(void);
 
-	private:
 		bool	newRow(const char *rowName, uint32_t nbCol);
 		template <typename Func>
 		void	setNextCell(const char *label, Func&& drawAction);
 
+	private:
 		bool	beginNewTable(void);
 		void	endTable(void);
 
@@ -110,8 +110,6 @@ class	Table {
 		bool		_tableOpened{false};
 		uint32_t	_nbTables{0};
 		uint32_t	_nbCol{0};
-	
-	friend class	TableRow;
 };
 
 class	TableRow {

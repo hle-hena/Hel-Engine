@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/18 11:20:37 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/20 20:32:16                                        */
+/*  Last Modified: 2026/03/20 21:19:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -104,40 +104,44 @@ bool	StyleEditor::colorPicker(const std::string &label, ImVec4 &color) {
 }
 
 void	StyleEditor::renderColorRow(const char *name, Color &col) {
-	ImGui::PushID(name);
+	auto	table = Table("ColorRow");
 
 	bool	changed = false;
-	changed |= ImGui::Checkbox("##override", &col.override);
-	ImGui::SameLine();
+	if (!table.newRow(name, 2))
+		return ;
+	ImGui::PushID(name);
 
-	if (col.override) {
-		changed |= ImGui::ColorEdit3(name, (float*)&col.color, ImGuiColorEditFlags_NoBorder);//Change.
-	} else {
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {4.f, 4.f});
+	if (ImGui::BeginPopup("##CHANGE_COLOR")) {
+		ImGui::SeparatorText("Change the color !");
 		auto	retrieveStr = [](void *data, int i){
 			return ((*static_cast<std::vector<std::string>*>(data))[i].c_str());
 		};
 		int		ref = std::distance(_baseColorsLabel.begin(), std::find(
 					_baseColorsLabel.begin(), _baseColorsLabel.end(), col.reference));
-		ImGui::SetNextItemWidth(120.f);
-
-		if (ImGui::Combo(name, &ref, retrieveStr, &_baseColorsLabel,
-						_baseColorsLabel.size())) {
+		if (ImGui::Combo(("##" + std::string(name)).c_str(), &ref,
+				retrieveStr, &_baseColorsLabel, _baseColorsLabel.size())) {
 			col.reference = _baseColorsLabel[ref];
 			changed = true;
 		}
+		ImGui::SeparatorText("Override the color !");
+		changed |= ImGui::Checkbox("##override", &col.override);
+		changed |= ImGui::ColorEdit3(name, (float*)&col.color, ImGuiColorEditFlags_NoBorder);//Change later.
+		ImGui::EndPopup();
 	}
+	ImGui::PopStyleVar();
 
-	ImGui::SameLine();
-	ImGui::SetNextItemWidth(80.f);
-	changed |= Knob(&col.alpha)
-				.setLabel("##alphaColorKnob")
-				.setMin(0.f)
-				.setMax(1.f)
-				.build();
-
-	// if (changed)
-	// 	applyPalette();
-
+	table.setNextCell("Alpha:", [&]{
+		changed |= Knob(&col.alpha)
+					.setLabel("##alphaColorKnob")
+					.setMin(0.f)
+					.setMax(1.f)
+					.build();
+	});
+	table.setNextCell(nullptr, [&]{
+		if (ImGui::Button("Change the color"))
+			ImGui::OpenPopup("CHANGE_COLOR");
+	});
 	ImGui::PopID();
 }
 
