@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/17 16:32:44 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 14:57:22                                        */
+/*  Last Modified: 2026/03/21 15:27:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,7 @@
 # include "api/ImGui/imgui.h"
 
 # include <map>
+# include <api/json/json.hpp>
 
 namespace	hel::sys {
 
@@ -35,13 +36,18 @@ class	StyleEditor : public Panel<StyleEditor> {
 
 		static constexpr const char	*label = "UI Style";
 		StyleEditor(void) = default;
-		~StyleEditor(void) = default;
+		~StyleEditor(void);
 
 		expected<void, std::string>	onInit(void) override;
 
 		void	render(Window *window, const ImVec2 &) override;
 
 	private:
+		void			saveToFile(const std::string &path);
+		bool			loadFromFile(const std::string &path);
+		nlohmann::json	serialize(void) const;
+		void			deserialize(const nlohmann::json &src);
+
 		void	baseColorEditor(void);
 		static constexpr ImVec2					_tabSize = {32.f, 32.f};
 		static constexpr ImVec2					_tabPadding = {2.f, 4.f};
@@ -139,6 +145,7 @@ class	StyleEditor : public Panel<StyleEditor> {
 		ImVec4	_highlightColor{0.f, 0.f, 0.f, 1.f};
 
 		std::map<ImGuiCol_, Color>	_colors;
+		bool						_applySetup{true};
 };
 
 }

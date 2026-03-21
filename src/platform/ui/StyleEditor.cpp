@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/18 11:20:37 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 14:58:31                                        */
+/*  Last Modified: 2026/03/21 15:27:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,6 +19,7 @@
 #include "platform/ui/UIHelper.hpp"
 
 #include <cmath>
+#include <fstream>
 
 namespace	hel::sys {
 
@@ -33,7 +34,64 @@ std::vector<std::string>	StyleEditor::_baseColorsLabel = {
 	"primary", "secondary", "tertiary", "shadow", "highlight"
 };
 
+StyleEditor::~StyleEditor(void) {
+	saveToFile("currentStyle.json");
+}
+
+void	StyleEditor::saveToFile(const std::string &path) {
+	std::ofstream	file(path);
+	file << serialize().dump(2);
+}
+
+bool	StyleEditor::loadFromFile(const std::string &path) {
+	std::ifstream	file(path);
+	if (!file.is_open())	{ return (false); }
+	nlohmann::json	src;
+	file >> src;
+	deserialize(src);
+	return (true);
+}
+
+nlohmann::json	StyleEditor::serialize(void) const {
+	nlohmann::json	dst;
+	for (auto &name: _baseColorsLabel) {
+		auto	col = _baseColors[name];
+		dst["baseColors"][name] = {col.x, col.y, col.z, col.w};
+	}
+    for (auto &[colType, col]: _colors) {
+        nlohmann::json	c;
+        c["reference"] = col.reference;
+        c["alpha"] = col.alpha;
+        c["override"] = col.override;
+        c["color"] = {col.color.x, col.color.y, col.color.z, col.color.w};
+        dst["colors"][std::to_string(colType)] = c;
+    }
+	return (dst);
+}
+
+void	StyleEditor::deserialize(const nlohmann::json &src) {
+	if (src.contains("baseColors")) {
+		for (auto &[name, arr]: src["baseColors"].items())
+			_baseColors[name] = {arr[0], arr[1], arr[2], arr[3]};
+	}
+	if (src.contains("colors")) {
+		for (auto &[key, color]: src["colors"].items()) {
+			ImGuiCol_ colType = static_cast<ImGuiCol_>(std::stoi(key));
+			_colors[colType] = {color["reference"], {}, color["alpha"],
+				color["override"]};
+			_colors[colType].color = {
+				color["color"][0],
+				color["color"][1],
+				color["color"][2],
+				color["color"][3]
+			};
+		}
+	}
+}
+
 expected<void, std::string>	StyleEditor::onInit(void) {
+	if (loadFromFile("currentStyle.json"))
+		return {};
 
 	_colors = {
 		{ ImGuiCol_WindowBg,				{ "secondary",	{}, 0.95f } },
@@ -283,6 +341,10 @@ void	StyleEditor::render(Window *window, const ImVec2 &size) {
 	showColorSection("Tabs", _tabColors);
 	showColorSection("Tables & Plots", _windowColors);
 	showColorSection("Misc", _miscColors);
+	if (_applySetup) {
+		applyPalette();
+		_applySetup = false;
+	}
 }
 
 }

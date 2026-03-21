@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 21:38:36                                        */
+/*  Last Modified: 2026/03/21 15:22:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -62,10 +62,10 @@ void	UI::saveToFile(const std::string &path) {
 }
 
 bool	UI::loadFromFile(const std::string &path) {
-    std::ifstream	file(path);
-    if (!file.is_open())	{ return (false); }
-    nlohmann::json	src;
-    file >> src;
+	std::ifstream	file(path);
+	if (!file.is_open())	{ return (false); }
+	nlohmann::json	src;
+	file >> src;
 	_dock = Dock::deserialize(this, src);
 	return (true);
 }
