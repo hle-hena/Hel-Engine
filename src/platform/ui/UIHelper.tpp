@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/05 15:22:31 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 16:04:31                                        */
+/*  Last Modified: 2026/03/21 13:53:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,9 +21,19 @@
 namespace	hel::sys {
 
 template <typename Func>
-void	Table::setNextCell(const char *label, Func&& drawAction) {
+void	Table::setNextCell(Func&& drawAction) {
 	ImGui::TableNextColumn();
+	ImGui::PushItemWidth(-1.0f);
+	ImGui::PushID(ImGui::GetColumnIndex());
+	drawAction();
+	ImGui::PopID();
+	ImGui::PopItemWidth();
+}
+
+template <typename Func>
+void	Table::setNextCell(const char *label, Func&& drawAction) {
 	if (label != nullptr) {
+		ImGui::TableNextColumn();
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label);
 	}

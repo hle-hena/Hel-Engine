@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:48:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/20 20:45:11                                        */
+/*  Last Modified: 2026/03/21 14:50:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -95,15 +95,25 @@ class	DragFloat {
 
 class	Table {
 	public:
+		static constexpr ImGuiTableColumnFlags	WStretch
+							= ImGuiTableColumnFlags_WidthStretch;
+		static constexpr ImGuiTableColumnFlags	WFixed
+							= ImGuiTableColumnFlags_WidthFixed;
 		Table(const char *name);
 		~Table(void);
 
-		bool	newRow(const char *rowName, uint32_t nbCol);
+		explicit operator bool(void) {return (true); }
+
+		using ColumnSizing = std::vector<ImGuiTableColumnFlags>;
+		bool	newRow(const char *rowName, ColumnSizing columnSizing);
+		bool	newRow(ColumnSizing columnSizing);
 		template <typename Func>
 		void	setNextCell(const char *label, Func&& drawAction);
+		template <typename Func>
+		void	setNextCell(Func&& drawAction);
 
 	private:
-		bool	beginNewTable(void);
+		bool	beginNewTable(ColumnSizing columnSizing);
 		void	endTable(void);
 
 		const char	*_name;

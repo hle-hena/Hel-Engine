@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/20 20:42:35                                        */
+/*  Last Modified: 2026/03/21 14:17:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -109,16 +109,13 @@ Table::~Table(void) {
 	}
 }
 
-bool	Table::beginNewTable(void) {
+bool	Table::beginNewTable(ColumnSizing columnSizing) {
 	if (_tableOpened)
 		return (false);
 	std::string	indexedName = std::string(_name) + "###Table" + std::to_string(_nbCol);
-	if (ImGui::BeginTable(indexedName.c_str(), _nbCol * 2 + 1, ImGuiTableFlags_SizingFixedFit)) {
-		ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthFixed);
-		for (uint32_t i = 0; i < _nbCol; i++) {
-			ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthFixed);
-			ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch);
-		}
+	if (ImGui::BeginTable(indexedName.c_str(), _nbCol, ImGuiTableFlags_SizingFixedFit)) {
+		for (auto sizing: columnSizing)
+			ImGui::TableSetupColumn(nullptr, sizing);
 		_tableOpened = true;
 		_nbTables++;
 		return (true);
@@ -129,16 +126,28 @@ bool	Table::beginNewTable(void) {
 void	Table::endTable(void) {
 	if (_tableOpened) {
 		ImGui::EndTable();
-		ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, 10.f));
 		_tableOpened = false;
 	}
 }
 
-bool	Table::newRow(const char *rowName, uint32_t nbCol) {
+bool	Table::newRow(ColumnSizing columnSizing) {
+	int	nbCol = columnSizing.size();
 	if (nbCol != _nbCol || !_tableOpened) {
 		_nbCol = nbCol;
 		endTable();
-		if (!beginNewTable())
+		if (!beginNewTable(columnSizing))
+			return (false);
+	}
+	ImGui::TableNextRow();
+	return (true);
+}
+
+bool	Table::newRow(const char *rowName, ColumnSizing columnSizing) {
+	int	nbCol = columnSizing.size();
+	if (nbCol != _nbCol || !_tableOpened) {
+		_nbCol = nbCol;
+		endTable();
+		if (!beginNewTable(columnSizing))
 			return (false);
 	}
 	ImGui::TableNextRow();
@@ -181,7 +190,12 @@ bool	TableRow::buildVecDrag(void) {
 	fillVec(_speeds, sRange);
 
 	bool	changed = false;
-	if (!_table.newRow(_rowName, _range))
+	Table::ColumnSizing	sizing = {Table::WFixed};
+	for (int i = 0; i < sRange; i++) {
+		sizing.push_back(Table::WFixed);
+		sizing.push_back(Table::WStretch);
+	}
+	if (!_table.newRow(_rowName, sizing))
 		return (false);
 	ImGui::PushID(_rowName);
 
@@ -217,7 +231,12 @@ bool	TableRow::buildDragRange(void) {
 	_mins[1] = *(_startFloat);
 
 	bool	changed = false;
-	if (!_table.newRow(_rowName, 2))
+	Table::ColumnSizing	sizing = {Table::WFixed};
+	for (int i = 0; i < sRange; i++) {
+		sizing.push_back(Table::WFixed);
+		sizing.push_back(Table::WStretch);
+	}
+	if (!_table.newRow(_rowName, sizing))
 		return (false);
 	ImGui::PushID(_rowName);
 
@@ -246,7 +265,12 @@ bool	TableRow::buildSimpleText(void) {
 	fillVec(_valueNames, sRange);
 	fillVec(_fmts, sRange);
 
-	if (!_table.newRow(_rowName, _range))
+	Table::ColumnSizing	sizing = {Table::WFixed};
+	for (int i = 0; i < sRange; i++) {
+		sizing.push_back(Table::WFixed);
+		sizing.push_back(Table::WStretch);
+	}
+	if (!_table.newRow(_rowName, sizing))
 		return (false);
 	ImGui::PushID(_rowName);
 
@@ -271,7 +295,12 @@ bool	TableRow::buildInputText(void) {
 	fillVec(_valueNames, sRange);
 
 	bool	changed = false;
-	if (!_table.newRow(_rowName, _range))
+	Table::ColumnSizing	sizing = {Table::WFixed};
+	for (int i = 0; i < sRange; i++) {
+		sizing.push_back(Table::WFixed);
+		sizing.push_back(Table::WStretch);
+	}
+	if (!_table.newRow(_rowName, sizing))
 		return (false);
 	ImGui::PushID(_rowName);
 
@@ -408,7 +437,7 @@ void	ColoredDummy::build(void) {
 	ImVec2	rectMax = {_pos.x + _size.x, _pos.y + _size.y};
 
 	ImGui::SetCursorScreenPos(_pos);
-	ImGui::Dummy(_size);
+	// ImGui::Dummy(_size);
 	draw->AddRectFilled(_pos, rectMax, IM_COL32(255, 0, 0, 100));
 	ImGui::SetCursorScreenPos(_endPos);
 	ImGui::GetCurrentWindow()->DC.IsSetPos = false;

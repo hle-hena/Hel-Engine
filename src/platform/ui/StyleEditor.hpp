@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/17 16:32:44 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/20 19:16:03                                        */
+/*  Last Modified: 2026/03/21 14:57:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -42,11 +42,7 @@ class	StyleEditor : public Panel<StyleEditor> {
 		void	render(Window *window, const ImVec2 &) override;
 
 	private:
-		bool	colorPicker(const std::string &label, ImVec4 &color);
-
-		void	addColorTab(const std::string &label,
-							const ImVec4 &color);
-		bool	baseColorEditor(void);
+		void	baseColorEditor(void);
 		static constexpr ImVec2					_tabSize = {32.f, 32.f};
 		static constexpr ImVec2					_tabPadding = {2.f, 4.f};
 		static std::map<std::string, ImVec4>	_baseColors;
@@ -54,6 +50,10 @@ class	StyleEditor : public Panel<StyleEditor> {
 		std::string								_colorTabSelected{"primary"};
 
 		using ColorList = std::initializer_list<ImGuiCol_>;
+		bool	basePopup(Color &color);
+		bool	overridePopup(Color &color);
+		bool	changeColorPopup(Color &color);
+		bool	renderColorRow(const char *name, Color &col);
 		void	showColorSection(const char *sectionName,
 								const ColorList &colors);
 		static constexpr ColorList	_textColors{ImGuiCol_Text,
@@ -119,9 +119,19 @@ class	StyleEditor : public Panel<StyleEditor> {
 												ImGuiCol_DockingPreview,
 												ImGuiCol_DockingEmptyBg};
 
+		bool	colorPicker(const std::string &label, ImVec4 &color);
+		struct	ColorSelectableStyle {
+			const char		*format{"%s"};
+			bool			isSelected{false};
+			const ImVec2	&tabSize;		
+			const ImVec2	&tabPadding;		
+		};
+		bool	colorSelectable(const std::string &label, const ImVec4 &color,
+							const ColorSelectableStyle &style);
+
 		ImVec4	resolveColor(const Color &col) const;
 		void	applyPalette(void);
-		void	renderColorRow(const char *name, Color &col);
+		void	applyPalette(ImGuiCol col, ImVec4 colValue);
 
 		ImVec4	_primaryColor{0.f, 0.f, 0.f, 1.f};
 		ImVec4	_secondaryColor{0.f, 0.f, 0.f, 1.f};

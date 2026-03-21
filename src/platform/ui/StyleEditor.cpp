@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/18 11:20:37 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/20 21:19:31                                        */
+/*  Last Modified: 2026/03/21 14:58:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -86,6 +86,10 @@ void	StyleEditor::applyPalette(void) {
 		style.Colors[colType] = resolveColor(col);
 }
 
+void	StyleEditor::applyPalette(ImGuiCol col, ImVec4 colValue) {
+	ImGui::GetStyle().Colors[col] = colValue;
+}
+
 bool	StyleEditor::colorPicker(const std::string &label, ImVec4 &color) {
 	ImGui::SeparatorText(("Modify the " + label + " color !").c_str());
 
@@ -100,36 +104,91 @@ bool	StyleEditor::colorPicker(const std::string &label, ImVec4 &color) {
 									ImGuiColorEditFlags_NoSidePreview |
 									ImGuiColorEditFlags_NoLabel |
 									ImGuiColorEditFlags_NoSmallPreview;
-	ImGui::ColorPicker3(label.c_str(), &color.x, pickerFlags);
+	return (ImGui::ColorPicker3(label.c_str(), &color.x, pickerFlags));
 }
 
-void	StyleEditor::renderColorRow(const char *name, Color &col) {
+bool	StyleEditor::basePopup(Color &color) {
+	color.override = false;
+	int		nbColors = static_cast<int>(_baseColorsLabel.size());
+	int		nbColumns = sqrt(nbColors) + 0.5f;
+	if (auto	table = Table("ChoseBaseColor")) {
+		ImVec2	avail = ImGui::GetContentRegionAvail() -
+						ImVec2(0.f, ImGui::GetFrameHeight() * 2);
+		ImVec2	tabSize = {avail.x / nbColumns, avail.y / std::ceil((float)nbColors / nbColumns)};
+		ImVec2	tabPadding = {tabSize.x * 0.025f, tabSize.y * 0.05f};
+		for (auto row = 0; row < nbColors; row += nbColumns) {
+			int	columns = std::min(nbColumns, nbColors - row);
+			Table::ColumnSizing	sizing(columns, Table::WStretch);
+	
+			table.newRow(sizing);
+			for (auto column = 0; column < columns; column++) {
+				table.setNextCell([&]{
+					float	cellWidth = ImGui::GetContentRegionAvail().x;
+					float	itemWidth = tabSize.x;
+					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (cellWidth - itemWidth) * 0.5f);
+					const auto	&label = _baseColorsLabel[row + column];
+					if (colorSelectable(label, _baseColors[label],
+									{"Click to change to the %s color !",
+									label == color.reference,
+									tabSize, tabPadding}))
+						color.reference = label;
+				});
+			}
+		}
+	}
+	ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered));
+	bool	clicked = ImGui::Button("Apply", ImGui::GetContentRegionAvail());
+	ImGui::PopStyleColor();
+	if (clicked)	{ ImGui::CloseCurrentPopup(); }
+	return (clicked);
+}
+
+bool	StyleEditor::overridePopup(Color &color) {
+	color.override = true;
+	ImGui::Dummy({0.f, 10.f});
+	colorPicker("override", color.color);
+	ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered));
+	bool	clicked = ImGui::Button("Apply", ImGui::GetContentRegionAvail());
+	ImGui::PopStyleColor();
+	if (clicked)	{ ImGui::CloseCurrentPopup(); }
+	return (clicked);
+}
+
+bool	StyleEditor::changeColorPopup(Color &color) {
+	bool	changed = false;
+
+	ImGui::PushStyleVar(ImGuiStyleVar_DisabledAlpha, 0.3f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {4.f, 4.f});
+	ImGui::SetNextWindowSize({300.f, 400.f}, ImGuiCond_Appearing);
+	if (ImGui::BeginPopup("CHANGE_COLOR")) {
+		ImGui::BeginChild("ColorChangePopup");
+		ImGui::SeparatorText("Modify the color of the element");
+		if (ImGui::BeginTabBar("ChangeColorTabBar", ImGuiTabBarFlags_NoTabListScrollingButtons)) {
+			if (ImGui::BeginTabItem("Base colors")) {
+				changed |= basePopup(color);
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Override color")) {
+				changed |= overridePopup(color);
+				ImGui::EndTabItem();
+			}
+			ImGui::EndTabBar();
+		}
+		ImGui::EndChild();
+		ImGui::EndPopup();
+	}
+	ImGui::PopStyleVar(2);
+	return (changed);
+}
+
+bool	StyleEditor::renderColorRow(const char *name, Color &col) {
 	auto	table = Table("ColorRow");
 
 	bool	changed = false;
-	if (!table.newRow(name, 2))
-		return ;
+	if (!table.newRow(name, {Table::WFixed, Table::WFixed, Table::WFixed,
+						Table::WStretch}))
+		return (changed);
 	ImGui::PushID(name);
-
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {4.f, 4.f});
-	if (ImGui::BeginPopup("##CHANGE_COLOR")) {
-		ImGui::SeparatorText("Change the color !");
-		auto	retrieveStr = [](void *data, int i){
-			return ((*static_cast<std::vector<std::string>*>(data))[i].c_str());
-		};
-		int		ref = std::distance(_baseColorsLabel.begin(), std::find(
-					_baseColorsLabel.begin(), _baseColorsLabel.end(), col.reference));
-		if (ImGui::Combo(("##" + std::string(name)).c_str(), &ref,
-				retrieveStr, &_baseColorsLabel, _baseColorsLabel.size())) {
-			col.reference = _baseColorsLabel[ref];
-			changed = true;
-		}
-		ImGui::SeparatorText("Override the color !");
-		changed |= ImGui::Checkbox("##override", &col.override);
-		changed |= ImGui::ColorEdit3(name, (float*)&col.color, ImGuiColorEditFlags_NoBorder);//Change later.
-		ImGui::EndPopup();
-	}
-	ImGui::PopStyleVar();
 
 	table.setNextCell("Alpha:", [&]{
 		changed |= Knob(&col.alpha)
@@ -138,11 +197,13 @@ void	StyleEditor::renderColorRow(const char *name, Color &col) {
 					.setMax(1.f)
 					.build();
 	});
-	table.setNextCell(nullptr, [&]{
+	table.setNextCell([&]{
+		changed |= changeColorPopup(col);
 		if (ImGui::Button("Change the color"))
 			ImGui::OpenPopup("CHANGE_COLOR");
 	});
 	ImGui::PopID();
+	return (changed);
 }
 
 void	StyleEditor::showColorSection(const char *sectionName,
@@ -150,42 +211,51 @@ void	StyleEditor::showColorSection(const char *sectionName,
 	if (!ImGui::CollapsingHeader(sectionName))	{ return ; }
 	for (auto color: colors) {
 		auto	it = _colors.find(color);
-		if (it != _colors.end())
-			renderColorRow(ImGui::GetStyleColorName(color), it->second);
+		if (it == _colors.end())
+			_colors[color] = {"primary", {}, 1.f};
+		if (renderColorRow(ImGui::GetStyleColorName(color), it->second))
+			applyPalette(color, resolveColor(it->second));
 	}
 }
 
-void	StyleEditor::addColorTab(const std::string &label,
-								const ImVec4 &color) {
-	bool	isSelected = (label == _colorTabSelected);
-	if (isSelected)	{ ImGui::PushStyleColor(ImGuiCol_Header,
+bool	StyleEditor::colorSelectable(const std::string &label,
+									const ImVec4 &color,
+									const ColorSelectableStyle &style) {
+	if (style.isSelected)	{ ImGui::PushStyleColor(ImGuiCol_Header,
 			ImGui::GetStyleColorVec4(ImGuiCol_TabSelected)); }
 	ImGui::PushID(label.c_str());
 
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.f, 0.f});
-	if (ImGui::Selectable("##tabs", isSelected, 0, _tabSize))
-		_colorTabSelected = label;
+
+	bool	hasBeenSelected = ImGui::Selectable("##tabs", style.isSelected,
+														0, style.tabSize);
 	ImGui::PopStyleVar();
 	if (ImGui::IsItemHovered())
-		ImGui::SetTooltip(("Click to modify the " + label + " color").c_str());
+		ImGui::SetTooltip(style.format, label.c_str());
 
 	ImGui::GetWindowDrawList()->AddRectFilled(
-		ImGui::GetItemRectMin() + _tabPadding,
-		ImGui::GetItemRectMax() - _tabPadding,
+		ImGui::GetItemRectMin() + style.tabPadding,
+		ImGui::GetItemRectMax() - style.tabPadding,
 		ImGui::ColorConvertFloat4ToU32(color),
-		3.f
+		std::max(style.tabSize.x, style.tabSize.y) * 0.1f
 	);
 
 	ImGui::PopID();
-	if (isSelected)
+	if (style.isSelected)
 		ImGui::PopStyleColor();
+	return (hasBeenSelected);
 }
 
-bool	StyleEditor::baseColorEditor(void) {
-	ImVec2	childSize = {_tabSize.x, _tabSize.y * _baseColors.size()};
+void	StyleEditor::baseColorEditor(void) {
+	ImVec2	childSize = {_tabSize.x, _tabSize.y * _baseColorsLabel.size()};
 	ImGui::BeginChild("ColorTabSelection", childSize);
-	for (auto &label: _baseColorsLabel)
-		addColorTab(label, _baseColors[label]);
+	for (auto &label: _baseColorsLabel) {
+		if (colorSelectable(label, _baseColors[label],
+						{"Click to change the %s color !",
+						label == _colorTabSelected,
+						_tabSize, _tabPadding}))
+			_colorTabSelected = label;
+	}
 	ImGui::EndChild();
 
 	ImGui::SameLine(0.f, 7.f);
@@ -198,13 +268,13 @@ bool	StyleEditor::baseColorEditor(void) {
 		ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_TabSelected)));
 
 	ImGui::BeginChild("ColorPick", {0.f, 0.f}, ImGuiChildFlags_AutoResizeY);
-	colorPicker(_colorTabSelected, _baseColors[_colorTabSelected]);
+	if (colorPicker(_colorTabSelected, _baseColors[_colorTabSelected]))
+		applyPalette();
 	ImGui::EndChild();
 }
 
 void	StyleEditor::render(Window *window, const ImVec2 &size) {
-	if (baseColorEditor())
-		applyPalette();
+	baseColorEditor();
 	ImGui::Separator();
 
 	showColorSection("Text", _textColors);
