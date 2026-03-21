@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/05 15:22:31 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 13:53:01                                        */
+/*  Last Modified: 2026/03/21 15:40:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -62,7 +62,10 @@ void	DropTarget::build(Func &&dropAction) {
 			if (payload->Preview) {
 				ImVec2	rectMin = ImGui::GetItemRectMin();
 				ImVec2	rectMax = ImGui::GetItemRectMax();
-				ImGui::GetForegroundDrawList()->AddRectFilled(rectMin, rectMax, IM_COL32(255, 0, 0, 50));
+				auto	color = ImGui::ColorConvertFloat4ToU32(
+					ImGui::GetStyleColorVec4(ImGuiCol_DragDropTargetBg)
+				);
+				ImGui::GetWindowDrawList()->AddRectFilled(rectMin, rectMax, color);
 			}
 			if (payload->IsDelivery())
 				dropAction(payload);

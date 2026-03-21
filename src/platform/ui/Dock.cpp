@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/20 21:02:36                                        */
+/*  Last Modified: 2026/03/21 15:39:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -201,6 +201,13 @@ Dock::RenderDragDropContext::RenderDragDropContext(const ImVec2 &size) {
 		origin.y + tabBarH + (size.y - tabBarH) * 0.5f};
 
 	released = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+
+	bgColor = ImGui::ColorConvertFloat4ToU32(
+		ImGui::GetStyleColorVec4(ImGuiCol_DragDropTargetBg)
+	);
+	mainColor = ImGui::ColorConvertFloat4ToU32(
+		ImGui::GetStyleColorVec4(ImGuiCol_DragDropTarget)
+	);
 }
 
 bool	Dock::renderTriangleZones(const RenderDragDropContext &ctx,
@@ -215,7 +222,7 @@ bool	Dock::renderTriangleZones(const RenderDragDropContext &ctx,
 	for (auto &zone: zones) {
 		if (!(mathUtils::pointInTriangle(ctx.mouse, zone.a, zone.b, zone.c)))
 			continue ;
-		draw->AddTriangleFilled(zone.a, zone.b, zone.c, IM_COL32(255, 0, 0, 50));
+		draw->AddTriangleFilled(zone.a, zone.b, zone.c, ctx.bgColor);
 		if (ctx.released)	{ split(zone.dir, panel); }
 		return (true);
 	}
@@ -240,7 +247,7 @@ void	Dock::renderTabBarZone(const RenderDragDropContext &ctx,
 		}
 		draw->AddRectFilled({_gaps[closestIdx] - 1.f, rectMin.y},
 							{_gaps[closestIdx] + 1.f, rectMax.y},
-							IM_COL32(255, 0, 0, 175));
+							ctx.mainColor);
 		if (ctx.released)
 			panel->changeOwner(this, closestIdx);
 	}
@@ -252,7 +259,7 @@ void	Dock::renderDragDrop(const RenderDragDropContext &ctx) {
 		return ;
 
 	IPanel	*panel = *static_cast<IPanel**>(payload->Data);
-	auto	draw = ImGui::GetForegroundDrawList();
+	auto	draw = ImGui::GetWindowDrawList();
 
 	if (panel->getOwner() == this && _panels.size() == 1)
 		return ;

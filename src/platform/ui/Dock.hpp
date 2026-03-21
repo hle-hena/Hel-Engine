@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:30:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 21:24:56                                        */
+/*  Last Modified: 2026/03/21 15:38:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,7 @@
 # include "platform/ui/UIHelper.hpp"
 
 # include <api/json/json.hpp>
+# include <api/ImGui/imgui.h>
 
 # include <vector>
 # include <memory>
@@ -63,6 +64,8 @@ class	Dock {
 			ImVec2	mouse;
 			float	tabBarH;
 			bool	released;
+			ImU32	bgColor;
+			ImU32	mainColor;
 
 			RenderDragDropContext(const ImVec2 &size);
 		};
