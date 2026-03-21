@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 16:28:37                                        */
+/*  Last Modified: 2026/03/21 18:51:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -86,6 +86,11 @@ void	UI::addDock(Window *window, const ImVec2 &size) {
 	ImGui::SetNextWindowPos({0.f, 0.f});
 	ImGui::SetNextWindowSize(size);
 	ImGui::Begin("##DockHost", nullptr, hostFlags);
+	ImGui::GetWindowDrawList()->AddRectFilled(
+		ImGui::GetCursorScreenPos(),
+		ImGui::GetContentRegionAvail(),
+		ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_WindowBg))
+	);
 	if (!_lastSize)
 		_lastSize = size;
 	if (size.x > 0.f && size.y > 0.f &&
