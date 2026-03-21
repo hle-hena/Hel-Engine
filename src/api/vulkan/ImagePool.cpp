@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/14 17:49:26                                        */
+/*  Last Modified: 2026/03/18 12:35:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -139,6 +139,13 @@ Image	*ImagePool::acquire(const std::string &referenceID,
 	return (image);
 }
 
+Image	*ImagePool::requestRender(Entity::id handle, const Image::Config &requested) {
+	auto	image = acquire(requested);
+	if (image)
+		_render.push_back({image, handle});
+	return (image);
+}
+
 Image	*ImagePool::get(const std::string &referenceID) {
 	auto	it = findNamed(referenceID);
 	if (it != _namedImages.end())
@@ -173,6 +180,7 @@ void	ImagePool::releaseAll(void) {
 		}
 	}
 	_namedImages.clear();
+	_render.clear();
 }
 
 }

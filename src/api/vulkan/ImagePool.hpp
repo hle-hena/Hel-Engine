@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/12 14:12:44                                        */
+/*  Last Modified: 2026/03/18 12:45:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,7 @@
 # include <memory>
 
 # include "api/vulkan/Image.hpp"
+# include "ecs/Entity.hpp"
 
 namespace	hel {
 
@@ -46,12 +47,18 @@ class	ImagePool {
 				ImageDescMap<uint32_t>	_imageDescs;
 		};
 
+		Image	*requestRender(Entity::id handle,
+						const Image::Config &requested);
 		Image	*acquire(const Image::Config &requested);
 		Image	*acquire(const std::string &referenceID,
 						const Image::Config &requested);
 		Image	*get(const std::string &referenceID);
 		void	release(Image *);
 		void	releaseAll(void);
+
+		const std::vector<std::pair<
+				Image *, Entity::id>>	&getRequestedRenders(void)
+											{ return (_render); }
 
 		~ImagePool(void);
 
@@ -75,6 +82,7 @@ class	ImagePool {
 		Device											&_device;
 		ImageDescMap<std::vector<Slot>>					_pools;
 		std::vector<std::pair<std::string, Image *>>	_namedImages;
+		std::vector<std::pair<Image *, Entity::id>>		_render;
 };
 
 }

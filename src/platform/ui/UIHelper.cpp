@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 16:57:08                                        */
+/*  Last Modified: 2026/03/21 14:17:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "platform/ui/UIHelper.hpp"
+#include "api/ImGui/imgui_internal.h"
 #include "api/ImGui/imgui_stdlib.h"
 
 #include <algorithm>
@@ -48,8 +49,8 @@ void	Splitter::build(void) {
 	bool	active = ImGui::IsItemActive();
 	if (active)
 		*_val += (isHorizontal(_dir)) ?
-						IsPositive(_dir) * ImGui::GetIO().MouseDelta.y :
-						IsPositive(_dir) * ImGui::GetIO().MouseDelta.x;
+						IsPositive(_dir) * ImGui::GetIO().MouseDelta.y / _normalizer :
+						IsPositive(_dir) * ImGui::GetIO().MouseDelta.x / _normalizer;
 	if (active || ImGui::IsItemHovered())
 		ImGui::SetMouseCursor(isHorizontal(_dir) ?
 									ImGuiMouseCursor_ResizeNS :
@@ -108,16 +109,13 @@ Table::~Table(void) {
 	}
 }
 
-bool	Table::beginNewTable(void) {
+bool	Table::beginNewTable(ColumnSizing columnSizing) {
 	if (_tableOpened)
 		return (false);
 	std::string	indexedName = std::string(_name) + "###Table" + std::to_string(_nbCol);
-	if (ImGui::BeginTable(indexedName.c_str(), _nbCol * 2 + 1, ImGuiTableFlags_SizingFixedFit)) {
-		ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthFixed);
-		for (uint32_t i = 0; i < _nbCol; i++) {
-			ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthFixed);
-			ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthStretch);
-		}
+	if (ImGui::BeginTable(indexedName.c_str(), _nbCol, ImGuiTableFlags_SizingFixedFit)) {
+		for (auto sizing: columnSizing)
+			ImGui::TableSetupColumn(nullptr, sizing);
 		_tableOpened = true;
 		_nbTables++;
 		return (true);
@@ -128,16 +126,28 @@ bool	Table::beginNewTable(void) {
 void	Table::endTable(void) {
 	if (_tableOpened) {
 		ImGui::EndTable();
-		ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, 10.f));
 		_tableOpened = false;
 	}
 }
 
-bool	Table::newRow(const char *rowName, uint32_t nbCol) {
+bool	Table::newRow(ColumnSizing columnSizing) {
+	int	nbCol = columnSizing.size();
 	if (nbCol != _nbCol || !_tableOpened) {
 		_nbCol = nbCol;
 		endTable();
-		if (!beginNewTable())
+		if (!beginNewTable(columnSizing))
+			return (false);
+	}
+	ImGui::TableNextRow();
+	return (true);
+}
+
+bool	Table::newRow(const char *rowName, ColumnSizing columnSizing) {
+	int	nbCol = columnSizing.size();
+	if (nbCol != _nbCol || !_tableOpened) {
+		_nbCol = nbCol;
+		endTable();
+		if (!beginNewTable(columnSizing))
 			return (false);
 	}
 	ImGui::TableNextRow();
@@ -180,7 +190,12 @@ bool	TableRow::buildVecDrag(void) {
 	fillVec(_speeds, sRange);
 
 	bool	changed = false;
-	if (!_table.newRow(_rowName, _range))
+	Table::ColumnSizing	sizing = {Table::WFixed};
+	for (int i = 0; i < sRange; i++) {
+		sizing.push_back(Table::WFixed);
+		sizing.push_back(Table::WStretch);
+	}
+	if (!_table.newRow(_rowName, sizing))
 		return (false);
 	ImGui::PushID(_rowName);
 
@@ -216,7 +231,12 @@ bool	TableRow::buildDragRange(void) {
 	_mins[1] = *(_startFloat);
 
 	bool	changed = false;
-	if (!_table.newRow(_rowName, 2))
+	Table::ColumnSizing	sizing = {Table::WFixed};
+	for (int i = 0; i < sRange; i++) {
+		sizing.push_back(Table::WFixed);
+		sizing.push_back(Table::WStretch);
+	}
+	if (!_table.newRow(_rowName, sizing))
 		return (false);
 	ImGui::PushID(_rowName);
 
@@ -245,7 +265,12 @@ bool	TableRow::buildSimpleText(void) {
 	fillVec(_valueNames, sRange);
 	fillVec(_fmts, sRange);
 
-	if (!_table.newRow(_rowName, _range))
+	Table::ColumnSizing	sizing = {Table::WFixed};
+	for (int i = 0; i < sRange; i++) {
+		sizing.push_back(Table::WFixed);
+		sizing.push_back(Table::WStretch);
+	}
+	if (!_table.newRow(_rowName, sizing))
 		return (false);
 	ImGui::PushID(_rowName);
 
@@ -270,7 +295,12 @@ bool	TableRow::buildInputText(void) {
 	fillVec(_valueNames, sRange);
 
 	bool	changed = false;
-	if (!_table.newRow(_rowName, _range))
+	Table::ColumnSizing	sizing = {Table::WFixed};
+	for (int i = 0; i < sRange; i++) {
+		sizing.push_back(Table::WFixed);
+		sizing.push_back(Table::WStretch);
+	}
+	if (!_table.newRow(_rowName, sizing))
 		return (false);
 	ImGui::PushID(_rowName);
 
@@ -286,5 +316,132 @@ bool	TableRow::buildInputText(void) {
 	ImGui::PopID();
 	return (changed);
 }
+
+
+
+DropTarget::DropTarget(const char *type)
+	:	_type{type} {
+	_startPos = ImGui::GetCursorScreenPos();
+	_endPos = _startPos;
+	_size = ImGui::GetContentRegionAvail();
+	_setToEndPos = false;
+}
+
+DropTarget	&DropTarget::setEndPos(const ImVec2 &val) {
+	_endPos = val;
+	_setToEndPos = true;
+	return (*this);
+}
+
+DropTarget	&DropTarget::addDummy(void) {
+	ImGui::SetCursorScreenPos(_startPos);
+	ImGui::Dummy(_size);
+	if (_setToEndPos) {
+		ImGui::SetCursorScreenPos(_endPos);
+		ImGui::GetCurrentWindow()->DC.IsSetPos = false;
+	}
+	return (*this);
+}
+
+
+
+Button::Button(const char *label) {
+	_label = label;
+	_size = ImGui::GetContentRegionAvail();
+	_pos = ImGui::GetCursorScreenPos();
+}
+
+Button	&Button::showOnHover(bool parentHover) {
+	_hide = parentHover;
+	_hide |= ImGui::IsMouseHoveringRect(_pos, {_pos.x + _size.x, _pos.y + _size.y});
+	return (*this);
+}
+
+bool	Button::build() {
+	if (!_hide)
+		return (false);
+	ImGui::SetCursorScreenPos(_pos);
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.f);
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.f, 0.f});
+	bool	ret = ImGui::Button(_label, _size);
+	ImGui::PopStyleVar(2);
+	if (_endPos)
+		ImGui::SetCursorScreenPos(*_endPos);
+	ImGui::GetCurrentWindow()->DC.IsSetPos = false;
+	return (ret);
+}
+
+
+
+bool	Knob::build(void) {
+	float	startAngle = IM_PI * 0.75f;
+	float	endAngle = IM_PI * 2.25f;
+	float	angleRange = endAngle - startAngle;
+
+	bool	changed = false;
+	ImVec2	center = ImGui::GetCursorScreenPos() + ImVec2(_radius, _radius);
+	auto	*draw = ImGui::GetWindowDrawList();
+
+	ImGui::InvisibleButton(_label, {_radius * 2.f, _radius * 2.f});
+
+	if (ImGui::IsItemActive()) {
+		ImVec2	mouse = ImGui::GetIO().MousePos;
+		float	angle = atan2f(mouse.y - center.y, mouse.x - center.x);
+		if (angle < 0.f)	{ angle += 2.f * IM_PI; }
+
+		float	start = startAngle;
+		float	end = endAngle;
+		if (angle < end - 2.f * IM_PI)	{ angle += 2.f * IM_PI; }
+		float	t = (angle - start) / angleRange;
+
+		if (t < 0.f || t > 1.f) {
+			float	distToStart = std::abs(angle - start);
+			float	distToEnd = std::abs(angle - end);
+			if (distToStart > IM_PI)
+				distToStart = 2.f * IM_PI - distToStart;
+			if (distToEnd > IM_PI)
+				distToEnd = 2.f * IM_PI - distToEnd;
+			t = (distToEnd < distToStart) ? 1.f : 0.f;
+		}
+
+		*_val = _min + t * (_max - _min);
+		changed = true;
+	}
+
+	float	t = (*_val - _min) / (_max - _min);
+	float	valueAngle = startAngle + t * angleRange;
+
+	ImU32	bgColor = ImGui::ColorConvertFloat4ToU32(
+		ImGui::GetStyleColorVec4(ImGuiCol_FrameBg));
+	ImU32	fgColor = ImGui::ColorConvertFloat4ToU32(
+		ImGui::GetStyleColorVec4(ImGuiCol_SliderGrabActive));
+
+	draw->PathArcTo(center, _radius, startAngle, endAngle, 64);
+	draw->PathStroke(bgColor, 0, _thickness);
+
+	draw->PathArcTo(center, _radius, startAngle, valueAngle, 64);
+	draw->PathStroke(fgColor, 0, _thickness);
+
+	return (changed);
+}
+
+
+
+ColoredDummy::ColoredDummy(void) {
+	_size = ImGui::GetContentRegionAvail();
+	_pos = ImGui::GetCursorScreenPos();
+}
+
+void	ColoredDummy::build(void) {
+	auto	draw = ImGui::GetForegroundDrawList();
+	ImVec2	rectMax = {_pos.x + _size.x, _pos.y + _size.y};
+
+	ImGui::SetCursorScreenPos(_pos);
+	// ImGui::Dummy(_size);
+	draw->AddRectFilled(_pos, rectMax, IM_COL32(255, 0, 0, 100));
+	ImGui::SetCursorScreenPos(_endPos);
+	ImGui::GetCurrentWindow()->DC.IsSetPos = false;
+}
+
 
 }

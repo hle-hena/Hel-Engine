@@ -35,7 +35,8 @@ add_dependencies(hel run_python_script)
 target_include_directories(hel PRIVATE
 	${CMAKE_SOURCE_DIR}/src
 )
-target_compile_definitions(hel PRIVATE 
+target_compile_definitions(hel PRIVATE
+	IMGUI_DEFINE_MATH_OPERATORS
 	$<$<CONFIG:Debug>:VALIDATION_LAYERS>
 )
 

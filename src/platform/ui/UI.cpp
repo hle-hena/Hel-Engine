@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:57:22                                        */
+/*  Last Modified: 2026/03/21 18:51:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,35 +19,90 @@
 #include "platform/ui/UIHelper.hpp"
 #include "ecs/Registry.hpp"
 #include "api/ImGui/imgui.h"
+#include "api/ImGui/imgui_internal.h"
 #include "api/ImGui/imgui_stdlib.h"
 #include "core/Engine.hpp"
 
+#include <fstream>
+
 namespace	hel::sys {
 
-void	UI::init(void) {
-	_inspectorUI.init(_registry);
-	_inspectorUI.setBuiltInDrawFunc();
-	_entityHierarchyUI.init(_registry);
+UI::~UI(void) {
+	saveToFile("currentLayout.json");
 }
 
-void	UI::addSplitters(float windowWidth, float windowHeight) {
-	Splitter(&_leftTabWidth)
-		.setLabel("leftTab splitter")
-		.setMin(50.f)
-		.setMax(windowWidth * 0.35f)
-		.setPos({_leftTabWidth, 0.f})
-		.setSize(windowHeight)
-		.setDir(Splitter::Right)
-		.build();
+void	UI::init(void) {
+	addNewPanelRegistry(EntityHierarchy::label, PanelFactoryMacro(EntityHierarchy));
+	addNewPanelRegistry(StyleEditor::label, PanelFactoryMacro(StyleEditor));
+	addNewPanelRegistry(Inspector::label, PanelFactoryMacro(Inspector));
+	addNewPanelRegistry(SceneViewport::label, PanelFactoryMacro(SceneViewport));
 
-	Splitter(&_rightTabWidth)
-		.setLabel("rightTab splitter")
-		.setMin(50.f)
-		.setMax(windowWidth * 0.4f)
-		.setPos({windowWidth - _rightTabWidth, 0.f})
-		.setSize(windowHeight)
-		.setDir(Splitter::Left)
-		.build();
+	if (!loadFromFile("currentLayout.json")) {
+		_dock = std::make_unique<Dock>("Dock", this);
+		auto	dockChild = _dock->forceSplit(Splitter::Dir::Left, -0.835f, {});
+		auto	leftChild = dockChild.first->forceSplit(Splitter::Dir::Left, -0.139f, {});
+
+		addNewPanel<EntityHierarchy>(leftChild.first);
+		addNewPanel<SceneViewport>(leftChild.second);
+		addNewPanel<Inspector>(dockChild.second);
+	}
+}
+
+void	UI::removePanel(IPanel *panel) {
+	auto	it = std::find_if(_panels.begin(), _panels.end(),
+				[panel](const auto &other){ return (panel == other.get()); });
+	if (it != _panels.end())
+		_panels.erase(it);
+}
+
+void	UI::saveToFile(const std::string &path) {
+	std::ofstream	file(path);
+	file << _dock->serialize(*_lastSize).dump(2);
+}
+
+bool	UI::loadFromFile(const std::string &path) {
+	std::ifstream	file(path);
+	if (!file.is_open())	{ return (false); }
+	nlohmann::json	src;
+	file >> src;
+	_dock = Dock::deserialize(this, src);
+	return (true);
+}
+
+void	UI::addDock(Window *window, const ImVec2 &size) {
+	ImGuiWindowFlags	hostFlags =
+		ImGuiWindowFlags_NoTitleBar				|
+		ImGuiWindowFlags_NoCollapse				|
+		ImGuiWindowFlags_NoResize				|
+		ImGuiWindowFlags_NoMove					|
+		ImGuiWindowFlags_NoBringToFrontOnFocus	|
+		ImGuiWindowFlags_NoNavFocus				|
+		ImGuiWindowFlags_NoScrollbar			|
+		ImGuiWindowFlags_NoBackground;
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+	ImGui::SetNextWindowPos({0.f, 0.f});
+	ImGui::SetNextWindowSize(size);
+	ImGui::Begin("##DockHost", nullptr, hostFlags);
+	ImGui::GetWindowDrawList()->AddRectFilled(
+		ImGui::GetCursorScreenPos(),
+		ImGui::GetContentRegionAvail(),
+		ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_WindowBg))
+	);
+	if (!_lastSize)
+		_lastSize = size;
+	if (size.x > 0.f && size.y > 0.f &&
+			((*_lastSize).x != size.x || (*_lastSize).y != size.y)) {
+		_dock->render(window, size, {size.x / (*_lastSize).x, size.y / (*_lastSize).y});
+		_lastSize = size;
+	}
+	else
+		_dock->render(window, size);
+	ImGui::End();
+
+	ImGui::PopStyleVar(2);
 }
 
 void	UI::registerUI(const FrameContext &ctx) {
@@ -55,14 +110,7 @@ void	UI::registerUI(const FrameContext &ctx) {
 	float	windowWidth = static_cast<float>(windowExtent.width);
 	float	windowHeight = static_cast<float>(windowExtent.height);
 
-	addSplitters(windowWidth, windowHeight);
-
-	_inspectorUI.render(ctx.window, {std::max(windowWidth - _rightTabWidth, 1.f), 0.f},
-						{_rightTabWidth, std::max(windowHeight, 1.f)});
-	_entityHierarchyUI.render(ctx.window, {0.f, 0.f},
-							{_leftTabWidth, std::max(windowHeight, 1.f)});
-	_sceneViewport.render(_imagePool, ctx.window, {_leftTabWidth, 0.f},
-						{std::max(windowWidth - _rightTabWidth - _leftTabWidth, 1.f), std::max(windowHeight, 1.f)});
+	addDock(ctx.window, {windowWidth, windowHeight});
 }
 
 }
