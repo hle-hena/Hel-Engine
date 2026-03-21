@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:48:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 16:57:11                                        */
+/*  Last Modified: 2026/03/21 14:50:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,6 +45,7 @@ class	Splitter {
 		SETTER(Dir, Dir, _dir)
 		SETTER(Label, const char *, _label)
 		SETTER(Pos, ImVec2, _pos)
+		SETTER(Normalizer, float, _normalizer)
 		void	build(void);
 
 	private:
@@ -64,6 +65,7 @@ class	Splitter {
 		float		_max{100.f};
 		float		_size{0.f};
 		float		_hitbox{6.f};
+		float		_normalizer{1.f};
 };
 
 
@@ -93,23 +95,31 @@ class	DragFloat {
 
 class	Table {
 	public:
+		static constexpr ImGuiTableColumnFlags	WStretch
+							= ImGuiTableColumnFlags_WidthStretch;
+		static constexpr ImGuiTableColumnFlags	WFixed
+							= ImGuiTableColumnFlags_WidthFixed;
 		Table(const char *name);
 		~Table(void);
 
-	private:
-		bool	newRow(const char *rowName, uint32_t nbCol);
+		explicit operator bool(void) {return (true); }
+
+		using ColumnSizing = std::vector<ImGuiTableColumnFlags>;
+		bool	newRow(const char *rowName, ColumnSizing columnSizing);
+		bool	newRow(ColumnSizing columnSizing);
 		template <typename Func>
 		void	setNextCell(const char *label, Func&& drawAction);
+		template <typename Func>
+		void	setNextCell(Func&& drawAction);
 
-		bool	beginNewTable(void);
+	private:
+		bool	beginNewTable(ColumnSizing columnSizing);
 		void	endTable(void);
 
 		const char	*_name;
 		bool		_tableOpened{false};
 		uint32_t	_nbTables{0};
 		uint32_t	_nbCol{0};
-	
-	friend class	TableRow;
 };
 
 class	TableRow {
@@ -159,6 +169,83 @@ class	TableRow {
 
 		using BuildFunc = bool (TableRow::*)();
 		static const std::unordered_map<Type, BuildFunc>	_buildFunctions;
+};
+
+class	DropTarget {
+	public:
+		DropTarget(const char *type);
+
+		SETTER(Size, const ImVec2 &, _size)
+		SETTER(ResetPosition, bool, _setToEndPos)
+		SETTER(Pos, const ImVec2 &, _startPos)
+		DropTarget	&setEndPos(const ImVec2 &val);
+
+		DropTarget	&addDummy(void);
+		template <typename Func>
+		void	build(Func &&dropAction);
+
+	private:
+		const char	*_type;
+		ImVec2		_size;
+		ImVec2		_startPos;
+		ImVec2		_endPos;
+		bool		_setToEndPos;
+};
+
+class	Button {
+	public:
+		Button(const char *label);
+
+		SETTER(Size, ImVec2, _size)
+		SETTER(EndPos, ImVec2, _endPos)
+		SETTER(Pos, ImVec2, _pos)
+
+		Button	&showOnHover(bool parentHover);
+
+		bool	build(void);
+
+	private:
+		const char				*_label;
+		ImVec2					_pos;
+		std::optional<ImVec2>	_endPos;
+		ImVec2					_size;
+		bool					_hide;
+};
+
+class	Knob {
+	public:
+		Knob(float *val) : _val{val} {};
+
+		SETTER(Label, const char *, _label)
+		SETTER(Min, float, _min)
+		SETTER(Max, float, _max)
+		SETTER(Width, float, _radius)
+		SETTER(Thickness, float, _thickness)
+		bool	build(void);
+
+	private:
+		float		*_val;
+		const char	*_label{"##knob"};
+		float		_min{-INFINITY};
+		float		_max{+INFINITY};
+		float		_radius{10.f};
+		float		_thickness{4.f};
+};
+
+class	ColoredDummy {
+	public:
+		ColoredDummy(void);
+
+		SETTER(Size, ImVec2, _size)
+		SETTER(EndPos, ImVec2, _endPos)
+		SETTER(Pos, ImVec2, _pos)
+
+		void	build(void);
+
+	private:
+		ImVec2	_pos;
+		ImVec2	_endPos;
+		ImVec2	_size;
 };
 
 }

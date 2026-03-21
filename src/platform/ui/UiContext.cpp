@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 18:27:01                                        */
+/*  Last Modified: 2026/03/21 16:27:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,7 @@
 #include "api/vulkan/Device.hpp"
 #include "api/vulkan/Sampler.hpp"
 #include "core/Application.hpp"
+#include "platform/ui/StyleEditor.hpp"
 
 namespace	hel {
 
@@ -79,9 +80,11 @@ void	UiContext::initImGui(Device &device) {
 void	UiContext::initImGuiStyle(void) {
 	auto	&style = ImGui::GetStyle();
 
-	ImGui::StyleColorsClassic(&style);
-	style.TreeLinesFlags = ImGuiTreeNodeFlags_DrawLinesFull;
+	style.TreeLinesFlags = ImGuiTreeNodeFlags_DrawLinesToNodes;
 	style.TreeLinesRounding = 3.f;
+
+	sys::StyleEditor::loadFromFile("currentStyle.json");
+	sys::StyleEditor::applyPalette();
 }
 
 void	UiContext::initDescriptorPool(Device &device) {

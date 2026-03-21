@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: EditorUI.hpp                                                        */
+/*  File: Inspector.hpp                                                       */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/27 21:55:02 by hle-hena                                  */
+/*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:35:08                                        */
+/*  Last Modified: 2026/03/18 10:23:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,6 +22,7 @@
 
 # include "ecs/Entity.hpp"
 # include "api/ImGui/imgui.h"
+# include "platform/ui/Panel.hpp"
 
 namespace	hel {
 
@@ -32,28 +33,29 @@ class	Window;
 
 namespace	hel::sys {
 
-class	InspectorUI {
+class	Inspector : public Panel<Inspector> {
 	public:
+		static constexpr const char	*label = "Inspector";
 		using UIDrawFunc = std::function<void(Window *, void *)>;
 
-		InspectorUI(void) = default;
-		~InspectorUI(void) = default;
+		Inspector(void) = default;
+		~Inspector(void) = default;
 
-		void	init(Registry *registry);
+		expected<void, std::string>	onInit(void) override;
 
 		template <typename Component>
 		void	setDrawFunc(UIDrawFunc func) {
 			_drawFuncs[typeid(Component)] = func;
 		}
-		void	setBuiltInDrawFunc(void);
 
-		void	render(Window *window, ImVec2 pos, ImVec2 size);
+		void	render(Window *window, const ImVec2 &) override;
 
 	private:
 		void	addNewComponentPopup(Entity::id handle);
 		void	removeEntity(Entity::id handle);
 
-		Registry	*_registry;
+		void	setBuiltInDrawFunc(void);
+
 		bool		_addNewComp{false};
 		int			_newCompTypeIndex{0};
 
