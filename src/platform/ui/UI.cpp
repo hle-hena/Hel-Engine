@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 15:22:18                                        */
+/*  Last Modified: 2026/03/21 16:28:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,11 +39,10 @@ void	UI::init(void) {
 
 	if (!loadFromFile("currentLayout.json")) {
 		_dock = std::make_unique<Dock>("Dock", this);
-		auto	dockChild = _dock->forceSplit(Splitter::Dir::Left, {});
-		auto	leftChild = dockChild.first->forceSplit(Splitter::Dir::Left, {});
+		auto	dockChild = _dock->forceSplit(Splitter::Dir::Left, -0.835f, {});
+		auto	leftChild = dockChild.first->forceSplit(Splitter::Dir::Left, -0.139f, {});
 
 		addNewPanel<EntityHierarchy>(leftChild.first);
-		addNewPanel<StyleEditor>(leftChild.first);
 		addNewPanel<SceneViewport>(leftChild.second);
 		addNewPanel<Inspector>(dockChild.second);
 	}

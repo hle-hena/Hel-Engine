@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:30:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 15:38:15                                        */
+/*  Last Modified: 2026/03/21 16:20:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -40,7 +40,8 @@ class	Dock {
 								const ImVec2 &rescale = {-1.f, -1.f});
 
 		PASSKEY(UIKey, UI)
-		std::pair<Dock *, Dock *>	forceSplit(Splitter::Dir dir, UIKey);
+		std::pair<Dock *, Dock *>	forceSplit(Splitter::Dir dir,
+												float splitRatio, UIKey);
 		Dock	*forceGetChildOne(UIKey)
 					{ return (_childOne.get()); }
 		Dock	*forceGetChildTwo(UIKey)

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 15:39:14                                        */
+/*  Last Modified: 2026/03/21 16:21:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -66,11 +66,12 @@ std::unique_ptr<Dock>	Dock::deserialize(UI *ui, const nlohmann::json &src) {
 	return (dock);
 }
 
-std::pair<Dock *, Dock *>	Dock::forceSplit(Splitter::Dir dir, UIKey) {
+std::pair<Dock *, Dock *>	Dock::forceSplit(Splitter::Dir dir,
+											float splitRatio, UIKey) {
 	_type = Type::Split;
 	_splitDir = (dir == Splitter::Dir::Left) ? Splitter::Dir::Right :
 				(dir == Splitter::Dir::Up) ? Splitter::Dir::Down : dir;
-	_splitRatio.reset();
+	_splitRatio = splitRatio;
 
 	bool	isVertical = (_splitDir == Splitter::Dir::Right);
 	_childOne = std::make_unique<Dock>(_dockName +

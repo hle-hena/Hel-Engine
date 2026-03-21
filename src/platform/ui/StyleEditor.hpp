@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/17 16:32:44 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 15:27:16                                        */
+/*  Last Modified: 2026/03/21 16:25:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,14 +39,15 @@ class	StyleEditor : public Panel<StyleEditor> {
 		~StyleEditor(void);
 
 		expected<void, std::string>	onInit(void) override;
+		static void		applyPalette(void);
+		static bool		loadFromFile(const std::string &path);
 
 		void	render(Window *window, const ImVec2 &) override;
 
 	private:
 		void			saveToFile(const std::string &path);
-		bool			loadFromFile(const std::string &path);
 		nlohmann::json	serialize(void) const;
-		void			deserialize(const nlohmann::json &src);
+		static void		deserialize(const nlohmann::json &src);
 
 		void	baseColorEditor(void);
 		static constexpr ImVec2					_tabSize = {32.f, 32.f};
@@ -135,17 +136,15 @@ class	StyleEditor : public Panel<StyleEditor> {
 		bool	colorSelectable(const std::string &label, const ImVec4 &color,
 							const ColorSelectableStyle &style);
 
-		ImVec4	resolveColor(const Color &col) const;
-		void	applyPalette(void);
-		void	applyPalette(ImGuiCol col, ImVec4 colValue);
+		static ImVec4	resolveColor(const Color &col);
+		static void		applyPalette(ImGuiCol col, ImVec4 colValue);
 
 		ImVec4	_primaryColor{0.f, 0.f, 0.f, 1.f};
 		ImVec4	_secondaryColor{0.f, 0.f, 0.f, 1.f};
 		ImVec4	_shadowColor{0.f, 0.f, 0.f, 1.f};
 		ImVec4	_highlightColor{0.f, 0.f, 0.f, 1.f};
 
-		std::map<ImGuiCol_, Color>	_colors;
-		bool						_applySetup{true};
+		static std::map<ImGuiCol_, Color>	_colors;
 };
 
 }

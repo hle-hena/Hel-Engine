@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/18 11:20:37 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 15:27:24                                        */
+/*  Last Modified: 2026/03/21 16:27:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,13 +23,8 @@
 
 namespace	hel::sys {
 
-std::map<std::string, ImVec4>	StyleEditor::_baseColors = {
-	{"primary", ImVec4(0.f, 0.f, 0.f, 1.f)},
-	{"secondary", ImVec4(0.f, 0.f, 0.f, 1.f)},
-	{"tertiary", ImVec4(0.f, 0.f, 0.f, 1.f)},
-	{"shadow", ImVec4(0.f, 0.f, 0.f, 1.f)},
-	{"highlight", ImVec4(0.f, 0.f, 0.f, 1.f)}
-};
+std::map<std::string, ImVec4>	StyleEditor::_baseColors = {};
+std::map<ImGuiCol_, StyleEditor::Color>	StyleEditor::_colors = {};
 std::vector<std::string>	StyleEditor::_baseColorsLabel = {
 	"primary", "secondary", "tertiary", "shadow", "highlight"
 };
@@ -45,11 +40,79 @@ void	StyleEditor::saveToFile(const std::string &path) {
 
 bool	StyleEditor::loadFromFile(const std::string &path) {
 	std::ifstream	file(path);
-	if (!file.is_open())	{ return (false); }
-	nlohmann::json	src;
-	file >> src;
-	deserialize(src);
-	return (true);
+	if (file.is_open()) {
+		nlohmann::json	src;
+		file >> src;
+		deserialize(src);
+		return (true);
+	}
+
+	if (_baseColors.empty()) {
+		_baseColors = {
+			{"highlight", {1.000f, 1.000f, 1.000f, 1.000f}},
+			{"primary", {0.401f, 0.349f, 0.908f, 1.000f}},
+			{"secondary", {0.155f, 0.166f, 0.328f, 1.000f}},
+			{"shadow", {0.000f, 0.000f, 0.000f, 1.000f}},
+			{"tertiary", {0.374f, 0.867f, 0.742f, 1.000f}},
+		};
+	}
+
+	if (_colors.empty()) {
+		_colors = {
+			{ ImGuiCol_Text, { "highlight", {}, 1.00f } },
+			{ ImGuiCol_TextDisabled, { "highlight", {}, 0.35f } },
+			{ ImGuiCol_WindowBg, { "secondary", {}, 0.95f } },
+			{ ImGuiCol_ChildBg, { "secondary", {}, 0.50f } },
+			{ ImGuiCol_PopupBg, { "secondary", {}, 0.98f } },
+			{ ImGuiCol_Border, { "shadow", {}, 0.40f } },
+			{ ImGuiCol_BorderShadow, { "shadow", {}, 0.00f } },
+			{ ImGuiCol_FrameBg, { "shadow", {}, 0.30f } },
+			{ ImGuiCol_FrameBgHovered, { "primary", {}, 0.25f } },
+			{ ImGuiCol_FrameBgActive, { "primary", {}, 0.50f } },
+			{ ImGuiCol_TitleBg, { "secondary", {}, 1.00f } },
+			{ ImGuiCol_TitleBgActive, { "primary", {}, 0.70f } },
+			{ ImGuiCol_TitleBgCollapsed, { "primary", {}, 1.00f } },
+			{ ImGuiCol_MenuBarBg, { "secondary", {}, 1.00f } },
+			{ ImGuiCol_ScrollbarBg, { "shadow", {}, 0.15f } },
+			{ ImGuiCol_ScrollbarGrab, { "primary", {}, 0.40f } },
+			{ ImGuiCol_ScrollbarGrabHovered, { "primary", {}, 0.65f } },
+			{ ImGuiCol_ScrollbarGrabActive, { "primary", {}, 0.90f } },
+			{ ImGuiCol_CheckMark, { "primary", {}, 1.00f } },
+			{ ImGuiCol_SliderGrab, { "primary", {}, 0.70f } },
+			{ ImGuiCol_SliderGrabActive, { "primary", {}, 1.00f } },
+			{ ImGuiCol_Button, { "primary", {}, 0.35f } },
+			{ ImGuiCol_ButtonHovered, { "primary", {}, 0.65f } },
+			{ ImGuiCol_ButtonActive, { "primary", {}, 1.00f } },
+			{ ImGuiCol_Header, { "primary", {}, 0.30f } },
+			{ ImGuiCol_HeaderHovered, { "primary", {}, 0.55f } },
+			{ ImGuiCol_HeaderActive, { "primary", {}, 0.80f } },
+			{ ImGuiCol_Separator, { "shadow", {}, 0.25f } },
+			{ ImGuiCol_SeparatorHovered, { "primary", {}, 1.00f } },
+			{ ImGuiCol_SeparatorActive, { "primary", {}, 1.00f } },
+			{ ImGuiCol_ResizeGrip, { "primary", {}, 0.20f } },
+			{ ImGuiCol_ResizeGripHovered, { "primary", {}, 0.60f } },
+			{ ImGuiCol_ResizeGripActive, { "primary", {}, 0.95f } },
+			{ ImGuiCol_InputTextCursor, { "primary", {}, 1.00f } },
+			{ ImGuiCol_TabHovered, { "primary", {}, 0.70f } },
+			{ ImGuiCol_Tab, { "secondary", {}, 0.80f } },
+			{ ImGuiCol_TabSelected, { "primary", {}, 0.50f } },
+			{ ImGuiCol_TabSelectedOverline, { "primary", {}, 1.00f } },
+			{ ImGuiCol_TabDimmed, { "primary", {}, 1.00f } },
+			{ ImGuiCol_TabDimmedSelected, { "primary", {}, 1.00f } },
+			{ ImGuiCol_TabDimmedSelectedOverline, { "primary", {}, 1.00f } },
+			{ ImGuiCol_DockingPreview, { "primary", {}, 1.00f } },
+			{ ImGuiCol_DockingEmptyBg, { "primary", {}, 1.00f } },
+			{ ImGuiCol_TextLink, { "primary", {}, 1.00f } },
+			{ ImGuiCol_TextSelectedBg, { "primary", {}, 1.00f } },
+			{ ImGuiCol_DragDropTarget, { "tertiary", {}, 1.00f } },
+			{ ImGuiCol_DragDropTargetBg, { "tertiary", {}, 0.45f } },
+			{ ImGuiCol_UnsavedMarker, { "primary", {}, 1.00f } },
+			{ ImGuiCol_NavCursor, { "primary", {}, 1.00f } },
+			{ ImGuiCol_NavWindowingHighlight, { "primary", {}, 1.00f } },
+			{ ImGuiCol_NavWindowingDimBg, { "primary", {}, 1.00f } },
+			{ ImGuiCol_ModalWindowDimBg, { "primary", {}, 1.00f } },
+		};
+	}
 }
 
 nlohmann::json	StyleEditor::serialize(void) const {
@@ -90,50 +153,11 @@ void	StyleEditor::deserialize(const nlohmann::json &src) {
 }
 
 expected<void, std::string>	StyleEditor::onInit(void) {
-	if (loadFromFile("currentStyle.json"))
-		return {};
-
-	_colors = {
-		{ ImGuiCol_WindowBg,				{ "secondary",	{}, 0.95f } },
-		{ ImGuiCol_ChildBg,					{ "secondary",	{}, 0.50f } },
-		{ ImGuiCol_PopupBg,					{ "secondary",	{}, 0.98f } },
-		{ ImGuiCol_FrameBg,					{ "shadow",		{}, 0.30f } },
-		{ ImGuiCol_FrameBgHovered,			{ "primary",	{}, 0.25f } },
-		{ ImGuiCol_FrameBgActive,			{ "primary",	{}, 0.50f } },
-		{ ImGuiCol_TitleBg,					{ "secondary",	{}, 1.00f } },
-		{ ImGuiCol_TitleBgActive,			{ "primary",	{}, 0.70f } },
-		{ ImGuiCol_MenuBarBg,				{ "secondary",	{}, 1.00f } },
-		{ ImGuiCol_ScrollbarBg,				{ "shadow",		{}, 0.15f } },
-		{ ImGuiCol_ScrollbarGrab,			{ "primary",	{}, 0.40f } },
-		{ ImGuiCol_ScrollbarGrabHovered,	{ "primary",	{}, 0.65f } },
-		{ ImGuiCol_ScrollbarGrabActive,		{ "primary",	{}, 0.90f } },
-		{ ImGuiCol_CheckMark,				{ "primary",	{}, 1.00f } },
-		{ ImGuiCol_SliderGrab,				{ "primary",	{}, 0.70f } },
-		{ ImGuiCol_SliderGrabActive,		{ "primary",	{}, 1.00f } },
-		{ ImGuiCol_Button,					{ "primary",	{}, 0.35f } },
-		{ ImGuiCol_ButtonHovered,			{ "primary",	{}, 0.65f } },
-		{ ImGuiCol_ButtonActive,			{ "primary",	{}, 1.00f } },
-		{ ImGuiCol_Header,					{ "primary",	{}, 0.30f } },
-		{ ImGuiCol_HeaderHovered,			{ "primary",	{}, 0.55f } },
-		{ ImGuiCol_HeaderActive,			{ "primary",	{}, 0.80f } },
-		{ ImGuiCol_Separator,				{ "shadow",		{}, 0.25f } },
-		{ ImGuiCol_ResizeGrip,				{ "primary",	{}, 0.20f } },
-		{ ImGuiCol_ResizeGripHovered,		{ "primary",	{}, 0.60f } },
-		{ ImGuiCol_ResizeGripActive,		{ "primary",	{}, 0.95f } },
-		{ ImGuiCol_Tab,						{ "secondary",	{}, 0.80f } },
-		{ ImGuiCol_TabHovered,				{ "primary",	{}, 0.70f } },
-		{ ImGuiCol_TabActive,				{ "primary",	{}, 0.50f } },
-		{ ImGuiCol_DragDropTarget,			{ "primary",	{}, 0.90f } },
-		{ ImGuiCol_NavHighlight,			{ "primary",	{}, 1.00f } },
-		{ ImGuiCol_Text,					{ "highlight",	{}, 1.00f } },
-		{ ImGuiCol_TextDisabled,			{ "highlight",	{}, 0.35f } },
-		{ ImGuiCol_Border,					{ "shadow",		{}, 0.40f } },
-		{ ImGuiCol_BorderShadow,			{ "shadow",		{}, 0.00f } }
-	};
+	loadFromFile("currentStyle.json");
 	return {};
 }
 
-ImVec4	StyleEditor::resolveColor(const Color &col) const {
+ImVec4	StyleEditor::resolveColor(const Color &col) {
 	auto	base = col.override ? col.color : _baseColors[col.reference];
 	return { base.x, base.y, base.z, col.alpha };
 }
@@ -341,10 +365,6 @@ void	StyleEditor::render(Window *window, const ImVec2 &size) {
 	showColorSection("Tabs", _tabColors);
 	showColorSection("Tables & Plots", _windowColors);
 	showColorSection("Misc", _miscColors);
-	if (_applySetup) {
-		applyPalette();
-		_applySetup = false;
-	}
 }
 
 }
