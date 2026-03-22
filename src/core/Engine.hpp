@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 22:50:37                                        */
+/*  Last Modified: 2026/03/21 20:01:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -76,13 +76,13 @@ class	Engine {
 		void			createDescriptorPool(void);
 		void			createImagePool(void);
 
-		void			UITick(UiContext &ui, const FrameContext &frameCtx);
-		void			updateTick(const FrameContext &frameCtx);
+		void			UITick(UiContext &ui, FrameContext &frameCtx);
+		void			updateTick(FrameContext &frameCtx);
 		void			renderTick(Window *window, UiContext &ui,
-								const FrameContext &frameCtx,
+								FrameContext &frameCtx,
 								uint32_t frameIndex);
 
-		void			updateGlobalUBO(Window &window, uint32_t currentFrame);
+		void			updateGlobalUBO(FrameContext &ctx, uint32_t currentFrame);
 
 		bool											_healthy{true};
 		std::string										_reason{""};

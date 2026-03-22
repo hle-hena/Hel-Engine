@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 12:55:30                                        */
+/*  Last Modified: 2026/03/21 20:10:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,6 +25,7 @@
 #include "platform/window/GLFW.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
+#include "core/RenderQueue.hpp"
 
 #include <stdexcept>
 #include <array>
@@ -126,25 +127,24 @@ void	Engine::tick(Window *window, uint32_t frameIndex) {
 	renderTick(window, ui, frameCtx, frameIndex);
 }
 
-void	Engine::UITick(UiContext &ui, const FrameContext &frameCtx) {
+void	Engine::UITick(UiContext &ui, FrameContext &frameCtx) {
 	ui.newFrame();
 	for (auto &system: _systems)
 		system->registerUI(frameCtx);
 	ui.endFrame();
 }
 
-void	Engine::updateTick(const FrameContext &frameCtx) {
+void	Engine::updateTick(FrameContext &frameCtx) {
 	for (auto &system: _systems)
 		system->update(frameCtx);
 }
 
-void	Engine::renderTick(Window *window, UiContext &ui, const FrameContext &ctx, uint32_t frameIndex) {
+void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx, uint32_t frameIndex) {
 	Swapchain	&swapchain = window->getSwapchain();
 	uint32_t	imageIndex;
 
 	if (swapchain.acquireNextImage(*window, frameIndex, &imageIndex))
 		return ;
-	updateGlobalUBO(*window, frameIndex);
 	vkResetCommandBuffer(ctx.commandBuffer, 0);
 
 	auto	depthImage = _imagePool->acquire(Image::Config()
@@ -159,7 +159,10 @@ void	Engine::renderTick(Window *window, UiContext &ui, const FrameContext &ctx, 
 
 	if (vkBeginCommandBuffer(ctx.commandBuffer, &beginInfo))
 		return ;
-	for (auto [renderImg, entityHandle]: _imagePool->getRequestedRenders()) {
+	for (auto &renderRequest: RenderQueue::flush()) {
+		auto	renderImg = renderRequest.img;
+		ctx.request = &renderRequest;
+		updateGlobalUBO(ctx, frameIndex);
 		if (auto pass = Renderer(ctx.commandBuffer, renderImg->getExtent())
 						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
 						.addDepthWrite(depthImage, depthImage->getFormat())
@@ -184,14 +187,17 @@ void	Engine::renderTick(Window *window, UiContext &ui, const FrameContext &ctx, 
 	swapchain.present(*window, imageIndex, frameIndex);
 }
 
-void	Engine::updateGlobalUBO(Window &window, uint32_t currentFrame) {
-	GlobalUBO	data{};
-	data.viewProjection = glm::mat4{0.f};
-	if (auto *camera = _registry.getComponent<comp::Camera>(window.getEntityReference())) {
-		data.viewProjection = camera->viewProjection;
-		data.elapsedTime = _timer.elapsedTime();
+void	Engine::updateGlobalUBO(FrameContext &ctx, uint32_t currentFrame) {
+	ctx.globalData.viewProjection = glm::mat4{1.f};
+	if (auto *camera = _registry.getComponent<comp::Camera>(ctx.window->getEntityReference())) {
+		auto	extent = ctx.request->img->getExtent();
+		float	aspect = (float)extent.width / extent.height;
+		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), aspect, camera->near, camera->far);
+		projection[1][1] *= -1;
+		ctx.globalData.viewProjection = projection * camera->view;
 	}
-	_frame.writeToUBO(&data, currentFrame);
+	ctx.globalData.elapsedTime = _timer.elapsedTime();
+	_frame.writeToUBO(&ctx.globalData, currentFrame);
 }
 
 }

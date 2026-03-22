@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 13:14:11                                        */
+/*  Last Modified: 2026/03/21 19:49:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,6 +19,7 @@
 #include "api/vulkan/Swapchain.hpp"
 #include "platform/window/Window.hpp"
 #include "api/vulkan/ImagePool.hpp"
+#include "core/RenderQueue.hpp"
 
 #include <iostream>
 
@@ -29,7 +30,7 @@ expected<void, std::string>	SceneViewport::onInit(void) {
 }
 
 void	SceneViewport::render(Window *window, const ImVec2 &size) {
-	auto	image = _imagePool->requestRender(Entity::NOT_REGISTERED, Image::Config()
+	auto	image = _imagePool->acquire(Image::Config()
 			.setWidth(static_cast<uint32_t>(std::max(size.x, 1.f)))
 			.setHeight(static_cast<uint32_t>(std::max(size.y, 1.f)))
 			.setFormats({VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM})
@@ -39,10 +40,10 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 			.setProperty(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
 	if (!image)
 		return ;
+	RenderQueue::push({Entity::NOT_REGISTERED, image});
 	auto	extent = image->getPhysicalExtent();
 	ImVec2	uv1 = {size.x / extent.width, size.y / extent.height};
-	float	aspect = size.x / size.y;
-	window->updateEntityReference(aspect);
+
 	ImGui::Image(image->getTexture(VK_FORMAT_B8G8R8A8_UNORM),
 			size, {0.f, 0.f}, uv1);
 	if (glfwGetInputMode(window->getWindow(), GLFW_CURSOR) ==

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 20:03:26                                        */
+/*  Last Modified: 2026/03/21 20:10:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -68,10 +68,7 @@ void	Camera::update(const FrameContext &) {
 			glm::mat4 translate = glm::translate(glm::mat4(1.0f), -constTransform->position);
 			glm::mat4 view = rotate * translate;
 
-			glm::mat4 projection = glm::perspective(glm::radians(camera->fov), camera->aspect, camera->near, camera->far);
-			projection[1][1] *= -1; 
-
-			camera->viewProjection = projection * view;
+			camera->view = view;
 		}
 	}
 }
@@ -91,7 +88,12 @@ void	Camera::render(const FrameContext &ctx, const RenderingConfig &conf) {
 		if (!mesh)	{ continue ; }
 		auto	*transform = entities.get<comp::Transform>(entity);
 		auto	*camera = entities.get<comp::Camera>(entity);
-		PushConstantData	push{transform->worldMatrix, glm::inverse(camera->viewProjection)};
+
+		auto	extent = ctx.request->img->getExtent();
+		float	aspect = (float)extent.width / extent.height;
+		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), aspect, camera->near, camera->far);
+		projection[1][1] *= -1; 
+		PushConstantData	push{transform->worldMatrix, projection * camera->view};
 
 		vkCmdPushConstants(commandBuffer,pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
 							0, sizeof(PushConstantData), &push);

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 20:07:54                                        */
+/*  Last Modified: 2026/03/21 20:03:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,6 +26,7 @@
 # include "api/vulkan/Buffer.hpp"
 # include "api/vulkan/Descriptors.hpp"
 # include "utils/Expected.hpp"
+# include "core/RenderQueue.hpp"
 
 namespace	hel {
 
@@ -39,8 +40,10 @@ struct	GlobalUBO {
 struct	FrameContext {
 	Window					*window{nullptr};
 	VkCommandBuffer			commandBuffer;
+	GlobalUBO				globalData;
 	VkDescriptorSet			globalSet;
 	VkDescriptorSetLayout	globalLayout;
+	RenderRequest			*request;
 	float					deltaTime{0.f};
 };
 

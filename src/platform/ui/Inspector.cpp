@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 10:23:14                                        */
+/*  Last Modified: 2026/03/21 20:13:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -166,10 +166,6 @@ void	Inspector::setBuiltInDrawFunc(void) {
 			.setMax(179.f)
 			.setSpeed(0.1f)
 			.setFormat("%.1f°")
-			.build();
-		changed |= TableRow(table, window, "AspectRatio")
-			.setType(TableRow::Type::SimpleText)
-			.setStart(&camera->aspect)
 			.build();
 
 		if (changed)
