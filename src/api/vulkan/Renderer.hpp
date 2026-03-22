@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 22:32:25                                        */
+/*  Last Modified: 2026/03/22 13:15:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -72,11 +72,37 @@ class RendererHandle {
 	public:
 		explicit RendererHandle(Renderer &&renderer);
 		explicit operator	bool(void) const;
-		
-		RenderingConfig		_config;
+
+		PASSKEY(ISystemKey, sys::ISystem)
+		bool	bindPipeline(PipelineMap *pipeline, ISystemKey) const;
+		struct	Draw;
+		Draw	drawCommand(ISystemKey) const;
 
 	private:
+		RenderingConfig		_config;
 		Renderer			_renderer;
 };
 
+struct	RendererHandle::Draw {
+	template <size_t N>
+	Draw	&addVertexBuffers(const VkBuffer (&buffers)[N],
+							const VkDeviceSize (&offsets)[N]);
+	Draw	&addIndexBuffer(VkBuffer buffer, VkDeviceSize offset,
+							VkIndexType indexType, uint32_t firstIndex = 0);
+	void	submit(uint32_t indexCount, uint32_t instanceCount = 1,
+				uint32_t firstInstance = 0);
+
+	private:
+		Draw(VkCommandBuffer commandBuffer) : _commandBuffer{commandBuffer} {}
+
+		VkCommandBuffer	_commandBuffer;
+		bool			_hasVertex{false};
+		bool			_hasIndex{false};
+		uint32_t		_firstIndex{0};
+
+	friend class RendererHandle;
+};
+
 }
+
+#include "api/vulkan/Renderer.tpp"

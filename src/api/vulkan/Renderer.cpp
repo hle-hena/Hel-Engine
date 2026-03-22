@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 22:34:38                                        */
+/*  Last Modified: 2026/03/22 13:11:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -100,6 +100,35 @@ RendererHandle::RendererHandle(Renderer &&renderer)
 
 RendererHandle::operator	bool(void) const {
 	return (_renderer._isValid);
+}
+
+bool	RendererHandle::bindPipeline(PipelineMap *pipeline, ISystemKey) const {
+	return (pipeline->bindPipeline(_config, _renderer._commandBuffer));
+}
+
+RendererHandle::Draw	RendererHandle::drawCommand(ISystemKey) const {
+	return {_renderer._commandBuffer};
+}
+
+RendererHandle::Draw	&RendererHandle::Draw::addIndexBuffer(VkBuffer buffer, VkDeviceSize offset,
+							VkIndexType indexType, uint32_t firstIndex) {
+	if (_hasIndex)
+		return (*this);
+	vkCmdBindIndexBuffer(_commandBuffer, buffer, offset, indexType);
+	_hasIndex = true;
+	_firstIndex = firstIndex;
+	return (*this);
+}
+
+void	RendererHandle::Draw::submit(uint32_t indexCount, uint32_t instanceCount,
+				uint32_t firstInstance) {
+	if (!_hasVertex)
+		return ;
+	if (_hasIndex)
+		vkCmdDrawIndexed(_commandBuffer, indexCount, instanceCount,
+						_firstIndex, 0, instanceCount);
+	else
+		vkCmdDraw(_commandBuffer, indexCount, instanceCount, 0, firstInstance);
 }
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 20:10:24                                        */
+/*  Last Modified: 2026/03/22 12:46:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,6 +23,7 @@
 #include "ecs/assets/Shader.hpp"
 #include "platform/window/Window.hpp"
 #include "core/Engine.hpp"
+#include "api/vulkan/Renderer.hpp"
 
 namespace	hel::sys {
 
@@ -73,11 +74,10 @@ void	Camera::update(const FrameContext &) {
 	}
 }
 
-void	Camera::render(const FrameContext &ctx, const RenderingConfig &conf) {
+void	Camera::render(const FrameContext &ctx, const RendererHandle &pass) {
 	auto	selfHandle = ctx.window->getEntityReference();
 	auto	commandBuffer = ctx.commandBuffer;
-	if (_frustumPipelines->bindPipeline(conf, commandBuffer) ||
-		!commandBuffer)	{ return ; }
+	if (bindPipelines(pass) || !commandBuffer)	{ return ; }
 	auto	pipelineLayout = _frustumPipelines->getLayout();
 
 	auto	entities = _registry->view<comp::Camera,

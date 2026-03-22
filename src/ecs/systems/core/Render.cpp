@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 20:17:41                                        */
+/*  Last Modified: 2026/03/22 13:16:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,6 +24,7 @@
 #include "ecs/assets/Geometry.hpp"
 #include "ecs/assets/Shader.hpp"
 #include "core/Engine.hpp"
+#include "api/vulkan/Renderer.hpp"
 
 namespace	hel::sys {
 
@@ -53,8 +54,8 @@ void	Render::configurePipeline(PipelineConfigInfo &config) {
 	Pipeline::setVertexInputDescriptions<Vertex>(config);
 }
 
-void	Render::render(const FrameContext &ctx, const RenderingConfig &conf) {
-	if (!ctx.commandBuffer || _pipelines->bindPipeline(conf, ctx.commandBuffer))
+void	Render::render(const FrameContext &ctx, const RendererHandle &pass) {
+	if (!ctx.commandBuffer || bindPipelines(pass))
 		return ;
 	auto	pipelineLayout = _pipelines->getLayout();
 
@@ -67,16 +68,14 @@ void	Render::render(const FrameContext &ctx, const RenderingConfig &conf) {
 
 		vkCmdPushConstants(ctx.commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
 							0, sizeof(PushConstantData), &push);
-		VkBuffer	buffers[] = {mesh->vertexBuffer->getBuffer()};
-		VkDeviceSize	offset[] = {0};
-		vkCmdBindVertexBuffers(ctx.commandBuffer, 0, 1, buffers, offset);
-		vkCmdBindIndexBuffer(ctx.commandBuffer, mesh->triangleIndexBuffer->getBuffer(), 0,
-							VK_INDEX_TYPE_UINT32);
 		vkCmdBindDescriptorSets(ctx.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
 							pipelineLayout, 0, 1,
 							&ctx.globalSet, 0,
 							nullptr);
-		vkCmdDrawIndexed(ctx.commandBuffer, mesh->triangleVertexCount, 1, 0, 0, 0);
+		drawCommand(pass)
+			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
+			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
+			.submit(mesh->triangleVertexCount);
 	}
 }
 

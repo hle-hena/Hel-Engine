@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 20:10:01                                        */
+/*  Last Modified: 2026/03/22 12:54:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -168,7 +168,7 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx, uint32
 						.addDepthWrite(depthImage, depthImage->getFormat())
 						.beginPass()) {
 			for (auto &system: _systems)
-				system->render(ctx, pass._config);
+				system->render(ctx, pass);
 		}
 		renderImg->transitionLayout(ctx.commandBuffer,
 					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
