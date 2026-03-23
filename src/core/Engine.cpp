@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 20:12:07                                        */
+/*  Last Modified: 2026/03/23 21:01:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -190,8 +190,9 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 
 void	Engine::updateGlobalUBO(Renderer &renderer) {
 	auto	ctx = renderer.frameContext();
+	auto	handle = ctx.request->handle;
 	ctx.globalData.viewProjection = glm::mat4{1.f};
-	if (auto *camera = _registry.getComponent<comp::Camera>(ctx.window->getEntityReference())) {
+	if (auto *camera = _registry.getComponent<comp::Camera>(handle)) {
 		auto	extent = ctx.request->img->getExtent();
 		float	aspect = (float)extent.width / extent.height;
 		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), aspect, camera->near, camera->far);

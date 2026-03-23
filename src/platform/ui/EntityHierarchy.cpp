@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 16:07:05                                        */
+/*  Last Modified: 2026/03/23 20:50:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -61,6 +61,16 @@ void	EntityHierarchy::showEntity(Window *window, View<comp::Hierarchy> view,
 	ImGui::SameLine();
 	if (ImGui::Selectable(name.c_str(), window->getEntityFocus() == handle))
 		window->setEntityFocus(handle);
+	if (ImGui::BeginDragDropSource()) {
+		Entity::id	payload = handle;
+		ImGui::SetDragDropPayload("MOVING_ENTITY",
+								&payload, sizeof(Entity::id));
+		ImGui::SetDragDropPayload("ENTITY_VIEWPORT",
+								&payload, sizeof(Entity::id));
+		ImGui::Text(("Moving an entity (" + name + ")").c_str());
+		ImGui::EndDragDropSource();
+	}
+
 	if (ImGui::BeginDragDropSource()) {
 		Entity::id	payload = handle;
 		ImGui::SetDragDropPayload("MOVING_ENTITY",

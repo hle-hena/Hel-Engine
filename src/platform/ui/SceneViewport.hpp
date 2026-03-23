@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:39 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 10:58:53                                        */
+/*  Last Modified: 2026/03/23 20:43:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,7 @@
 
 # include "api/ImGui/imgui.h"
 # include "platform/ui/Panel.hpp"
+# include "ecs/Entity.hpp"
 
 namespace	hel {
 
@@ -40,7 +41,8 @@ class	SceneViewport : public Panel<SceneViewport> {
 		void	render(Window *window, const ImVec2 &size) override;
 
 	private:
-		bool	_captured;
+		bool		_captured;
+		Entity::id	_handle{Entity::NOT_REGISTERED};
 };
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 19:49:43                                        */
+/*  Last Modified: 2026/03/23 20:52:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,7 @@
 #include "platform/window/Window.hpp"
 #include "api/vulkan/ImagePool.hpp"
 #include "core/RenderQueue.hpp"
+#include "platform/ui/UIHelper.hpp"
 
 #include <iostream>
 
@@ -30,6 +31,7 @@ expected<void, std::string>	SceneViewport::onInit(void) {
 }
 
 void	SceneViewport::render(Window *window, const ImVec2 &size) {
+	auto	top = ImGui::GetCursorScreenPos() + ImVec2(10.f, 10.f);
 	auto	image = _imagePool->acquire(Image::Config()
 			.setWidth(static_cast<uint32_t>(std::max(size.x, 1.f)))
 			.setHeight(static_cast<uint32_t>(std::max(size.y, 1.f)))
@@ -40,7 +42,17 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 			.setProperty(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
 	if (!image)
 		return ;
-	RenderQueue::push({Entity::NOT_REGISTERED, image});
+	if (_handle == Entity::NOT_REGISTERED)
+		_handle = window->getEntityReference();
+
+	DropTarget("MOVING_ENTITY")
+		.setResetPosition(true)
+		.addDummy()
+		.build([&](auto payload){
+			_handle = *static_cast<Entity::id *>(payload->Data);
+		});
+
+	RenderQueue::push({_handle, image});
 	auto	extent = image->getPhysicalExtent();
 	ImVec2	uv1 = {size.x / extent.width, size.y / extent.height};
 
