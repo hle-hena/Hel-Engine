@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/29 16:04:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 19:11:41                                        */
+/*  Last Modified: 2026/03/23 20:08:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -40,7 +40,8 @@ Buffer::Buffer(Device &device, uint32_t stride,
 			VkMemoryPropertyFlags properties)
 	:	_device{device} {
 	_stride = stride;
-	_size = device.getAligned(stride) * count;
+	_alignedStride = device.getAligned(stride, usage);
+	_size = _alignedStride * count;
 	VkBufferCreateInfo	createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	createInfo.size = _size;

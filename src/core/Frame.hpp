@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 18:31:02                                        */
+/*  Last Modified: 2026/03/23 20:12:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -61,7 +61,7 @@ class	Frame {
 
 		FrameContext	getContext(Window *window, uint32_t frameIndex,
 								float deltaTime);
-		void			writeToUBO(GlobalUBO *data, uint32_t offset,
+		void			writeToUBO(GlobalUBO *data, uint32_t passIndex,
 								uint32_t currentFrame);
 
 	private:

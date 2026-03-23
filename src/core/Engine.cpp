@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 18:39:10                                        */
+/*  Last Modified: 2026/03/23 20:12:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -199,8 +199,7 @@ void	Engine::updateGlobalUBO(Renderer &renderer) {
 		ctx.globalData.viewProjection = projection * camera->view;
 	}
 	ctx.globalData.elapsedTime = _timer.elapsedTime();
-	_frame.writeToUBO(&ctx.globalData, _device.getAligned(sizeof(GlobalUBO)) *
-							renderer.passIndex(), ctx.frameIndex);
+	_frame.writeToUBO(&ctx.globalData, renderer.passIndex(), ctx.frameIndex);
 }
 
 }

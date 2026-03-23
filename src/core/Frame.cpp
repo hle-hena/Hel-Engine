@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:35 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 19:12:05                                        */
+/*  Last Modified: 2026/03/23 20:11:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -65,7 +65,8 @@ FrameContext	Frame::getContext(Window *window, uint32_t frameIndex,
 	};
 }
 
-void	Frame::writeToUBO(GlobalUBO *data, uint32_t offset, uint32_t frameIndex) {
+void	Frame::writeToUBO(GlobalUBO *data, uint32_t passIndex, uint32_t frameIndex) {
+	uint32_t	offset = _globalUbos[0]->alignedStride() * passIndex;
 	_globalUbos[frameIndex]->writeToBuffer(data, sizeof(GlobalUBO), offset);
 }
 
