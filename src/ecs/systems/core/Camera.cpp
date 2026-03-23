@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 17:37:05                                        */
+/*  Last Modified: 2026/03/23 20:22:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -88,24 +88,15 @@ void	Camera::render(const FrameContext &ctx, const Renderer &renderer) {
 		auto	*transform = entities.get<comp::Transform>(entity);
 		auto	*camera = entities.get<comp::Camera>(entity);
 
-		auto	extent = ctx.request->img->getExtent();
-		float	aspect = (float)extent.width / extent.height;
-		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), aspect, camera->near, camera->far);
-		projection[1][1] *= -1; 
+		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), 1.f, camera->near, camera->far);
+		projection[1][1] *= -1;
 		PushConstantData	push{transform->worldMatrix, projection * camera->view};
 
-		vkCmdPushConstants(commandBuffer,pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
-							0, sizeof(PushConstantData), &push);
-		VkBuffer	buffers[] = {mesh->vertexBuffer->getBuffer()};
-		VkDeviceSize	offset[] = {0};
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offset);
-		vkCmdBindIndexBuffer(commandBuffer, mesh->lineIndexBuffer->getBuffer(), 0,
-							VK_INDEX_TYPE_UINT32);
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-							pipelineLayout, 0, 1,
-							&ctx.globalSet, 0,
-							nullptr);
-		vkCmdDrawIndexed(commandBuffer, mesh->lineVertexCount, 1, 0, 0, 0);
+		drawCommand(renderer, pipelineLayout)
+			.addPush(VK_SHADER_STAGE_VERTEX_BIT, push)
+			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
+			.addIndexBuffer(mesh->lineIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
+			.submit(mesh->lineVertexCount);
 	}
 }
 
