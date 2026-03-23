@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 17:34:53                                        */
+/*  Last Modified: 2026/03/23 17:37:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -64,7 +64,6 @@ void	Camera::update(const FrameContext &) {
 		if (!constCamera->isDirty && !constTransform->isDirty)
 			continue ;
 		if (auto camera = _registry->modify(constCamera)) {
-
 			glm::mat4 rotate = glm::mat4_cast(glm::conjugate(constTransform->rotation));
 			glm::mat4 translate = glm::translate(glm::mat4(1.0f), -constTransform->position);
 			glm::mat4 view = rotate * translate;

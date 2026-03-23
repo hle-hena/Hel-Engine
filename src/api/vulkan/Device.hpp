@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:22 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 15:46:57                                        */
+/*  Last Modified: 2026/03/23 18:35:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -69,6 +69,7 @@ class	Device {
 		VkPhysicalDeviceProperties2	getPhysProperties(void) const {
 			return (_physicalProperties);
 		}
+		uint32_t	getAligned(uint32_t stride) const;
 
 		bool				pickPhysicalDevice(Window &bootstrapWindow);
 		bool				supportSurface(Window &window);

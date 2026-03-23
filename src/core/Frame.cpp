@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:35 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 20:10:55                                        */
+/*  Last Modified: 2026/03/23 19:12:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,20 +34,20 @@ tl::expected<void, std::string>	Frame::init(Device &device,
 		return (unexpected("Failed to allocated command buffers"));
 
 	_descriptorSets = DescriptorFactory(device)
-		.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+		.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
 			VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
 		.setSetCount(Swapchain::MAX_FRAMES_IN_FLIGHT)
 		.build(*descriptorPool);
 
 	DescriptorWriter	writer(device, _descriptorSets.get());
 	for (size_t i = 0; i < frameCount; i++) {
-		_globalUbos[i] = Buffer::create(device, sizeof(GlobalUBO),
+		_globalUbos[i] = Buffer::create(device, sizeof(GlobalUBO), 32,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
 			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		if (!_globalUbos[i])	return (unexpected("Failed to create a UBO"));
 		_globalUbos[i]->map();
 
-		writer.writeBuffer(i, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, *_globalUbos[i]);
+		writer.writeBuffer(i, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, *_globalUbos[i]);
 	}
 	writer.update();
 	return {};
@@ -60,12 +60,13 @@ FrameContext	Frame::getContext(Window *window, uint32_t frameIndex,
 		.commandBuffer = _commandBuffers[frameIndex],
 		.globalSet = _descriptorSets->sets[frameIndex],
 		.globalLayout = _descriptorSets->setLayout,
-		.deltaTime = deltaTime
+		.deltaTime = deltaTime,
+		.frameIndex = frameIndex
 	};
 }
 
-void	Frame::writeToUBO(GlobalUBO *data, uint32_t frameIndex) {
-	_globalUbos[frameIndex]->writeToBuffer(data);
+void	Frame::writeToUBO(GlobalUBO *data, uint32_t offset, uint32_t frameIndex) {
+	_globalUbos[frameIndex]->writeToBuffer(data, sizeof(GlobalUBO), offset);
 }
 
 }

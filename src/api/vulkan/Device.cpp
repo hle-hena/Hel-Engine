@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 15:42:44                                        */
+/*  Last Modified: 2026/03/23 19:22:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -208,6 +208,12 @@ bool	Device::supportSurface(Window &window) {
 	vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice, _indices.presentFamily.value(), window.getSurface(), &presentSupport);
 
 	return (presentSupport);
+}
+
+uint32_t	Device::getAligned(uint32_t stride) const {
+	uint32_t	alignement = _physicalProperties.properties.limits
+								.minUniformBufferOffsetAlignment;//TODO -> This is assuming that every single thing in the universe is a UBO. I don't think that's the best idea.
+	return ((stride + alignement - 1) & ~(alignement - 1));
 }
 
 }

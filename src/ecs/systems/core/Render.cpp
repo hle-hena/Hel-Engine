@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 17:34:32                                        */
+/*  Last Modified: 2026/03/23 17:47:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -67,7 +67,6 @@ void	Render::render(const FrameContext &ctx, const Renderer &renderer) {
 		PushConstantData	push{transform->worldMatrix, transform->normalMatrix};
 
 		drawCommand(renderer, pipelineLayout)
-			.addBinding(ctx.globalSet)
 			.addPush(VK_SHADER_STAGE_VERTEX_BIT, push)
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
 			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)

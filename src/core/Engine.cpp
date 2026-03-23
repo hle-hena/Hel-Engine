@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 17:17:03                                        */
+/*  Last Modified: 2026/03/23 18:39:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -90,7 +90,7 @@ bool	Engine::createCommandPool(void) {
 
 void	Engine::createDescriptorPool(void) {
 	_staticPool = DescriptorPool::Builder(_device)
-		.addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+		.addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
 		.setPageSize(GLFW::_maxInstanceCount * Swapchain::MAX_FRAMES_IN_FLIGHT)
 		.build();
 }
@@ -124,7 +124,7 @@ void	Engine::tick(Window *window, uint32_t frameIndex) {
 
 	UITick(ui, frameCtx);
 	updateTick(frameCtx);
-	renderTick(window, ui, frameCtx, frameIndex);
+	renderTick(window, ui, frameCtx);
 }
 
 void	Engine::UITick(UiContext &ui, FrameContext &frameCtx) {
@@ -139,11 +139,12 @@ void	Engine::updateTick(FrameContext &frameCtx) {
 		system->update(frameCtx);
 }
 
-void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx, uint32_t frameIndex) {
+void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 	Swapchain	&swapchain = window->getSwapchain();
 	uint32_t	imageIndex;
 
-	if (swapchain.acquireNextImage(*window, frameIndex, &imageIndex))
+	RenderPass::newFrame();
+	if (swapchain.acquireNextImage(*window, ctx.frameIndex, &imageIndex))
 		return ;
 	vkResetCommandBuffer(ctx.commandBuffer, 0);
 
@@ -162,11 +163,11 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx, uint32
 	for (auto &renderRequest: RenderQueue::flush()) {
 		auto	renderImg = renderRequest.img;
 		ctx.request = &renderRequest;
-		updateGlobalUBO(ctx, frameIndex);
 		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
 						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
 						.addDepthWrite(depthImage, depthImage->getFormat())
-						.beginPass()) {
+						.beginPass(ctx)) {
+			updateGlobalUBO(renderer);
 			for (auto &system: _systems)
 				system->render(ctx, renderer);
 		}
@@ -176,18 +177,19 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx, uint32
 
 	if (auto renderer = RenderPass(_device, ctx.commandBuffer, swapImage->getExtent())
 					.addColorWrite(swapImage, VK_FORMAT_B8G8R8A8_UNORM)
-					.beginPass()) {
+					.beginPass(ctx)) {
 		ui.renderFrame(ctx.commandBuffer);
 	}
 
 	swapImage->transitionLayout(ctx.commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 	vkEndCommandBuffer(ctx.commandBuffer);
 
-	swapchain.submitCommandBuffer(ctx.commandBuffer, imageIndex, frameIndex);
-	swapchain.present(*window, imageIndex, frameIndex);
+	swapchain.submitCommandBuffer(ctx.commandBuffer, imageIndex, ctx.frameIndex);
+	swapchain.present(*window, imageIndex, ctx.frameIndex);
 }
 
-void	Engine::updateGlobalUBO(FrameContext &ctx, uint32_t currentFrame) {
+void	Engine::updateGlobalUBO(Renderer &renderer) {
+	auto	ctx = renderer.frameContext();
 	ctx.globalData.viewProjection = glm::mat4{1.f};
 	if (auto *camera = _registry.getComponent<comp::Camera>(ctx.window->getEntityReference())) {
 		auto	extent = ctx.request->img->getExtent();
@@ -197,7 +199,8 @@ void	Engine::updateGlobalUBO(FrameContext &ctx, uint32_t currentFrame) {
 		ctx.globalData.viewProjection = projection * camera->view;
 	}
 	ctx.globalData.elapsedTime = _timer.elapsedTime();
-	_frame.writeToUBO(&ctx.globalData, currentFrame);
+	_frame.writeToUBO(&ctx.globalData, _device.getAligned(sizeof(GlobalUBO)) *
+							renderer.passIndex(), ctx.frameIndex);
 }
 
 }

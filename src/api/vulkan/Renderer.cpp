@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 17:33:55                                        */
+/*  Last Modified: 2026/03/23 18:49:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,10 +17,13 @@
 # include "api/vulkan/Renderer.hpp"
 # include "api/vulkan/Image.hpp"
 # include "api/vulkan/Device.hpp"
+# include "core/Frame.hpp"
 
 # include <iostream>
 
 namespace	hel {
+
+uint32_t	RenderPass::_passIndex = 0;
 
 RenderPass::RenderPass(Device &device, VkCommandBuffer commandBuffer, VkExtent2D extent)
 	:	_device{device},
@@ -41,9 +44,9 @@ RenderPass::~RenderPass(void) {
 		endPass();
 }
 
-Renderer	RenderPass::beginPass(void) {
+Renderer	RenderPass::beginPass(FrameContext &frameContext) {
 	if (_colorsWrite.empty())
-		return (Renderer(std::move(*this)));
+		return (Renderer(frameContext, std::move(*this)));
 
 	VkRenderingInfo	renderingInfo{};
 	renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
@@ -57,7 +60,7 @@ Renderer	RenderPass::beginPass(void) {
 	vkCmdBeginRendering(_commandBuffer, &renderingInfo);
 	setViewport();
 	_isValid = true;
-	return (Renderer(std::move(*this)));
+	return (Renderer(frameContext, std::move(*this)));
 }
 
 void	RenderPass::setViewport(void) {
@@ -98,11 +101,14 @@ RenderPass	&RenderPass::addDepthWrite(Image *depth, VkFormat format) {
 	return (*this);
 }
 
-Renderer::Renderer(RenderPass &&pass)
+Renderer::Renderer(FrameContext &frameContext, RenderPass &&pass)
 	:	_device{pass._device},
+		_frameContext{frameContext},
 		_commandBuffer{pass._commandBuffer},
 		_config{pass._config},
 		_pass{std::move(pass)} {
+	if (_pass._isValid)
+		_frameContext.passIndex = RenderPass::newPass();
 }
 
 Renderer::operator	bool(void) const {
@@ -114,7 +120,8 @@ bool	Renderer::bindPipeline(PipelineMap *pipeline, ISystemKey) const {
 }
 
 Renderer::Draw	Renderer::drawCommand(VkPipelineLayout layout, ISystemKey) const {
-	Draw	drawCall {_device, _commandBuffer, layout};
+	Draw	drawCall {_device, _frameContext, _commandBuffer, layout};
+	drawCall.addBinding(_frameContext.globalSet, sizeof(GlobalUBO), nullptr);
 	return (drawCall);
 }
 
@@ -134,11 +141,13 @@ Renderer::Draw	&Renderer::Draw::addBinding(VkDescriptorSet set) {
 }
 
 Renderer::Draw	&Renderer::Draw::addBinding(VkDescriptorSet set,
-														uint32_t stride) {
+											uint32_t stride, uint32_t *pOffset) {
 	_sets.push_back(set);
 	uint32_t	alignement = _device.getPhysProperties().properties.limits
 										.minUniformBufferOffsetAlignment;
-	uint32_t	offset = (stride + alignement - 1) & ~(alignement - 1);
+	uint32_t	offset = ((stride + alignement - 1) & ~(alignement - 1)) * _frameContext.passIndex;
+	if (pOffset)
+		(*pOffset = offset);
 	_setsOffsets.push_back(offset);
 	return (*this);
 }

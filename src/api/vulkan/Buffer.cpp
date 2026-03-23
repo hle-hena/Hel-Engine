@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/29 16:04:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/16 12:15:24                                        */
+/*  Last Modified: 2026/03/23 19:11:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,23 +24,26 @@
 
 namespace	hel {
 
-std::unique_ptr<Buffer>	Buffer::create(Device &device, VkDeviceSize size,
-					VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
+std::unique_ptr<Buffer>	Buffer::create(Device &device, uint32_t stride,
+						uint32_t count, VkBufferUsageFlags usage,
+						VkMemoryPropertyFlags properties) {
 	try	 {
-		return (std::unique_ptr<Buffer>(new Buffer(device, size, usage, properties)));
+		return (std::unique_ptr<Buffer>(new Buffer(device, stride, count, usage, properties)));
 	} catch (const std::exception &e) {
 		std::cerr << e.what() << std::endl;
 		return (nullptr);
 	}
 }
 
-Buffer::Buffer(Device &device, VkDeviceSize size, VkBufferUsageFlags usage,
+Buffer::Buffer(Device &device, uint32_t stride,
+			uint32_t count, VkBufferUsageFlags usage,
 			VkMemoryPropertyFlags properties)
-	:	_device{device},
-		_size{size} {
+	:	_device{device} {
+	_stride = stride;
+	_size = device.getAligned(stride) * count;
 	VkBufferCreateInfo	createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	createInfo.size = size;
+	createInfo.size = _size;
 	createInfo.usage = usage;
 	createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 

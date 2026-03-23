@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 17:31:44                                        */
+/*  Last Modified: 2026/03/23 18:48:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,12 +22,14 @@
 
 # include "utils/Setters.hpp"
 # include "api/vulkan/PipelineMap.hpp"
+# include "core/Frame.hpp"
 
 namespace	hel {
 
 class	Image;
 class	Renderer;
 class	Device;
+struct	FrameContext;
 
 class	RenderPass {
 	public:
@@ -42,7 +44,9 @@ class	RenderPass {
 		RenderPass		&addColorWrite(Image *color, VkFormat format);
 		RenderPass		&addDepthWrite(Image *depth, VkFormat format);
 
-		Renderer		beginPass(void);
+		Renderer		beginPass(FrameContext &context);
+
+		static void	newFrame(void)	{ _passIndex = 0; }
 
 	private:
 		void	setViewport(void);
@@ -67,13 +71,19 @@ class	RenderPass {
 		std::optional<VkRenderingAttachmentInfo>	_depthInfo{};
 		RenderingConfig								_config;
 
+		static uint32_t		_passIndex;
+		static uint32_t		newPass(void)	{ return (_passIndex++); }
+
 	friend class	Renderer;
 };
 
 class Renderer {
 	public:
-		explicit Renderer(RenderPass &&pass);
+		explicit Renderer(FrameContext &frameContext, RenderPass &&pass);
 		explicit operator	bool(void) const;
+
+		FrameContext	&frameContext(void)	{ return (_frameContext); }
+		uint32_t		passIndex(void) const	{ return (_frameContext.passIndex); }
 
 		PASSKEY(ISystemKey, sys::ISystem)
 		bool	bindPipeline(PipelineMap *pipeline, ISystemKey) const;
@@ -82,6 +92,7 @@ class Renderer {
 
 	private:
 		Device				&_device;
+		FrameContext		&_frameContext;
 		VkCommandBuffer		_commandBuffer;
 		RenderingConfig		_config;
 
@@ -95,18 +106,20 @@ struct	Renderer::Draw {
 	Draw	&addIndexBuffer(VkBuffer buffer, VkDeviceSize offset,
 							VkIndexType indexType, uint32_t firstIndex = 0);
 	Draw	&addBinding(VkDescriptorSet set);
-	Draw	&addBinding(VkDescriptorSet set, uint32_t stride);
+	Draw	&addBinding(VkDescriptorSet set, uint32_t stride, uint32_t *offset);
 	template <typename T>
 	Draw	&addPush(VkShaderStageFlags stage, const T &data);
 	void	submit(uint32_t indexCount, uint32_t instanceCount = 1,
 				uint32_t firstInstance = 0);
 
 	private:
-		Draw(Device &device, VkCommandBuffer commandBuffer,
+		Draw(Device &device, FrameContext &frameContext, VkCommandBuffer commandBuffer,
 			VkPipelineLayout pipelineLayout)
-			: _device{device}, _commandBuffer{commandBuffer}, _pipelineLayout{pipelineLayout} {}
+			: _device{device}, _frameContext{frameContext},
+				_commandBuffer{commandBuffer}, _pipelineLayout{pipelineLayout} {}
 
 		Device							&_device;
+		FrameContext					&_frameContext;
 		VkCommandBuffer					_commandBuffer;
 		VkPipelineLayout				_pipelineLayout;
 		std::vector<VkDescriptorSet>	_sets{};

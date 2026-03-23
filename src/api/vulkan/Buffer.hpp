@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/29 16:04:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/25 13:14:29                                        */
+/*  Last Modified: 2026/03/23 19:09:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,8 +25,9 @@ class	Device;
 
 class Buffer {
 	public:
-		static std::unique_ptr<Buffer>	create(Device &device, VkDeviceSize size,
-						VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+		static std::unique_ptr<Buffer>	create(Device &device, uint32_t stride,
+						uint32_t count, VkBufferUsageFlags usage,
+						VkMemoryPropertyFlags properties);
 		~Buffer(void);
 
 		Buffer(const Buffer &) = delete;
@@ -42,7 +43,7 @@ class Buffer {
 							VkDeviceSize offset = 0);
 
 		VkDescriptorBufferInfo	getDescriptorInfo(void) const
-			{ return {_buffer, 0, _size}; }
+			{ return {_buffer, 0, _stride}; }
 		VkBuffer				getBuffer(void) const
 			{ return (_buffer); }
 		VkDeviceSize			getSize(void) const
@@ -51,13 +52,15 @@ class Buffer {
 			{ return (0); }
 
 	private:
-		Buffer(Device &device, VkDeviceSize size, VkBufferUsageFlags usage,
+		Buffer(Device &device, uint32_t stride,
+				uint32_t count, VkBufferUsageFlags usage,
 				VkMemoryPropertyFlags properties);
 
 		Device			&_device;
 		VkBuffer		_buffer{VK_NULL_HANDLE};
 		VkDeviceMemory	_memory{VK_NULL_HANDLE};
 		VkDeviceSize	_size;
+		uint32_t		_stride;
 		void			*_mapped{nullptr};
 };
 
