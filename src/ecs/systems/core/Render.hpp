@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/22 12:46:30                                        */
+/*  Last Modified: 2026/03/23 17:34:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -41,7 +41,7 @@ class	Render : public ISystem {
 
 		void	init(void) override;
 
-		void	render(const FrameContext &ctx, const RendererHandle &conf) override;
+		void	render(const FrameContext &ctx, const Renderer &conf) override;
 
 	private:
 		struct	PushConstantData {

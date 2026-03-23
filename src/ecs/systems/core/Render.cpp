@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 16:52:16                                        */
+/*  Last Modified: 2026/03/23 17:34:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -54,8 +54,8 @@ void	Render::configurePipeline(PipelineConfigInfo &config) {
 	Pipeline::setVertexInputDescriptions<Vertex>(config);
 }
 
-void	Render::render(const FrameContext &ctx, const RendererHandle &pass) {
-	if (!ctx.commandBuffer || bindPipelines(pass))
+void	Render::render(const FrameContext &ctx, const Renderer &renderer) {
+	if (!ctx.commandBuffer || bindPipelines(renderer))
 		return ;
 	auto	pipelineLayout = _pipelines->getLayout();
 
@@ -66,7 +66,7 @@ void	Render::render(const FrameContext &ctx, const RendererHandle &pass) {
 		auto	*transform = entities.get<comp::Transform>(entity);
 		PushConstantData	push{transform->worldMatrix, transform->normalMatrix};
 
-		drawCommand(pass, pipelineLayout)
+		drawCommand(renderer, pipelineLayout)
 			.addBinding(ctx.globalSet)
 			.addPush(VK_SHADER_STAGE_VERTEX_BIT, push)
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})

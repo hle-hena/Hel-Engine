@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 15:58:02                                        */
+/*  Last Modified: 2026/03/23 17:17:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -163,18 +163,18 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx, uint32
 		auto	renderImg = renderRequest.img;
 		ctx.request = &renderRequest;
 		updateGlobalUBO(ctx, frameIndex);
-		if (auto pass = Renderer(_device, ctx.commandBuffer, renderImg->getExtent())
+		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
 						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
 						.addDepthWrite(depthImage, depthImage->getFormat())
 						.beginPass()) {
 			for (auto &system: _systems)
-				system->render(ctx, pass);
+				system->render(ctx, renderer);
 		}
 		renderImg->transitionLayout(ctx.commandBuffer,
 					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	}
 
-	if (auto pass = Renderer(_device, ctx.commandBuffer, swapImage->getExtent())
+	if (auto renderer = RenderPass(_device, ctx.commandBuffer, swapImage->getExtent())
 					.addColorWrite(swapImage, VK_FORMAT_B8G8R8A8_UNORM)
 					.beginPass()) {
 		ui.renderFrame(ctx.commandBuffer);

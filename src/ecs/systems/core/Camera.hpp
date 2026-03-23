@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/22 12:38:01                                        */
+/*  Last Modified: 2026/03/23 17:34:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -41,7 +41,7 @@ class	Camera : public ISystem {
 
 		void	update(const FrameContext &ctx) override;
 		void	render(const FrameContext &ctx,
-					const RendererHandle &conf) override;
+					const Renderer &conf) override;
 
 	private:
 		struct	PushConstantData {

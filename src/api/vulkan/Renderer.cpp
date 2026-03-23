@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 17:01:29                                        */
+/*  Last Modified: 2026/03/23 17:33:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,13 +22,13 @@
 
 namespace	hel {
 
-Renderer::Renderer(Device &device, VkCommandBuffer commandBuffer, VkExtent2D extent)
+RenderPass::RenderPass(Device &device, VkCommandBuffer commandBuffer, VkExtent2D extent)
 	:	_device{device},
 		_commandBuffer{commandBuffer},
 		_extent{extent} {
 }
 
-Renderer::Renderer(Renderer &&other)
+RenderPass::RenderPass(RenderPass &&other)
 	:	_device{other._device},
 		_commandBuffer{other._commandBuffer},
 		_config{other._config},
@@ -36,14 +36,14 @@ Renderer::Renderer(Renderer &&other)
 	other._commandBuffer = VK_NULL_HANDLE;
 }
 
-Renderer::~Renderer(void) {
+RenderPass::~RenderPass(void) {
 	if (_commandBuffer)
 		endPass();
 }
 
-RendererHandle	Renderer::beginPass(void) {
+Renderer	RenderPass::beginPass(void) {
 	if (_colorsWrite.empty())
-		return (RendererHandle(std::move(*this)));
+		return (Renderer(std::move(*this)));
 
 	VkRenderingInfo	renderingInfo{};
 	renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
@@ -57,10 +57,10 @@ RendererHandle	Renderer::beginPass(void) {
 	vkCmdBeginRendering(_commandBuffer, &renderingInfo);
 	setViewport();
 	_isValid = true;
-	return (RendererHandle(std::move(*this)));
+	return (Renderer(std::move(*this)));
 }
 
-void	Renderer::setViewport(void) {
+void	RenderPass::setViewport(void) {
 	VkViewport	viewport{};
 	viewport.height = static_cast<float>(_extent.height);
 	viewport.width = static_cast<float>(_extent.width);
@@ -72,11 +72,11 @@ void	Renderer::setViewport(void) {
 	vkCmdSetScissor(_commandBuffer, 0, 1, &scissor);
 }
 
-void	Renderer::endPass(void) {
+void	RenderPass::endPass(void) {
 	vkCmdEndRendering(_commandBuffer);
 }
 
-Renderer	&Renderer::addColorWrite(Image *color, VkFormat format) {
+RenderPass	&RenderPass::addColorWrite(Image *color, VkFormat format) {
 	color->transitionLayout(_commandBuffer,
 							VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
@@ -87,7 +87,7 @@ Renderer	&Renderer::addColorWrite(Image *color, VkFormat format) {
 	return (*this);
 }
 
-Renderer	&Renderer::addDepthWrite(Image *depth, VkFormat format) {
+RenderPass	&RenderPass::addDepthWrite(Image *depth, VkFormat format) {
 	depth->transitionLayout(_commandBuffer,
 							VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
@@ -98,25 +98,27 @@ Renderer	&Renderer::addDepthWrite(Image *depth, VkFormat format) {
 	return (*this);
 }
 
-RendererHandle::RendererHandle(Renderer &&renderer)
-	:	_renderer{std::move(renderer)} {
-	_config = _renderer._config;
+Renderer::Renderer(RenderPass &&pass)
+	:	_device{pass._device},
+		_commandBuffer{pass._commandBuffer},
+		_config{pass._config},
+		_pass{std::move(pass)} {
 }
 
-RendererHandle::operator	bool(void) const {
-	return (_renderer._isValid);
+Renderer::operator	bool(void) const {
+	return (_pass._isValid);
 }
 
-bool	RendererHandle::bindPipeline(PipelineMap *pipeline, ISystemKey) const {
-	return (pipeline->bindPipeline(_config, _renderer._commandBuffer));
+bool	Renderer::bindPipeline(PipelineMap *pipeline, ISystemKey) const {
+	return (pipeline->bindPipeline(_config, _commandBuffer));
 }
 
-RendererHandle::Draw	RendererHandle::drawCommand(VkPipelineLayout layout, ISystemKey) const {
-	Draw	drawCall {_renderer._device, _renderer._commandBuffer, layout};
+Renderer::Draw	Renderer::drawCommand(VkPipelineLayout layout, ISystemKey) const {
+	Draw	drawCall {_device, _commandBuffer, layout};
 	return (drawCall);
 }
 
-RendererHandle::Draw	&RendererHandle::Draw::addIndexBuffer(VkBuffer buffer, VkDeviceSize offset,
+Renderer::Draw	&Renderer::Draw::addIndexBuffer(VkBuffer buffer, VkDeviceSize offset,
 							VkIndexType indexType, uint32_t firstIndex) {
 	if (_hasIndex)
 		return (*this);
@@ -126,12 +128,12 @@ RendererHandle::Draw	&RendererHandle::Draw::addIndexBuffer(VkBuffer buffer, VkDe
 	return (*this);
 }
 
-RendererHandle::Draw	&RendererHandle::Draw::addBinding(VkDescriptorSet set) {
+Renderer::Draw	&Renderer::Draw::addBinding(VkDescriptorSet set) {
 	_sets.push_back(set);
 	return (*this);
 }
 
-RendererHandle::Draw	&RendererHandle::Draw::addBinding(VkDescriptorSet set,
+Renderer::Draw	&Renderer::Draw::addBinding(VkDescriptorSet set,
 														uint32_t stride) {
 	_sets.push_back(set);
 	uint32_t	alignement = _device.getPhysProperties().properties.limits
@@ -141,7 +143,7 @@ RendererHandle::Draw	&RendererHandle::Draw::addBinding(VkDescriptorSet set,
 	return (*this);
 }
 
-void	RendererHandle::Draw::submit(uint32_t indexCount, uint32_t instanceCount,
+void	Renderer::Draw::submit(uint32_t indexCount, uint32_t instanceCount,
 				uint32_t firstInstance) {
 	if (!_hasVertex)
 		return ;

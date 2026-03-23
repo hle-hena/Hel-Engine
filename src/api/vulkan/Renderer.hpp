@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 16:51:37                                        */
+/*  Last Modified: 2026/03/23 17:31:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,23 +26,23 @@
 namespace	hel {
 
 class	Image;
-class	RendererHandle;
+class	Renderer;
 class	Device;
 
-class	Renderer {
+class	RenderPass {
 	public:
-		Renderer(Device &device, VkCommandBuffer commandBuffer, VkExtent2D extent);
-		Renderer(Renderer &&other);
-		~Renderer(void);
+		RenderPass(Device &device, VkCommandBuffer commandBuffer, VkExtent2D extent);
+		RenderPass(RenderPass &&other);
+		~RenderPass(void);
 
 		SETTER(ColorLoadOp, VkAttachmentLoadOp, _colorsLoadOp)
 		SETTER(ColorStoreOp, VkAttachmentStoreOp, _colorsStoreOp)
 		SETTER(DepthLoadOp, VkAttachmentLoadOp, _depthLoadOp)
 		SETTER(DepthStoreOp, VkAttachmentStoreOp, _depthStoreOp)
-		Renderer		&addColorWrite(Image *color, VkFormat format);
-		Renderer		&addDepthWrite(Image *depth, VkFormat format);
+		RenderPass		&addColorWrite(Image *color, VkFormat format);
+		RenderPass		&addDepthWrite(Image *depth, VkFormat format);
 
-		RendererHandle	beginPass(void);
+		Renderer		beginPass(void);
 
 	private:
 		void	setViewport(void);
@@ -66,13 +66,13 @@ class	Renderer {
 		std::vector<VkRenderingAttachmentInfo>		_colorsInfo{};
 		std::optional<VkRenderingAttachmentInfo>	_depthInfo{};
 		RenderingConfig								_config;
-	
-	friend class	RendererHandle;
+
+	friend class	Renderer;
 };
 
-class RendererHandle {
+class Renderer {
 	public:
-		explicit RendererHandle(Renderer &&renderer);
+		explicit Renderer(RenderPass &&pass);
 		explicit operator	bool(void) const;
 
 		PASSKEY(ISystemKey, sys::ISystem)
@@ -81,11 +81,14 @@ class RendererHandle {
 		Draw	drawCommand(VkPipelineLayout layout, ISystemKey) const;
 
 	private:
+		Device				&_device;
+		VkCommandBuffer		_commandBuffer;
 		RenderingConfig		_config;
-		Renderer			_renderer;
+
+		RenderPass			_pass;
 };
 
-struct	RendererHandle::Draw {
+struct	Renderer::Draw {
 	template <size_t N>
 	Draw	&addVertexBuffers(const VkBuffer (&buffers)[N],
 							const VkDeviceSize (&offsets)[N]);
@@ -113,7 +116,7 @@ struct	RendererHandle::Draw {
 		bool							_hasPush{false};
 		uint32_t						_firstIndex{0};
 
-	friend class RendererHandle;
+	friend class Renderer;
 };
 
 }
