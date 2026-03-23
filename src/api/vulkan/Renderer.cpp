@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/22 13:11:47                                        */
+/*  Last Modified: 2026/03/23 17:01:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,16 +16,21 @@
 
 # include "api/vulkan/Renderer.hpp"
 # include "api/vulkan/Image.hpp"
+# include "api/vulkan/Device.hpp"
+
+# include <iostream>
 
 namespace	hel {
 
-Renderer::Renderer(VkCommandBuffer commandBuffer, VkExtent2D extent)
-	:	_commandBuffer{commandBuffer},
+Renderer::Renderer(Device &device, VkCommandBuffer commandBuffer, VkExtent2D extent)
+	:	_device{device},
+		_commandBuffer{commandBuffer},
 		_extent{extent} {
 }
 
 Renderer::Renderer(Renderer &&other)
-	:	_commandBuffer{other._commandBuffer},
+	:	_device{other._device},
+		_commandBuffer{other._commandBuffer},
 		_config{other._config},
 		_isValid{other._isValid} {
 	other._commandBuffer = VK_NULL_HANDLE;
@@ -106,8 +111,9 @@ bool	RendererHandle::bindPipeline(PipelineMap *pipeline, ISystemKey) const {
 	return (pipeline->bindPipeline(_config, _renderer._commandBuffer));
 }
 
-RendererHandle::Draw	RendererHandle::drawCommand(ISystemKey) const {
-	return {_renderer._commandBuffer};
+RendererHandle::Draw	RendererHandle::drawCommand(VkPipelineLayout layout, ISystemKey) const {
+	Draw	drawCall {_renderer._device, _renderer._commandBuffer, layout};
+	return (drawCall);
 }
 
 RendererHandle::Draw	&RendererHandle::Draw::addIndexBuffer(VkBuffer buffer, VkDeviceSize offset,
@@ -120,10 +126,28 @@ RendererHandle::Draw	&RendererHandle::Draw::addIndexBuffer(VkBuffer buffer, VkDe
 	return (*this);
 }
 
+RendererHandle::Draw	&RendererHandle::Draw::addBinding(VkDescriptorSet set) {
+	_sets.push_back(set);
+	return (*this);
+}
+
+RendererHandle::Draw	&RendererHandle::Draw::addBinding(VkDescriptorSet set,
+														uint32_t stride) {
+	_sets.push_back(set);
+	uint32_t	alignement = _device.getPhysProperties().properties.limits
+										.minUniformBufferOffsetAlignment;
+	uint32_t	offset = (stride + alignement - 1) & ~(alignement - 1);
+	_setsOffsets.push_back(offset);
+	return (*this);
+}
+
 void	RendererHandle::Draw::submit(uint32_t indexCount, uint32_t instanceCount,
 				uint32_t firstInstance) {
 	if (!_hasVertex)
 		return ;
+	vkCmdBindDescriptorSets(_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+							_pipelineLayout, 0, _sets.size(), _sets.data(),
+							_setsOffsets.size(), _setsOffsets.data());
 	if (_hasIndex)
 		vkCmdDrawIndexed(_commandBuffer, indexCount, instanceCount,
 						_firstIndex, 0, instanceCount);

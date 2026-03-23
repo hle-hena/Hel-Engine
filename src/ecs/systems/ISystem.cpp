@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/26 18:12:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/22 13:11:31                                        */
+/*  Last Modified: 2026/03/23 15:36:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -43,8 +43,9 @@ bool	ISystem::bindPipelines(const RendererHandle &pass) const {
 	}
 }
 
-RendererHandle::Draw	ISystem::drawCommand(const RendererHandle &pass) const {
-	return (pass.drawCommand({}));
+RendererHandle::Draw	ISystem::drawCommand(const RendererHandle &pass,
+											VkPipelineLayout layout) const {
+	return (pass.drawCommand(layout, {}));
 }
 
 

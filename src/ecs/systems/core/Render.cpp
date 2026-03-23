@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/22 13:16:49                                        */
+/*  Last Modified: 2026/03/23 16:52:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -66,13 +66,9 @@ void	Render::render(const FrameContext &ctx, const RendererHandle &pass) {
 		auto	*transform = entities.get<comp::Transform>(entity);
 		PushConstantData	push{transform->worldMatrix, transform->normalMatrix};
 
-		vkCmdPushConstants(ctx.commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
-							0, sizeof(PushConstantData), &push);
-		vkCmdBindDescriptorSets(ctx.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-							pipelineLayout, 0, 1,
-							&ctx.globalSet, 0,
-							nullptr);
-		drawCommand(pass)
+		drawCommand(pass, pipelineLayout)
+			.addBinding(ctx.globalSet)
+			.addPush(VK_SHADER_STAGE_VERTEX_BIT, push)
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
 			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
 			.submit(mesh->triangleVertexCount);

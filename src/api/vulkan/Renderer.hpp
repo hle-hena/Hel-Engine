@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/22 13:15:59                                        */
+/*  Last Modified: 2026/03/23 16:51:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,10 +27,11 @@ namespace	hel {
 
 class	Image;
 class	RendererHandle;
+class	Device;
 
 class	Renderer {
 	public:
-		Renderer(VkCommandBuffer commandBuffer, VkExtent2D extent);
+		Renderer(Device &device, VkCommandBuffer commandBuffer, VkExtent2D extent);
 		Renderer(Renderer &&other);
 		~Renderer(void);
 
@@ -47,6 +48,7 @@ class	Renderer {
 		void	setViewport(void);
 		void	endPass(void);
 
+		Device				&_device;
 		VkCommandBuffer		_commandBuffer;
 		VkExtent2D			_extent;
 		bool				_isValid{false};
@@ -76,7 +78,7 @@ class RendererHandle {
 		PASSKEY(ISystemKey, sys::ISystem)
 		bool	bindPipeline(PipelineMap *pipeline, ISystemKey) const;
 		struct	Draw;
-		Draw	drawCommand(ISystemKey) const;
+		Draw	drawCommand(VkPipelineLayout layout, ISystemKey) const;
 
 	private:
 		RenderingConfig		_config;
@@ -89,16 +91,27 @@ struct	RendererHandle::Draw {
 							const VkDeviceSize (&offsets)[N]);
 	Draw	&addIndexBuffer(VkBuffer buffer, VkDeviceSize offset,
 							VkIndexType indexType, uint32_t firstIndex = 0);
+	Draw	&addBinding(VkDescriptorSet set);
+	Draw	&addBinding(VkDescriptorSet set, uint32_t stride);
+	template <typename T>
+	Draw	&addPush(VkShaderStageFlags stage, const T &data);
 	void	submit(uint32_t indexCount, uint32_t instanceCount = 1,
 				uint32_t firstInstance = 0);
 
 	private:
-		Draw(VkCommandBuffer commandBuffer) : _commandBuffer{commandBuffer} {}
+		Draw(Device &device, VkCommandBuffer commandBuffer,
+			VkPipelineLayout pipelineLayout)
+			: _device{device}, _commandBuffer{commandBuffer}, _pipelineLayout{pipelineLayout} {}
 
-		VkCommandBuffer	_commandBuffer;
-		bool			_hasVertex{false};
-		bool			_hasIndex{false};
-		uint32_t		_firstIndex{0};
+		Device							&_device;
+		VkCommandBuffer					_commandBuffer;
+		VkPipelineLayout				_pipelineLayout;
+		std::vector<VkDescriptorSet>	_sets{};
+		std::vector<uint32_t>			_setsOffsets{};
+		bool							_hasVertex{false};
+		bool							_hasIndex{false};
+		bool							_hasPush{false};
+		uint32_t						_firstIndex{0};
 
 	friend class RendererHandle;
 };

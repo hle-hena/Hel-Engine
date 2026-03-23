@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 16:51:10                                        */
+/*  Last Modified: 2026/03/23 15:42:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -50,6 +50,7 @@ bool	Device::pickPhysicalDevice(Window &bootstrapWindow) {
 	}
 	if (_physicalDevice == VK_NULL_HANDLE)
 		RETURN_SET_UNHEALTHY("Couldn't find a suitable physical device.", true);
+	vkGetPhysicalDeviceProperties2(_physicalDevice, &_physicalProperties);
 	return (createLogicalDevice());
 }
 

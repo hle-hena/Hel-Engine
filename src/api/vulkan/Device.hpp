@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:22 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/11 15:22:11                                        */
+/*  Last Modified: 2026/03/23 15:46:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -66,6 +66,9 @@ class	Device {
 		VkQueue				getPresentQueue(void) const {
 			return (_presentQueue);
 		}
+		VkPhysicalDeviceProperties2	getPhysProperties(void) const {
+			return (_physicalProperties);
+		}
 
 		bool				pickPhysicalDevice(Window &bootstrapWindow);
 		bool				supportSurface(Window &window);
@@ -87,15 +90,16 @@ class	Device {
 		bool				createLogicalDevice(void);
 		bool				createCommandPool(void);
 
-		bool				_healthy{true};
-		std::string			_reason{""};
-		VulkanInstance		&_instance;
-		VkPhysicalDevice	_physicalDevice{VK_NULL_HANDLE};
-		VkDevice			_device{VK_NULL_HANDLE};
-		QueuesFamilyIndices	_indices;
-		VkQueue				_graphicQueue;
-		VkQueue				_presentQueue;
-		VkCommandPool		_transientCommandPool{VK_NULL_HANDLE};
+		bool						_healthy{true};
+		std::string					_reason{""};
+		VulkanInstance				&_instance;
+		VkPhysicalDevice			_physicalDevice{VK_NULL_HANDLE};
+		VkPhysicalDeviceProperties2	_physicalProperties{.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+		VkDevice					_device{VK_NULL_HANDLE};
+		QueuesFamilyIndices			_indices;
+		VkQueue						_graphicQueue;
+		VkQueue						_presentQueue;
+		VkCommandPool				_transientCommandPool{VK_NULL_HANDLE};
 
 		const std::vector<const char *>	_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 };
