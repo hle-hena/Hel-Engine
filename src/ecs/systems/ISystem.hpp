@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 17:26:27                                        */
+/*  Last Modified: 2026/03/24 15:47:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -56,10 +56,9 @@ class	ISystem {
 	protected:
 		virtual PipelineMap	*createPipeline(const
 								PipelineMap::Config &config) final;
-		virtual bool		bindPipelines(const Renderer &renderer) const final;
 
 		virtual Renderer::Draw	drawCommand(const Renderer &renderer,
-											VkPipelineLayout layout) const final;
+											PipelineMap *pipeline) const final;
 
 		Device										*_device;
 		Registry									*_registry;

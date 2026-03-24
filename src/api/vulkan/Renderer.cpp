@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 18:49:55                                        */
+/*  Last Modified: 2026/03/24 15:46:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -115,12 +115,9 @@ Renderer::operator	bool(void) const {
 	return (_pass._isValid);
 }
 
-bool	Renderer::bindPipeline(PipelineMap *pipeline, ISystemKey) const {
-	return (pipeline->bindPipeline(_config, _commandBuffer));
-}
-
-Renderer::Draw	Renderer::drawCommand(VkPipelineLayout layout, ISystemKey) const {
-	Draw	drawCall {_device, _frameContext, _commandBuffer, layout};
+Renderer::Draw	Renderer::drawCommand(PipelineMap *pipeline, ISystemKey) const {
+	pipeline->bindPipeline(_config, _commandBuffer);
+	Draw	drawCall {_device, _frameContext, _commandBuffer, pipeline->getLayout()};
 	drawCall.addBinding(_frameContext.globalSet, sizeof(GlobalUBO), nullptr);
 	return (drawCall);
 }

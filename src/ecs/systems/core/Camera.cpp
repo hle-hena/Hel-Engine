@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 10:53:26                                        */
+/*  Last Modified: 2026/03/24 15:48:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,7 @@
 #include "ecs/Component.hpp"
 #include "ecs/assets/Geometry.hpp"
 #include "ecs/assets/Shader.hpp"
+#include "ecs/assets/Texture.hpp"
 #include "platform/window/Window.hpp"
 #include "core/Engine.hpp"
 #include "api/vulkan/Renderer.hpp"
@@ -78,14 +79,14 @@ void	Camera::render(const FrameContext &ctx, const Renderer &renderer) {
 	if (!_registry->getComponent<comp::Camera>(selfHandle))
 		return ;
 	auto	commandBuffer = ctx.commandBuffer;
-	if (bindPipelines(renderer) || !commandBuffer)	{ return ; }
-	auto	pipelineLayout = _frustumPipelines->getLayout();
+	if (!commandBuffer)	{ return ; }
 
 	auto	entities = _registry->view<comp::Camera,
 									comp::Transform>();
 	for (auto entity : entities) {
 		if (entity == selfHandle)	{ continue ; }
 		auto	mesh = _assetManager->get<FullGeometry>("assets/models/frustum.obj");
+		_assetManager->get<Texture>("assets/images/camera_complex.svg");
 		if (!mesh)	{ continue ; }
 		auto	*transform = entities.get<comp::Transform>(entity);
 		auto	*camera = entities.get<comp::Camera>(entity);
@@ -94,7 +95,7 @@ void	Camera::render(const FrameContext &ctx, const Renderer &renderer) {
 		projection[1][1] *= -1;
 		PushConstantData	push{transform->worldMatrix, glm::inverse(projection * camera->view)};
 
-		drawCommand(renderer, pipelineLayout)
+		drawCommand(renderer, _frustumPipelines)
 			.addPush(VK_SHADER_STAGE_VERTEX_BIT, push)
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
 			.addIndexBuffer(mesh->lineIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)

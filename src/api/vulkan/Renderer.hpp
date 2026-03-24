@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 18:48:18                                        */
+/*  Last Modified: 2026/03/24 15:47:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -86,9 +86,8 @@ class Renderer {
 		uint32_t		passIndex(void) const	{ return (_frameContext.passIndex); }
 
 		PASSKEY(ISystemKey, sys::ISystem)
-		bool	bindPipeline(PipelineMap *pipeline, ISystemKey) const;
 		struct	Draw;
-		Draw	drawCommand(VkPipelineLayout layout, ISystemKey) const;
+		Draw	drawCommand(PipelineMap *pipeline, ISystemKey) const;
 
 	private:
 		Device				&_device;

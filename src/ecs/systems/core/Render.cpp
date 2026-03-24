@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 17:47:53                                        */
+/*  Last Modified: 2026/03/24 15:49:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -55,9 +55,8 @@ void	Render::configurePipeline(PipelineConfigInfo &config) {
 }
 
 void	Render::render(const FrameContext &ctx, const Renderer &renderer) {
-	if (!ctx.commandBuffer || bindPipelines(renderer))
+	if (!ctx.commandBuffer)
 		return ;
-	auto	pipelineLayout = _pipelines->getLayout();
 
 	auto	entities = _registry->view<comp::Transform, comp::Model>();
 	for (auto entity: entities) {
@@ -66,7 +65,7 @@ void	Render::render(const FrameContext &ctx, const Renderer &renderer) {
 		auto	*transform = entities.get<comp::Transform>(entity);
 		PushConstantData	push{transform->worldMatrix, transform->normalMatrix};
 
-		drawCommand(renderer, pipelineLayout)
+		drawCommand(renderer, _pipelines)
 			.addPush(VK_SHADER_STAGE_VERTEX_BIT, push)
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
 			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
