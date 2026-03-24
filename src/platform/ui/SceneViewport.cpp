@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 13:39:30                                        */
+/*  Last Modified: 2026/03/24 13:52:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,7 +35,7 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 	auto	rectMin = ImGui::GetCursorScreenPos() - ImGui::GetStyle().WindowPadding;
 	auto	rectMax = rectMin + ImGui::GetContentRegionAvail() + ImGui::GetStyle().WindowPadding * 2;
 	auto	col = ImGui::GetStyleColorVec4(ImGuiCol_HeaderActive);
-	col.w = (windowEntityHandle == _handle ? 0.25f : 0.f);
+	col.w = (windowEntityHandle == _handle ? 0.75f : 0.f);
 	ImGui::GetWindowDrawList()->AddRectFilled(rectMin, rectMax,
 			ImGui::ColorConvertFloat4ToU32(col));
 	auto	image = _imagePool->acquire(Image::Config()
@@ -61,6 +61,8 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 		glfwGetInputMode(window->getWindow(), GLFW_CURSOR) ==
 			GLFW_CURSOR_DISABLED || ImGui::IsItemHovered()))
 		ImGui::SetNextFrameWantCaptureMouse(false);
+	if (ImGui::IsItemClicked())
+		window->setEntityReference(_handle);
 
 	DropTarget("ENTITY")
 		.setPos(rectMin)
