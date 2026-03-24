@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 15:47:05                                        */
+/*  Last Modified: 2026/03/24 16:10:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -109,6 +109,8 @@ struct	Renderer::Draw {
 	template <typename T>
 	Draw	&addPush(VkShaderStageFlags stage, const T &data);
 	void	submit(uint32_t indexCount, uint32_t instanceCount = 1,
+				uint32_t firstInstance = 0);
+	void	submitNoVertex(uint32_t indexCount, uint32_t instanceCount = 1,
 				uint32_t firstInstance = 0);
 
 	private:

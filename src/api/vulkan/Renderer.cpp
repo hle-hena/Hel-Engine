@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 15:46:57                                        */
+/*  Last Modified: 2026/03/24 16:11:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -153,6 +153,18 @@ void	Renderer::Draw::submit(uint32_t indexCount, uint32_t instanceCount,
 				uint32_t firstInstance) {
 	if (!_hasVertex)
 		return ;
+	vkCmdBindDescriptorSets(_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+							_pipelineLayout, 0, _sets.size(), _sets.data(),
+							_setsOffsets.size(), _setsOffsets.data());
+	if (_hasIndex)
+		vkCmdDrawIndexed(_commandBuffer, indexCount, instanceCount,
+						_firstIndex, 0, instanceCount);
+	else
+		vkCmdDraw(_commandBuffer, indexCount, instanceCount, 0, firstInstance);
+}
+
+void	Renderer::Draw::submitNoVertex(uint32_t indexCount, uint32_t instanceCount,
+				uint32_t firstInstance) {
 	vkCmdBindDescriptorSets(_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
 							_pipelineLayout, 0, _sets.size(), _sets.data(),
 							_setsOffsets.size(), _setsOffsets.data());
