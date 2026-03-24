@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Render.hpp                                                          */
+/*  File: RenderQueue.hpp                                                     */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
+/*  Created: 2026/03/21 19:35:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 17:34:07                                        */
+/*  Last Modified: 2026/03/21 19:46:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,45 +16,25 @@
 
 #pragma once
 
-# include <vulkan/vulkan.h>
-# include <unordered_map>
-# include <memory>
-# include <string>
-# include <glm/glm.hpp>
+# include "ecs/Entity.hpp"
+# include "api/vulkan/Image.hpp"
 
-# include "ecs/systems/ISystem.hpp"
-# include "api/vulkan/PipelineMap.hpp"
+# include <span>
 
 namespace	hel {
 
-class	AssetManager;
-class	Window;
+struct	RenderRequest {
+	Entity::id	handle;
+	Image		*img;
+};
 
-}
-
-namespace	hel::sys {
-
-class	Render : public ISystem {
+class	RenderQueue {
 	public:
-		Render(void) = default;
-		~Render(void) = default;
-
-		void	init(void) override;
-
-		void	render(const FrameContext &ctx, const Renderer &conf) override;
+		static void							push(const RenderRequest &request);
+		static std::vector<RenderRequest>	flush(void);
 
 	private:
-		struct	PushConstantData {
-			glm::mat4	modelMatrix;
-			glm::mat4	normalMatrix;
-		};
-
-		static void	initLayout(std::vector<VkDescriptorSetLayout> &setLayouts,
-						std::vector<VkPushConstantRange> &pushConstants);
-		static void	configurePipeline(PipelineConfigInfo &config);
-
-		AssetManager	*_assetManager;
-		PipelineMap		*_pipelines{nullptr};
+		static std::vector<RenderRequest>	_requests;
 };
 
 }

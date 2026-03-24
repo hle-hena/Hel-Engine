@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 12:35:40                                        */
+/*  Last Modified: 2026/03/21 19:50:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -103,8 +103,9 @@ auto	ImagePool::findNamed(Image *image) {
 }
 
 Image	*ImagePool::acquire(const Image::Config &requested) {
-	Slot		*bestSlot = nullptr;
-	uint64_t	bestScore = UINT64_MAX;
+	Slot					*bestSlot = nullptr;
+	uint64_t				bestScore = UINT64_MAX;
+	const Image::Config		*bestConfig = nullptr;
 
 	for (auto &[candidate, pool]: _pools) {
 		if (!candidateFits(requested, candidate))
@@ -112,6 +113,7 @@ Image	*ImagePool::acquire(const Image::Config &requested) {
 		uint64_t	score = candidateScore(requested, candidate);
 		if (score >= bestScore)
 			continue ;
+		bestConfig = &candidate;
 		for (auto &slot: pool) {
 			if (slot.inUse)
 				continue ;
@@ -120,8 +122,15 @@ Image	*ImagePool::acquire(const Image::Config &requested) {
 			break ;
 		}
 	}
-	if (!bestSlot)
+	if (!bestSlot && !bestConfig)
 		return (nullptr);
+	if (!bestSlot) {
+		Slot	newSlot = {};
+		newSlot.image = Image::create(_device, *bestConfig);
+		if (!newSlot.image)
+			return (nullptr);
+		bestSlot = &_pools[*bestConfig].emplace_back(std::move(newSlot));
+	}
 	bestSlot->inUse = true;
 	bestSlot->image->setExtent({std::max(requested.width, 1u), std::max(requested.height, 1u)}, {});
 	return (bestSlot->image.get());
@@ -136,13 +145,6 @@ Image	*ImagePool::acquire(const std::string &referenceID,
 	auto	image = acquire(requested);
 	if (image)
 		_namedImages.push_back({referenceID, image});
-	return (image);
-}
-
-Image	*ImagePool::requestRender(Entity::id handle, const Image::Config &requested) {
-	auto	image = acquire(requested);
-	if (image)
-		_render.push_back({image, handle});
 	return (image);
 }
 
@@ -180,7 +182,6 @@ void	ImagePool::releaseAll(void) {
 		}
 	}
 	_namedImages.clear();
-	_render.clear();
 }
 
 }

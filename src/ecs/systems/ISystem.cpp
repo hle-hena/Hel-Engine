@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/26 18:12:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:58:36                                        */
+/*  Last Modified: 2026/03/23 17:26:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,6 +16,7 @@
 
 #include "ecs/systems/ISystem.hpp"
 #include "core/Engine.hpp"
+#include "api/vulkan/Renderer.hpp"
 
 namespace	hel::sys {
 
@@ -34,6 +35,17 @@ PipelineMap	*ISystem::createPipeline(const PipelineMap::Config &config) {
 	auto	pipelinePtr = pipeline.get();
 	_pipelines.push_back(std::move(pipeline));
 	return (pipelinePtr);
+}
+
+bool	ISystem::bindPipelines(const Renderer &renderer) const {
+	for (auto &pipeline: _pipelines) {
+		renderer.bindPipeline(pipeline.get(), {});
+	}
+}
+
+Renderer::Draw	ISystem::drawCommand(const Renderer &renderer,
+											VkPipelineLayout layout) const {
+	return (renderer.drawCommand(layout, {}));
 }
 
 

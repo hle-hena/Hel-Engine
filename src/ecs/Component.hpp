@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 18:04:01                                        */
+/*  Last Modified: 2026/03/21 20:12:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -74,10 +74,10 @@ struct	Camera {
 	static constexpr const char	*label = "Camera";
 
 	float		fov{70};
-	float		aspect{1.f};
 	float		near{0.1f};
 	float		far{100.f};
-	glm::mat4	viewProjection{1.f};
+
+	glm::mat4	view{1.f};
 
 	bool		isDirty{true};
 };

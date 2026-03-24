@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 20:04:55                                        */
+/*  Last Modified: 2026/03/23 17:26:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,7 @@
 #pragma once
 
 # include "api/vulkan/PipelineMap.hpp"
+# include "api/vulkan/Renderer.hpp"
 # include "core/Frame.hpp"
 
 # include <vulkan/vulkan.h>
@@ -50,17 +51,21 @@ class	ISystem {
 		virtual void	registerUI(const FrameContext &) {}
 		virtual void	update(const FrameContext &) {}
 		virtual void	render(const FrameContext &,
-							const RenderingConfig &) {}
+							const Renderer &) {}
 
 	protected:
 		virtual PipelineMap	*createPipeline(const
 								PipelineMap::Config &config) final;
+		virtual bool		bindPipelines(const Renderer &renderer) const final;
+
+		virtual Renderer::Draw	drawCommand(const Renderer &renderer,
+											VkPipelineLayout layout) const final;
 
 		Device										*_device;
 		Registry									*_registry;
 		ImagePool									*_imagePool;
 		std::vector<std::unique_ptr<PipelineMap>>	_pipelines;
-	
+
 	private:
 		FrameContext	_frameCtx;
 };

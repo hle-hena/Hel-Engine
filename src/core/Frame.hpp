@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 20:07:54                                        */
+/*  Last Modified: 2026/03/23 20:12:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,6 +26,7 @@
 # include "api/vulkan/Buffer.hpp"
 # include "api/vulkan/Descriptors.hpp"
 # include "utils/Expected.hpp"
+# include "core/RenderQueue.hpp"
 
 namespace	hel {
 
@@ -39,9 +40,13 @@ struct	GlobalUBO {
 struct	FrameContext {
 	Window					*window{nullptr};
 	VkCommandBuffer			commandBuffer;
+	GlobalUBO				globalData;
 	VkDescriptorSet			globalSet;
 	VkDescriptorSetLayout	globalLayout;
+	RenderRequest			*request;
 	float					deltaTime{0.f};
+	uint32_t				passIndex;
+	uint32_t				frameIndex;
 };
 
 
@@ -56,7 +61,8 @@ class	Frame {
 
 		FrameContext	getContext(Window *window, uint32_t frameIndex,
 								float deltaTime);
-		void			writeToUBO(GlobalUBO *data, uint32_t currentFrame);
+		void			writeToUBO(GlobalUBO *data, uint32_t passIndex,
+								uint32_t currentFrame);
 
 	private:
 		std::array<VkCommandBuffer,
