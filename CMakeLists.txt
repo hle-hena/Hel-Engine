@@ -99,6 +99,15 @@ add_custom_target(copy_models ALL
 )
 add_dependencies(hel copy_models)
 
+set(MODELS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/assets/images")
+set(MODELS_DEST_DIR "${CMAKE_BINARY_DIR}/assets/images")
+add_custom_target(copy_images ALL
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${MODELS_DEST_DIR}
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${MODELS_SOURCE_DIR} ${MODELS_DEST_DIR}
+	COMMENT "Copying models to assets/images"
+)
+add_dependencies(hel copy_images)
+
 
 
 install(TARGETS hel

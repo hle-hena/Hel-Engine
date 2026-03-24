@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 20:12:29                                        */
+/*  Last Modified: 2026/03/24 18:21:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -43,6 +43,7 @@ struct	FrameContext {
 	GlobalUBO				globalData;
 	VkDescriptorSet			globalSet;
 	VkDescriptorSetLayout	globalLayout;
+	DescriptorPool			*descriptorPool;
 	RenderRequest			*request;
 	float					deltaTime{0.f};
 	uint32_t				passIndex;
@@ -69,6 +70,8 @@ class	Frame {
 				Swapchain::MAX_FRAMES_IN_FLIGHT>	_commandBuffers{};
 		std::array<std::unique_ptr<Buffer>,
 				Swapchain::MAX_FRAMES_IN_FLIGHT>	_globalUbos{};
+		std::array<std::unique_ptr<DescriptorPool>,
+				Swapchain::MAX_FRAMES_IN_FLIGHT>	_dynamicPools{};
 		std::unique_ptr<DescriptorSet>				_descriptorSets{};
 };
 

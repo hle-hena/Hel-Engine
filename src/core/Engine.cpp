@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 16:15:38                                        */
+/*  Last Modified: 2026/03/24 18:25:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -49,7 +49,7 @@ Engine::~Engine(void) {
 bool	Engine::init(Window &window) {
 	if (createCommandPool())
 		return (true);
-	createDescriptorPool();
+	createDescriptorPools();
 	auto	frameRes = _frame.init(_device, _staticPool.get(), _commandPool);
 	if (!frameRes) {
 		std::cerr << frameRes.error() << std::endl;
@@ -88,7 +88,7 @@ bool	Engine::createCommandPool(void) {
 	return (false);
 }
 
-void	Engine::createDescriptorPool(void) {
+void	Engine::createDescriptorPools(void) {
 	_staticPool = DescriptorPool::Builder(_device)
 		.addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
 		.addDescriptor(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4.f)
@@ -148,6 +148,7 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 	if (swapchain.acquireNextImage(*window, ctx.frameIndex, &imageIndex))
 		return ;
 	vkResetCommandBuffer(ctx.commandBuffer, 0);
+	ctx.descriptorPool->resetPools();
 
 	auto	depthImage = _imagePool->acquire(Image::Config()
 			.setFormats(VK_FORMAT_D32_SFLOAT)

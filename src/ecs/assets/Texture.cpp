@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/24 15:13:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 15:21:02                                        */
+/*  Last Modified: 2026/03/24 17:35:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,12 +19,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "api/image/stb_image.h"
 
-namespace	hel {
+#include <iostream>
 
-Texture::RawTexture::~RawTexture(void) {
-	if (pixels)
-		stbi_image_free(pixels);
-}
+namespace	hel {
 
 Texture::RawTexture	Texture::loadFile(const std::string &path) {
 	RawTexture	raw{};
@@ -36,8 +33,10 @@ Texture::RawTexture	Texture::loadFile(const std::string &path) {
 std::shared_ptr<Texture> Texture::load(Device &device,
 											const std::string &path) {
 	auto	raw = loadFile(path);
-	if (!raw.pixels)
+	if (!raw.pixels) {
+		std::cerr << "Failed to load the image " << path << std::endl;
 		return (nullptr);
+	}
 
 	auto	asset = std::make_shared<Texture>();
 	asset->filePath = path;
@@ -54,6 +53,7 @@ std::shared_ptr<Texture> Texture::load(Device &device,
 	VkDeviceSize	size = raw.width * raw.height * 4;
 	asset->image->setData(raw.pixels, size);
 
+	stbi_image_free(raw.pixels);
 	return (asset);
 }
 

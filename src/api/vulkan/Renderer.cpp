@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 16:11:01                                        */
+/*  Last Modified: 2026/03/24 18:24:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,7 +25,8 @@ namespace	hel {
 
 uint32_t	RenderPass::_passIndex = 0;
 
-RenderPass::RenderPass(Device &device, VkCommandBuffer commandBuffer, VkExtent2D extent)
+RenderPass::RenderPass(Device &device, VkCommandBuffer commandBuffer,
+						VkExtent2D extent)
 	:	_device{device},
 		_commandBuffer{commandBuffer},
 		_extent{extent} {
@@ -34,7 +35,6 @@ RenderPass::RenderPass(Device &device, VkCommandBuffer commandBuffer, VkExtent2D
 RenderPass::RenderPass(RenderPass &&other)
 	:	_device{other._device},
 		_commandBuffer{other._commandBuffer},
-		_config{other._config},
 		_isValid{other._isValid} {
 	other._commandBuffer = VK_NULL_HANDLE;
 }

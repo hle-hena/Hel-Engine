@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 18:31:47                                        */
+/*  Last Modified: 2026/03/24 18:25:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -73,7 +73,7 @@ class	Engine {
 
 	private:
 		bool			createCommandPool(void);
-		void			createDescriptorPool(void);
+		void			createDescriptorPools(void);
 		void			createImagePool(void);
 
 		void			UITick(UiContext &ui, FrameContext &frameCtx);

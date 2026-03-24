@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 15:49:02                                        */
+/*  Last Modified: 2026/03/24 18:08:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -42,7 +42,7 @@ void	Render::init(void) {
 	_pipelines = createPipeline(config);
 }
 
-void	Render::initLayout(std::vector<VkDescriptorSetLayout> &setLayouts,
+void	Render::initLayout(Device &, std::vector<VkDescriptorSetLayout> &setLayouts,
 						std::vector<VkPushConstantRange> &pushConstants) {
 	VkPushConstantRange	vertexPush{};
 	vertexPush.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;

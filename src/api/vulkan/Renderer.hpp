@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 16:10:40                                        */
+/*  Last Modified: 2026/03/24 18:23:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,6 +22,7 @@
 
 # include "utils/Setters.hpp"
 # include "api/vulkan/PipelineMap.hpp"
+# include "api/vulkan/Descriptors.hpp"
 # include "core/Frame.hpp"
 
 namespace	hel {
@@ -82,8 +83,8 @@ class Renderer {
 		explicit Renderer(FrameContext &frameContext, RenderPass &&pass);
 		explicit operator	bool(void) const;
 
-		FrameContext	&frameContext(void)	{ return (_frameContext); }
-		uint32_t		passIndex(void) const	{ return (_frameContext.passIndex); }
+		FrameContext		&frameContext(void)	{ return (_frameContext); }
+		uint32_t			passIndex(void) const	{ return (_frameContext.passIndex); }
 
 		PASSKEY(ISystemKey, sys::ISystem)
 		struct	Draw;

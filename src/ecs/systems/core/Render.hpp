@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 17:34:07                                        */
+/*  Last Modified: 2026/03/24 18:08:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -49,7 +49,7 @@ class	Render : public ISystem {
 			glm::mat4	normalMatrix;
 		};
 
-		static void	initLayout(std::vector<VkDescriptorSetLayout> &setLayouts,
+		static void	initLayout(Device &, std::vector<VkDescriptorSetLayout> &setLayouts,
 						std::vector<VkPushConstantRange> &pushConstants);
 		static void	configurePipeline(PipelineConfigInfo &config);
 

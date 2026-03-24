@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 14:54:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 19:39:38                                        */
+/*  Last Modified: 2026/03/24 18:02:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -42,7 +42,7 @@ struct	RenderingConfigHasher {
 class	PipelineMap {
 	public:
 		using LayoutVec = std::vector<VkDescriptorSetLayout>;
-		using LayoutCallback = std::function<void (
+		using LayoutCallback = std::function<void (Device &,
 								std::vector<VkDescriptorSetLayout> &,
 								std::vector<VkPushConstantRange> &)>;
 		using ConfigCallback = std::function<void (PipelineConfigInfo &)>;
