@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 20:50:36                                        */
+/*  Last Modified: 2026/03/24 13:07:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -63,23 +63,21 @@ void	EntityHierarchy::showEntity(Window *window, View<comp::Hierarchy> view,
 		window->setEntityFocus(handle);
 	if (ImGui::BeginDragDropSource()) {
 		Entity::id	payload = handle;
-		ImGui::SetDragDropPayload("MOVING_ENTITY",
+		ImGui::SetDragDropPayload("ENTITY",
 								&payload, sizeof(Entity::id));
-		ImGui::SetDragDropPayload("ENTITY_VIEWPORT",
-								&payload, sizeof(Entity::id));
-		ImGui::Text(("Moving an entity (" + name + ")").c_str());
+		ImGui::Text(("Entity (" + name + ")").c_str());
 		ImGui::EndDragDropSource();
 	}
 
 	if (ImGui::BeginDragDropSource()) {
 		Entity::id	payload = handle;
-		ImGui::SetDragDropPayload("MOVING_ENTITY",
+		ImGui::SetDragDropPayload("ENTITY",
 								&payload, sizeof(Entity::id));
 		ImGui::Text(("Moving an entity (" + name + ")").c_str());
 		ImGui::EndDragDropSource();
 	}
 
-	DropTarget("MOVING_ENTITY")
+	DropTarget("ENTITY")
 		.build([&](auto payload){
 			moveEntity(window, view, *static_cast<Entity::id *>(payload->Data), handle);
 		});
@@ -97,7 +95,7 @@ void	EntityHierarchy::render(Window *window, const ImVec2 &) {
 	ImGui::Separator();
 
 	auto	view = _registry->view<comp::Hierarchy>();
-	DropTarget("MOVING_ENTITY")
+	DropTarget("ENTITY")
 		.setResetPosition(true)
 		.addDummy()
 		.build([&](auto payload){
