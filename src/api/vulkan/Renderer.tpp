@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: SceneViewport.hpp                                                   */
+/*  File: Renderer.tpp                                                        */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/03/09 11:38:39 by hle-hena                                  */
+/*  Created: 2026/03/22 12:19:09 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 20:43:26                                        */
+/*  Last Modified: 2026/03/23 17:21:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,35 +14,28 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#pragma once
-
-# include "api/ImGui/imgui.h"
-# include "platform/ui/Panel.hpp"
-# include "ecs/Entity.hpp"
+#include "api/vulkan/Renderer.hpp"
 
 namespace	hel {
 
-class	Window;
-class	Device;
-class	ImagePool;
-
+template <size_t N>
+Renderer::Draw	&Renderer::Draw::addVertexBuffers(const VkBuffer (&buffers)[N],
+								const VkDeviceSize (&offsets)[N]) {
+	if (_hasVertex)
+		return (*this);
+	vkCmdBindVertexBuffers(_commandBuffer, 0, N, buffers, offsets);
+	_hasVertex = true;
+	return (*this);
 }
 
-namespace	hel::sys {
-
-class	SceneViewport : public Panel<SceneViewport> {
-	public:
-		static constexpr const char	*label = "Viewport";
-		SceneViewport(void) = default;
-		~SceneViewport(void) = default;
-
-		expected<void, std::string>	onInit(void) override;
-
-		void	render(Window *window, const ImVec2 &size) override;
-
-	private:
-		bool		_captured;
-		Entity::id	_handle{Entity::NOT_REGISTERED};
-};
+template <typename T>
+Renderer::Draw	&Renderer::Draw::addPush(VkShaderStageFlags stage, const T &data) {
+	if (_hasPush)
+		return (*this);
+	vkCmdPushConstants(_commandBuffer, _pipelineLayout,
+					stage, 0, sizeof(T), &data);
+	_hasPush = true;
+	return (*this);
+}
 
 }

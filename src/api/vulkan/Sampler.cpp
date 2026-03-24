@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/26 11:02:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/26 13:08:58                                        */
+/*  Last Modified: 2026/03/23 15:45:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -57,11 +57,8 @@ void	Sampler::deleteAllSamplers(Device &device) {
 }
 
 VkSampler	Sampler::getSampler(Device &device, Config config) {
-	VkPhysicalDeviceProperties2	properties{};
-	properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
-	vkGetPhysicalDeviceProperties2(device.getPhysical(), &properties);
 	config.maxAnisotropy = std::min(config.maxAnisotropy,
-							properties.properties.limits.maxSamplerAnisotropy);
+							device.getPhysProperties().properties.limits.maxSamplerAnisotropy);
 
 	if (_samplers.find(config) != _samplers.end())
 		return (_samplers[config]);

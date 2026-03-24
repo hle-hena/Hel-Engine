@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 16:51:10                                        */
+/*  Last Modified: 2026/03/23 20:07:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -50,6 +50,7 @@ bool	Device::pickPhysicalDevice(Window &bootstrapWindow) {
 	}
 	if (_physicalDevice == VK_NULL_HANDLE)
 		RETURN_SET_UNHEALTHY("Couldn't find a suitable physical device.", true);
+	vkGetPhysicalDeviceProperties2(_physicalDevice, &_physicalProperties);
 	return (createLogicalDevice());
 }
 
@@ -207,6 +208,20 @@ bool	Device::supportSurface(Window &window) {
 	vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice, _indices.presentFamily.value(), window.getSurface(), &presentSupport);
 
 	return (presentSupport);
+}
+
+uint32_t	Device::getAligned(uint32_t stride, VkBufferUsageFlags usage) const {
+	auto	&limits = _physicalProperties.properties.limits;
+	auto	align = [stride](uint32_t alignment) {
+		return ((stride + alignment - 1) & ~(alignment - 1));
+	};
+	if (usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT)
+		return (align(limits.minUniformBufferOffsetAlignment));
+	if (usage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
+		return (align(limits.minStorageBufferOffsetAlignment));
+	if (usage & VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT)
+		return (align(limits.minTexelBufferOffsetAlignment));
+	return (stride);
 }
 
 }

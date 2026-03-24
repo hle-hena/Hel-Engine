@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 22:32:25                                        */
+/*  Last Modified: 2026/03/23 18:48:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,31 +22,37 @@
 
 # include "utils/Setters.hpp"
 # include "api/vulkan/PipelineMap.hpp"
+# include "core/Frame.hpp"
 
 namespace	hel {
 
 class	Image;
-class	RendererHandle;
+class	Renderer;
+class	Device;
+struct	FrameContext;
 
-class	Renderer {
+class	RenderPass {
 	public:
-		Renderer(VkCommandBuffer commandBuffer, VkExtent2D extent);
-		Renderer(Renderer &&other);
-		~Renderer(void);
+		RenderPass(Device &device, VkCommandBuffer commandBuffer, VkExtent2D extent);
+		RenderPass(RenderPass &&other);
+		~RenderPass(void);
 
 		SETTER(ColorLoadOp, VkAttachmentLoadOp, _colorsLoadOp)
 		SETTER(ColorStoreOp, VkAttachmentStoreOp, _colorsStoreOp)
 		SETTER(DepthLoadOp, VkAttachmentLoadOp, _depthLoadOp)
 		SETTER(DepthStoreOp, VkAttachmentStoreOp, _depthStoreOp)
-		Renderer		&addColorWrite(Image *color, VkFormat format);
-		Renderer		&addDepthWrite(Image *depth, VkFormat format);
+		RenderPass		&addColorWrite(Image *color, VkFormat format);
+		RenderPass		&addDepthWrite(Image *depth, VkFormat format);
 
-		RendererHandle	beginPass(void);
+		Renderer		beginPass(FrameContext &context);
+
+		static void	newFrame(void)	{ _passIndex = 0; }
 
 	private:
 		void	setViewport(void);
 		void	endPass(void);
 
+		Device				&_device;
 		VkCommandBuffer		_commandBuffer;
 		VkExtent2D			_extent;
 		bool				_isValid{false};
@@ -64,19 +70,68 @@ class	Renderer {
 		std::vector<VkRenderingAttachmentInfo>		_colorsInfo{};
 		std::optional<VkRenderingAttachmentInfo>	_depthInfo{};
 		RenderingConfig								_config;
-	
-	friend class	RendererHandle;
+
+		static uint32_t		_passIndex;
+		static uint32_t		newPass(void)	{ return (_passIndex++); }
+
+	friend class	Renderer;
 };
 
-class RendererHandle {
+class Renderer {
 	public:
-		explicit RendererHandle(Renderer &&renderer);
+		explicit Renderer(FrameContext &frameContext, RenderPass &&pass);
 		explicit operator	bool(void) const;
-		
-		RenderingConfig		_config;
+
+		FrameContext	&frameContext(void)	{ return (_frameContext); }
+		uint32_t		passIndex(void) const	{ return (_frameContext.passIndex); }
+
+		PASSKEY(ISystemKey, sys::ISystem)
+		bool	bindPipeline(PipelineMap *pipeline, ISystemKey) const;
+		struct	Draw;
+		Draw	drawCommand(VkPipelineLayout layout, ISystemKey) const;
 
 	private:
-		Renderer			_renderer;
+		Device				&_device;
+		FrameContext		&_frameContext;
+		VkCommandBuffer		_commandBuffer;
+		RenderingConfig		_config;
+
+		RenderPass			_pass;
+};
+
+struct	Renderer::Draw {
+	template <size_t N>
+	Draw	&addVertexBuffers(const VkBuffer (&buffers)[N],
+							const VkDeviceSize (&offsets)[N]);
+	Draw	&addIndexBuffer(VkBuffer buffer, VkDeviceSize offset,
+							VkIndexType indexType, uint32_t firstIndex = 0);
+	Draw	&addBinding(VkDescriptorSet set);
+	Draw	&addBinding(VkDescriptorSet set, uint32_t stride, uint32_t *offset);
+	template <typename T>
+	Draw	&addPush(VkShaderStageFlags stage, const T &data);
+	void	submit(uint32_t indexCount, uint32_t instanceCount = 1,
+				uint32_t firstInstance = 0);
+
+	private:
+		Draw(Device &device, FrameContext &frameContext, VkCommandBuffer commandBuffer,
+			VkPipelineLayout pipelineLayout)
+			: _device{device}, _frameContext{frameContext},
+				_commandBuffer{commandBuffer}, _pipelineLayout{pipelineLayout} {}
+
+		Device							&_device;
+		FrameContext					&_frameContext;
+		VkCommandBuffer					_commandBuffer;
+		VkPipelineLayout				_pipelineLayout;
+		std::vector<VkDescriptorSet>	_sets{};
+		std::vector<uint32_t>			_setsOffsets{};
+		bool							_hasVertex{false};
+		bool							_hasIndex{false};
+		bool							_hasPush{false};
+		uint32_t						_firstIndex{0};
+
+	friend class Renderer;
 };
 
 }
+
+#include "api/vulkan/Renderer.tpp"

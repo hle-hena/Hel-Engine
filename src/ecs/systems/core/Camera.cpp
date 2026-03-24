@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 20:03:26                                        */
+/*  Last Modified: 2026/03/24 10:53:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,6 +23,7 @@
 #include "ecs/assets/Shader.hpp"
 #include "platform/window/Window.hpp"
 #include "core/Engine.hpp"
+#include "api/vulkan/Renderer.hpp"
 
 namespace	hel::sys {
 
@@ -63,24 +64,21 @@ void	Camera::update(const FrameContext &) {
 		if (!constCamera->isDirty && !constTransform->isDirty)
 			continue ;
 		if (auto camera = _registry->modify(constCamera)) {
-
 			glm::mat4 rotate = glm::mat4_cast(glm::conjugate(constTransform->rotation));
 			glm::mat4 translate = glm::translate(glm::mat4(1.0f), -constTransform->position);
 			glm::mat4 view = rotate * translate;
 
-			glm::mat4 projection = glm::perspective(glm::radians(camera->fov), camera->aspect, camera->near, camera->far);
-			projection[1][1] *= -1; 
-
-			camera->viewProjection = projection * view;
+			camera->view = view;
 		}
 	}
 }
 
-void	Camera::render(const FrameContext &ctx, const RenderingConfig &conf) {
-	auto	selfHandle = ctx.window->getEntityReference();
+void	Camera::render(const FrameContext &ctx, const Renderer &renderer) {
+	auto	selfHandle = ctx.request->handle;
+	if (!_registry->getComponent<comp::Camera>(selfHandle))
+		return ;
 	auto	commandBuffer = ctx.commandBuffer;
-	if (_frustumPipelines->bindPipeline(conf, commandBuffer) ||
-		!commandBuffer)	{ return ; }
+	if (bindPipelines(renderer) || !commandBuffer)	{ return ; }
 	auto	pipelineLayout = _frustumPipelines->getLayout();
 
 	auto	entities = _registry->view<comp::Camera,
@@ -91,20 +89,16 @@ void	Camera::render(const FrameContext &ctx, const RenderingConfig &conf) {
 		if (!mesh)	{ continue ; }
 		auto	*transform = entities.get<comp::Transform>(entity);
 		auto	*camera = entities.get<comp::Camera>(entity);
-		PushConstantData	push{transform->worldMatrix, glm::inverse(camera->viewProjection)};
 
-		vkCmdPushConstants(commandBuffer,pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT,
-							0, sizeof(PushConstantData), &push);
-		VkBuffer	buffers[] = {mesh->vertexBuffer->getBuffer()};
-		VkDeviceSize	offset[] = {0};
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offset);
-		vkCmdBindIndexBuffer(commandBuffer, mesh->lineIndexBuffer->getBuffer(), 0,
-							VK_INDEX_TYPE_UINT32);
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-							pipelineLayout, 0, 1,
-							&ctx.globalSet, 0,
-							nullptr);
-		vkCmdDrawIndexed(commandBuffer, mesh->lineVertexCount, 1, 0, 0, 0);
+		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), 1.f, camera->near, camera->far);
+		projection[1][1] *= -1;
+		PushConstantData	push{transform->worldMatrix, glm::inverse(projection * camera->view)};
+
+		drawCommand(renderer, pipelineLayout)
+			.addPush(VK_SHADER_STAGE_VERTEX_BIT, push)
+			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
+			.addIndexBuffer(mesh->lineIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
+			.submit(mesh->lineVertexCount);
 	}
 }
 

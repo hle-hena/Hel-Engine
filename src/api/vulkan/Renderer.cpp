@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 22:34:38                                        */
+/*  Last Modified: 2026/03/23 18:49:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,29 +16,37 @@
 
 # include "api/vulkan/Renderer.hpp"
 # include "api/vulkan/Image.hpp"
+# include "api/vulkan/Device.hpp"
+# include "core/Frame.hpp"
+
+# include <iostream>
 
 namespace	hel {
 
-Renderer::Renderer(VkCommandBuffer commandBuffer, VkExtent2D extent)
-	:	_commandBuffer{commandBuffer},
+uint32_t	RenderPass::_passIndex = 0;
+
+RenderPass::RenderPass(Device &device, VkCommandBuffer commandBuffer, VkExtent2D extent)
+	:	_device{device},
+		_commandBuffer{commandBuffer},
 		_extent{extent} {
 }
 
-Renderer::Renderer(Renderer &&other)
-	:	_commandBuffer{other._commandBuffer},
+RenderPass::RenderPass(RenderPass &&other)
+	:	_device{other._device},
+		_commandBuffer{other._commandBuffer},
 		_config{other._config},
 		_isValid{other._isValid} {
 	other._commandBuffer = VK_NULL_HANDLE;
 }
 
-Renderer::~Renderer(void) {
+RenderPass::~RenderPass(void) {
 	if (_commandBuffer)
 		endPass();
 }
 
-RendererHandle	Renderer::beginPass(void) {
+Renderer	RenderPass::beginPass(FrameContext &frameContext) {
 	if (_colorsWrite.empty())
-		return (RendererHandle(std::move(*this)));
+		return (Renderer(frameContext, std::move(*this)));
 
 	VkRenderingInfo	renderingInfo{};
 	renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
@@ -52,10 +60,10 @@ RendererHandle	Renderer::beginPass(void) {
 	vkCmdBeginRendering(_commandBuffer, &renderingInfo);
 	setViewport();
 	_isValid = true;
-	return (RendererHandle(std::move(*this)));
+	return (Renderer(frameContext, std::move(*this)));
 }
 
-void	Renderer::setViewport(void) {
+void	RenderPass::setViewport(void) {
 	VkViewport	viewport{};
 	viewport.height = static_cast<float>(_extent.height);
 	viewport.width = static_cast<float>(_extent.width);
@@ -67,11 +75,11 @@ void	Renderer::setViewport(void) {
 	vkCmdSetScissor(_commandBuffer, 0, 1, &scissor);
 }
 
-void	Renderer::endPass(void) {
+void	RenderPass::endPass(void) {
 	vkCmdEndRendering(_commandBuffer);
 }
 
-Renderer	&Renderer::addColorWrite(Image *color, VkFormat format) {
+RenderPass	&RenderPass::addColorWrite(Image *color, VkFormat format) {
 	color->transitionLayout(_commandBuffer,
 							VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
@@ -82,7 +90,7 @@ Renderer	&Renderer::addColorWrite(Image *color, VkFormat format) {
 	return (*this);
 }
 
-Renderer	&Renderer::addDepthWrite(Image *depth, VkFormat format) {
+RenderPass	&RenderPass::addDepthWrite(Image *depth, VkFormat format) {
 	depth->transitionLayout(_commandBuffer,
 							VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
@@ -93,13 +101,69 @@ Renderer	&Renderer::addDepthWrite(Image *depth, VkFormat format) {
 	return (*this);
 }
 
-RendererHandle::RendererHandle(Renderer &&renderer)
-	:	_renderer{std::move(renderer)} {
-	_config = _renderer._config;
+Renderer::Renderer(FrameContext &frameContext, RenderPass &&pass)
+	:	_device{pass._device},
+		_frameContext{frameContext},
+		_commandBuffer{pass._commandBuffer},
+		_config{pass._config},
+		_pass{std::move(pass)} {
+	if (_pass._isValid)
+		_frameContext.passIndex = RenderPass::newPass();
 }
 
-RendererHandle::operator	bool(void) const {
-	return (_renderer._isValid);
+Renderer::operator	bool(void) const {
+	return (_pass._isValid);
+}
+
+bool	Renderer::bindPipeline(PipelineMap *pipeline, ISystemKey) const {
+	return (pipeline->bindPipeline(_config, _commandBuffer));
+}
+
+Renderer::Draw	Renderer::drawCommand(VkPipelineLayout layout, ISystemKey) const {
+	Draw	drawCall {_device, _frameContext, _commandBuffer, layout};
+	drawCall.addBinding(_frameContext.globalSet, sizeof(GlobalUBO), nullptr);
+	return (drawCall);
+}
+
+Renderer::Draw	&Renderer::Draw::addIndexBuffer(VkBuffer buffer, VkDeviceSize offset,
+							VkIndexType indexType, uint32_t firstIndex) {
+	if (_hasIndex)
+		return (*this);
+	vkCmdBindIndexBuffer(_commandBuffer, buffer, offset, indexType);
+	_hasIndex = true;
+	_firstIndex = firstIndex;
+	return (*this);
+}
+
+Renderer::Draw	&Renderer::Draw::addBinding(VkDescriptorSet set) {
+	_sets.push_back(set);
+	return (*this);
+}
+
+Renderer::Draw	&Renderer::Draw::addBinding(VkDescriptorSet set,
+											uint32_t stride, uint32_t *pOffset) {
+	_sets.push_back(set);
+	uint32_t	alignement = _device.getPhysProperties().properties.limits
+										.minUniformBufferOffsetAlignment;
+	uint32_t	offset = ((stride + alignement - 1) & ~(alignement - 1)) * _frameContext.passIndex;
+	if (pOffset)
+		(*pOffset = offset);
+	_setsOffsets.push_back(offset);
+	return (*this);
+}
+
+void	Renderer::Draw::submit(uint32_t indexCount, uint32_t instanceCount,
+				uint32_t firstInstance) {
+	if (!_hasVertex)
+		return ;
+	vkCmdBindDescriptorSets(_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+							_pipelineLayout, 0, _sets.size(), _sets.data(),
+							_setsOffsets.size(), _setsOffsets.data());
+	if (_hasIndex)
+		vkCmdDrawIndexed(_commandBuffer, indexCount, instanceCount,
+						_firstIndex, 0, instanceCount);
+	else
+		vkCmdDraw(_commandBuffer, indexCount, instanceCount, 0, firstInstance);
 }
 
 }
