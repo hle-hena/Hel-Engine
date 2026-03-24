@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 21:01:08                                        */
+/*  Last Modified: 2026/03/24 10:53:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -75,6 +75,8 @@ void	Camera::update(const FrameContext &) {
 
 void	Camera::render(const FrameContext &ctx, const Renderer &renderer) {
 	auto	selfHandle = ctx.request->handle;
+	if (!_registry->getComponent<comp::Camera>(selfHandle))
+		return ;
 	auto	commandBuffer = ctx.commandBuffer;
 	if (bindPipelines(renderer) || !commandBuffer)	{ return ; }
 	auto	pipelineLayout = _frustumPipelines->getLayout();

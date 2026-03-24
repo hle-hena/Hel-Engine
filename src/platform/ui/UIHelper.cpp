@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 14:17:29                                        */
+/*  Last Modified: 2026/03/24 10:39:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -192,7 +192,8 @@ bool	TableRow::buildVecDrag(void) {
 	bool	changed = false;
 	Table::ColumnSizing	sizing = {Table::WFixed};
 	for (int i = 0; i < sRange; i++) {
-		sizing.push_back(Table::WFixed);
+		if (_valueNames[i])
+			sizing.push_back(Table::WFixed);
 		sizing.push_back(Table::WStretch);
 	}
 	if (!_table.newRow(_rowName, sizing))
@@ -233,7 +234,8 @@ bool	TableRow::buildDragRange(void) {
 	bool	changed = false;
 	Table::ColumnSizing	sizing = {Table::WFixed};
 	for (int i = 0; i < sRange; i++) {
-		sizing.push_back(Table::WFixed);
+		if (_valueNames[i])
+			sizing.push_back(Table::WFixed);
 		sizing.push_back(Table::WStretch);
 	}
 	if (!_table.newRow(_rowName, sizing))
@@ -267,7 +269,8 @@ bool	TableRow::buildSimpleText(void) {
 
 	Table::ColumnSizing	sizing = {Table::WFixed};
 	for (int i = 0; i < sRange; i++) {
-		sizing.push_back(Table::WFixed);
+		if (_valueNames[i])
+			sizing.push_back(Table::WFixed);
 		sizing.push_back(Table::WStretch);
 	}
 	if (!_table.newRow(_rowName, sizing))
@@ -297,7 +300,8 @@ bool	TableRow::buildInputText(void) {
 	bool	changed = false;
 	Table::ColumnSizing	sizing = {Table::WFixed};
 	for (int i = 0; i < sRange; i++) {
-		sizing.push_back(Table::WFixed);
+		if (_valueNames[i])
+			sizing.push_back(Table::WFixed);
 		sizing.push_back(Table::WStretch);
 	}
 	if (!_table.newRow(_rowName, sizing))
