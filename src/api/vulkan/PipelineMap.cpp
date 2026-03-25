@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 15:07:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/04 20:48:00                                        */
+/*  Last Modified: 2026/03/24 18:02:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -44,7 +44,7 @@ PipelineMap::PipelineMap(const Config &conf)
 	:	_device{*conf.device},
 		_assetManager{*conf.assetManager},
 		_shaderPaths{conf.shaderPaths},
-		_initLayout{[](auto &, auto &){}},
+		_initLayout{[](auto &, auto &, auto &){}},
 		_configPipeline{[](auto &){}} {
 	if (conf.initPipelineLayout)
 		_initLayout = conf.initPipelineLayout;
@@ -68,7 +68,7 @@ VkPipelineLayout	PipelineMap::getLayout(void) {
 		return (_layout);
 	std::vector<VkDescriptorSetLayout>	setLayouts = _defaultLayouts;
 	std::vector<VkPushConstantRange>	pushConstants{};
-	_initLayout(setLayouts, pushConstants);
+	_initLayout(_device, setLayouts, pushConstants);
 	VkPipelineLayoutCreateInfo	createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	createInfo.setLayoutCount = setLayouts.size();

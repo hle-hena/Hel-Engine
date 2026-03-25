@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:35 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 20:11:48                                        */
+/*  Last Modified: 2026/03/24 18:23:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,6 +48,12 @@ tl::expected<void, std::string>	Frame::init(Device &device,
 		_globalUbos[i]->map();
 
 		writer.writeBuffer(i, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, *_globalUbos[i]);
+
+		_dynamicPools[i] = DescriptorPool::Builder(device)
+			.addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1.f)
+			.addDescriptor(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4.f)
+			.setPageSize(1000)
+			.build();
 	}
 	writer.update();
 	return {};
@@ -60,6 +66,7 @@ FrameContext	Frame::getContext(Window *window, uint32_t frameIndex,
 		.commandBuffer = _commandBuffers[frameIndex],
 		.globalSet = _descriptorSets->sets[frameIndex],
 		.globalLayout = _descriptorSets->setLayout,
+		.descriptorPool = _dynamicPools[frameIndex].get(),
 		.deltaTime = deltaTime,
 		.frameIndex = frameIndex
 	};

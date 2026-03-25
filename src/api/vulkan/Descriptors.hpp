@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 19:00:22                                        */
+/*  Last Modified: 2026/03/24 18:11:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -93,6 +93,7 @@ struct	DescriptorPool::Builder {
 
 struct	DescriptorBindings {
 	std::vector<VkDescriptorSetLayoutBinding>	_bindings{};
+	std::vector<VkSampler>						_samplers{};
 
 	bool	operator==(const DescriptorBindings &other) const;
 };
@@ -107,18 +108,17 @@ class	DescriptorFactory {
 
 		DescriptorFactory	&addBinding(uint32_t binding, VkDescriptorType type,
 										VkShaderStageFlags stages,
-										VkSampler *sampler = nullptr,
+										VkSampler sampler = VK_NULL_HANDLE,
 										uint32_t descriptorCount = 1);
 		std::unique_ptr<DescriptorSet>	build(DescriptorPool &buildPool);
+		VkDescriptorSetLayout			getSetLayout(void);
 
 		static void	deleteLayoutCache(Device &device);
 
 	private:
-		VkDescriptorSetLayout	getSetLayout(void);
-
 		Device				&_device;
 		DescriptorBindings	_bindings;
-		uint32_t			_setCount{0};
+		uint32_t			_setCount{1};
 
 		static std::unordered_map<DescriptorBindings,
 								VkDescriptorSetLayout>	_descriptorSetLayouts;
