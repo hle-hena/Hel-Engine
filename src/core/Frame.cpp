@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:35 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 18:23:19                                        */
+/*  Last Modified: 2026/03/25 20:20:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -42,8 +42,8 @@ tl::expected<void, std::string>	Frame::init(Device &device,
 	DescriptorWriter	writer(device, _descriptorSets.get());
 	for (size_t i = 0; i < frameCount; i++) {
 		_globalUbos[i] = Buffer::create(device, sizeof(GlobalUBO), 32,
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+			VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);
 		if (!_globalUbos[i])	return (unexpected("Failed to create a UBO"));
 		_globalUbos[i]->map();
 

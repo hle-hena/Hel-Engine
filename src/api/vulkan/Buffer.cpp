@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/29 16:04:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 20:08:35                                        */
+/*  Last Modified: 2026/03/25 20:24:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,7 +16,6 @@
 
 #include "api/vulkan/Buffer.hpp"
 #include "api/vulkan/Device.hpp"
-#include "api/vulkan/MemoryHelper.hpp"
 
 #include <stdexcept>
 #include <cstring>
@@ -26,9 +25,10 @@ namespace	hel {
 
 std::unique_ptr<Buffer>	Buffer::create(Device &device, uint32_t stride,
 						uint32_t count, VkBufferUsageFlags usage,
-						VkMemoryPropertyFlags properties) {
+						VmaMemoryUsage memoryUsage,
+						VmaAllocationCreateFlags allocFlags) {
 	try	 {
-		return (std::unique_ptr<Buffer>(new Buffer(device, stride, count, usage, properties)));
+		return (std::unique_ptr<Buffer>(new Buffer(device, stride, count, usage, memoryUsage, allocFlags)));
 	} catch (const std::exception &e) {
 		std::cerr << e.what() << std::endl;
 		return (nullptr);
@@ -37,46 +37,45 @@ std::unique_ptr<Buffer>	Buffer::create(Device &device, uint32_t stride,
 
 Buffer::Buffer(Device &device, uint32_t stride,
 			uint32_t count, VkBufferUsageFlags usage,
-			VkMemoryPropertyFlags properties)
+			VmaMemoryUsage memoryUsage,
+			VmaAllocationCreateFlags allocFlags)
 	:	_device{device} {
 	_stride = stride;
 	_alignedStride = device.getAligned(stride, usage);
 	_size = _alignedStride * count;
+	_allocFlags = allocFlags;
 	VkBufferCreateInfo	createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	createInfo.size = _size;
 	createInfo.usage = usage;
 	createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	if (vkCreateBuffer(_device.getLogical(), &createInfo, nullptr, &_buffer)) {
+	VmaAllocationCreateInfo	allocCreateInfo{};
+	allocCreateInfo.usage = memoryUsage;
+	allocCreateInfo.flags = allocFlags;
+	VmaAllocationInfo		allocInfo;
+	if (vmaCreateBuffer(_device.getAllocator(), &createInfo, &allocCreateInfo,
+						&_buffer, &_allocation, &allocInfo))
 		throw std::runtime_error("Failed to create a buffer");
-	}
 
-	VkMemoryRequirements	memRequirements;
-	vkGetBufferMemoryRequirements(_device.getLogical(), _buffer, &memRequirements);
-	if (MemoryHelper::allocate(_device, memRequirements, properties, _memory)) {
-		throw std::runtime_error("Failed to allocate memory for a buffer");
-	}
-	vkBindBufferMemory(_device.getLogical(), _buffer, _memory, 0);
+	if (allocFlags & VMA_ALLOCATION_CREATE_MAPPED_BIT)
+		_mapped = allocInfo.pMappedData;
 }
 
 Buffer::~Buffer(void) {
 	unmap();
-	if (_buffer != VK_NULL_HANDLE)
-		vkDestroyBuffer(_device.getLogical(), _buffer, nullptr);
-	if (_memory != VK_NULL_HANDLE)
-		vkFreeMemory(_device.getLogical(), _memory, nullptr);
+	if (_allocation)
+		vmaDestroyBuffer(_device.getAllocator(), _buffer, _allocation);
 }
 
-VkResult	Buffer::map(VkDeviceSize size, VkDeviceSize offset) {
+VkResult	Buffer::map(void) {
 	if (_mapped)	{ return (VK_SUCCESS); }
-	if (size == VK_WHOLE_SIZE)	{ size = _size; }
-	return (vkMapMemory(_device.getLogical(), _memory, offset, size, 0, &_mapped));
+	return (vmaMapMemory(_device.getAllocator(), _allocation, &_mapped));
 }
 
 void	Buffer::unmap(void) {
-	if (_mapped) {
-		vkUnmapMemory(_device.getLogical(), _memory);
+	if (_mapped && !(_allocFlags & VMA_ALLOCATION_CREATE_MAPPED_BIT)) {
+		vmaUnmapMemory(_device.getAllocator(), _allocation);
 		_mapped = nullptr;
 	}
 }
@@ -85,12 +84,7 @@ VkResult	Buffer::flush(VkDeviceSize size, VkDeviceSize offset) {
 	if (!_mapped)	{ return (VK_SUCCESS); }
 	if (size == VK_WHOLE_SIZE)	{ size = _size; }
 
-	VkMappedMemoryRange	mappedMemoryRange{};
-	mappedMemoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-	mappedMemoryRange.memory = _memory;
-	mappedMemoryRange.offset = offset;
-	mappedMemoryRange.size = size;
-	return (vkFlushMappedMemoryRanges(_device.getLogical(), 1, &mappedMemoryRange));
+	return (vmaFlushAllocation(_device.getAllocator(), _allocation, offset, size));
 }
 
 void	Buffer::writeToBuffer(void* data, VkDeviceSize size, VkDeviceSize offset) {

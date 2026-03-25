@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:22 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 20:08:55                                        */
+/*  Last Modified: 2026/03/25 20:35:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,8 @@
 # include <cstdint>
 # include <string>
 # include <optional>
+
+#include "api/vulkan/vma/vk_mem_alloc.h"
 
 namespace	hel {
 
@@ -57,6 +59,9 @@ class	Device {
 		VkDevice			getLogical(void) {
 			return (_device);
 		}
+		VmaAllocator		getAllocator(void) const {
+			return (_allocator);
+		}
 		QueuesFamilyIndices	&getQueueFamily(void) {
 			return (_indices);
 		}
@@ -77,7 +82,7 @@ class	Device {
 		bool				findMemoryType(uint32_t typeFilter,
 								VkMemoryPropertyFlags properties,
 								uint32_t &outTypeIndex);
-		
+
 		VkCommandBuffer		beginSingleTimeCommand(void);
 		void				endSingleTimeCommand(VkCommandBuffer commandBuffer);
 
@@ -90,6 +95,7 @@ class	Device {
 
 		bool				createLogicalDevice(void);
 		bool				createCommandPool(void);
+		bool				createVmaAllocator(void);
 
 		bool						_healthy{true};
 		std::string					_reason{""};
@@ -101,6 +107,7 @@ class	Device {
 		VkQueue						_graphicQueue;
 		VkQueue						_presentQueue;
 		VkCommandPool				_transientCommandPool{VK_NULL_HANDLE};
+		VmaAllocator				_allocator;
 
 		const std::vector<const char *>	_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 };
