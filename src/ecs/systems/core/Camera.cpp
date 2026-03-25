@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 21:39:34                                        */
+/*  Last Modified: 2026/03/25 10:21:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -144,7 +144,7 @@ void	Camera::render(const FrameContext &ctx, const Renderer &renderer) {
 			.writeImage(0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 						*texture->image.get(), texture->image->getFormat(), sampler)
 			.update();
-		float	size = 0.1f * glm::distance(transform->position, selfTransform->position);
+		float	size = 0.05f * glm::distance(transform->position, selfTransform->position);
 		drawCommand(renderer, _spritePipeline)
 			.addBinding(set->sets[0])
 			.addPush(VK_SHADER_STAGE_VERTEX_BIT, SpritePush{transform->position, size})

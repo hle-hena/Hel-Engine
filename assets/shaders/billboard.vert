@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/24 17:02:11 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 21:32:58                                        */
+/*  Last Modified: 2026/03/25 10:26:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -44,11 +44,8 @@ void	main() {
 
 	vec3	right = vec3(ubo.viewProjection[0][0], ubo.viewProjection[1][0], ubo.viewProjection[2][0]);
 	vec3	up = vec3(ubo.viewProjection[0][1], ubo.viewProjection[1][1], ubo.viewProjection[2][1]);
-
 	vec2	offset = offsets[gl_VertexIndex] * push.size;
-	vec3	worldPos = push.worldPos
-				+ right * offset.x
-				+ up * offset.y;
+	vec3	worldPos = push.worldPos + right * offset.x + up * offset.y;
 
 	gl_Position = ubo.viewProjection * vec4(worldPos, 1.0);
 	outUV = uvs[gl_VertexIndex];
