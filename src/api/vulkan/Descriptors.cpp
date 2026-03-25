@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/10 19:00:38                                        */
+/*  Last Modified: 2026/03/24 18:12:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -182,14 +182,16 @@ DescriptorFactory::DescriptorFactory(Device &device)
 DescriptorFactory	&DescriptorFactory::addBinding(uint32_t binding,
 												VkDescriptorType type,
 												VkShaderStageFlags stages,
-												VkSampler *sampler,
+												VkSampler sampler,
 												uint32_t descriptorCount) {
+	_bindings._samplers.push_back(sampler);
+
 	VkDescriptorSetLayoutBinding	layoutBinding{};
 	layoutBinding.binding = binding;
 	layoutBinding.stageFlags = stages;
 	layoutBinding.descriptorCount = descriptorCount;
 	layoutBinding.descriptorType = type;
-	layoutBinding.pImmutableSamplers = sampler;
+	layoutBinding.pImmutableSamplers = &_bindings._samplers.back();
 
 	_bindings._bindings.push_back(layoutBinding);
 	return (*this);

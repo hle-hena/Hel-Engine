@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Render.hpp                                                          */
+/*  File: Texture.hpp                                                         */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
+/*  Created: 2026/03/24 15:06:28 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 18:08:47                                        */
+/*  Last Modified: 2026/03/25 10:27:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,45 +16,27 @@
 
 #pragma once
 
-# include <vulkan/vulkan.h>
-# include <unordered_map>
 # include <memory>
 # include <string>
-# include <glm/glm.hpp>
-
-# include "ecs/systems/ISystem.hpp"
-# include "api/vulkan/PipelineMap.hpp"
+# include "api/vulkan/Image.hpp"
 
 namespace	hel {
 
-class	AssetManager;
-class	Window;
+struct	Texture {
+	std::string					filePath;
 
-}
+	std::unique_ptr<Image>		image;
 
-namespace	hel::sys {
+	static std::shared_ptr<Texture>	load(Device &device,
+											const std::string &path);
 
-class	Render : public ISystem {
-	public:
-		Render(void) = default;
-		~Render(void) = default;
-
-		void	init(void) override;
-
-		void	render(const FrameContext &ctx, const Renderer &conf) override;
-
-	private:
-		struct	PushConstantData {
-			glm::mat4	modelMatrix;
-			glm::mat4	normalMatrix;
+	protected:
+		struct	RawTexture {
+			unsigned char	*pixels{nullptr};
+			int				width, height, channels;
 		};
 
-		static void	initLayout(Device &, std::vector<VkDescriptorSetLayout> &setLayouts,
-						std::vector<VkPushConstantRange> &pushConstants);
-		static void	configurePipeline(PipelineConfigInfo &config);
-
-		AssetManager	*_assetManager;
-		PipelineMap		*_pipelines{nullptr};
+		static RawTexture	loadFile(const std::string &path);
 };
 
 }

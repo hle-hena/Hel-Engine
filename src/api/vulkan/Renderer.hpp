@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 18:48:18                                        */
+/*  Last Modified: 2026/03/24 18:23:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,6 +22,7 @@
 
 # include "utils/Setters.hpp"
 # include "api/vulkan/PipelineMap.hpp"
+# include "api/vulkan/Descriptors.hpp"
 # include "core/Frame.hpp"
 
 namespace	hel {
@@ -82,13 +83,12 @@ class Renderer {
 		explicit Renderer(FrameContext &frameContext, RenderPass &&pass);
 		explicit operator	bool(void) const;
 
-		FrameContext	&frameContext(void)	{ return (_frameContext); }
-		uint32_t		passIndex(void) const	{ return (_frameContext.passIndex); }
+		FrameContext		&frameContext(void)	{ return (_frameContext); }
+		uint32_t			passIndex(void) const	{ return (_frameContext.passIndex); }
 
 		PASSKEY(ISystemKey, sys::ISystem)
-		bool	bindPipeline(PipelineMap *pipeline, ISystemKey) const;
 		struct	Draw;
-		Draw	drawCommand(VkPipelineLayout layout, ISystemKey) const;
+		Draw	drawCommand(PipelineMap *pipeline, ISystemKey) const;
 
 	private:
 		Device				&_device;
@@ -110,6 +110,8 @@ struct	Renderer::Draw {
 	template <typename T>
 	Draw	&addPush(VkShaderStageFlags stage, const T &data);
 	void	submit(uint32_t indexCount, uint32_t instanceCount = 1,
+				uint32_t firstInstance = 0);
+	void	submitNoVertex(uint32_t indexCount, uint32_t instanceCount = 1,
 				uint32_t firstInstance = 0);
 
 	private:
