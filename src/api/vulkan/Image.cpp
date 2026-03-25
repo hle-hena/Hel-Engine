@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/25 20:30:30                                        */
+/*  Last Modified: 2026/03/25 20:57:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,7 +30,7 @@ size_t	Image::ConfigHasher::operator()(const Config &conf) const {
 	for (auto format: conf.format)
 		hel::mathUtils::hashCombine(seed, format);
 	hel::mathUtils::hashCombine(seed, conf.aspectFlags, conf.usage,
-						conf.height, conf.width, conf.properties);
+						conf.height, conf.width);
 	return (seed);
 }
 
@@ -39,7 +39,6 @@ bool	Image::Config::operator==(const Config &other) const {
 			this->usage == other.usage &&
 			this->width == other.width &&
 			this->height == other.height &&
-			this->properties == other.properties &&
 			this->aspectFlags == other.aspectFlags);
 }
 
@@ -67,7 +66,7 @@ std::unique_ptr<Image>	Image::wrapSwapchainImages(Device &device, VkImage img,
 Image::Image(Device &device, const Config &config)
 	:	_device{device},
 		_config{config} {
-	createImage(), allocateMemory(), createViews();
+	createImage(), createViews();
 	_extent = {config.width, config.height};
 }
 
@@ -89,10 +88,8 @@ Image::~Image(void) {
 		UiContext::unregisterTexture(it.second);
 	for (auto it: _views)
 		vkDestroyImageView(_device.getLogical(), it.second, nullptr);
-	if (_owned && _memory)
-		vkFreeMemory(_device.getLogical(), _memory, nullptr);
-	if (_owned && _image)
-		vkDestroyImage(_device.getLogical(), _image, nullptr);
+	if (_owned)
+		vmaDestroyImage(_device.getAllocator(), _image, _allocation);
 }
 
 void	Image::createImage(void) {
@@ -113,7 +110,10 @@ void	Image::createImage(void) {
 	createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-	if (vkCreateImage(_device.getLogical(), &createInfo, nullptr, &_image))
+	VmaAllocationCreateInfo	allocCreateInfo{};
+	allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+	if (vmaCreateImage(_device.getAllocator(), &createInfo, &allocCreateInfo,
+					&_image, &_allocation, nullptr))
 		throw std::runtime_error("Failed to create an Image");
 }
 
@@ -145,16 +145,6 @@ void	Image::createView(VkFormat format) {
 	if (vkCreateImageView(_device.getLogical(), &viewCreateInfo,
 						nullptr, &_views[format]))
 		throw std::runtime_error("Failed to create an image view");
-}
-
-void	Image::allocateMemory(void) {
-	VkMemoryRequirements	memRequirements;
-	vkGetImageMemoryRequirements(_device.getLogical(), _image,
-								&memRequirements);
-	if (MemoryHelper::allocate(_device, memRequirements,
-							_config.properties, _memory))
-		throw std::runtime_error("Failed to allocate memory for the image");
-	vkBindImageMemory(_device.getLogical(), _image, _memory, 0);
 }
 
 void	Image::transitionLayout(VkCommandBuffer commandBuffer,

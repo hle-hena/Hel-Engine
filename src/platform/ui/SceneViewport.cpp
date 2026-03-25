@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 13:52:17                                        */
+/*  Last Modified: 2026/03/25 20:59:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -44,8 +44,7 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 			.setFormats({VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM})
 			.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
 			.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
-			.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
-			.setProperty(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
+			.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
 	if (!image)
 		return ;
 	if (_handle == Entity::NOT_REGISTERED)
