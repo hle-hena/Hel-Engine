@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 18:12:32                                        */
+/*  Last Modified: 2026/03/30 18:34:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -52,6 +52,10 @@ struct	is_unique<T, Rest...> : std::bool_constant<
 struct	PendingWrite {
 	uint32_t	offset;
 	void		*data;
+
+	bool	operator<(const PendingWrite &other) const {
+		return (offset < other.offset);
+	}
 };
 
 struct	IPool {
@@ -59,7 +63,7 @@ struct	IPool {
 
 	virtual ~IPool(void) = default;
 	virtual void	syncBuffer(Device &device) = 0;
-	virtual void	syncBuffer(Device &device, PendingWrite &write) = 0;
+	virtual void	syncBuffer(Device &device, const PendingWrite &write) = 0;
 	virtual void	removeEntity(Entity::id handle) = 0;
 	virtual void	resetDirtyFlag(void) = 0;
 	virtual void	addWrite(uint32_t offset, void *data) = 0;
@@ -81,7 +85,7 @@ struct	Pool : IPool {
 	std::unique_ptr<Buffer>	buffer{nullptr};
 
 	void	syncBuffer(Device &device) override;
-	void	syncBuffer(Device &device, PendingWrite &write) override;
+	void	syncBuffer(Device &device, const PendingWrite &write) override;
 	void	removeEntity(Entity::id handle) override;
 	void	resetDirtyFlag(void) override;
 	void	addWrite(uint32_t offset, void *data) override;
@@ -92,7 +96,7 @@ struct	Pool : IPool {
 	const char	*getTypeName(void) const override;
 
 	private:
-		std::vector<PendingWrite>		_writes{};//make it a set.
+		std::set<PendingWrite>	_writes{};
 };
 
 template <typename Component>

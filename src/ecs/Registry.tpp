@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 18:04:43                                        */
+/*  Last Modified: 2026/03/30 18:35:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -50,7 +50,7 @@ void	Pool<Component>::syncBuffer(Device &device) {
 }
 
 template <typename Component>
-void	Pool<Component>::syncBuffer(Device &device, PendingWrite &write) {
+void	Pool<Component>::syncBuffer(Device &device, const PendingWrite &write) {
 	if constexpr (requires { Component::gpuVisible == true; }) {
 		if constexpr (requires (Component c) { c.toGPU(); }) {
 			auto		gpuData = static_cast<Component *>(write.data)->toGPU();
@@ -91,7 +91,13 @@ void	Pool<Component>::resetDirtyFlag(void) {
 
 template <typename Component>
 void	Pool<Component>::addWrite(uint32_t offset, void *data) {
-	_writes.push_back({.offset = offset, .data = data});
+	PendingWrite	write{offset, data};
+	auto	[it, inserted] = _writes.insert(write);
+
+	if (!inserted) {
+		_writes.erase(it);
+		_writes.insert(write);
+	}
 }
 
 template <typename Component>
