@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/24 15:13:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 17:35:51                                        */
+/*  Last Modified: 2026/03/25 20:59:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -47,7 +47,6 @@ std::shared_ptr<Texture> Texture::load(Device &device,
 			.setHeight(raw.height)
 			.setFormats({VK_FORMAT_R8G8B8A8_SRGB})
 			.setUsage(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
-			.setProperty(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 			.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
 
 	VkDeviceSize	size = raw.width * raw.height * 4;

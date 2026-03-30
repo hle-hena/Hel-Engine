@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 20:07:14                                        */
+/*  Last Modified: 2026/03/25 20:26:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,6 +22,9 @@
 #include "utils/healthHelper.hpp"
 #include <set>
 
+#define VMA_IMPLEMENTATION
+#include "api/vulkan/vma/vk_mem_alloc.h"
+
 namespace	hel {
 
 Device::Device(VulkanInstance &instance)
@@ -29,6 +32,8 @@ Device::Device(VulkanInstance &instance)
 }
 
 Device::~Device(void) {
+	if (_allocator)
+		vmaDestroyAllocator(_allocator);
 	if (_transientCommandPool != VK_NULL_HANDLE)
 		vkDestroyCommandPool(_device, _transientCommandPool, nullptr);
 	if (_device != VK_NULL_HANDLE)
@@ -168,7 +173,16 @@ bool	Device::createCommandPool(void) {
 
 	if (vkCreateCommandPool(_device, &commandPoolInfo, nullptr, &_transientCommandPool))
 		RETURN_SET_UNHEALTHY("Couldn't create the command pool.", true);
-	return (false);
+	return (createVmaAllocator());
+}
+
+bool	Device::createVmaAllocator(void) {
+	VmaAllocatorCreateInfo	createInfo{};
+	createInfo.vulkanApiVersion = VK_API_VERSION_1_3;
+	createInfo.device = _device;
+	createInfo.physicalDevice = _physicalDevice;
+	createInfo.instance = _instance.getVkInstance();
+	return (vmaCreateAllocator(&createInfo, &_allocator));
 }
 
 VkCommandBuffer	Device::beginSingleTimeCommand(void) {

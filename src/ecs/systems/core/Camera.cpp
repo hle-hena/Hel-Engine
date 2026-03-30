@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/25 11:22:18                                        */
+/*  Last Modified: 2026/03/30 19:45:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -91,12 +91,12 @@ void	Camera::update(const FrameContext &) {
 	auto	entities = _registry->view<comp::Transform, comp::Camera>();
 
 	for (auto entity: entities) {
-		auto	*constTransform = entities.get<comp::Transform>(entity);
-		auto	*constCamera = entities.get<comp::Camera>(entity);
+		auto	constTransform = entities.get<comp::Transform>(entity);
+		auto	constCamera = entities.get<comp::Camera>(entity);
 
 		if (!constCamera->isDirty && !constTransform->isDirty)
 			continue ;
-		if (auto camera = _registry->modify(constCamera)) {
+		if (auto camera = constCamera.modify()) {
 			glm::mat4 rotate = glm::mat4_cast(glm::conjugate(constTransform->rotation));
 			glm::mat4 translate = glm::translate(glm::mat4(1.0f), -constTransform->position);
 			glm::mat4 view = rotate * translate;
@@ -108,8 +108,8 @@ void	Camera::update(const FrameContext &) {
 
 void	Camera::render(const FrameContext &ctx, const Renderer &renderer) {
 	auto	selfHandle = ctx.request->handle;
-	auto	*selfCam = _registry->getComponent<comp::Camera>(selfHandle);
-	auto	*selfTransform = _registry->getComponent<comp::Transform>(selfHandle);
+	auto	selfCam = _registry->getComponent<comp::Camera>(selfHandle);
+	auto	selfTransform = _registry->getComponent<comp::Transform>(selfHandle);
 	if (!selfCam || !selfTransform)
 		return ;
 	auto	commandBuffer = ctx.commandBuffer;
@@ -131,8 +131,8 @@ void	Camera::render(const FrameContext &ctx, const Renderer &renderer) {
 		if (entity == selfHandle)	{ continue ; }
 		auto	mesh = _assetManager->get<FullGeometry>("assets/models/frustum.obj");
 		if (!mesh)	{ continue ; }
-		auto	*transform = entities.get<comp::Transform>(entity);
-		auto	*camera = entities.get<comp::Camera>(entity);
+		auto	transform = entities.get<comp::Transform>(entity);
+		auto	camera = entities.get<comp::Camera>(entity);
 
 		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), 1.f, camera->near, camera->far);
 		projection[1][1] *= -1;
