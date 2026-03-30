@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 19:50:20                                        */
+/*  Last Modified: 2026/03/25 21:00:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -58,8 +58,6 @@ bool	ImagePool::candidateFits(const Image::Config &requested,
 	bool	sizeFit = requested.width <= candidate.width &&
 			requested.height <= candidate.height;
 	bool	usageFit = (requested.usage & candidate.usage) == requested.usage;
-	bool	propertiesFit = (requested.properties & candidate.properties)
-													== requested.properties;
 	bool	aspectFit = (requested.aspectFlags & candidate.aspectFlags)
 													== requested.aspectFlags;
 	bool	formatFit = true;
@@ -69,7 +67,7 @@ bool	ImagePool::candidateFits(const Image::Config &requested,
 			formatFit = false;
 	}
 
-	return (sizeFit && usageFit && propertiesFit && aspectFit);
+	return (sizeFit && usageFit && aspectFit);
 }
 
 uint64_t	ImagePool::candidateScore(const Image::Config &requested,
@@ -79,7 +77,6 @@ uint64_t	ImagePool::candidateScore(const Image::Config &requested,
 	waste += (candidate.width - requested.width) *
 			(candidate.height - requested.height) * 100;
 	waste += std::popcount(candidate.usage & ~requested.usage);
-	waste += std::popcount(candidate.properties & ~requested.properties);
 	waste += std::popcount(candidate.aspectFlags & ~requested.aspectFlags);
 	for (auto fmt: candidate.format) {
 		if (std::find(requested.format.begin(), requested.format.end(), fmt) == requested.format.end())

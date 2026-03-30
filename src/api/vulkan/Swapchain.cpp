@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 22:36:58                                        */
+/*  Last Modified: 2026/03/25 21:00:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -187,7 +187,6 @@ bool	Swapchain::createDepthImage(VkExtent2D extent) {
 	config.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 	config.width = extent.width;
 	config.height = extent.height;
-	config.properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 	config.aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
 	_depthImage = Image::create(_device, config);
 	return (!_depthImage);
@@ -199,7 +198,6 @@ bool	Swapchain::createOffscreenImage(VkExtent2D extent) {
 	config.height = extent.height;
 	config.aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
 	config.format = {VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM};
-	config.properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 	config.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 	_offscreenImage = Image::create(_device, config);
 	return (!_offscreenImage);

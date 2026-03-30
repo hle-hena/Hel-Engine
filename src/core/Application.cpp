@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/14 18:02:08                                        */
+/*  Last Modified: 2026/03/30 11:37:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,7 +48,7 @@ Application::~Application(void) {
 
 void	Application::loadPrimaryScene(void) {
 	Entity::id	cameraHandle = _registry.createEntity();
-	if (auto transform = _registry.modify(_registry.addComponent<comp::Transform>(cameraHandle)))
+	if (auto transform = _registry.addComponent<comp::Transform>(cameraHandle).modify())
 		transform->position = {1.f, 1.f, 1.f};
 	_registry.addComponent<comp::Controller>(cameraHandle);
 	_registry.addComponent<comp::EditorControllerTag>(cameraHandle);
@@ -56,28 +56,28 @@ void	Application::loadPrimaryScene(void) {
 	_appWindow->setEntityReference(cameraHandle);
 
 	Entity::id	handle = _registry.createEntity();
-	if (auto mesh = _registry.modify(_registry.addComponent<comp::Model>(handle))) {
+	if (auto mesh = _registry.addComponent<comp::Model>(handle).modify()) {
 		mesh->filePath = "assets/models/flat_vase.obj";
 	}
-	if (auto transform = _registry.modify(_registry.addComponent<comp::Transform>(handle))) {
+	if (auto transform = _registry.addComponent<comp::Transform>(handle).modify()) {
 		transform->position = glm::vec3(-2.f, 0.f, -2.f);
 		transform->scale = glm::vec3(4.f, 2.f, 4.f);
 		transform->scale.y = -transform->scale.y;
 	}
 	Entity::id	secondHandle = _registry.createEntity();
-	if (auto mesh = _registry.modify(_registry.addComponent<comp::Model>(secondHandle))) {
+	if (auto mesh = _registry.addComponent<comp::Model>(secondHandle).modify()) {
 		mesh->filePath = "assets/models/smooth_vase.obj";
 	}
-	if (auto transform = _registry.modify(_registry.addComponent<comp::Transform>(secondHandle))) {
+	if (auto transform = _registry.addComponent<comp::Transform>(secondHandle).modify()) {
 		transform->position = glm::vec3(2.f, 0.f, 2.f);
 		transform->scale = glm::vec3(4.f);
 		transform->scale.y = -transform->scale.y;
 	}
 	Entity::id	thirdHandle = _registry.createEntity();
-	if (auto mesh = _registry.modify(_registry.addComponent<comp::Model>(thirdHandle))) {
+	if (auto mesh = _registry.addComponent<comp::Model>(thirdHandle).modify()) {
 		mesh->filePath = "assets/models/quad.obj";
 	}
-	if (auto transform = _registry.modify(_registry.addComponent<comp::Transform>(thirdHandle))) {
+	if (auto transform = _registry.addComponent<comp::Transform>(thirdHandle).modify()) {
 		transform->position = glm::vec3(0.f, 0.f, 0.f);
 		transform->scale = glm::vec3(400.f);
 	}

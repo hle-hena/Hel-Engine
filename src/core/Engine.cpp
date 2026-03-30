@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 18:25:43                                        */
+/*  Last Modified: 2026/03/30 19:36:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -105,15 +105,13 @@ void	Engine::createImagePool(void) {
 			.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
 			.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
 			.setUsage(VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
-			.setAspect(VK_IMAGE_ASPECT_COLOR_BIT)
-			.setProperty(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))
+			.setAspect(VK_IMAGE_ASPECT_COLOR_BIT))
 		.addImage(Image::Config()
 			.setHeight(4096)
 			.setWidth(4096)
 			.setFormats(VK_FORMAT_D32_SFLOAT)
 			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT)
-			.setProperty(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))
+			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT))
 		.build();
 }
 
@@ -125,6 +123,7 @@ void	Engine::tick(Window *window, uint32_t frameIndex) {
 
 	UITick(ui, frameCtx);
 	updateTick(frameCtx);
+	_registry.updateBuffers(_device);
 	renderTick(window, ui, frameCtx);
 }
 
@@ -153,8 +152,7 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 	auto	depthImage = _imagePool->acquire(Image::Config()
 			.setFormats(VK_FORMAT_D32_SFLOAT)
 			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT)
-			.setProperty(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
+			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT));
 	auto	swapImage = swapchain.getSwapImage(imageIndex);
 
 	VkCommandBufferBeginInfo	beginInfo{};
@@ -194,7 +192,7 @@ void	Engine::updateGlobalUBO(Renderer &renderer) {
 	auto	ctx = renderer.frameContext();
 	auto	handle = ctx.request->handle;
 	ctx.globalData.viewProjection = glm::mat4{1.f};
-	if (auto *camera = _registry.getComponent<comp::Camera>(handle)) {
+	if (auto camera = _registry.getComponent<comp::Camera>(handle)) {
 		auto	extent = ctx.request->img->getExtent();
 		float	aspect = (float)extent.width / extent.height;
 		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), aspect, camera->near, camera->far);
