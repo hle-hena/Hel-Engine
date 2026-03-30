@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/29 16:12:54                                        */
+/*  Last Modified: 2026/03/30 15:14:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -43,9 +43,19 @@ struct	Name {
 	std::string	name{"Paul"};
 };
 
+struct	TransformGPU {
+	glm::mat4	worldMatrix;
+	glm::mat4	normalMatrix;
+};
+
 struct	Transform {
 	static constexpr const char	*label = "Transform";
 	static constexpr const bool	gpuVisible = true;
+
+	using GPUType = TransformGPU;
+	TransformGPU	toGPU(void) {
+		return {worldMatrix, normalMatrix};
+	}
 
 	glm::vec3	position{0.f};
 	glm::quat	rotation{1.f, 0.f, 0.f, 0.f};

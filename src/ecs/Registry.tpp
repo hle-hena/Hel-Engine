@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 11:49:59                                        */
+/*  Last Modified: 2026/03/30 16:07:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,30 +16,60 @@
 
 #include "Registry.hpp"
 #include <iostream>
+#include <type_traits>
 
 namespace	hel {
+
+template <typename Component>
+Pool<Component>::Pool(Device &device, DescriptorPool *pool)
+	:	_pool{pool} {
+	_set = DescriptorFactory(device)
+		.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_ALL)
+		.build(*_pool);
+}
 
 template <typename Component>
 void	Pool<Component>::syncBuffer(Device &device) {
 	if constexpr (requires { Component::gpuVisible == true; }) {
 		uint32_t	nbComp = components.size();
-		if (!buffer || buffer->getSize() < nbComp * sizeof(Component)) {
-			buffer = Buffer::create(device, sizeof(Component),
-						std::max(nbComp, 8u),
+		using BufferType = std::conditional_t<
+			requires { typename Component::GPUType; },
+			typename Component::GPUType,
+			Component>;
+		if (!buffer || buffer->getSize() < nbComp * sizeof(BufferType)) {
+			buffer = Buffer::create(device, sizeof(BufferType) * std::max(nbComp, 8u),
+						1,
 						VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
 						VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
 						VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
 						VMA_ALLOCATION_CREATE_MAPPED_BIT);
+			DescriptorWriter(device, _set.get())
+				.writeBuffer(0, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, *buffer)
+				.update();
 		}
-		buffer->writeToBuffer(components.data(), nbComp * sizeof(Component));
-		isDirty = false;
+		if constexpr (requires (Component c) { c.toGPU(); }) {
+			std::vector<BufferType>	gpuData;
+			gpuData.reserve(nbComp);
+			for (auto &comp: components)
+				gpuData.push_back(comp.toGPU());
+			buffer->writeToBuffer(gpuData.data(), nbComp * sizeof(BufferType));
+		} else {
+			buffer->writeToBuffer(components.data(), nbComp * sizeof(Component));
+		}
 	}
+	isDirty = false;
 }
 
 template <typename Component>
 void	Pool<Component>::syncBuffer(Device &device, PendingWrite &write) {
 	if constexpr (requires { Component::gpuVisible == true; }) {
-		buffer->writeToBuffer(write.data, sizeof(Component), write.offset);
+		if constexpr (requires (Component c) { c.toGPU(); }) {
+			auto		gpuData = static_cast<Component *>(write.data)->toGPU();
+			uint32_t	gpuOffset = (write.offset / sizeof(Component)) * sizeof(typename Component::GPUType);
+			buffer->writeToBuffer(&gpuData, sizeof(typename Component::GPUType), gpuOffset);
+		} else {
+			buffer->writeToBuffer(write.data, sizeof(Component), write.offset);
+		}
 	}
 }
 
@@ -164,7 +194,7 @@ Pool<Component>	*Registry::getPool() {
 
 	auto	pool = _pools.find(typeKey);
 	if (pool == _pools.end()) {
-		_pools[typeKey] = std::make_unique<Pool<Component>>();
+		_pools[typeKey] = std::make_unique<Pool<Component>>(*_device, _descriptorPool);
 		return (static_cast<Pool<Component> *>(_pools[typeKey].get()));
 	}
 	return (static_cast<Pool<Component> *>(pool->second.get()));

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 12:07:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/29 16:54:56                                        */
+/*  Last Modified: 2026/03/30 14:41:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,8 +19,12 @@
 namespace	hel {
 
 Registry::Registry(AssetManager &assetManager)
-	:	_assetManager{assetManager} {
-	
+	:	_assetManager{&assetManager} {
+}
+
+void	Registry::init(Device &device, DescriptorPool *descriptorPool) {
+	_descriptorPool = descriptorPool;
+	_device = &device;
 }
 
 bool	Registry::isValidHandle(Entity::id handle) {

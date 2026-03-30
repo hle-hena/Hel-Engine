@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/17 17:07:29                                        */
+/*  Last Modified: 2026/03/30 16:06:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,15 +29,23 @@ layout (binding = 0) uniform UniformBufferObject {
 	float	elapsedTime;
 }	ubo;
 
-layout (push_constant) uniform Push {
+struct	Transform {
 	mat4	modelMatrix;
 	mat4	normalMatrix;
+};
+layout(set = 1, binding = 0) readonly buffer Transforms {
+    Transform data[];
+} transforms;
+
+layout (push_constant) uniform Push {
+	uint	transformIndex;
 } push;
 
 void	main() {
-	vec4	positionInWorld = push.modelMatrix * vec4(inPos, 1.0);
+	Transform	transform = transforms.data[push.transformIndex];
+	vec4	positionInWorld = transform.modelMatrix * vec4(inPos, 1.0);
 	gl_Position = ubo.viewProjection * positionInWorld;
 	fragColor = inColor;
 	fragPos = vec3(positionInWorld);
-	fragNormal = normalize(mat3(push.normalMatrix) * inNormal);
+	fragNormal = normalize(mat3(transform.normalMatrix) * inNormal);
 }

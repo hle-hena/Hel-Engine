@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 11:40:46                                        */
+/*  Last Modified: 2026/03/30 14:42:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -50,6 +50,7 @@ bool	Engine::init(Window &window) {
 	if (createCommandPool())
 		return (true);
 	createDescriptorPools();
+	_registry.init(_device, _staticPool.get());
 	auto	frameRes = _frame.init(_device, _staticPool.get(), _commandPool);
 	if (!frameRes) {
 		std::cerr << frameRes.error() << std::endl;
@@ -92,6 +93,7 @@ void	Engine::createDescriptorPools(void) {
 	_staticPool = DescriptorPool::Builder(_device)
 		.addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
 		.addDescriptor(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4.f)
+		.addDescriptor(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 10.f)
 		.setPageSize(GLFW::_maxInstanceCount * Swapchain::MAX_FRAMES_IN_FLIGHT)
 		.build();
 }
