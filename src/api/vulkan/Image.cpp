@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/25 20:57:48                                        */
+/*  Last Modified: 2026/03/30 19:35:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -88,7 +88,7 @@ Image::~Image(void) {
 		UiContext::unregisterTexture(it.second);
 	for (auto it: _views)
 		vkDestroyImageView(_device.getLogical(), it.second, nullptr);
-	if (_owned)
+	if (_owned && _image)
 		vmaDestroyImage(_device.getAllocator(), _image, _allocation);
 }
 
