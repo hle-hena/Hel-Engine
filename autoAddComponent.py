@@ -81,13 +81,13 @@ vector_str = vector_str[:-2] + "};"
 output_str += vector_str
 output_str += """
 
-const void\t*ComponentList::addComponent(Registry &registry, Entity::id handle, const char *componentName) {\n
+void\tComponentList::addComponent(Registry &registry, Entity::id handle, const char *componentName) {\n
 """
 
 for struct in comp_structs:
-    output_str += f"\n\tif (componentName == \"{struct}\")\n\t\treturn (registry.addComponent<comp::{struct}>(handle));"
+    output_str += f"\n\tif (componentName == \"{struct}\")\n\t\treturn ((void)registry.addComponent<comp::{struct}>(handle));"
 
-output_str += f"\n\treturn (NULL);\n" + "}\n\n}\n"
+output_str += f"\n\treturn ;\n" + "}\n\n}\n"
 
 output_file = "src/ecs/ComponentList.cpp"
 with open(output_file, "w") as f:

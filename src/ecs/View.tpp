@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 16:09:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/02 11:38:30                                        */
+/*  Last Modified: 2026/03/30 11:59:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,7 +22,7 @@ template <typename... Components>
 View<Components...>::View(Registry &registry)
 	:	_registry{registry},
 		_maxEntities{0} {
-	_pools = std::make_tuple(&_registry.getPool<Components>()...);
+	_pools = std::make_tuple(_registry.getPool<Components>()...);
 	_leadEntityList = findSmallestPool();
 	if (_leadEntityList)
 		_maxEntities = _leadEntityList->size();
@@ -30,9 +30,12 @@ View<Components...>::View(Registry &registry)
 
 template <typename... Components>
 template <typename Component>
-const Component	*View<Components...>::get(Entity::id handle) const {
-	auto	*pool = std::get<Pool<Component>*>(_pools);
-	return (&pool->components[pool->indices[Entity::getIndex(handle)]]);
+ComponentHandle<Component>	View<Components...>::get(Entity::id handle) const {
+	ComponentHandle<Component>	compHandle;
+	compHandle._pool = std::get<Pool<Component>*>(_pools);
+	compHandle._index = compHandle._pool->indices[Entity::getIndex(handle)];
+	compHandle._comp = &compHandle._pool->components[*compHandle._index];
+	return (compHandle);
 }
 
 template <typename... Components>

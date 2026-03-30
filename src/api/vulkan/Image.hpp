@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/12 13:44:40                                        */
+/*  Last Modified: 2026/03/25 20:56:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,7 @@
 # include <vulkan/vulkan.h>
 # include "utils/mathUtils.hpp"
 # include "utils/Setters.hpp"
+# include "api/vulkan/vma/vk_mem_alloc.h"
 
 namespace	hel {
 
@@ -35,13 +36,11 @@ class Image {
 			SETTER(Width, uint32_t, width)
 			SETTER(Height, uint32_t, height)
 			SETTER_OR(Usage, VkImageUsageFlags, usage)
-			SETTER_OR(Property, VkMemoryPropertyFlags, properties)
 			SETTER_OR(Aspect, VkImageAspectFlags, aspectFlags)
 
 			uint32_t				width{4096}, height{4096};
 			std::vector<VkFormat>	format{};
 			VkImageUsageFlags		usage{0};
-			VkMemoryPropertyFlags	properties{0};
 			VkImageAspectFlags		aspectFlags{0};
 
 			bool	operator==(const Config &other) const;
@@ -90,7 +89,6 @@ class Image {
 		Image(Device &device, VkImage img, VkFormat format, VkExtent2D extent);
 
 		void	createImage(void);
-		void	allocateMemory(void);
 		void	createViews(void);
 		void	createView(VkFormat format);
 
@@ -105,7 +103,7 @@ class Image {
 		std::unordered_map<VkFormat,
 				VkDescriptorSet,
 				mathUtils::EnumHash>	_textures;
-		VkDeviceMemory					_memory{VK_NULL_HANDLE};
+		VmaAllocation					_allocation{VK_NULL_HANDLE};
 		VkImageLayout					_currentLayout{VK_IMAGE_LAYOUT_UNDEFINED};
 };
 

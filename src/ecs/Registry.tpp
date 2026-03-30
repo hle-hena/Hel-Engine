@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/02 15:15:01                                        */
+/*  Last Modified: 2026/03/30 19:40:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,8 +16,51 @@
 
 #include "Registry.hpp"
 #include <iostream>
+#include <type_traits>
 
 namespace	hel {
+
+template <typename Component>
+void	Pool<Component>::syncBuffer(Device &device) {
+	if constexpr (requires { Component::gpuVisible == true; }) {
+		uint32_t	nbComp = components.size();
+		using BufferType = std::conditional_t<
+			requires { typename Component::GPUType; },
+			typename Component::GPUType,
+			Component>;
+		if (!buffer || buffer->getSize() < nbComp * sizeof(BufferType)) {
+			buffer = Buffer::create(device, sizeof(BufferType) * std::max(nbComp, 8u),
+						1,
+						VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+						VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+						VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
+						VMA_ALLOCATION_CREATE_MAPPED_BIT);
+		}
+		if constexpr (requires (Component c) { c.toGPU(); }) {
+			std::vector<BufferType>	gpuData;
+			gpuData.reserve(nbComp);
+			for (auto &comp: components)
+				gpuData.push_back(comp.toGPU());
+			buffer->writeToBuffer(gpuData.data(), nbComp * sizeof(BufferType));
+		} else {
+			buffer->writeToBuffer(components.data(), nbComp * sizeof(Component));
+		}
+	}
+	isDirty = false;
+}
+
+template <typename Component>
+void	Pool<Component>::syncBuffer(Device &device, const PendingWrite &write) {
+	if constexpr (requires { Component::gpuVisible == true; }) {
+		if constexpr (requires (Component c) { c.toGPU(); }) {
+			auto		gpuData = static_cast<Component *>(write.data)->toGPU();
+			uint32_t	gpuOffset = write.index * sizeof(typename Component::GPUType);
+			buffer->writeToBuffer(&gpuData, sizeof(typename Component::GPUType), gpuOffset);
+		} else {
+			buffer->writeToBuffer(write.data, sizeof(Component), write.index * sizeof(Component));
+		}
+	}
+}
 
 template <typename Component>
 void	Pool<Component>::removeEntity(Entity::id handle) {
@@ -34,6 +77,7 @@ void	Pool<Component>::removeEntity(Entity::id handle) {
 	components.resize(lastIndex);
 	entities.resize(lastIndex);
 	indices[entityIndex] = Entity::NOT_REGISTERED;
+	isDirty = true;
 }
 
 template <typename Component>
@@ -43,6 +87,29 @@ void	Pool<Component>::resetDirtyFlag(void) {
 			comp.isDirty = false;
 		}
 	}
+}
+
+template <typename Component>
+void	Pool<Component>::addWrite(uint32_t index, void *data) {
+	PendingWrite	write{index, data};
+	auto	[it, inserted] = _writes.insert(write);
+
+	if (!inserted) {
+		_writes.erase(it);
+		_writes.insert(write);
+	}
+}
+
+template <typename Component>
+void	Pool<Component>::flushWrites(Device &device) {
+	if (isDirty) {
+		_writes.clear();
+		return (syncBuffer(device));
+	}
+	for (auto &write: _writes) {
+		syncBuffer(device, write);
+	}
+	_writes.clear();
 }
 
 template <typename Component>
@@ -67,33 +134,44 @@ const char	*Pool<Component>::getTypeName(void) const {
 
 
 template <typename Component, typename... Args>
-const Component	*Registry::addComponent(Entity::id handle, Args&&... args) {
-	if (!isValidHandle(handle))	{ return (nullptr); }
-	Pool<Component>	&pool = getPool<Component>();
-	uint32_t		entityIndex = Entity::getIndex(handle);
-	if (pool.indices.size() <= entityIndex) {
-		pool.indices.resize(entityIndex + 1, Entity::NOT_REGISTERED);
-	}
-	if (pool.indices[entityIndex] != Entity::NOT_REGISTERED) {
+ComponentHandle<Component>	Registry::addComponent(Entity::id entityHandle, Args&&... args) {
+	ComponentHandle<Component>	compHandle;
+	if (!isValidHandle(entityHandle))	{ return (compHandle); }
+	compHandle._pool = getPool<Component>();
+	uint32_t		entityIndex = Entity::getIndex(entityHandle);
+	if (compHandle._pool->indices.size() <= entityIndex)
+		compHandle._pool->indices.resize(entityIndex + 1, Entity::NOT_REGISTERED);
+	compHandle._index = compHandle._pool->indices[entityIndex];
+	if (compHandle._index != Entity::NOT_REGISTERED) {
 		std::cout << "Cannot add a component when one already exists. " <<
 			"Use getComponent to get it and modify to modifiy it." << std::endl;
-		return (&pool.components[pool.indices[entityIndex]]);
+		compHandle._comp = &compHandle._pool->components[*compHandle._index];
+		return (compHandle);
 	}
-	Component	&component = pool.components.emplace_back(std::forward<Args>(args)...);
-	pool.entities.push_back(handle);
-	pool.indices[entityIndex] = pool.components.size() - 1;
+	Component	&component = compHandle._pool->components.emplace_back(std::forward<Args>(args)...);
+	compHandle._pool->entities.push_back(entityHandle);
+	compHandle._pool->indices[entityIndex] = compHandle._pool->components.size() - 1;
+	compHandle._index = compHandle._pool->indices[entityIndex];
+	compHandle._comp = &component;
+	compHandle._pool->isDirty = true;
 	prepareComponent(component);
-	return (&component);
+	return (compHandle);
 }
 
 template <typename Component>
-const Component	*Registry::getComponent(Entity::id handle) {
-	if (!isValidHandle(handle))	{ return (nullptr); }
-	Pool<Component>	&pool = getPool<Component>();
-	uint32_t		entityIndex = Entity::getIndex(handle);
-	if (pool.indices.size() <= entityIndex || pool.indices[entityIndex] == Entity::NOT_REGISTERED)
-		return (nullptr);
-	return (&pool.components[pool.indices[entityIndex]]);
+ComponentHandle<Component>	Registry::getComponent(Entity::id entityHandle) {
+	ComponentHandle<Component>	compHandle;
+	if (!isValidHandle(entityHandle))	{ return (compHandle); }
+	compHandle._pool = getPool<Component>();
+	uint32_t	entityIndex = Entity::getIndex(entityHandle);
+	if (compHandle._pool->indices.size() <= entityIndex)
+		return (compHandle);
+	uint32_t	denseIndex = compHandle._pool->indices[entityIndex];
+	if (denseIndex == Entity::NOT_REGISTERED)
+		return (compHandle);
+	compHandle._index = denseIndex;
+	compHandle._comp = &compHandle._pool->components[denseIndex];
+	return (compHandle);
 }
 
 template <typename Component>
@@ -106,42 +184,65 @@ void	Registry::removeComponent(Entity::id handle) {
 
 
 template <typename Component>
-ModificationProxy<Component>	Registry::modify(Entity::id handle) {
-	auto	*comp = getComponent<Component>(handle);
-	return (ModificationProxy<Component>(const_cast<Component *>(comp)));
-}
-
-template <typename Component>
-ModificationProxy<Component>	Registry::modify(const Component *comp) {
-	return (ModificationProxy<Component>(const_cast<Component *>(comp)));
-}
-
-
-
-template <typename Component>
-Pool<Component>	&Registry::getPool() {
+Pool<Component>	*Registry::getPool() {
 	std::type_index	typeKey = typeid(Component);
 
 	auto	pool = _pools.find(typeKey);
 	if (pool == _pools.end()) {
 		_pools[typeKey] = std::make_unique<Pool<Component>>();
-		return (static_cast<Pool<Component>&>(*_pools[typeKey]));
+		return (static_cast<Pool<Component> *>(_pools[typeKey].get()));
 	}
-	return (static_cast<Pool<Component>&>(*pool->second));
+	return (static_cast<Pool<Component> *>(pool->second.get()));
 }
 
 template <typename... Components>
 View<Components...> Registry::view() {
 	static_assert(sizeof...(Components) > 0, "Cannot create an empty View. Please provide at least one component");
-    static_assert(is_unique<Components...>::value, "View contains duplicate component types");
+	static_assert(is_unique<Components...>::value, "View contains duplicate component types");
 	return (View<Components...>(*this));
 }
 
-template<typename Component>
+template <typename Component>
 void	Registry::prepareComponent(Component &component) {
 	if constexpr (requires { component.init(_assetManager); }) {
 		component.init(_assetManager);
 	}
+}
+
+template <typename T>
+constexpr bool isGpuVisible() {
+    if constexpr (requires { T::gpuVisible; })
+        return T::gpuVisible;
+    return false;
+}
+
+template <typename... Component>
+DescriptorSet::ptr	Registry::buildComponentSet(Device &device,
+												DescriptorPool *dynamicPool) {
+	bool	invalid = (!isGpuVisible<Component>() || ...);
+	if (invalid)
+		return (nullptr);
+	auto		factory = DescriptorFactory(device);
+	uint32_t	binding = 0;
+	((factory.addBinding(binding++, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+		VK_SHADER_STAGE_ALL), (void)sizeof(Component)), ...);
+	auto	set = factory.build(*dynamicPool);
+	auto	writer = DescriptorWriter(device, set.get());
+	binding = 0;
+	(writer.writeBuffer(0, binding++, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+		*getPool<Component>()->buffer), ...);
+	writer.update();
+	return (set);
+}
+
+
+
+
+template <typename Component>
+ModificationProxy<Component>	ComponentHandle<Component>::modify(void) {
+	if (_index.has_value())
+		return {const_cast<Component *>(_comp), _pool, *_index};
+	return {};
 }
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 18:08:47                                        */
+/*  Last Modified: 2026/03/30 15:06:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,8 +45,7 @@ class	Render : public ISystem {
 
 	private:
 		struct	PushConstantData {
-			glm::mat4	modelMatrix;
-			glm::mat4	normalMatrix;
+			uint32_t	transformIndex{0};
 		};
 
 		static void	initLayout(Device &, std::vector<VkDescriptorSetLayout> &setLayouts,

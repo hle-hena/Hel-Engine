@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 16:04:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/30 16:14:52                                        */
+/*  Last Modified: 2026/03/30 11:51:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,7 +28,7 @@ class	View {
 		View(Registry &registry);
 
 		template <typename Component>
-		const Component	*get(Entity::id handle) const;
+		ComponentHandle<Component>	get(Entity::id handle) const;
 
 		struct	Iterator {
 			using iterator_category = std::forward_iterator_tag;
