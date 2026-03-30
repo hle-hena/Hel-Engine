@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 14:42:25                                        */
+/*  Last Modified: 2026/03/30 18:12:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -50,7 +50,6 @@ bool	Engine::init(Window &window) {
 	if (createCommandPool())
 		return (true);
 	createDescriptorPools();
-	_registry.init(_device, _staticPool.get());
 	auto	frameRes = _frame.init(_device, _staticPool.get(), _commandPool);
 	if (!frameRes) {
 		std::cerr << frameRes.error() << std::endl;

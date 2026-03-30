@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 16:07:10                                        */
+/*  Last Modified: 2026/03/30 18:04:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,14 +19,6 @@
 #include <type_traits>
 
 namespace	hel {
-
-template <typename Component>
-Pool<Component>::Pool(Device &device, DescriptorPool *pool)
-	:	_pool{pool} {
-	_set = DescriptorFactory(device)
-		.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_ALL)
-		.build(*_pool);
-}
 
 template <typename Component>
 void	Pool<Component>::syncBuffer(Device &device) {
@@ -43,9 +35,6 @@ void	Pool<Component>::syncBuffer(Device &device) {
 						VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
 						VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
 						VMA_ALLOCATION_CREATE_MAPPED_BIT);
-			DescriptorWriter(device, _set.get())
-				.writeBuffer(0, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, *buffer)
-				.update();
 		}
 		if constexpr (requires (Component c) { c.toGPU(); }) {
 			std::vector<BufferType>	gpuData;
@@ -194,7 +183,7 @@ Pool<Component>	*Registry::getPool() {
 
 	auto	pool = _pools.find(typeKey);
 	if (pool == _pools.end()) {
-		_pools[typeKey] = std::make_unique<Pool<Component>>(*_device, _descriptorPool);
+		_pools[typeKey] = std::make_unique<Pool<Component>>();
 		return (static_cast<Pool<Component> *>(_pools[typeKey].get()));
 	}
 	return (static_cast<Pool<Component> *>(pool->second.get()));
@@ -203,7 +192,7 @@ Pool<Component>	*Registry::getPool() {
 template <typename... Components>
 View<Components...> Registry::view() {
 	static_assert(sizeof...(Components) > 0, "Cannot create an empty View. Please provide at least one component");
-    static_assert(is_unique<Components...>::value, "View contains duplicate component types");
+	static_assert(is_unique<Components...>::value, "View contains duplicate component types");
 	return (View<Components...>(*this));
 }
 
@@ -213,6 +202,33 @@ void	Registry::prepareComponent(Component &component) {
 		component.init(_assetManager);
 	}
 }
+
+template <typename T>
+constexpr bool isGpuVisible() {
+    if constexpr (requires { T::gpuVisible; })
+        return T::gpuVisible;
+    return false;
+}
+
+template <typename... Component>
+DescriptorSet::ptr	Registry::buildComponentSet(Device &device,
+												DescriptorPool *dynamicPool) {
+	bool	invalid = (!isGpuVisible<Component>() || ...);
+	if (invalid)
+		return (nullptr);
+	auto		factory = DescriptorFactory(device);
+	uint32_t	binding = 0;
+	((factory.addBinding(binding++, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+		VK_SHADER_STAGE_ALL), (void)sizeof(Component)), ...);
+	auto	set = factory.build(*dynamicPool);
+	auto	writer = DescriptorWriter(device, set.get());
+	binding = 0;
+	(writer.writeBuffer(0, binding++, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+		*getPool<Component>()->buffer), ...);
+	writer.update();
+	return (set);
+}
+
 
 
 

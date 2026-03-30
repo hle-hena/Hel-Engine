@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 18:11:45                                        */
+/*  Last Modified: 2026/03/30 17:00:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -145,6 +145,7 @@ class	DescriptorWriter {
 };
 
 struct DescriptorSet {
+	using ptr = std::unique_ptr<DescriptorSet>;
 	~DescriptorSet(void)	{ free(); }
 
 	VkDescriptorSetLayout			setLayout;

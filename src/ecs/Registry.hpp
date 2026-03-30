@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 15:23:22                                        */
+/*  Last Modified: 2026/03/30 18:12:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -68,13 +68,11 @@ struct	IPool {
 	virtual bool		has(Entity::id handle) const = 0;
 	virtual void		*getRaw(Entity::id handle) = 0;
 	virtual const char	*getTypeName(void) const = 0;
-
-	virtual VkDescriptorSet	getSet(void) const = 0;
 };
 
 template <typename Component>
 struct	Pool : IPool {
-	Pool(Device &device, DescriptorPool *pool);
+	Pool(void) = default;
 
 	std::vector<uint32_t>	indices{};
 	std::vector<Entity::id>	entities{};
@@ -93,13 +91,8 @@ struct	Pool : IPool {
 	void		*getRaw(Entity::id handle) override;
 	const char	*getTypeName(void) const override;
 
-	VkDescriptorSet	getSet(void) const override	{ return (_set->sets[0]); }
-
-
 	private:
-		DescriptorPool					*_pool;
 		std::vector<PendingWrite>		_writes{};//make it a set.
-		std::unique_ptr<DescriptorSet>	_set;
 };
 
 template <typename Component>
@@ -138,8 +131,6 @@ class	Registry {
 		Registry(const Registry &) = delete;
 		Registry	&operator=(const Registry &) = delete;
 
-		void	init(Device &device, DescriptorPool *descriptorPool);
-
 		AssetManager	&getAssetManager(void) const {
 			return (*_assetManager);
 		}
@@ -163,6 +154,9 @@ class	Registry {
 		void		resetAllDirty(void);
 		void		updateBuffers(Device &device);
 
+		template <typename... Component>
+		DescriptorSet::ptr	buildComponentSet(Device &device, DescriptorPool *dynamicPool);
+
 		template <typename... Components>
 		View<Components...>		view();
 
@@ -176,8 +170,6 @@ class	Registry {
 
 		std::vector<Entity::id>		_aliveEntities{};
 		PoolMap						_pools;
-		Device						*_device;
-		DescriptorPool				*_descriptorPool;
 		AssetManager				*_assetManager;
 		InputState					_inputState;
 
@@ -193,7 +185,6 @@ struct	ComponentHandle {
 		operator bool(void) const	{ return (_index.has_value()); }
 		const Component	*operator->(void)	{ return (_comp); }
 		ModificationProxy<Component>	modify(void);
-		VkDescriptorSet					getSet(void) const	{ return (_pool->getSet()); }
 		uint32_t						getDenseIndex(void) const	{ return (*_index); }
 
 	private:

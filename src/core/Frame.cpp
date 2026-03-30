@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:35 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/25 20:20:34                                        */
+/*  Last Modified: 2026/03/30 16:49:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -52,6 +52,7 @@ tl::expected<void, std::string>	Frame::init(Device &device,
 		_dynamicPools[i] = DescriptorPool::Builder(device)
 			.addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1.f)
 			.addDescriptor(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4.f)
+			.addDescriptor(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 10.f)
 			.setPageSize(1000)
 			.build();
 	}

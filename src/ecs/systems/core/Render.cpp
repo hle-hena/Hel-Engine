@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 15:28:47                                        */
+/*  Last Modified: 2026/03/30 18:09:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -61,6 +61,9 @@ void	Render::render(const FrameContext &ctx, const Renderer &renderer) {
 	if (!ctx.commandBuffer)
 		return ;
 
+	auto	set = _registry->buildComponentSet<comp::Transform>(*_device, ctx.descriptorPool);
+	if (!set)
+		return ;
 	auto	entities = _registry->view<comp::Transform, comp::Model>();
 	for (auto entity: entities) {
 		auto	mesh = _assetManager->get<Geometry>(entities.get<comp::Model>(entity)->filePath);
@@ -69,7 +72,7 @@ void	Render::render(const FrameContext &ctx, const Renderer &renderer) {
 
 		drawCommand(renderer, _pipelines)
 			.addPush(VK_SHADER_STAGE_VERTEX_BIT, PushConstantData{transform.getDenseIndex()})
-			.addBinding(transform.getSet())
+			.addBinding(set->sets[0])
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
 			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
 			.submit(mesh->triangleVertexCount);
