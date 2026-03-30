@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 18:12:59                                        */
+/*  Last Modified: 2026/03/30 19:36:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -92,7 +92,6 @@ void	Engine::createDescriptorPools(void) {
 	_staticPool = DescriptorPool::Builder(_device)
 		.addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
 		.addDescriptor(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4.f)
-		.addDescriptor(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 10.f)
 		.setPageSize(GLFW::_maxInstanceCount * Swapchain::MAX_FRAMES_IN_FLIGHT)
 		.build();
 }
