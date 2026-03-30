@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 18:35:05                                        */
+/*  Last Modified: 2026/03/30 19:40:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -54,10 +54,10 @@ void	Pool<Component>::syncBuffer(Device &device, const PendingWrite &write) {
 	if constexpr (requires { Component::gpuVisible == true; }) {
 		if constexpr (requires (Component c) { c.toGPU(); }) {
 			auto		gpuData = static_cast<Component *>(write.data)->toGPU();
-			uint32_t	gpuOffset = (write.offset / sizeof(Component)) * sizeof(typename Component::GPUType);
+			uint32_t	gpuOffset = write.index * sizeof(typename Component::GPUType);
 			buffer->writeToBuffer(&gpuData, sizeof(typename Component::GPUType), gpuOffset);
 		} else {
-			buffer->writeToBuffer(write.data, sizeof(Component), write.offset);
+			buffer->writeToBuffer(write.data, sizeof(Component), write.index * sizeof(Component));
 		}
 	}
 }
@@ -90,8 +90,8 @@ void	Pool<Component>::resetDirtyFlag(void) {
 }
 
 template <typename Component>
-void	Pool<Component>::addWrite(uint32_t offset, void *data) {
-	PendingWrite	write{offset, data};
+void	Pool<Component>::addWrite(uint32_t index, void *data) {
+	PendingWrite	write{index, data};
 	auto	[it, inserted] = _writes.insert(write);
 
 	if (!inserted) {

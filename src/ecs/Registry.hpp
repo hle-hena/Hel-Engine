@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 18:34:20                                        */
+/*  Last Modified: 2026/03/30 19:39:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -50,11 +50,11 @@ struct	is_unique<T, Rest...> : std::bool_constant<
 > {};
 
 struct	PendingWrite {
-	uint32_t	offset;
+	uint32_t	index;
 	void		*data;
 
 	bool	operator<(const PendingWrite &other) const {
-		return (offset < other.offset);
+		return (index < other.index);
 	}
 };
 
@@ -66,7 +66,7 @@ struct	IPool {
 	virtual void	syncBuffer(Device &device, const PendingWrite &write) = 0;
 	virtual void	removeEntity(Entity::id handle) = 0;
 	virtual void	resetDirtyFlag(void) = 0;
-	virtual void	addWrite(uint32_t offset, void *data) = 0;
+	virtual void	addWrite(uint32_t index, void *data) = 0;
 	virtual void	flushWrites(Device &device) = 0;
 	
 	virtual bool		has(Entity::id handle) const = 0;
@@ -88,7 +88,7 @@ struct	Pool : IPool {
 	void	syncBuffer(Device &device, const PendingWrite &write) override;
 	void	removeEntity(Entity::id handle) override;
 	void	resetDirtyFlag(void) override;
-	void	addWrite(uint32_t offset, void *data) override;
+	void	addWrite(uint32_t index, void *data) override;
 	void	flushWrites(Device &device) override;
 
 	bool		has(Entity::id handle) const override;
@@ -111,7 +111,7 @@ struct	ModificationProxy {
 			if (component)
 				component->isDirty = true;
 		}
-		pool->addWrite(index * sizeof(Component), component);
+		pool->addWrite(index, component);
 	}
 	Component	*operator->(void) { return component; };
 	explicit operator bool() const { return (component != nullptr); }
