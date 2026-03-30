@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/25 20:59:09                                        */
+/*  Last Modified: 2026/03/29 16:11:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -123,6 +123,7 @@ void	Engine::tick(Window *window, uint32_t frameIndex) {
 
 	UITick(ui, frameCtx);
 	updateTick(frameCtx);
+	_registry.updateBuffers(_device);
 	renderTick(window, ui, frameCtx);
 }
 

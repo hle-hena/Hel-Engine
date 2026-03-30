@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/02 15:15:01                                        */
+/*  Last Modified: 2026/03/30 10:20:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,30 @@
 #include <iostream>
 
 namespace	hel {
+
+template <typename Component>
+void	Pool<Component>::syncBuffer(Device &device) {
+	if constexpr (requires { Component::gpuVisible == true; }) {
+		uint32_t	nbComp = components.size();
+		if (!buffer || buffer->getSize() < nbComp * sizeof(Component)) {
+			buffer = Buffer::create(device, sizeof(Component),
+						std::max(nbComp, 8u),
+						VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+						VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+						VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
+						VMA_ALLOCATION_CREATE_MAPPED_BIT);
+		}
+		buffer->writeToBuffer(components.data(), nbComp * sizeof(Component));
+		isDirty = false;
+	}
+}
+
+template <typename Component>
+void	Pool<Component>::syncBuffer(Device &device, PendingWrite &write) {
+	if constexpr (requires { Component::gpuVisible == true; }) {
+		buffer->writeToBuffer(write.data, sizeof(Component), write.offset);
+	}
+}
 
 template <typename Component>
 void	Pool<Component>::removeEntity(Entity::id handle) {
@@ -34,6 +58,7 @@ void	Pool<Component>::removeEntity(Entity::id handle) {
 	components.resize(lastIndex);
 	entities.resize(lastIndex);
 	indices[entityIndex] = Entity::NOT_REGISTERED;
+	isDirty = true;
 }
 
 template <typename Component>
@@ -43,6 +68,23 @@ void	Pool<Component>::resetDirtyFlag(void) {
 			comp.isDirty = false;
 		}
 	}
+}
+
+template <typename Component>
+void	Pool<Component>::addWrite(uint32_t offset, void *data) {
+	_writes.push_back({.offset = offset, .data = data});
+}
+
+template <typename Component>
+void	Pool<Component>::flushWrites(Device &device) {
+	if (isDirty) {
+		_writes.clear();
+		return (syncBuffer(device));
+	}
+	for (auto &write: _writes) {
+		syncBuffer(device, write);
+	}
+	_writes.clear();
 }
 
 template <typename Component>
@@ -82,6 +124,7 @@ const Component	*Registry::addComponent(Entity::id handle, Args&&... args) {
 	Component	&component = pool.components.emplace_back(std::forward<Args>(args)...);
 	pool.entities.push_back(handle);
 	pool.indices[entityIndex] = pool.components.size() - 1;
+	pool.isDirty = true;
 	prepareComponent(component);
 	return (&component);
 }
@@ -107,13 +150,26 @@ void	Registry::removeComponent(Entity::id handle) {
 
 template <typename Component>
 ModificationProxy<Component>	Registry::modify(Entity::id handle) {
-	auto	*comp = getComponent<Component>(handle);
-	return (ModificationProxy<Component>(const_cast<Component *>(comp)));
+	if (!isValidHandle(handle))	{ return {}; }
+	std::type_index	typeKey = typeid(Component);
+	uint32_t		entityIndex = Entity::getIndex(handle);
+	auto	poolIt = _pools.find(typeKey);
+	if (poolIt == _pools.end())
+		return {};
+	auto	*pool = static_cast<Pool<Component> *>(poolIt->second.get());
+	if (pool->indices.size() <= entityIndex || pool->indices[entityIndex] == Entity::NOT_REGISTERED)
+		return {};
+	auto	comp = &pool->components[pool->indices[entityIndex]];
+	return (ModificationProxy<Component>(comp, pool));
 }
 
 template <typename Component>
 ModificationProxy<Component>	Registry::modify(const Component *comp) {
-	return (ModificationProxy<Component>(const_cast<Component *>(comp)));
+	std::type_index	typeKey = typeid(Component);
+	auto	pool = _pools.find(typeKey);
+	if (pool == _pools.end())
+		return {};
+	return (ModificationProxy<Component>(const_cast<Component *>(comp), pool->second.get()));
 }
 
 

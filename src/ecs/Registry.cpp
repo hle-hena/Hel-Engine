@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 12:07:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/27 22:29:48                                        */
+/*  Last Modified: 2026/03/29 16:54:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -57,6 +57,11 @@ void	Registry::removeEntity(Entity::id handle) {
 void	Registry::resetAllDirty(void) {
 	for (auto &[type, pool]: _pools)
 		pool->resetDirtyFlag();
+}
+
+void	Registry::updateBuffers(Device &device) {
+	for (auto &[type, pool]: _pools)
+		pool->flushWrites(device);
 }
 
 }

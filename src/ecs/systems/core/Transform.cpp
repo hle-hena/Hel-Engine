@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:22:58                                        */
+/*  Last Modified: 2026/03/30 10:17:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,11 +27,10 @@ void	Transform::update(const FrameContext &ctx) {
 	auto	entities = _registry->view<comp::Transform>();
 
 	for (auto entity: entities) {
-		auto	transform = _registry->modify(
-								entities.get<comp::Transform>(entity));
-		if (!transform->isDirty)
+		auto	constTransform = entities.get<comp::Transform>(entity);
+		if (!constTransform->isDirty)
 			continue ;
-
+		auto	transform = _registry->modify(constTransform);
 		transform->rotation = glm::normalize(transform->rotation);
 		glm::mat4	T = glm::translate(glm::mat4(1.f), transform->position);
 		glm::mat4	R = glm::mat4_cast(transform->rotation);

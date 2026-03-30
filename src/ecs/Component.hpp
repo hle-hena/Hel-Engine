@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 20:12:21                                        */
+/*  Last Modified: 2026/03/29 16:12:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,6 +45,7 @@ struct	Name {
 
 struct	Transform {
 	static constexpr const char	*label = "Transform";
+	static constexpr const bool	gpuVisible = true;
 
 	glm::vec3	position{0.f};
 	glm::quat	rotation{1.f, 0.f, 0.f, 0.f};
