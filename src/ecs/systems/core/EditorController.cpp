@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/03 18:56:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:16:37                                        */
+/*  Last Modified: 2026/03/30 11:43:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,9 +28,9 @@ void	EditorController::init(void) {
 }
 
 void	EditorController::handleKeyboardInput(Entity::id handle, float deltaTime) {
-	auto	*constTransform = _registry->getComponent<comp::Transform>(handle);
-	auto	*constController = _registry->getComponent<comp::Controller>(handle);
-	auto	*tag = _registry->getComponent<comp::EditorControllerTag>(handle);
+	auto	constTransform = _registry->getComponent<comp::Transform>(handle);
+	auto	constController = _registry->getComponent<comp::Controller>(handle);
+	auto	tag = _registry->getComponent<comp::EditorControllerTag>(handle);
 	if (!constTransform || !constController || !tag)	{ return ; }
 
 	glm::vec3	upVector = glm::vec3(0., 1., 0.);
@@ -61,23 +61,23 @@ void	EditorController::handleKeyboardInput(Entity::id handle, float deltaTime) {
 		return ;
 	delta = glm::normalize(delta);
 	delta *= constController->movementSpeed * deltaTime;
-	if (auto transform = _registry->modify(constTransform))
+	if (auto transform = constTransform.modify())
 		transform->position += delta;
 }
 
 void	EditorController::handleMouseMove(Entity::id handle) {
 	if (!_input->isDown<input::Mouse>(GLFW_MOUSE_BUTTON_RIGHT) ||
 		!_input->mouseMoved())	{ return ; }
-	auto	*constTransform = _registry->getComponent<comp::Transform>(handle);
-	auto	*constController = _registry->getComponent<comp::Controller>(handle);
-	auto	*tag = _registry->getComponent<comp::EditorControllerTag>(handle);
+	auto	constTransform = _registry->getComponent<comp::Transform>(handle);
+	auto	constController = _registry->getComponent<comp::Controller>(handle);
+	auto	tag = _registry->getComponent<comp::EditorControllerTag>(handle);
 	if (!constTransform || !constController || !tag)	{ return ; }
 
 	int	dx, dy;
 	_input->getMouseDelta(dx, dy);
 	float	sensitivity = constController->mouseSensivity;
 
-	auto		transform = _registry->modify<comp::Transform>(handle);
+	auto		transform = constTransform.modify();
 	glm::vec3	upVector = glm::vec3(0., 1., 0.);
 	glm::quat	qYaw = glm::angleAxis(-static_cast<float>(dx) * sensitivity,
 					upVector);

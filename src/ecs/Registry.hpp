@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 10:59:27                                        */
+/*  Last Modified: 2026/03/30 12:01:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,11 +23,13 @@
 # include <set>
 # include <vector>
 # include <memory>
+# include <optional>
 
 # include "ecs/Entity.hpp"
 # include "ecs/Component.hpp"
 # include "platform/input/InputState.hpp"
 # include "api/vulkan/Buffer.hpp"
+# include "utils/Setters.hpp"
 
 namespace	hel {
 
@@ -93,13 +95,16 @@ struct	Pool : IPool {
 template <typename Component>
 struct	ModificationProxy {
 	ModificationProxy(void) {};
-	ModificationProxy(Component *comp, IPool *p) : component(comp), pool{p} {}
+	ModificationProxy(Component *comp, IPool *p, uint32_t compIndex)
+		:	component(comp),
+			pool{p},
+			index{compIndex} {}
 	~ModificationProxy(void) {
 		if constexpr (requires { component->isDirty = true; }) {
 			if (component)
 				component->isDirty = true;
 		}
-		pool->addWrite(0, component);
+		pool->addWrite(index * sizeof(Component), component);
 	}
 	Component	*operator->(void) { return component; };
 	explicit operator bool() const { return (component != nullptr); }
@@ -107,7 +112,11 @@ struct	ModificationProxy {
 	private:
 		Component	*component{nullptr};
 		IPool		*pool{nullptr};
+		uint32_t	index;
 };
+
+template <typename Component>
+struct	ComponentHandle;
 
 class	Registry {
 	public:
@@ -130,16 +139,11 @@ class	Registry {
 		}
 
 		template <typename Component, typename... Args>
-		const Component	*addComponent(Entity::id handle, Args&&... args);
+		ComponentHandle<Component>	addComponent(Entity::id handle, Args&&... args);
 		template <typename Component>
-		const Component	*getComponent(Entity::id handle);
+		ComponentHandle<Component>	getComponent(Entity::id handle);
 		template <typename Component>
 		void			removeComponent(Entity::id handle);
-
-		template <typename Component>
-		ModificationProxy<Component>	modify(Entity::id handle);
-		template <typename Component>
-		ModificationProxy<Component>	modify(const Component *component);
 
 		Entity::id	createEntity(void);
 		void		removeEntity(Entity::id handle);
@@ -154,7 +158,7 @@ class	Registry {
 		template<typename Component>
 		void	prepareComponent(Component &component);
 		template <typename Component>
-		Pool<Component>			&getPool();
+		Pool<Component>			*getPool();
 
 		bool	isValidHandle(Entity::id handle);
 
@@ -163,6 +167,24 @@ class	Registry {
 		AssetManager				&_assetManager;
 		InputState					_inputState;
 
+	template <typename... Components>
+	friend class View;
+};
+
+template <typename Component>
+struct	ComponentHandle {
+	public:
+		ComponentHandle(void) = default;
+
+		operator bool(void) const	{ return (_index.has_value()); }
+		const Component	*operator->(void)	{ return (_comp); }
+		ModificationProxy<Component>	modify(void);
+
+	private:
+		Pool<Component>			*_pool{nullptr};
+		const Component			*_comp{nullptr};
+		std::optional<uint32_t>	_index;
+	friend class	Registry;
 	template <typename... Components>
 	friend class View;
 };

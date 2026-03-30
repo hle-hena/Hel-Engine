@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 10:20:01                                        */
+/*  Last Modified: 2026/03/30 11:49:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -109,34 +109,44 @@ const char	*Pool<Component>::getTypeName(void) const {
 
 
 template <typename Component, typename... Args>
-const Component	*Registry::addComponent(Entity::id handle, Args&&... args) {
-	if (!isValidHandle(handle))	{ return (nullptr); }
-	Pool<Component>	&pool = getPool<Component>();
-	uint32_t		entityIndex = Entity::getIndex(handle);
-	if (pool.indices.size() <= entityIndex) {
-		pool.indices.resize(entityIndex + 1, Entity::NOT_REGISTERED);
-	}
-	if (pool.indices[entityIndex] != Entity::NOT_REGISTERED) {
+ComponentHandle<Component>	Registry::addComponent(Entity::id entityHandle, Args&&... args) {
+	ComponentHandle<Component>	compHandle;
+	if (!isValidHandle(entityHandle))	{ return (compHandle); }
+	compHandle._pool = getPool<Component>();
+	uint32_t		entityIndex = Entity::getIndex(entityHandle);
+	if (compHandle._pool->indices.size() <= entityIndex)
+		compHandle._pool->indices.resize(entityIndex + 1, Entity::NOT_REGISTERED);
+	compHandle._index = compHandle._pool->indices[entityIndex];
+	if (compHandle._index != Entity::NOT_REGISTERED) {
 		std::cout << "Cannot add a component when one already exists. " <<
 			"Use getComponent to get it and modify to modifiy it." << std::endl;
-		return (&pool.components[pool.indices[entityIndex]]);
+		compHandle._comp = &compHandle._pool->components[*compHandle._index];
+		return (compHandle);
 	}
-	Component	&component = pool.components.emplace_back(std::forward<Args>(args)...);
-	pool.entities.push_back(handle);
-	pool.indices[entityIndex] = pool.components.size() - 1;
-	pool.isDirty = true;
+	Component	&component = compHandle._pool->components.emplace_back(std::forward<Args>(args)...);
+	compHandle._pool->entities.push_back(entityHandle);
+	compHandle._pool->indices[entityIndex] = compHandle._pool->components.size() - 1;
+	compHandle._index = compHandle._pool->indices[entityIndex];
+	compHandle._comp = &component;
+	compHandle._pool->isDirty = true;
 	prepareComponent(component);
-	return (&component);
+	return (compHandle);
 }
 
 template <typename Component>
-const Component	*Registry::getComponent(Entity::id handle) {
-	if (!isValidHandle(handle))	{ return (nullptr); }
-	Pool<Component>	&pool = getPool<Component>();
-	uint32_t		entityIndex = Entity::getIndex(handle);
-	if (pool.indices.size() <= entityIndex || pool.indices[entityIndex] == Entity::NOT_REGISTERED)
-		return (nullptr);
-	return (&pool.components[pool.indices[entityIndex]]);
+ComponentHandle<Component>	Registry::getComponent(Entity::id entityHandle) {
+	ComponentHandle<Component>	compHandle;
+	if (!isValidHandle(entityHandle))	{ return (compHandle); }
+	compHandle._pool = getPool<Component>();
+	uint32_t	entityIndex = Entity::getIndex(entityHandle);
+	if (compHandle._pool->indices.size() <= entityIndex)
+		return (compHandle);
+	uint32_t	denseIndex = compHandle._pool->indices[entityIndex];
+	if (denseIndex == Entity::NOT_REGISTERED)
+		return (compHandle);
+	compHandle._index = denseIndex;
+	compHandle._comp = &compHandle._pool->components[denseIndex];
+	return (compHandle);
 }
 
 template <typename Component>
@@ -149,41 +159,15 @@ void	Registry::removeComponent(Entity::id handle) {
 
 
 template <typename Component>
-ModificationProxy<Component>	Registry::modify(Entity::id handle) {
-	if (!isValidHandle(handle))	{ return {}; }
-	std::type_index	typeKey = typeid(Component);
-	uint32_t		entityIndex = Entity::getIndex(handle);
-	auto	poolIt = _pools.find(typeKey);
-	if (poolIt == _pools.end())
-		return {};
-	auto	*pool = static_cast<Pool<Component> *>(poolIt->second.get());
-	if (pool->indices.size() <= entityIndex || pool->indices[entityIndex] == Entity::NOT_REGISTERED)
-		return {};
-	auto	comp = &pool->components[pool->indices[entityIndex]];
-	return (ModificationProxy<Component>(comp, pool));
-}
-
-template <typename Component>
-ModificationProxy<Component>	Registry::modify(const Component *comp) {
-	std::type_index	typeKey = typeid(Component);
-	auto	pool = _pools.find(typeKey);
-	if (pool == _pools.end())
-		return {};
-	return (ModificationProxy<Component>(const_cast<Component *>(comp), pool->second.get()));
-}
-
-
-
-template <typename Component>
-Pool<Component>	&Registry::getPool() {
+Pool<Component>	*Registry::getPool() {
 	std::type_index	typeKey = typeid(Component);
 
 	auto	pool = _pools.find(typeKey);
 	if (pool == _pools.end()) {
 		_pools[typeKey] = std::make_unique<Pool<Component>>();
-		return (static_cast<Pool<Component>&>(*_pools[typeKey]));
+		return (static_cast<Pool<Component> *>(_pools[typeKey].get()));
 	}
-	return (static_cast<Pool<Component>&>(*pool->second));
+	return (static_cast<Pool<Component> *>(pool->second.get()));
 }
 
 template <typename... Components>
@@ -193,11 +177,20 @@ View<Components...> Registry::view() {
 	return (View<Components...>(*this));
 }
 
-template<typename Component>
+template <typename Component>
 void	Registry::prepareComponent(Component &component) {
 	if constexpr (requires { component.init(_assetManager); }) {
 		component.init(_assetManager);
 	}
+}
+
+
+
+template <typename Component>
+ModificationProxy<Component>	ComponentHandle<Component>::modify(void) {
+	if (_index.has_value())
+		return {const_cast<Component *>(_comp), _pool, *_index};
+	return {};
 }
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 13:07:59                                        */
+/*  Last Modified: 2026/03/30 11:57:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,22 +27,21 @@ expected<void, std::string>	EntityHierarchy::onInit(void) {
 
 void	EntityHierarchy::moveEntity(Window *window, View<comp::Hierarchy> &view,
 					Entity::id srcHandle, Entity::id dstHandle) {
-	auto	srcHierarchy = _registry->modify(view.get
-								<comp::Hierarchy>(srcHandle));
+	auto	srcHierarchy = view.get<comp::Hierarchy>(srcHandle).modify();
 
 	if (std::find(srcHierarchy->childrenId.begin(),
 				srcHierarchy->childrenId.end(), dstHandle) !=
 				srcHierarchy->childrenId.end())
 		return ;
-	if (auto prevHierarchy = _registry->modify<comp::Hierarchy>
-										(srcHierarchy->parentId)) {
+	if (auto prevHierarchy = _registry->getComponent<comp::Hierarchy>
+										(srcHierarchy->parentId).modify()) {
 		auto	it = std::find(prevHierarchy->childrenId.begin(),
 				prevHierarchy->childrenId.end(),
 				srcHandle);
 		prevHierarchy->childrenId.erase(it);
 	}
 	srcHierarchy->parentId = dstHandle;
-	if (auto dstHierarchy = _registry->modify<comp::Hierarchy>(dstHandle))
+	if (auto dstHierarchy = _registry->getComponent<comp::Hierarchy>(dstHandle).modify())
 		dstHierarchy->childrenId.push_back(srcHandle);
 }
 

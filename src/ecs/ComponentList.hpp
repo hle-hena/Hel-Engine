@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/28 16:53:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/28 17:47:08                                        */
+/*  Last Modified: 2026/03/30 11:39:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,7 +27,7 @@ namespace	hel {
 
 class	ComponentList {
 	public:
-		static const void	*addComponent(Registry &registry, Entity::id handle,
+		static void	addComponent(Registry &registry, Entity::id handle,
 							const char *componentName);
 
 		static std::vector<const char *>	&getComponentList(void) {

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 18:08:54                                        */
+/*  Last Modified: 2026/03/30 11:54:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -62,7 +62,7 @@ void	Render::render(const FrameContext &ctx, const Renderer &renderer) {
 	for (auto entity: entities) {
 		auto	mesh = _assetManager->get<Geometry>(entities.get<comp::Model>(entity)->filePath);
 		if (!mesh)	{ continue ; }
-		auto	*transform = entities.get<comp::Transform>(entity);
+		auto	transform = entities.get<comp::Transform>(entity);
 		PushConstantData	push{transform->worldMatrix, transform->normalMatrix};
 
 		drawCommand(renderer, _pipelines)
