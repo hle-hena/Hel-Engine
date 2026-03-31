@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 18:24:13                                        */
+/*  Last Modified: 2026/03/31 13:02:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -54,8 +54,10 @@ Renderer	RenderPass::beginPass(FrameContext &frameContext) {
 	renderingInfo.layerCount = 1;
 	renderingInfo.colorAttachmentCount = _colorsInfo.size();
 	renderingInfo.pColorAttachments = _colorsInfo.data();
-	if (_depthInfo.has_value())
+	if (_depthInfo.has_value()) {
 		renderingInfo.pDepthAttachment = &(*_depthInfo);
+		renderingInfo.pStencilAttachment = &(*_depthInfo);
+	}
 
 	vkCmdBeginRendering(_commandBuffer, &renderingInfo);
 	setViewport();

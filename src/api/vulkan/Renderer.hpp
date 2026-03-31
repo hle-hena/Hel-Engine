@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 18:23:53                                        */
+/*  Last Modified: 2026/03/31 11:05:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -83,7 +83,7 @@ class Renderer {
 		explicit Renderer(FrameContext &frameContext, RenderPass &&pass);
 		explicit operator	bool(void) const;
 
-		FrameContext		&frameContext(void)	{ return (_frameContext); }
+		FrameContext		&frameContext(void) const	{ return (_frameContext); }
 		uint32_t			passIndex(void) const	{ return (_frameContext.passIndex); }
 
 		PASSKEY(ISystemKey, sys::ISystem)

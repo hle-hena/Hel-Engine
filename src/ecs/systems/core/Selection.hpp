@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/25 10:36:45                                        */
+/*  Last Modified: 2026/03/31 12:21:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,7 +39,7 @@ class	Selection : public ISystem {
 		void	init(void) override;
 
 		void	update(const FrameContext &ctx) override;
-		void	render(const FrameContext &ctx, const Renderer &conf) override;
+		void	postProcessing(const Renderer &conf) override;
 
 	private:
 		struct	PushConstantData {

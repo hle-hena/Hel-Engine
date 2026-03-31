@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 21:33:36                                        */
+/*  Last Modified: 2026/03/31 11:38:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -40,8 +40,7 @@ class	Camera : public ISystem {
 		void	init(void) override;
 
 		void	update(const FrameContext &ctx) override;
-		void	render(const FrameContext &ctx,
-					const Renderer &conf) override;
+		void	postProcessing(const Renderer &conf) override;
 
 	private:
 		struct	FrustumPush {

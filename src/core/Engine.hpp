@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 18:25:27                                        */
+/*  Last Modified: 2026/03/31 12:53:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,6 +26,7 @@
 #include "ecs/systems/core/Camera.hpp"
 #include "ecs/systems/core/EditorController.hpp"
 #include "ecs/systems/core/HideMouse.hpp"
+#include "ecs/systems/core/Selection.hpp"
 #include "platform/ui/UI.hpp"
 
 #include "ecs/systems/runtime/BaseController.hpp"

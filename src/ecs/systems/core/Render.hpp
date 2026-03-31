@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 15:06:11                                        */
+/*  Last Modified: 2026/03/31 12:40:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -50,10 +50,12 @@ class	Render : public ISystem {
 
 		static void	initLayout(Device &, std::vector<VkDescriptorSetLayout> &setLayouts,
 						std::vector<VkPushConstantRange> &pushConstants);
-		static void	configurePipeline(PipelineConfigInfo &config);
+		static void	configureNormalPipeline(PipelineConfigInfo &config);
+		static void	configureSelectedPipeline(PipelineConfigInfo &config);
 
 		AssetManager	*_assetManager;
-		PipelineMap		*_pipelines{nullptr};
+		PipelineMap		*_normalPipeline{nullptr};
+		PipelineMap		*_selectedObjectPipeline{nullptr};
 };
 
 }

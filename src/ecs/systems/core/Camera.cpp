@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 19:45:54                                        */
+/*  Last Modified: 2026/03/31 11:38:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -106,7 +106,8 @@ void	Camera::update(const FrameContext &) {
 	}
 }
 
-void	Camera::render(const FrameContext &ctx, const Renderer &renderer) {
+void	Camera::postProcessing(const Renderer &renderer) {
+	auto	&ctx = renderer.frameContext();
 	auto	selfHandle = ctx.request->handle;
 	auto	selfCam = _registry->getComponent<comp::Camera>(selfHandle);
 	auto	selfTransform = _registry->getComponent<comp::Transform>(selfHandle);
