@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 19:36:38                                        */
+/*  Last Modified: 2026/03/31 13:31:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -64,6 +64,7 @@ bool	Engine::init(Window &window) {
 	_systems.push_back(std::make_unique<sys::Camera>());
 	_systems.push_back(std::make_unique<sys::Render>());
 	_systems.push_back(std::make_unique<sys::UI>());
+	_systems.push_back(std::make_unique<sys::Selection>());
 
 	auto	frameCtx = _frame.getContext(&window, 0, 0);
 	_engineCtx.device = &_device;
@@ -109,9 +110,9 @@ void	Engine::createImagePool(void) {
 		.addImage(Image::Config()
 			.setHeight(4096)
 			.setWidth(4096)
-			.setFormats(VK_FORMAT_D32_SFLOAT)
+			.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
 			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT))
+			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT))
 		.build();
 }
 
@@ -150,9 +151,9 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 	ctx.descriptorPool->resetPools();
 
 	auto	depthImage = _imagePool->acquire(Image::Config()
-			.setFormats(VK_FORMAT_D32_SFLOAT)
+			.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
 			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT));
+			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT));
 	auto	swapImage = swapchain.getSwapImage(imageIndex);
 
 	VkCommandBufferBeginInfo	beginInfo{};
@@ -164,12 +165,23 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 		auto	renderImg = renderRequest.img;
 		ctx.request = &renderRequest;
 		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
+						.setDepthStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
 						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
 						.addDepthWrite(depthImage, depthImage->getFormat())
 						.beginPass(ctx)) {
 			updateGlobalUBO(renderer);
 			for (auto &system: _systems)
 				system->render(ctx, renderer);
+		}
+		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
+						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+						.setDepthLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
+						.addDepthWrite(depthImage, depthImage->getFormat())
+						.beginPass(ctx)) {
+			updateGlobalUBO(renderer);
+			for (auto &system: _systems)
+				system->postProcessing(renderer);
 		}
 		renderImg->transitionLayout(ctx.commandBuffer,
 					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

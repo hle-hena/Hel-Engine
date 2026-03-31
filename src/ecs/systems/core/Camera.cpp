@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 11:53:40                                        */
+/*  Last Modified: 2026/03/31 11:38:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -106,7 +106,8 @@ void	Camera::update(const FrameContext &) {
 	}
 }
 
-void	Camera::render(const FrameContext &ctx, const Renderer &renderer) {
+void	Camera::postProcessing(const Renderer &renderer) {
+	auto	&ctx = renderer.frameContext();
 	auto	selfHandle = ctx.request->handle;
 	auto	selfCam = _registry->getComponent<comp::Camera>(selfHandle);
 	auto	selfTransform = _registry->getComponent<comp::Transform>(selfHandle);
@@ -117,6 +118,16 @@ void	Camera::render(const FrameContext &ctx, const Renderer &renderer) {
 
 	auto	entities = _registry->view<comp::Camera,
 									comp::Transform>();
+	auto	sampler = Sampler::getSampler(*_device, {});
+	auto	set = DescriptorFactory(*_device)
+						.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+							VK_SHADER_STAGE_FRAGMENT_BIT, sampler, 1)
+						.build(*ctx.descriptorPool);
+	auto	texture = _assetManager->get<Texture>("assets/images/cameraSprite.png");
+	DescriptorWriter(*_device, set.get())
+		.writeImage(0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+					*texture->image.get(), texture->image->getFormat(), sampler)
+		.update();
 	for (auto entity : entities) {
 		if (entity == selfHandle)	{ continue ; }
 		auto	mesh = _assetManager->get<FullGeometry>("assets/models/frustum.obj");
@@ -134,16 +145,6 @@ void	Camera::render(const FrameContext &ctx, const Renderer &renderer) {
 			.addIndexBuffer(mesh->lineIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
 			.submit(mesh->lineVertexCount);
 
-		auto	sampler = Sampler::getSampler(*_device, {});
-		auto	set = DescriptorFactory(*_device)
-							.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-								VK_SHADER_STAGE_FRAGMENT_BIT, sampler, 1)
-							.build(*ctx.descriptorPool);
-		auto	texture = _assetManager->get<Texture>("assets/images/cameraSprite.png");
-		DescriptorWriter(*_device, set.get())
-			.writeImage(0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-						*texture->image.get(), texture->image->getFormat(), sampler)
-			.update();
 		float	size = 0.05f * glm::distance(transform->position, selfTransform->position);
 		drawCommand(renderer, _spritePipeline)
 			.addBinding(set->sets[0])
