@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 15:14:36                                        */
+/*  Last Modified: 2026/03/31 13:44:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -97,7 +97,7 @@ struct	Controller {
 	static constexpr const char	*label = "Controller";
 
 	float	mouseSensivity{0.001f};
-	float	movementSpeed{1.f};
+	float	movementSpeed{10.f};
 
 	int		forwardKey{GLFW_KEY_W};
 	int		backwardKey{GLFW_KEY_S};

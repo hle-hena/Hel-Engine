@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Render.hpp                                                          */
+/*  File: Selection.hpp                                                       */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
+/*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/31 12:40:16                                        */
+/*  Last Modified: 2026/03/31 12:21:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,9 +17,6 @@
 #pragma once
 
 # include <vulkan/vulkan.h>
-# include <unordered_map>
-# include <memory>
-# include <string>
 # include <glm/glm.hpp>
 
 # include "ecs/systems/ISystem.hpp"
@@ -34,28 +31,28 @@ class	Window;
 
 namespace	hel::sys {
 
-class	Render : public ISystem {
+class	Selection : public ISystem {
 	public:
-		Render(void) = default;
-		~Render(void) = default;
+		Selection(void) = default;
+		~Selection(void) = default;
 
 		void	init(void) override;
 
-		void	render(const FrameContext &ctx, const Renderer &conf) override;
+		void	update(const FrameContext &ctx) override;
+		void	postProcessing(const Renderer &conf) override;
 
 	private:
 		struct	PushConstantData {
-			uint32_t	transformIndex{0};
+			glm::mat4	modelMatrix;
+			glm::mat4	normalMatrix;
 		};
 
 		static void	initLayout(Device &, std::vector<VkDescriptorSetLayout> &setLayouts,
 						std::vector<VkPushConstantRange> &pushConstants);
-		static void	configureNormalPipeline(PipelineConfigInfo &config);
-		static void	configureSelectedPipeline(PipelineConfigInfo &config);
+		static void	configurePipeline(PipelineConfigInfo &config);
 
 		AssetManager	*_assetManager;
-		PipelineMap		*_normalPipeline{nullptr};
-		PipelineMap		*_selectedObjectPipeline{nullptr};
+		PipelineMap		*_pipeline{nullptr};
 };
 
 }

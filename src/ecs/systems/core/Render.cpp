@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 18:09:34                                        */
+/*  Last Modified: 2026/03/31 14:54:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,17 +29,32 @@
 namespace	hel::sys {
 
 void	Render::init(void) {
-	_assetManager = &_registry->getAssetManager();
-	PipelineMap::Config	config;
-	config.device = _device;
-	config.assetManager = &_registry->getAssetManager();
-	config.shaderPaths = {
-		"assets/shaders/basic.vert.spv",
-		"assets/shaders/basic.frag.spv"
-	};
-	config.initPipelineLayout = initLayout;
-	config.configurePipeline = configurePipeline;
-	_pipelines = createPipeline(config);
+	{
+		_assetManager = &_registry->getAssetManager();
+		PipelineMap::Config	config;
+		config.device = _device;
+		config.assetManager = &_registry->getAssetManager();
+		config.shaderPaths = {
+			"assets/shaders/basic.vert.spv",
+			"assets/shaders/basic.frag.spv"
+		};
+		config.initPipelineLayout = initLayout;
+		config.configurePipeline = configureSelectedPipeline;
+		_selectedObjectPipeline = createPipeline(config);
+	}
+	{
+		_assetManager = &_registry->getAssetManager();
+		PipelineMap::Config	config;
+		config.device = _device;
+		config.assetManager = &_registry->getAssetManager();
+		config.shaderPaths = {
+			"assets/shaders/basic.vert.spv",
+			"assets/shaders/basic.frag.spv"
+		};
+		config.initPipelineLayout = initLayout;
+		config.configurePipeline = configureNormalPipeline;
+		_normalPipeline = createPipeline(config);
+	}
 }
 
 void	Render::initLayout(Device &device, std::vector<VkDescriptorSetLayout> &setLayouts,
@@ -53,8 +68,20 @@ void	Render::initLayout(Device &device, std::vector<VkDescriptorSetLayout> &setL
 							.getSetLayout());
 }
 
-void	Render::configurePipeline(PipelineConfigInfo &config) {
+void	Render::configureNormalPipeline(PipelineConfigInfo &config) {
 	Pipeline::setVertexInputDescriptions<Vertex>(config);
+}
+
+void	Render::configureSelectedPipeline(PipelineConfigInfo &config) {
+	Pipeline::setVertexInputDescriptions<Vertex>(config);
+
+	config.depthStencilInfo.stencilTestEnable = VK_TRUE;
+	config.depthStencilInfo.front.compareOp = VK_COMPARE_OP_ALWAYS;
+	config.depthStencilInfo.front.passOp = VK_STENCIL_OP_REPLACE;
+	config.depthStencilInfo.front.reference = 1;
+	config.depthStencilInfo.front.compareMask = 0xFF;
+	config.depthStencilInfo.front.writeMask = 0x1;
+	config.depthStencilInfo.back = config.depthStencilInfo.front;
 }
 
 void	Render::render(const FrameContext &ctx, const Renderer &renderer) {
@@ -70,8 +97,11 @@ void	Render::render(const FrameContext &ctx, const Renderer &renderer) {
 		if (!mesh)	{ continue ; }
 		auto	transform = entities.get<comp::Transform>(entity);
 
-		drawCommand(renderer, _pipelines)
-			.addPush(VK_SHADER_STAGE_VERTEX_BIT, PushConstantData{transform.getDenseIndex()})
+		//TODO -> sort those calls later on.
+		auto	drawCall = ctx.window->getEntityFocus() == entity ?
+								drawCommand(renderer, _selectedObjectPipeline) :
+								drawCommand(renderer, _normalPipeline);
+		drawCall.addPush(VK_SHADER_STAGE_VERTEX_BIT, PushConstantData{transform.getDenseIndex()})
 			.addBinding(set->sets[0])
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
 			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
