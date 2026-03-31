@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/31 13:02:48                                        */
+/*  Last Modified: 2026/03/31 16:52:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -56,6 +56,7 @@ Renderer	RenderPass::beginPass(FrameContext &frameContext) {
 	renderingInfo.pColorAttachments = _colorsInfo.data();
 	if (_depthInfo.has_value()) {
 		renderingInfo.pDepthAttachment = &(*_depthInfo);
+		//TODO -> add it's own function to set it.
 		renderingInfo.pStencilAttachment = &(*_depthInfo);
 	}
 

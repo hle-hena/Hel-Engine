@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 15:07:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/31 13:05:48                                        */
+/*  Last Modified: 2026/03/31 16:51:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -112,6 +112,7 @@ bool	PipelineMap::bindPipeline(const RenderingConfig &renderingConfig,
 		config.renderingInfo.colorAttachmentCount = renderingConfig.colorFormats.size();
 		config.renderingInfo.pColorAttachmentFormats = renderingConfig.colorFormats.data();
 		config.renderingInfo.depthAttachmentFormat = renderingConfig.depthFormat;
+		//TODO -> add it's own var in the config.
 		config.renderingInfo.stencilAttachmentFormat = renderingConfig.depthFormat;
 
 		if (pipeline.createGraphicsPipeline(config, _shaderStageInfos))
