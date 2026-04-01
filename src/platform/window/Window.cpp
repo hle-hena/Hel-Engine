@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 19:22:09                                        */
+/*  Last Modified: 2026/04/01 17:14:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -159,25 +159,14 @@ void	Window::mouseButtonCallback(GLFWwindow *window, int button,
 void	Window::cursorEnterCallback(GLFWwindow *window, int entered) {
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
-	if (entered)
-		appWindow->_lastMouseX = -1;
+	appWindow->getApp().getRegistry().getInputState().setFocus(appWindow, entered);
 }
 
 void	Window::cursorPositionCallback(GLFWwindow *window, double x, double y) {
 	auto		appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
-	auto		&input = appWindow->getApp().getRegistry().getInputState();
 
-	if (appWindow->_uiContext.capturesMouse())
-		return ;
-	if (input.getFocused() != appWindow) { return ; }
-	if (appWindow->_lastMouseX == -1) {
-		appWindow->_lastMouseX = x;
-		appWindow->_lastMouseY = y;
-	}
-	input.setMouseMove(appWindow, x - appWindow->_lastMouseX,
-					y - appWindow->_lastMouseY);
-	appWindow->_lastMouseX = x;
-	appWindow->_lastMouseY = y;
+	appWindow->getApp().getRegistry().getInputState().setMouseMove(appWindow, x, y);
+	auto		&input = appWindow->getApp().getRegistry().getInputState();
 }
 
 }

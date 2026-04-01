@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 19:23:02                                        */
+/*  Last Modified: 2026/04/01 17:11:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -112,8 +112,6 @@ class	Window {
 		VkInstance					&_instance;
 		int							_width;
 		int							_height;
-		int							_lastMouseX{-1};
-		int							_lastMouseY{-1};
 		bool						_frameBufferResized{false};
 		std::string					_windowName;
 		GLFWwindow					*_windowPtr;
