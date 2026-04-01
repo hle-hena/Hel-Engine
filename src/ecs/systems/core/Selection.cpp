@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 19:31:11                                        */
+/*  Last Modified: 2026/04/01 21:56:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -77,7 +77,7 @@ void	Selection::configureTintPipeline(PipelineConfigInfo &config) {
 void	Selection::initEntityLayout(Device &device, std::vector<VkDescriptorSetLayout> &setLayouts,
 						std::vector<VkPushConstantRange> &pushConstants) {
 	VkPushConstantRange	vertexPush{};
-	vertexPush.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	vertexPush.stageFlags = VK_SHADER_STAGE_ALL;
 	vertexPush.size = sizeof(EntityData);
 	pushConstants.push_back(vertexPush);
 	setLayouts.push_back(DescriptorFactory(device)
@@ -104,12 +104,22 @@ void	Selection::renderEntityID(const Renderer &renderer) {
 		auto	transform = entities.get<comp::Transform>(entity);
 
 		drawCommand(renderer, _entityIDPipeline)
-			.addPush(VK_SHADER_STAGE_VERTEX_BIT, EntityData{ctx.request->handle, transform.getDenseIndex()})
+			.addPush(VK_SHADER_STAGE_ALL, EntityData{entity, transform.getDenseIndex()})
 			.addBinding(set->sets[0])
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
 			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
 			.submit(mesh->triangleVertexCount);
 	}
+}
+
+void	Selection::checkSelectionResult(const FrameContext &ctx) {
+	if (!_needReadback || ctx.frameIndex != _frameRequested)	{ return ; }
+
+	uint32_t	*data = static_cast<uint32_t *>(_buff->getMapped());
+
+	ctx.window->setEntityFocus(data[0]);
+	_buff = nullptr;
+	_needReadback = false;
 }
 
 void	Selection::updateWindow(const FrameContext &ctx) {
@@ -131,13 +141,34 @@ void	Selection::updateWindow(const FrameContext &ctx) {
 							.setHeight(imgExtent.height)
 							.setFormats({VK_FORMAT_R32_UINT})
 							.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-							.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
+							.setUsage(VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
 							.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
+		auto	depthImage = _imagePool->acquire(Image::Config()
+			.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
+			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT));
 		FrameContext	renderCtx = ctx;
+		VkClearValue	clear{};
+		clear.color.uint32[0] = 0xFFFFFFFF;
 		if (auto renderer = RenderPass(*_device, renderCtx.commandBuffer, imgExtent)
-								.beginPass(renderCtx))
+							.setClearValue(clear)
+							.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
+							.addDepthWrite(depthImage, depthImage->getFormat())
+							.beginPass(renderCtx))
 			renderEntityID(renderer);
-	}
+
+		_buff = Buffer::create(*_device, sizeof(uint32_t), 1,
+							VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+							VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+							VMA_ALLOCATION_CREATE_MAPPED_BIT |
+							VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+		VkOffset3D	mouseOffset = { (int32_t)pos.x, (int32_t)pos.y, 0 };
+		VkExtent3D	pixelExtent = { 1, 1, 1 };
+		entityImg->copyTo(ctx.commandBuffer, _buff.get(), mouseOffset, pixelExtent);
+		_needReadback = true;
+		_frameRequested = ctx.frameIndex;
+	} else
+		checkSelectionResult(ctx);
 }
 
 void	Selection::postProcessing(const Renderer &renderer) {

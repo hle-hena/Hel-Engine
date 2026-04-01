@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/31 11:05:24                                        */
+/*  Last Modified: 2026/04/01 20:23:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -42,6 +42,7 @@ class	RenderPass {
 		SETTER(ColorStoreOp, VkAttachmentStoreOp, _colorsStoreOp)
 		SETTER(DepthLoadOp, VkAttachmentLoadOp, _depthLoadOp)
 		SETTER(DepthStoreOp, VkAttachmentStoreOp, _depthStoreOp)
+		SETTER(ClearValue, VkClearValue, _colorClear)
 		RenderPass		&addColorWrite(Image *color, VkFormat format);
 		RenderPass		&addDepthWrite(Image *depth, VkFormat format);
 

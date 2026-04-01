@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 19:25:15                                        */
+/*  Last Modified: 2026/04/01 21:48:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,9 +18,11 @@
 
 # include <vulkan/vulkan.h>
 # include <glm/glm.hpp>
+# include <memory>
 
 # include "ecs/systems/ISystem.hpp"
 # include "api/vulkan/PipelineMap.hpp"
+# include "api/vulkan/Buffer.hpp"
 
 namespace	hel {
 
@@ -54,11 +56,15 @@ class	Selection : public ISystem {
 		static void	configureEntityPipeline(PipelineConfigInfo &config);
 
 		void	renderEntityID(const Renderer &renderer);
+		void	checkSelectionResult(const FrameContext &ctx);
 
-		AssetManager	*_assetManager;
-		PipelineMap		*_tintPipeline{nullptr};
-		PipelineMap		*_entityIDPipeline{nullptr};
-		InputState		*_inputState;
+		AssetManager			*_assetManager;
+		PipelineMap				*_tintPipeline{nullptr};
+		PipelineMap				*_entityIDPipeline{nullptr};
+		InputState				*_inputState{nullptr};
+		std::unique_ptr<Buffer>	_buff;
+		bool					_needReadback{false};
+		uint32_t				_frameRequested;
 };
 
 }

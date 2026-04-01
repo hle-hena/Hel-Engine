@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 19:35:47                                        */
+/*  Last Modified: 2026/04/01 21:30:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -228,6 +228,35 @@ void	Image::copyTo(VkCommandBuffer commandBuffer, Image *dst) {
 	blitInfo.pRegions = &region;
 	blitInfo.filter = VK_FILTER_LINEAR;
 	vkCmdBlitImage2(commandBuffer, &blitInfo);
+}
+
+void	Image::copyTo(VkCommandBuffer commandBuffer, Buffer *dst,
+					VkOffset3D startPos, VkExtent3D extent) {
+	this->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+
+	VkBufferImageCopy2	copyRegion{};
+	copyRegion.sType = VK_STRUCTURE_TYPE_BUFFER_IMAGE_COPY_2;
+	copyRegion.bufferOffset = 0;
+	copyRegion.bufferRowLength = 0;
+	copyRegion.bufferImageHeight = 0;
+
+	copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	copyRegion.imageSubresource.mipLevel = 0;
+	copyRegion.imageSubresource.baseArrayLayer = 0;
+	copyRegion.imageSubresource.layerCount = 1;
+
+	copyRegion.imageOffset = startPos;
+	copyRegion.imageExtent = extent;
+
+	VkCopyImageToBufferInfo2	copyInfo{};
+	copyInfo.sType = VK_STRUCTURE_TYPE_COPY_IMAGE_TO_BUFFER_INFO_2;
+	copyInfo.dstBuffer = dst->getBuffer();
+	copyInfo.srcImage = _image;
+	copyInfo.srcImageLayout = _currentLayout;
+	copyInfo.pRegions = &copyRegion;
+	copyInfo.regionCount = 1;
+
+	vkCmdCopyImageToBuffer2(commandBuffer, &copyInfo);
 }
 
 VkDescriptorSet	Image::getTexture(VkFormat format) {
