@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 16:06:21                                        */
+/*  Last Modified: 2026/04/01 18:00:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,10 +34,11 @@ struct	Transform {
 	mat4	normalMatrix;
 };
 layout(set = 1, binding = 0) readonly buffer Transforms {
-    Transform data[];
+	Transform data[];
 } transforms;
 
 layout (push_constant) uniform Push {
+	uint	entityIndex;
 	uint	transformIndex;
 } push;
 

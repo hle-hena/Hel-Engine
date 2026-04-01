@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/31 13:50:11                                        */
+/*  Last Modified: 2026/04/01 17:54:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,6 +16,7 @@
 
 #include "ecs/systems/core/Selection.hpp"
 #include "ecs/Registry.hpp"
+#include "platform/window/Window.hpp"
 
 namespace	hel::sys {
 
@@ -31,6 +32,7 @@ void	Selection::init(void) {
 	config.initPipelineLayout = initLayout;
 	config.configurePipeline = configurePipeline;
 	_pipeline = createPipeline(config);
+	_inputState = &_registry->getInputState();
 }
 
 void	Selection::initLayout(Device &, std::vector<VkDescriptorSetLayout> &setLayouts,
@@ -59,8 +61,21 @@ void	Selection::configurePipeline(PipelineConfigInfo &config) {
 	config.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 }
 
-void	Selection::update(const FrameContext &ctx) {
-
+void	Selection::updateWindow(const FrameContext &ctx) {
+	if (_inputState->isPressed<input::Mouse>(0)) {
+		auto	camera = _registry->getComponent<comp::Camera>(ctx.request->handle);
+		auto	transform = _registry->getComponent<comp::Transform>(ctx.request->handle);
+		if (!camera || !transform)
+			return ;
+		glm::vec2	viewportOrigin(ctx.request->origin.x, ctx.request->origin.y);
+		glm::vec2	viewportSize(ctx.request->img->getExtent().width, ctx.request->img->getExtent().height);
+		auto	pos = glm::vec3(_inputState->getMousePos() - viewportOrigin, 0.f);
+		glm::vec4	viewport(viewportOrigin, viewportSize);
+		if (pos.x < 0 || pos.y < 0 || pos.x > viewportSize.x || pos.y > viewportSize.y)
+			return ;
+		auto	posInWorld = glm::unProject(pos, camera->view, ctx.projection, viewport);
+		auto	rayDir = glm::normalize(posInWorld - transform->position);
+	}
 }
 
 void	Selection::postProcessing(const Renderer &renderer) {

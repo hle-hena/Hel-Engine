@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/31 12:40:16                                        */
+/*  Last Modified: 2026/04/01 18:03:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,6 +45,7 @@ class	Render : public ISystem {
 
 	private:
 		struct	PushConstantData {
+			uint32_t	entityIndex{0};
 			uint32_t	transformIndex{0};
 		};
 

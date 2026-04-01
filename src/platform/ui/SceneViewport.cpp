@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/25 20:59:29                                        */
+/*  Last Modified: 2026/04/01 15:39:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -50,7 +50,7 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 	if (_handle == Entity::NOT_REGISTERED)
 		_handle = window->getEntityReference();
 
-	RenderQueue::push({_handle, image});
+	RenderQueue::push({_handle, ImGui::GetCursorScreenPos(), image});
 	auto	extent = image->getPhysicalExtent();
 	ImVec2	uv1 = {size.x / extent.width, size.y / extent.height};
 
