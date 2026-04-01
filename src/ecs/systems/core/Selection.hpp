@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 15:22:10                                        */
+/*  Last Modified: 2026/04/01 19:25:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -43,17 +43,21 @@ class	Selection : public ISystem {
 		void	postProcessing(const Renderer &conf) override;
 
 	private:
-		struct	PushConstantData {
-			glm::mat4	modelMatrix;
-			glm::mat4	normalMatrix;
+		struct	EntityData {
+			uint32_t	entityIndex{0};
+			uint32_t	transformIndex{0};
 		};
 
-		static void	initLayout(Device &, std::vector<VkDescriptorSetLayout> &setLayouts,
+		static void	configureTintPipeline(PipelineConfigInfo &config);
+		static void	initEntityLayout(Device &, std::vector<VkDescriptorSetLayout> &setLayouts,
 						std::vector<VkPushConstantRange> &pushConstants);
-		static void	configurePipeline(PipelineConfigInfo &config);
+		static void	configureEntityPipeline(PipelineConfigInfo &config);
+
+		void	renderEntityID(const Renderer &renderer);
 
 		AssetManager	*_assetManager;
-		PipelineMap		*_pipeline{nullptr};
+		PipelineMap		*_tintPipeline{nullptr};
+		PipelineMap		*_entityIDPipeline{nullptr};
 		InputState		*_inputState;
 };
 
