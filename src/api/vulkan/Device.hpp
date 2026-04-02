@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:22 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/25 20:35:45                                        */
+/*  Last Modified: 2026/04/02 17:57:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,8 +21,7 @@
 # include <cstdint>
 # include <string>
 # include <optional>
-
-#include "api/vulkan/vma/vk_mem_alloc.h"
+# include <vma/vk_mem_alloc.h>
 
 namespace	hel {
 
@@ -101,7 +100,8 @@ class	Device {
 		std::string					_reason{""};
 		VulkanInstance				&_instance;
 		VkPhysicalDevice			_physicalDevice{VK_NULL_HANDLE};
-		VkPhysicalDeviceProperties2	_physicalProperties{.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+		VkPhysicalDeviceProperties2	_physicalProperties{.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
+														.pNext = nullptr, .properties = {}};
 		VkDevice					_device{VK_NULL_HANDLE};
 		QueuesFamilyIndices			_indices;
 		VkQueue						_graphicQueue;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 16:21:02                                        */
+/*  Last Modified: 2026/04/02 18:00:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,9 +16,10 @@
 
 #include "platform/ui/Dock.hpp"
 #include "platform/ui/UI.hpp"
-#include "api/ImGui/imgui.h"
-#include "api/ImGui/imgui_internal.h"
 #include "utils/mathUtils.hpp"
+
+#include <ui/ImGui/imgui.h>
+#include <ui/ImGui/imgui_internal.h>
 
 namespace	hel::sys {
 

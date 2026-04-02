@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 11:57:29                                        */
+/*  Last Modified: 2026/04/02 18:10:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,8 +16,9 @@
 
 #include "platform/ui/EntityHierarchy.hpp"
 #include "platform/ui/UIHelper.hpp"
-#include "api/ImGui/imgui_stdlib.h"
 #include "platform/window/Window.hpp"
+
+#include <ui/ImGui/imgui_stdlib.h>
 
 namespace	hel::sys {
 

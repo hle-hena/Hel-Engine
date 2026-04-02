@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:30:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 16:20:41                                        */
+/*  Last Modified: 2026/04/02 18:01:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,8 +19,8 @@
 # include "platform/ui/Panel.hpp"
 # include "platform/ui/UIHelper.hpp"
 
-# include <api/json/json.hpp>
-# include <api/ImGui/imgui.h>
+# include <utils/json.hpp>
+# include <ui/ImGui/imgui.h>
 
 # include <vector>
 # include <memory>

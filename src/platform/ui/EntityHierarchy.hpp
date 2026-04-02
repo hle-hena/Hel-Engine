@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 10:22:08                                        */
+/*  Last Modified: 2026/04/02 18:01:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,9 +16,10 @@
 
 #pragma once
 
+# include <ui/ImGui/imgui.h>
+
 # include "ecs/View.hpp"
 # include "ecs/Entity.hpp"
-# include "api/ImGui/imgui.h"
 # include "platform/ui/Panel.hpp"
 
 namespace	hel::sys {

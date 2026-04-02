@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 17:14:39                                        */
+/*  Last Modified: 2026/04/02 17:28:04                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,7 +21,7 @@
 
 namespace	hel {
 
-Window::windowPtr	Window::createWindow(int width, int height,
+Window::windowPtr	Window::createWindow(uint32_t width, uint32_t height,
 										const std::string &windowName,
 										Application &app, VkInstance &instance) noexcept {
 	if (!GLFW::acquire())
@@ -42,7 +42,7 @@ Window::windowPtr	Window::createWindow(int width, int height,
 	}
 }
 
-Window::windowPtr	Window::createBootstrap(int width, int height,
+Window::windowPtr	Window::createBootstrap(uint32_t width, uint32_t height,
 										const std::string &windowName,
 										Application &app, VkInstance &instance) noexcept {
 	if (!GLFW::acquire())
@@ -60,7 +60,7 @@ Window::windowPtr	Window::createBootstrap(int width, int height,
 	}
 }
 
-Window::Window(int width, int height, const std::string &windowName,
+Window::Window(uint32_t width, uint32_t height, const std::string &windowName,
 			Application &app, VkInstance &instance)
 	:	_app{app},
 		_instance{instance},
@@ -128,8 +128,8 @@ void	Window::frameBufferResizedCallback(GLFWwindow *window,
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 	appWindow->getSwapchain()._frameBufferResized = true;
 
-	appWindow->_width = width;
-	appWindow->_height = height;
+	appWindow->_width = static_cast<uint32_t>(width);
+	appWindow->_height = static_cast<uint32_t>(height);
 }
 
 void	Window::focusCallback(GLFWwindow *window, int focused) {

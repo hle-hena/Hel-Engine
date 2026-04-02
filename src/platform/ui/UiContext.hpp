@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:09 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/09 14:48:51                                        */
+/*  Last Modified: 2026/04/02 18:04:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,9 +17,10 @@
 #pragma once
 
 # include "api/vulkan/Descriptors.hpp"
-# include "api/ImGui/imgui.h"
-# include "api/ImGui/imgui_impl_glfw.h"
-# include "api/ImGui/imgui_impl_vulkan.h"
+
+# include <ui/ImGui/imgui.h>
+# include <ui/ImGui/imgui_impl_glfw.h>
+# include <ui/ImGui/imgui_impl_vulkan.h>
 
 namespace	hel {
 
