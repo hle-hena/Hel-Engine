@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 16:21:02                                        */
+/*  Last Modified: 2026/04/02 20:07:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,9 +16,10 @@
 
 #include "platform/ui/Dock.hpp"
 #include "platform/ui/UI.hpp"
-#include "api/ImGui/imgui.h"
-#include "api/ImGui/imgui_internal.h"
 #include "utils/mathUtils.hpp"
+
+#include <ui/ImGui/imgui.h>
+#include <ui/ImGui/imgui_internal.h>
 
 namespace	hel::sys {
 
@@ -58,7 +59,7 @@ std::unique_ptr<Dock>	Dock::deserialize(UI *ui, const nlohmann::json &src) {
 		for (auto &panelLabel: src["panels"]) {
 			auto	&panelRegistry = ui->getPanelRegistry();
 			auto	it = std::find_if(panelRegistry.begin(), panelRegistry.end(),
-					[&](const auto &r){ return (r.first == panelLabel); });
+					[&](const auto &r){ return (r.first == panelLabel.get<std::string>()); });
 			if (it != panelRegistry.end())
 				it->second(ui, dock.get());
 		}
@@ -282,7 +283,7 @@ void	Dock::newPanelPopup(void) {
 	ImGui::PopStyleVar();
 }
 
-void	Dock::renderPanels(Window *window, const ImVec2 &size) {
+void	Dock::renderPanels(Window *window, const ImVec2 &) {
 	auto	prev = ImGui::GetStyle().ItemInnerSpacing;
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, {10.f, 0.f});
 	float	innerSpacing = ImGui::GetStyle().ItemInnerSpacing.x;
@@ -299,7 +300,7 @@ void	Dock::renderPanels(Window *window, const ImVec2 &size) {
 			_gaps.push_back(ImGui::GetItemRectMax().x + innerSpacing / 2);
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 				ImGui::SetDragDropPayload("TAB_MOVE", &panel, sizeof(IPanel *));
-				ImGui::Text(panel->getLabel());
+				ImGui::TextUnformatted(panel->getLabel());
 				ImGui::EndDragDropSource();
 			}
 			float	btnWidth = 12.f;

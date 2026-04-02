@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/18 10:23:02                                        */
+/*  Last Modified: 2026/04/02 18:01:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,9 +19,9 @@
 # include <unordered_map>
 # include <typeindex>
 # include <functional>
+# include <ui/ImGui/imgui.h>
 
 # include "ecs/Entity.hpp"
-# include "api/ImGui/imgui.h"
 # include "platform/ui/Panel.hpp"
 
 namespace	hel {

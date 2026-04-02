@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/24 15:13:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/25 20:59:23                                        */
+/*  Last Modified: 2026/04/02 18:06:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,7 +17,7 @@
 #include "ecs/assets/Texture.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "api/image/stb_image.h"
+#include <assetLoader/stb_image.h>
 
 #include <iostream>
 

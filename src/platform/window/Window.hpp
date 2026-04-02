@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 17:11:38                                        */
+/*  Last Modified: 2026/04/02 17:27:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -40,10 +40,10 @@ class	Window {
 		Window	&operator=(Window &&other) = default;
 		~Window(void);
 
-		static windowPtr	createWindow(int width, int height,
+		static windowPtr	createWindow(uint32_t width, uint32_t height,
 										const std::string &windowName,
 										Application &app, VkInstance &instance) noexcept;
-		static windowPtr	createBootstrap(int width, int height,
+		static windowPtr	createBootstrap(uint32_t width, uint32_t height,
 										const std::string &windowName,
 										Application &app, VkInstance &instance) noexcept;
 		bool				shouldClose(void);
@@ -88,7 +88,7 @@ class	Window {
 
 
 	private:
-		Window(int width, int height, const std::string &windowName,
+		Window(uint32_t width, uint32_t height, const std::string &windowName,
 			Application &app, VkInstance &instance);
 		Window(const Window &other) = delete;
 		Window	&operator=(const Window &other) = delete;
@@ -110,8 +110,8 @@ class	Window {
 		std::string					_reason{""};
 		Application					&_app;
 		VkInstance					&_instance;
-		int							_width;
-		int							_height;
+		uint32_t					_width;
+		uint32_t					_height;
 		bool						_frameBufferResized{false};
 		std::string					_windowName;
 		GLFWwindow					*_windowPtr;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:12 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/11 17:12:18                                        */
+/*  Last Modified: 2026/04/02 19:47:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,8 +16,6 @@
 
 #pragma once
 
-# include <vector>
-# include <memory>
 # include <string>
 
 # include "platform/window/Window.hpp"

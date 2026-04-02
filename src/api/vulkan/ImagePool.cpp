@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 21:32:54                                        */
+/*  Last Modified: 2026/04/02 18:18:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -43,7 +43,7 @@ std::unique_ptr<ImagePool>	ImagePool::Builder::build(void) {
 ImagePool::ImagePool(Device &device, ImageDescMap<uint32_t> &&imageDescs)
 	:	_device{device} {
 	for (auto &it: imageDescs) {
-		for (auto i = 0; i < it.second; i++) {
+		for (uint32_t i = 0; i < it.second; i++) {
 			auto	&slot = _pools[it.first].emplace_back();
 			slot.image = Image::create(_device, it.first);
 		}
@@ -175,7 +175,7 @@ void	ImagePool::release(Image *image) {
 void	ImagePool::releaseAll(void) {
 	for (auto &pool: _pools) {
 		for (auto &slot: pool.second)
-			slot.life = std::max(--slot.life, 0u);
+			if (slot.life > 0)	{ --slot.life; }
 	}
 	_namedImages.clear();
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/25 21:00:14                                        */
+/*  Last Modified: 2026/04/02 19:44:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,7 +18,6 @@
 #include "platform/window/Window.hpp"
 #include "api/vulkan/Device.hpp"
 #include "utils/healthHelper.hpp"
-#include "api/vulkan/MemoryHelper.hpp"
 
 #include <limits>
 #include <iostream>
@@ -168,6 +167,7 @@ bool	Swapchain::createSwapchainImageViews(std::vector<VkImage> &images,
 		if (!_swapImages.back())
 			RETURN_SET_UNHEALTHY("Couldn't create an image view", true);
 	}
+	return (false);
 }
 
 bool	Swapchain::createOffscreenResources(VkExtent2D extent) {
@@ -271,8 +271,7 @@ bool	Swapchain::acquireNextImage(Window &window, uint32_t currentFrame, uint32_t
 	return (false);
 }
 
-bool	Swapchain::submitCommandBuffer(VkCommandBuffer commandBuffer,
-									uint32_t imageIndex, uint32_t currentFrame) {
+bool	Swapchain::submitCommandBuffer(VkCommandBuffer commandBuffer, uint32_t currentFrame) {
 	VkSubmitInfo	submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 

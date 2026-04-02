@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/28 16:53:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 11:39:28                                        */
+/*  Last Modified: 2026/04/02 20:25:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,7 +17,6 @@
 #pragma once
 
 # include <vector>
-# include <string>
 
 # include "ecs/Entity.hpp"
 # include "ecs/Registry.hpp"

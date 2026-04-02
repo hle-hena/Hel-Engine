@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/19 21:36:56                                        */
+/*  Last Modified: 2026/04/02 19:57:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,11 +22,6 @@
 # include "ecs/systems/ISystem.hpp"
 
 # include "platform/ui/Dock.hpp"
-
-# include "platform/ui/Inspector.hpp"
-# include "platform/ui/EntityHierarchy.hpp"
-# include "platform/ui/StyleEditor.hpp"
-# include "platform/ui/SceneViewport.hpp"
 
 # define PanelFactoryMacro(panelType)							\
 	[](UI *ui, Dock *dock){ ui->addNewPanel<panelType>(dock); }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/18 11:20:37 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 16:27:16                                        */
+/*  Last Modified: 2026/04/02 20:09:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,7 +15,6 @@
 /* *************************************************************************  */
 
 #include "platform/ui/StyleEditor.hpp"
-#include "api/ImGui/imgui.h"
 #include "platform/ui/UIHelper.hpp"
 
 #include <cmath>
@@ -113,6 +112,7 @@ bool	StyleEditor::loadFromFile(const std::string &path) {
 			{ ImGuiCol_ModalWindowDimBg, { "primary", {}, 1.00f } },
 		};
 	}
+	return (true);
 }
 
 nlohmann::json	StyleEditor::serialize(void) const {
@@ -355,7 +355,7 @@ void	StyleEditor::baseColorEditor(void) {
 	ImGui::EndChild();
 }
 
-void	StyleEditor::render(Window *window, const ImVec2 &size) {
+void	StyleEditor::render(Window *, const ImVec2 &) {
 	baseColorEditor();
 	ImGui::Separator();
 

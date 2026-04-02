@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 15:25:45                                        */
+/*  Last Modified: 2026/04/02 18:33:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -40,14 +40,14 @@ struct	GlobalUBO {
 struct	FrameContext {
 	Window					*window{nullptr};
 	VkCommandBuffer			commandBuffer;
-	GlobalUBO				globalData;
+	GlobalUBO				globalData{};
 	VkDescriptorSet			globalSet;
 	VkDescriptorSetLayout	globalLayout;
 	DescriptorPool			*descriptorPool;
-	RenderRequest			*request;
+	RenderRequest			*request{nullptr};
 	glm::mat4				projection{1.f};
 	float					deltaTime{0.f};
-	uint32_t				passIndex;
+	uint32_t				passIndex{0};
 	uint32_t				frameIndex;
 };
 

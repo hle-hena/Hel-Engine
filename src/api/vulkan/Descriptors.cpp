@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 18:12:14                                        */
+/*  Last Modified: 2026/04/02 17:23:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -165,7 +165,7 @@ bool	DescriptorPool::allocateSets(DescriptorSet &handle, uint32_t setCount) {
 bool	DescriptorBindings::operator==(const DescriptorBindings &other) const {
 	if (other._bindings.size() != _bindings.size())
 		return (false);
-	for (int i = 0; i < _bindings.size(); i++) {
+	for (size_t i = 0; i < _bindings.size(); i++) {
 		if (_bindings[i].binding != other._bindings[i].binding ||
 			_bindings[i].descriptorType != other._bindings[i].descriptorType ||
 			_bindings[i].descriptorCount != other._bindings[i].descriptorCount ||

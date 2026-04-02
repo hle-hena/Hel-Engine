@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 19:40:17                                        */
+/*  Last Modified: 2026/04/02 19:06:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -50,7 +50,7 @@ void	Pool<Component>::syncBuffer(Device &device) {
 }
 
 template <typename Component>
-void	Pool<Component>::syncBuffer(Device &device, const PendingWrite &write) {
+void	Pool<Component>::syncBuffer(Device &, const PendingWrite &write) {
 	if constexpr (requires { Component::gpuVisible == true; }) {
 		if constexpr (requires (Component c) { c.toGPU(); }) {
 			auto		gpuData = static_cast<Component *>(write.data)->toGPU();
@@ -234,7 +234,6 @@ DescriptorSet::ptr	Registry::buildComponentSet(Device &device,
 	writer.update();
 	return (set);
 }
-
 
 
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 20:08:25                                        */
+/*  Last Modified: 2026/04/02 19:42:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,7 +21,6 @@
 # include <memory>
 
 # include "api/vulkan/Image.hpp"
-# include "ecs/Entity.hpp"
 
 namespace	hel {
 
