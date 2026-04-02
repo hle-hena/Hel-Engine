@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 19:50:08                                        */
+/*  Last Modified: 2026/04/01 20:08:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -47,9 +47,9 @@ class	ImagePool {
 				ImageDescMap<uint32_t>	_imageDescs;
 		};
 
-		Image	*acquire(const Image::Config &requested);
+		Image	*acquire(const Image::Config &requested, uint32_t life = 1u);
 		Image	*acquire(const std::string &referenceID,
-						const Image::Config &requested);
+						const Image::Config &requested, uint32_t life = 1u);
 		Image	*get(const std::string &referenceID);
 		void	release(Image *);
 		void	releaseAll(void);
@@ -59,7 +59,7 @@ class	ImagePool {
 	private:
 		struct	Slot {
 			std::unique_ptr<Image>	image{nullptr};
-			bool					inUse{false};
+			uint32_t				life{0};
 		};
 
 		ImagePool(Device &device, ImageDescMap<uint32_t> &&imageDescs);

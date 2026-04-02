@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 15:01:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/21 15:50:33                                        */
+/*  Last Modified: 2026/04/01 17:13:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,8 +18,12 @@
 
 # define GLFW_INCLUDE_VULKAN
 # include <GLFW/glfw3.h>
+# define GLM_FORCE_RADIANS
+# define GLM_FORCE_DEPTH_ZERO_TO_ONE
+# include <glm/glm.hpp>
 # include <bitset>
 # include <vector>
+# include <optional>
 
 namespace	hel::input {
 
@@ -57,28 +61,30 @@ class	InputState {
 		bool	hasAnyChanged(std::vector<int> indices) const;
 
 		bool	hasMod(int mod);
-		bool	mouseMoved(void) { return (_mouseDeltaX || _mouseDeltaY); }
+		bool	mouseMoved(void) { return (_mouseDelta.has_value()); }
 
 		Window	*getFocused(void) const {
 			return (_windowFocused);
 		}
-		void	getMouseDelta(int &deltaX, int &deltaY) {
-			deltaX = _mouseDeltaX;
-			deltaY = _mouseDeltaY;
+		glm::vec2	getMousePos(void) {
+			return (_mousePos.value_or(glm::vec2{-1.f, -1.f}));
+		}
+		glm::vec2	getMouseDelta(void) {
+			return (_mouseDelta.value_or(glm::vec2{0.f, 0.f}));
 		}
 
 	private:
 		template <typename T>
 		void	setState(int index, int action, int mods);
 		void	setFocus(Window *window, bool focused);
-		void	setMouseMove(Window *window, double deltaX, double deltaY);
+		void	setMouseMove(Window *window, double newX, double newY);
 
-		std::bitset<512>	_current{false};
-		std::bitset<512>	_previous{false};
-		int					_currentMods{0};
-		int					_mouseDeltaY{0};
-		int					_mouseDeltaX{0};
-		Window				*_windowFocused{nullptr};
+		std::bitset<512>			_current{false};
+		std::bitset<512>			_previous{false};
+		int							_currentMods{0};
+		std::optional<glm::vec2>	_mouseDelta;
+		std::optional<glm::vec2>	_mousePos;
+		Window						*_windowFocused{nullptr};
 
 	friend class Window;
 };

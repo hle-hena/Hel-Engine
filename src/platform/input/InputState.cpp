@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 15:02:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/21 15:23:42                                        */
+/*  Last Modified: 2026/04/01 17:14:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,15 +25,19 @@ void	InputState::setFocus(Window *window, bool focused) {
 		_windowFocused = nullptr;
 }
 
-void	InputState::setMouseMove(Window *window, double deltaX, double deltaY) {
-	_mouseDeltaX += deltaX;
-	_mouseDeltaY += deltaY;
+void	InputState::setMouseMove(Window *window, double newX, double newY) {
+	if (_mousePos.has_value()) {
+		_mouseDelta = {
+			newX - _mousePos->x,
+			newY - _mousePos->y,
+		};
+	}
+	_mousePos = {newX, newY};
 }
 
 void	InputState::newFrame(void) {
 	_previous = _current;
-	_mouseDeltaX = 0;
-	_mouseDeltaY = 0;
+	_mouseDelta.reset();
 }
 
 bool	InputState::hasMod(int mod) {

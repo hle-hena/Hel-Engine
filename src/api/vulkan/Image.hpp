@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/25 20:56:00                                        */
+/*  Last Modified: 2026/04/01 20:32:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,6 +26,7 @@
 namespace	hel {
 
 class	Device;
+class	Buffer;
 
 class Image {
 	public:
@@ -62,6 +63,8 @@ class Image {
 								VkImageLayout newLayout);
 		void	setData(void *data, VkDeviceSize size);
 		void	copyTo(VkCommandBuffer commandBuffer, Image *dst);
+		void	copyTo(VkCommandBuffer commandBuffer, Buffer *dst,
+					VkOffset3D startPos, VkExtent3D extent);
 
 		PASSKEY(ExtentKey, ImagePool)
 		void	setExtent(const VkExtent2D &extent, ExtentKey)

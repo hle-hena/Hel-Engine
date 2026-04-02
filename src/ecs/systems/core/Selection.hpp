@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/31 12:21:47                                        */
+/*  Last Modified: 2026/04/01 21:48:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,13 +18,16 @@
 
 # include <vulkan/vulkan.h>
 # include <glm/glm.hpp>
+# include <memory>
 
 # include "ecs/systems/ISystem.hpp"
 # include "api/vulkan/PipelineMap.hpp"
+# include "api/vulkan/Buffer.hpp"
 
 namespace	hel {
 
 class	AssetManager;
+class	InputState;
 class	Window;
 
 }
@@ -38,21 +41,30 @@ class	Selection : public ISystem {
 
 		void	init(void) override;
 
-		void	update(const FrameContext &ctx) override;
+		void	updateWindow(const FrameContext &ctx) override;
 		void	postProcessing(const Renderer &conf) override;
 
 	private:
-		struct	PushConstantData {
-			glm::mat4	modelMatrix;
-			glm::mat4	normalMatrix;
+		struct	EntityData {
+			uint32_t	entityIndex{0};
+			uint32_t	transformIndex{0};
 		};
 
-		static void	initLayout(Device &, std::vector<VkDescriptorSetLayout> &setLayouts,
+		static void	configureTintPipeline(PipelineConfigInfo &config);
+		static void	initEntityLayout(Device &, std::vector<VkDescriptorSetLayout> &setLayouts,
 						std::vector<VkPushConstantRange> &pushConstants);
-		static void	configurePipeline(PipelineConfigInfo &config);
+		static void	configureEntityPipeline(PipelineConfigInfo &config);
 
-		AssetManager	*_assetManager;
-		PipelineMap		*_pipeline{nullptr};
+		void	renderEntityID(const Renderer &renderer);
+		void	checkSelectionResult(const FrameContext &ctx);
+
+		AssetManager			*_assetManager;
+		PipelineMap				*_tintPipeline{nullptr};
+		PipelineMap				*_entityIDPipeline{nullptr};
+		InputState				*_inputState{nullptr};
+		std::unique_ptr<Buffer>	_buff;
+		bool					_needReadback{false};
+		uint32_t				_frameRequested;
 };
 
 }
