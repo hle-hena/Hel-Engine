@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 20:13:06                                        */
+/*  Last Modified: 2026/04/02 20:08:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,11 +15,13 @@
 /* *************************************************************************  */
 
 #include "platform/ui/Inspector.hpp"
-#include "platform/ui/UIHelper.hpp"
 #include "ecs/Registry.hpp"
-#include "api/ImGui/imgui_stdlib.h"
 #include "platform/window/Window.hpp"
 #include "ecs/ComponentList.hpp"
+#include "ecs/Component.hpp"
+#include "platform/ui/UIHelper.hpp"
+
+#include <ui/ImGui/imgui_stdlib.h>
 
 namespace	hel::sys {
 

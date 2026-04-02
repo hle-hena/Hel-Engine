@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 15:01:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 17:13:38                                        */
+/*  Last Modified: 2026/04/02 20:01:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -77,7 +77,7 @@ class	InputState {
 		template <typename T>
 		void	setState(int index, int action, int mods);
 		void	setFocus(Window *window, bool focused);
-		void	setMouseMove(Window *window, double newX, double newY);
+		void	setMouseMove(double newX, double newY);
 
 		std::bitset<512>			_current{false};
 		std::bitset<512>			_previous{false};

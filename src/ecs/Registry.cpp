@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 12:07:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 18:12:41                                        */
+/*  Last Modified: 2026/04/02 19:40:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "ecs/Registry.hpp"
+#include "ecs/Component.hpp"
 
 namespace	hel {
 
@@ -39,7 +40,7 @@ Entity::id	Registry::createEntity(void) {
 }
 
 template <>
-void	Registry::removeComponent<comp::Hierarchy>(Entity::id handle) {
+void	Registry::removeComponent<comp::Hierarchy>(Entity::id) {
 }
 
 void	Registry::removeEntity(Entity::id handle) {

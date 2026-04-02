@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 17:00:28                                        */
+/*  Last Modified: 2026/04/02 19:41:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,7 +27,7 @@ namespace	hel {
 class	Device;
 class	Buffer;
 class	Image;
-class	DescriptorSet;
+struct	DescriptorSet;
 
 class	DescriptorPool {
 	public:

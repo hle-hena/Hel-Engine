@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:03:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/25 11:12:14                                        */
+/*  Last Modified: 2026/04/02 18:09:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,7 +20,7 @@
 
 #ifndef TINYOBJLOADER_IMPLEMENTATION
 # define TINYOBJLOADER_IMPLEMENTATION
-# include "api/objectLoader/tinyObjLoader.h"
+# include <assetLoader/tinyObjLoader.h>
 #endif
 
 #include <iostream>

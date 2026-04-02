@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:33:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/25 18:08:47                                        */
+/*  Last Modified: 2026/04/02 19:47:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -68,10 +68,10 @@ bool	VulkanInstance::checkAllSupport(std::vector<const char *> &reqExt) {
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL	debugCallback(
-		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-		VkDebugUtilsMessageTypeFlagsEXT messageType,
+		VkDebugUtilsMessageSeverityFlagBitsEXT /* messageSeverity */,
+		VkDebugUtilsMessageTypeFlagsEXT /* messageType */,
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-		void* pUserData) {
+		void* /* pUserData */) {
 	std::cerr << pCallbackData->pMessage << std::endl;
 	return VK_FALSE;
 }

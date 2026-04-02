@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:48:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 14:50:38                                        */
+/*  Last Modified: 2026/04/02 18:04:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,8 +20,8 @@
 # include <GLFW/glfw3.h>
 # include <string>
 # include <math.h>
+# include <ui/ImGui/imgui.h>
 
-# include "api/ImGui/imgui.h"
 # include "platform/window/Window.hpp"
 
 #define	SETTER(name, type, member)	\

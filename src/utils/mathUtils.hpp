@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/11 14:41:39 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/17 20:55:17                                        */
+/*  Last Modified: 2026/04/02 18:11:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,7 +17,7 @@
 #pragma once
 
 # include <functional>
-# include "api/ImGui/imgui.h"
+# include <ui/ImGui/imgui.h>
 
 namespace	hel::mathUtils {
 
@@ -35,7 +35,7 @@ struct	EnumHash {
 	}
 };
 
-static bool	pointInTriangle(ImVec2 point, ImVec2 A, ImVec2 B, ImVec2 C) {
+static inline bool	pointInTriangle(ImVec2 point, ImVec2 A, ImVec2 B, ImVec2 C) {
 	auto sign = [](ImVec2 p1, ImVec2 p2, ImVec2 p3) {
 		return ((p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y));
 	};

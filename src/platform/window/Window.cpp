@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 17:14:39                                        */
+/*  Last Modified: 2026/04/02 20:14:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,11 +17,10 @@
 #include "platform/window/Window.hpp"
 #include "platform/window/GLFW.hpp"
 #include "core/Application.hpp"
-#include "ecs/Component.hpp"
 
 namespace	hel {
 
-Window::windowPtr	Window::createWindow(int width, int height,
+Window::windowPtr	Window::createWindow(uint32_t width, uint32_t height,
 										const std::string &windowName,
 										Application &app, VkInstance &instance) noexcept {
 	if (!GLFW::acquire())
@@ -42,7 +41,7 @@ Window::windowPtr	Window::createWindow(int width, int height,
 	}
 }
 
-Window::windowPtr	Window::createBootstrap(int width, int height,
+Window::windowPtr	Window::createBootstrap(uint32_t width, uint32_t height,
 										const std::string &windowName,
 										Application &app, VkInstance &instance) noexcept {
 	if (!GLFW::acquire())
@@ -60,15 +59,15 @@ Window::windowPtr	Window::createBootstrap(int width, int height,
 	}
 }
 
-Window::Window(int width, int height, const std::string &windowName,
+Window::Window(uint32_t width, uint32_t height, const std::string &windowName,
 			Application &app, VkInstance &instance)
 	:	_app{app},
 		_instance{instance},
 		_width(width),
 		_height(height),
-		_uiContext{this},
 		_windowName(windowName),
 		_windowPtr(nullptr),
+		_uiContext{this},
 		_swapchain{app.getVkContext().getDevice()} {
 	initWindow();
 }
@@ -128,8 +127,8 @@ void	Window::frameBufferResizedCallback(GLFWwindow *window,
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 	appWindow->getSwapchain()._frameBufferResized = true;
 
-	appWindow->_width = width;
-	appWindow->_height = height;
+	appWindow->_width = static_cast<uint32_t>(width);
+	appWindow->_height = static_cast<uint32_t>(height);
 }
 
 void	Window::focusCallback(GLFWwindow *window, int focused) {
@@ -138,7 +137,7 @@ void	Window::focusCallback(GLFWwindow *window, int focused) {
 	appWindow->getApp().getRegistry().getInputState().setFocus(appWindow, focused);
 }
 
-void	Window::keyCallback(GLFWwindow *window, int key, int scancode,
+void	Window::keyCallback(GLFWwindow *window, int key, int,
 							int action, int mods) {
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
@@ -165,8 +164,7 @@ void	Window::cursorEnterCallback(GLFWwindow *window, int entered) {
 void	Window::cursorPositionCallback(GLFWwindow *window, double x, double y) {
 	auto		appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
-	appWindow->getApp().getRegistry().getInputState().setMouseMove(appWindow, x, y);
-	auto		&input = appWindow->getApp().getRegistry().getInputState();
+	appWindow->getApp().getRegistry().getInputState().setMouseMove(x, y);
 }
 
 }

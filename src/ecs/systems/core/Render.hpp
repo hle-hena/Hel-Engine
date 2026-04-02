@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 18:03:09                                        */
+/*  Last Modified: 2026/04/02 19:59:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,9 +17,6 @@
 #pragma once
 
 # include <vulkan/vulkan.h>
-# include <unordered_map>
-# include <memory>
-# include <string>
 # include <glm/glm.hpp>
 
 # include "ecs/systems/ISystem.hpp"

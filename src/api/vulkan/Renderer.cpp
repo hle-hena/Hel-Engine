@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/31 16:52:21                                        */
+/*  Last Modified: 2026/04/02 19:44:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,8 +18,6 @@
 # include "api/vulkan/Image.hpp"
 # include "api/vulkan/Device.hpp"
 # include "core/Frame.hpp"
-
-# include <iostream>
 
 namespace	hel {
 

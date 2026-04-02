@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/31 11:38:14                                        */
+/*  Last Modified: 2026/04/02 19:58:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,7 +22,6 @@
 #include "ecs/assets/Geometry.hpp"
 #include "ecs/assets/Shader.hpp"
 #include "ecs/assets/Texture.hpp"
-#include "platform/window/Window.hpp"
 #include "core/Engine.hpp"
 #include "api/vulkan/Renderer.hpp"
 #include "api/vulkan/Sampler.hpp"
@@ -57,7 +56,7 @@ void	Camera::init(void) {
 	}
 }
 
-void	Camera::initFrustumLayout(Device &, std::vector<VkDescriptorSetLayout> &setLayouts,
+void	Camera::initFrustumLayout(Device &, std::vector<VkDescriptorSetLayout> &,
 								std::vector<VkPushConstantRange> &pushConstant) {
 	VkPushConstantRange	vertexPush{};
 	vertexPush.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;

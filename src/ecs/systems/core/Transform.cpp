@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 11:55:06                                        */
+/*  Last Modified: 2026/04/02 19:59:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,7 +23,7 @@ namespace	hel::sys {
 void	Transform::init(void) {
 }
 
-void	Transform::update(const FrameContext &ctx) {
+void	Transform::update(const FrameContext &) {
 	auto	entities = _registry->view<comp::Transform>();
 
 	for (auto entity: entities) {
