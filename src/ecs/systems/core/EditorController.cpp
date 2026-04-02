@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/03 18:56:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 11:43:34                                        */
+/*  Last Modified: 2026/04/01 17:16:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -73,15 +73,14 @@ void	EditorController::handleMouseMove(Entity::id handle) {
 	auto	tag = _registry->getComponent<comp::EditorControllerTag>(handle);
 	if (!constTransform || !constController || !tag)	{ return ; }
 
-	int	dx, dy;
-	_input->getMouseDelta(dx, dy);
+	auto	delta = _input->getMouseDelta();
 	float	sensitivity = constController->mouseSensivity;
 
 	auto		transform = constTransform.modify();
 	glm::vec3	upVector = glm::vec3(0., 1., 0.);
-	glm::quat	qYaw = glm::angleAxis(-static_cast<float>(dx) * sensitivity,
+	glm::quat	qYaw = glm::angleAxis(-static_cast<float>(delta.x) * sensitivity,
 					upVector);
-	glm::quat	qPitch = glm::angleAxis(-static_cast<float>(dy) * sensitivity,
+	glm::quat	qPitch = glm::angleAxis(-static_cast<float>(delta.y) * sensitivity,
 					transform->rotation * glm::vec3(1, 0, 0));
 	transform->rotation = glm::normalize(qYaw * qPitch * transform->rotation);
 }

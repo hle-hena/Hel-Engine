@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/29 16:04:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/25 20:22:52                                        */
+/*  Last Modified: 2026/04/01 20:15:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -47,6 +47,8 @@ class Buffer {
 			{ return {_buffer, 0, _stride}; }
 		VkBuffer				getBuffer(void) const
 			{ return (_buffer); }
+		void					*getMapped(void) const
+			{ return (_mapped); }
 		VkDeviceSize			getSize(void) const
 			{ return (_size); }
 		uint32_t				alignedStride(void) const

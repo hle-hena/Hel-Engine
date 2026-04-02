@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 18:21:50                                        */
+/*  Last Modified: 2026/04/01 15:25:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,6 +45,7 @@ struct	FrameContext {
 	VkDescriptorSetLayout	globalLayout;
 	DescriptorPool			*descriptorPool;
 	RenderRequest			*request;
+	glm::mat4				projection{1.f};
 	float					deltaTime{0.f};
 	uint32_t				passIndex;
 	uint32_t				frameIndex;

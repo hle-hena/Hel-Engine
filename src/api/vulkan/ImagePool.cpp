@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/25 21:00:53                                        */
+/*  Last Modified: 2026/04/01 21:32:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -67,7 +67,7 @@ bool	ImagePool::candidateFits(const Image::Config &requested,
 			formatFit = false;
 	}
 
-	return (sizeFit && usageFit && aspectFit);
+	return (sizeFit && usageFit && aspectFit && formatFit);
 }
 
 uint64_t	ImagePool::candidateScore(const Image::Config &requested,
@@ -99,7 +99,7 @@ auto	ImagePool::findNamed(Image *image) {
 								}));
 }
 
-Image	*ImagePool::acquire(const Image::Config &requested) {
+Image	*ImagePool::acquire(const Image::Config &requested, uint32_t life) {
 	Slot					*bestSlot = nullptr;
 	uint64_t				bestScore = UINT64_MAX;
 	const Image::Config		*bestConfig = nullptr;
@@ -112,15 +112,15 @@ Image	*ImagePool::acquire(const Image::Config &requested) {
 			continue ;
 		bestConfig = &candidate;
 		for (auto &slot: pool) {
-			if (slot.inUse)
+			if (slot.life)
 				continue ;
 			bestSlot = &slot;
 			bestScore = score;
 			break ;
 		}
 	}
-	if (!bestSlot && !bestConfig)
-		return (nullptr);
+	if (!bestConfig)
+		bestConfig = &requested;
 	if (!bestSlot) {
 		Slot	newSlot = {};
 		newSlot.image = Image::create(_device, *bestConfig);
@@ -128,18 +128,18 @@ Image	*ImagePool::acquire(const Image::Config &requested) {
 			return (nullptr);
 		bestSlot = &_pools[*bestConfig].emplace_back(std::move(newSlot));
 	}
-	bestSlot->inUse = true;
+	bestSlot->life = life;
 	bestSlot->image->setExtent({std::max(requested.width, 1u), std::max(requested.height, 1u)}, {});
 	return (bestSlot->image.get());
 }
 
 Image	*ImagePool::acquire(const std::string &referenceID,
-							const Image::Config &requested) {
+							const Image::Config &requested, uint32_t life) {
 	if (findNamed(referenceID) != _namedImages.end()) {
 		std::cerr << "Name already taken" << std::endl;
 		return (nullptr);
 	}
-	auto	image = acquire(requested);
+	auto	image = acquire(requested, life);
 	if (image)
 		_namedImages.push_back({referenceID, image});
 	return (image);
@@ -164,7 +164,7 @@ void	ImagePool::release(Image *image) {
 	for (auto &pool: _pools) {
 		for (auto &slot: pool.second) {
 			if (slot.image.get() == image) {
-				slot.inUse = false;
+				slot.life = 0;
 				removeIfNamed(image);
 				return ;
 			}
@@ -174,9 +174,8 @@ void	ImagePool::release(Image *image) {
 
 void	ImagePool::releaseAll(void) {
 	for (auto &pool: _pools) {
-		for (auto &slot: pool.second) {
-			slot.inUse = false;
-		}
+		for (auto &slot: pool.second)
+			slot.life = std::max(--slot.life, 0u);
 	}
 	_namedImages.clear();
 }

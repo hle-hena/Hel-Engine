@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/25 20:59:29                                        */
+/*  Last Modified: 2026/04/02 14:47:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,7 +33,8 @@ expected<void, std::string>	SceneViewport::onInit(void) {
 void	SceneViewport::render(Window *window, const ImVec2 &size) {
 	auto	windowEntityHandle = window->getEntityReference();
 	auto	rectMin = ImGui::GetCursorScreenPos() - ImGui::GetStyle().WindowPadding;
-	auto	rectMax = rectMin + ImGui::GetContentRegionAvail() + ImGui::GetStyle().WindowPadding * 2;
+	auto	rectMax = rectMin + ImGui::GetContentRegionAvail()
+						+ ImGui::GetStyle().WindowPadding * 2;
 	auto	col = ImGui::GetStyleColorVec4(ImGuiCol_HeaderActive);
 	col.w = (windowEntityHandle == _handle ? 0.75f : 0.f);
 	ImGui::GetWindowDrawList()->AddRectFilled(rectMin, rectMax,
@@ -50,7 +51,7 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 	if (_handle == Entity::NOT_REGISTERED)
 		_handle = window->getEntityReference();
 
-	RenderQueue::push({_handle, image});
+	RenderQueue::push({_handle, ImGui::GetCursorScreenPos(), image});
 	auto	extent = image->getPhysicalExtent();
 	ImVec2	uv1 = {size.x / extent.width, size.y / extent.height};
 
@@ -65,7 +66,7 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 
 	DropTarget("ENTITY")
 		.setPos(rectMin)
-		.setSize(rectMax - rectMin)
+		.setSize(size)
 		.addDummy()
 		.build([&](auto payload){
 			_handle = *static_cast<Entity::id *>(payload->Data);

@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: RenderQueue.hpp                                                     */
+/*  File: EntityIdAsColor.frag                                                */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/03/21 19:35:16 by hle-hena                                  */
+/*  Created: 2026/04/01 18:00:39 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 15:38:15                                        */
+/*  Last Modified: 2026/04/01 18:05:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,28 +14,24 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#pragma once
+#version 450
 
-# include "ecs/Entity.hpp"
-# include "api/vulkan/Image.hpp"
+layout (location = 0) out uint		outEntityId;
 
-# include <span>
+layout (location = 0) in vec3		inColor;
+layout (location = 1) in vec3		inPos;
+layout (location = 2) in vec3		inNormal;
 
-namespace	hel {
+layout (binding = 0) uniform UniformBufferObject {
+	mat4	viewProjection;
+	float	elapsedTime;
+}	ubo;
 
-struct	RenderRequest {
-	Entity::id	handle;
-	ImVec2		origin{0.f, 0.f};
-	Image		*img;
-};
+layout (push_constant) uniform Push {
+	uint	entityIndex;
+	uint	transformIndex;
+} push;
 
-class	RenderQueue {
-	public:
-		static void							push(const RenderRequest &request);
-		static std::vector<RenderRequest>	flush(void);
-
-	private:
-		static std::vector<RenderRequest>	_requests;
-};
-
+void	main(void) {
+	outEntityId = push.entityIndex;
 }

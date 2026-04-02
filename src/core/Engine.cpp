@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/31 13:31:17                                        */
+/*  Last Modified: 2026/04/01 17:40:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -164,12 +164,15 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 	for (auto &renderRequest: RenderQueue::flush()) {
 		auto	renderImg = renderRequest.img;
 		ctx.request = &renderRequest;
+		updateGlobalData(ctx);
+		for (auto &system: _systems)
+			system->updateWindow(ctx);
 		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
 						.setDepthStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
 						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
 						.addDepthWrite(depthImage, depthImage->getFormat())
 						.beginPass(ctx)) {
-			updateGlobalUBO(renderer);
+			writeGlobalData(renderer);
 			for (auto &system: _systems)
 				system->render(ctx, renderer);
 		}
@@ -179,7 +182,7 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
 						.addDepthWrite(depthImage, depthImage->getFormat())
 						.beginPass(ctx)) {
-			updateGlobalUBO(renderer);
+			writeGlobalData(renderer);
 			for (auto &system: _systems)
 				system->postProcessing(renderer);
 		}
@@ -200,8 +203,7 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 	swapchain.present(*window, imageIndex, ctx.frameIndex);
 }
 
-void	Engine::updateGlobalUBO(Renderer &renderer) {
-	auto	ctx = renderer.frameContext();
+void	Engine::updateGlobalData(FrameContext &ctx) {
 	auto	handle = ctx.request->handle;
 	ctx.globalData.viewProjection = glm::mat4{1.f};
 	if (auto camera = _registry.getComponent<comp::Camera>(handle)) {
@@ -209,9 +211,14 @@ void	Engine::updateGlobalUBO(Renderer &renderer) {
 		float	aspect = (float)extent.width / extent.height;
 		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), aspect, camera->near, camera->far);
 		projection[1][1] *= -1;
+		ctx.projection = projection;
 		ctx.globalData.viewProjection = projection * camera->view;
 	}
 	ctx.globalData.elapsedTime = _timer.elapsedTime();
+}
+
+void	Engine::writeGlobalData(Renderer &renderer) {
+	auto	ctx = renderer.frameContext();
 	_frame.writeToUBO(&ctx.globalData, renderer.passIndex(), ctx.frameIndex);
 }
 

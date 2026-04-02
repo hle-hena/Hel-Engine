@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/31 14:54:39                                        */
+/*  Last Modified: 2026/04/01 18:05:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -101,7 +101,7 @@ void	Render::render(const FrameContext &ctx, const Renderer &renderer) {
 		auto	drawCall = ctx.window->getEntityFocus() == entity ?
 								drawCommand(renderer, _selectedObjectPipeline) :
 								drawCommand(renderer, _normalPipeline);
-		drawCall.addPush(VK_SHADER_STAGE_VERTEX_BIT, PushConstantData{transform.getDenseIndex()})
+		drawCall.addPush(VK_SHADER_STAGE_VERTEX_BIT, PushConstantData{ctx.request->handle, transform.getDenseIndex()})
 			.addBinding(set->sets[0])
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
 			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)

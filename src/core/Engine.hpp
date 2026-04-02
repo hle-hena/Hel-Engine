@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/31 12:53:46                                        */
+/*  Last Modified: 2026/04/01 15:17:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -82,7 +82,8 @@ class	Engine {
 		void			renderTick(Window *window, UiContext &ui,
 								FrameContext &frameCtx);
 
-		void			updateGlobalUBO(Renderer &renderer);
+		void			updateGlobalData(FrameContext &ctx);
+		void			writeGlobalData(Renderer &renderer);
 
 		bool											_healthy{true};
 		std::string										_reason{""};
