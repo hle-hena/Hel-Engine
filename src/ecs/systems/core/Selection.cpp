@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 21:56:02                                        */
+/*  Last Modified: 2026/04/02 19:59:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,7 @@
 #include "ecs/Registry.hpp"
 #include "ecs/assets/Geometry.hpp"
 #include "ecs/AssetManager.hpp"
+#include "ecs/Component.hpp"
 #include "platform/window/Window.hpp"
 #include "api/vulkan/ImagePool.hpp"
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 18:08:07                                        */
+/*  Last Modified: 2026/04/02 20:12:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,7 +19,6 @@
 #include <ui/ImGui/imgui_internal.h>
 #include <ui/ImGui/imgui_stdlib.h>
 #include <algorithm>
-#include <iostream>
 
 namespace	hel::sys {
 
@@ -131,7 +130,7 @@ void	Table::endTable(void) {
 }
 
 bool	Table::newRow(ColumnSizing columnSizing) {
-	int	nbCol = columnSizing.size();
+	uint32_t	nbCol = columnSizing.size();
 	if (nbCol != _nbCol || !_tableOpened) {
 		_nbCol = nbCol;
 		endTable();
@@ -143,17 +142,11 @@ bool	Table::newRow(ColumnSizing columnSizing) {
 }
 
 bool	Table::newRow(const char *rowName, ColumnSizing columnSizing) {
-	int	nbCol = columnSizing.size();
-	if (nbCol != _nbCol || !_tableOpened) {
-		_nbCol = nbCol;
-		endTable();
-		if (!beginNewTable(columnSizing))
-			return (false);
-	}
-	ImGui::TableNextRow();
+	if (!newRow(columnSizing))
+		return (false);
 	ImGui::TableNextColumn();
 	ImGui::AlignTextToFramePadding();
-	ImGui::Text(rowName);
+	ImGui::Text("%s", rowName);
 	ImGui::SameLine();
 	ImGui::Dummy(ImVec2(10.0f, 0.0f));
 	return (true);
@@ -191,7 +184,7 @@ bool	TableRow::buildVecDrag(void) {
 
 	bool	changed = false;
 	Table::ColumnSizing	sizing = {Table::WFixed};
-	for (int i = 0; i < sRange; i++) {
+	for (uint32_t i = 0; i < sRange; i++) {
 		if (_valueNames[i])
 			sizing.push_back(Table::WFixed);
 		sizing.push_back(Table::WStretch);
@@ -233,7 +226,7 @@ bool	TableRow::buildDragRange(void) {
 
 	bool	changed = false;
 	Table::ColumnSizing	sizing = {Table::WFixed};
-	for (int i = 0; i < sRange; i++) {
+	for (uint32_t i = 0; i < sRange; i++) {
 		if (_valueNames[i])
 			sizing.push_back(Table::WFixed);
 		sizing.push_back(Table::WStretch);
@@ -268,7 +261,7 @@ bool	TableRow::buildSimpleText(void) {
 	fillVec(_fmts, sRange);
 
 	Table::ColumnSizing	sizing = {Table::WFixed};
-	for (int i = 0; i < sRange; i++) {
+	for (uint32_t i = 0; i < sRange; i++) {
 		if (_valueNames[i])
 			sizing.push_back(Table::WFixed);
 		sizing.push_back(Table::WStretch);
@@ -299,7 +292,7 @@ bool	TableRow::buildInputText(void) {
 
 	bool	changed = false;
 	Table::ColumnSizing	sizing = {Table::WFixed};
-	for (int i = 0; i < sRange; i++) {
+	for (uint32_t i = 0; i < sRange; i++) {
 		if (_valueNames[i])
 			sizing.push_back(Table::WFixed);
 		sizing.push_back(Table::WStretch);

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 14:47:59                                        */
+/*  Last Modified: 2026/04/02 20:09:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,8 +21,6 @@
 #include "api/vulkan/ImagePool.hpp"
 #include "core/RenderQueue.hpp"
 #include "platform/ui/UIHelper.hpp"
-
-#include <iostream>
 
 namespace	hel::sys {
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 18:10:05                                        */
+/*  Last Modified: 2026/04/02 18:28:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,7 +26,7 @@ expected<void, std::string>	EntityHierarchy::onInit(void) {
 	return {};
 }
 
-void	EntityHierarchy::moveEntity(Window *window, View<comp::Hierarchy> &view,
+void	EntityHierarchy::moveEntity(View<comp::Hierarchy> &view,
 					Entity::id srcHandle, Entity::id dstHandle) {
 	auto	srcHierarchy = view.get<comp::Hierarchy>(srcHandle).modify();
 
@@ -65,7 +65,7 @@ void	EntityHierarchy::showEntity(Window *window, View<comp::Hierarchy> view,
 		Entity::id	payload = handle;
 		ImGui::SetDragDropPayload("ENTITY",
 								&payload, sizeof(Entity::id));
-		ImGui::Text(("Entity (" + name + ")").c_str());
+		ImGui::TextUnformatted(("Entity (" + name + ")").c_str());
 		ImGui::EndDragDropSource();
 	}
 
@@ -73,13 +73,13 @@ void	EntityHierarchy::showEntity(Window *window, View<comp::Hierarchy> view,
 		Entity::id	payload = handle;
 		ImGui::SetDragDropPayload("ENTITY",
 								&payload, sizeof(Entity::id));
-		ImGui::Text(("Moving an entity (" + name + ")").c_str());
+		ImGui::TextUnformatted(("Moving an entity (" + name + ")").c_str());
 		ImGui::EndDragDropSource();
 	}
 
 	DropTarget("ENTITY")
 		.build([&](auto payload){
-			moveEntity(window, view, *static_cast<Entity::id *>(payload->Data), handle);
+			moveEntity(view, *static_cast<Entity::id *>(payload->Data), handle);
 		});
 
 	if (nodeOpen) {
@@ -99,7 +99,7 @@ void	EntityHierarchy::render(Window *window, const ImVec2 &) {
 		.setResetPosition(true)
 		.addDummy()
 		.build([&](auto payload){
-			moveEntity(window, view, *static_cast<Entity::id *>(payload->Data), Entity::NOT_REGISTERED);
+			moveEntity(view, *static_cast<Entity::id *>(payload->Data), Entity::NOT_REGISTERED);
 		});
 
 	for (auto handle: view) {

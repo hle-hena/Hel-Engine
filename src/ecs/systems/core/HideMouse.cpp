@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/21 14:13:56 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 19:18:14                                        */
+/*  Last Modified: 2026/04/02 18:34:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,7 +24,7 @@ void	HideMouse::init(void) {
 	_inputState = &_registry->getInputState();
 }
 
-void	HideMouse::update(const FrameContext &ctx) {
+void	HideMouse::update(const FrameContext &) {
 	auto	window = _inputState->getFocused();
 	if (!window)
 		return ;

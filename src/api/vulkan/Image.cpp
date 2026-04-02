@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 21:30:28                                        */
+/*  Last Modified: 2026/04/02 19:42:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,7 +16,6 @@
 
 #include "api/vulkan/Image.hpp"
 #include "api/vulkan/Device.hpp"
-#include "api/vulkan/MemoryHelper.hpp"
 #include "api/vulkan/Buffer.hpp"
 #include "platform/ui/UiContext.hpp"
 
@@ -123,7 +122,7 @@ void	Image::createViews(void) {
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
 	if (!(viewFlags & _config.usage))
 		return ;
-	for (auto i = 0; i < _config.format.size(); i++)
+	for (size_t i = 0; i < _config.format.size(); i++)
 		createView(_config.format[i]);
 }
 

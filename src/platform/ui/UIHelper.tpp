@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/05 15:22:31 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 15:40:55                                        */
+/*  Last Modified: 2026/04/02 20:12:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,8 +15,6 @@
 /* *************************************************************************  */
 
 #include "platform/ui/UIHelper.hpp"
-
-# include <iostream>
 
 namespace	hel::sys {
 
@@ -35,7 +33,7 @@ void	Table::setNextCell(const char *label, Func&& drawAction) {
 	if (label != nullptr) {
 		ImGui::TableNextColumn();
 		ImGui::AlignTextToFramePadding();
-		ImGui::Text(label);
+		ImGui::Text("%s", label);
 	}
 
 	ImGui::TableNextColumn();

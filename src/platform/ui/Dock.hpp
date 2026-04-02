@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:30:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 18:01:24                                        */
+/*  Last Modified: 2026/04/02 20:02:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,7 +34,7 @@ class	Dock {
 		enum class	Type { Split, TabGroup };
 
 		Dock(const std::string &dockName, UI *ui)
-				:	_dockName{dockName}, _ui{ui} {}
+				:	_ui{ui}, _dockName{dockName} {}
 
 		void	render(Window *window, const ImVec2 &size,
 								const ImVec2 &rescale = {-1.f, -1.f});

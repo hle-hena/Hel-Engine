@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 19:39:03                                        */
+/*  Last Modified: 2026/04/02 19:40:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,7 +18,6 @@
 
 # include <cstdint>
 # include <typeindex>
-# include <typeinfo>
 # include <unordered_map>
 # include <set>
 # include <vector>
@@ -26,10 +25,8 @@
 # include <optional>
 
 # include "ecs/Entity.hpp"
-# include "ecs/Component.hpp"
 # include "platform/input/InputState.hpp"
 # include "api/vulkan/Buffer.hpp"
-# include "utils/Setters.hpp"
 # include "api/vulkan/Descriptors.hpp"
 
 namespace	hel {

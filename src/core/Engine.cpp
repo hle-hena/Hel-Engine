@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 17:40:40                                        */
+/*  Last Modified: 2026/04/02 19:56:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,20 +15,31 @@
 /* *************************************************************************  */
 
 #include "core/Engine.hpp"
+#include "core/RenderQueue.hpp"
+
 #include "api/vulkan/Device.hpp"
 #include "api/vulkan/Swapchain.hpp"
 #include "api/vulkan/Sampler.hpp"
 #include "api/vulkan/Descriptors.hpp"
 #include "api/vulkan/Renderer.hpp"
+
 #include "utils/healthHelper.hpp"
+
 #include "platform/window/Window.hpp"
 #include "platform/window/GLFW.hpp"
+#include "platform/ui/UI.hpp"
+
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
-#include "core/RenderQueue.hpp"
+#include "ecs/systems/core/Camera.hpp"
+#include "ecs/systems/core/EditorController.hpp"
+#include "ecs/systems/core/HideMouse.hpp"
+#include "ecs/systems/core/Render.hpp"
+#include "ecs/systems/core/Selection.hpp"
+#include "ecs/systems/core/Transform.hpp"
+#include "ecs/systems/runtime/BaseController.hpp"
+#include "ecs/systems/runtime/SurfaceAllignement.hpp"
 
-#include <stdexcept>
-#include <array>
 #include <iostream>
 
 namespace hel {
@@ -199,7 +210,7 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 	swapImage->transitionLayout(ctx.commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 	vkEndCommandBuffer(ctx.commandBuffer);
 
-	swapchain.submitCommandBuffer(ctx.commandBuffer, imageIndex, ctx.frameIndex);
+	swapchain.submitCommandBuffer(ctx.commandBuffer, ctx.frameIndex);
 	swapchain.present(*window, imageIndex, ctx.frameIndex);
 }
 

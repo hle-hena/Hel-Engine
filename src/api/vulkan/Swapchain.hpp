@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/13 22:37:06                                        */
+/*  Last Modified: 2026/04/02 19:45:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,7 +20,6 @@
 # include <GLFW/glfw3.h>
 # include <vector>
 # include <string>
-# include <unordered_map>
 # include <array>
 
 # include "api/vulkan/Image.hpp"
@@ -67,8 +66,7 @@ class	Swapchain
 		Image			*getOffImage(void);
 		Image			*getSwapImage(uint32_t imageIndex);
 		bool			acquireNextImage(Window &window, uint32_t currentFrame, uint32_t *imageIndex);
-		bool			submitCommandBuffer(VkCommandBuffer commandBuffer,
-									uint32_t imageIndex, uint32_t currentFrame);
+		bool			submitCommandBuffer(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 		bool			present(Window &window, uint32_t imageIndex, uint32_t currentFrame);
 
 		bool	_frameBufferResized{false};

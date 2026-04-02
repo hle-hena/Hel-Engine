@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 15:17:37                                        */
+/*  Last Modified: 2026/04/02 19:52:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,20 +17,8 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
-#include <vector>
 #include <memory>
 #include <cassert>
-
-#include "ecs/systems/core/Render.hpp"
-#include "ecs/systems/core/Transform.hpp"
-#include "ecs/systems/core/Camera.hpp"
-#include "ecs/systems/core/EditorController.hpp"
-#include "ecs/systems/core/HideMouse.hpp"
-#include "ecs/systems/core/Selection.hpp"
-#include "platform/ui/UI.hpp"
-
-#include "ecs/systems/runtime/BaseController.hpp"
-#include "ecs/systems/runtime/SurfaceAllignement.hpp"
 
 #include "utils/Timer.hpp"
 
@@ -38,6 +26,7 @@
 #include "api/vulkan/Buffer.hpp"
 #include "api/vulkan/Descriptors.hpp"
 #include "api/vulkan/ImagePool.hpp"
+#include "api/vulkan/Renderer.hpp"
 
 #include "core/Frame.hpp"
 
