@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:56:57                                        */
+/*  Last Modified: 2026/04/03 15:37:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -165,6 +165,11 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 			.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
 			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
 			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT));
+	Image	*entityImg = _imagePool->acquire(Image::Config()
+						.setFormats({VK_FORMAT_R32_UINT})
+						.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+						.setUsage(VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
+						.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
 	auto	swapImage = swapchain.getSwapImage(imageIndex);
 
 	VkCommandBufferBeginInfo	beginInfo{};
@@ -173,14 +178,17 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 	if (vkBeginCommandBuffer(ctx.commandBuffer, &beginInfo))
 		return ;
 	for (auto &renderRequest: RenderQueue::flush()) {
-		auto	renderImg = renderRequest.img;
+		auto	renderImg = renderRequest.mainImage;
 		ctx.request = &renderRequest;
+		renderRequest.secondaryImages["entityID"] = entityImg;
 		updateGlobalData(ctx);
-		for (auto &system: _systems)
-			system->updateWindow(ctx);
+		VkClearValue	clear{};
+		clear.color.uint32[0] = 0xFFFFFFFF;
 		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
 						.setDepthStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
 						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
+						.setClearValue(clear)
+						.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
 						.addDepthWrite(depthImage, depthImage->getFormat())
 						.beginPass(ctx)) {
 			writeGlobalData(renderer);
@@ -197,6 +205,8 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 			for (auto &system: _systems)
 				system->postProcessing(renderer);
 		}
+		for (auto &system: _systems)
+			system->updateWindow(ctx);
 		renderImg->transitionLayout(ctx.commandBuffer,
 					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	}
@@ -218,7 +228,7 @@ void	Engine::updateGlobalData(FrameContext &ctx) {
 	auto	handle = ctx.request->handle;
 	ctx.globalData.viewProjection = glm::mat4{1.f};
 	if (auto camera = _registry.getComponent<comp::Camera>(handle)) {
-		auto	extent = ctx.request->img->getExtent();
+		auto	extent = ctx.request->mainImage->getExtent();
 		float	aspect = (float)extent.width / extent.height;
 		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), aspect, camera->near, camera->far);
 		projection[1][1] *= -1;

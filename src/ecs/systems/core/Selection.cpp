@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:59:40                                        */
+/*  Last Modified: 2026/04/03 15:56:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -53,7 +53,7 @@ void	Selection::init(void) {
 	}
 }
 
-void	Selection::configureTintPipeline(PipelineConfigInfo &config) {
+void	Selection::configureTintPipeline(PipelineConfig &config) {
 	config.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 
 	config.depthStencilInfo.stencilTestEnable = VK_TRUE;
@@ -66,13 +66,16 @@ void	Selection::configureTintPipeline(PipelineConfigInfo &config) {
 	config.depthStencilInfo.depthTestEnable  = VK_FALSE;
 	config.depthStencilInfo.depthWriteEnable = VK_FALSE;
 
-	config.colorBlendAttachment.blendEnable = VK_TRUE;
-	config.colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-	config.colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-	config.colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-	config.colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-	config.colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-	config.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+	VkPipelineColorBlendAttachmentState	attachment{};
+	attachment.colorWriteMask = 0xF;
+	attachment.blendEnable = VK_TRUE;
+	attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	attachment.colorBlendOp = VK_BLEND_OP_ADD;
+	attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+	attachment.alphaBlendOp = VK_BLEND_OP_ADD;
+	Pipeline::setBlendAttachment(config, 0, attachment);
 }
 
 void	Selection::initEntityLayout(Device &device, std::vector<VkDescriptorSetLayout> &setLayouts,
@@ -86,7 +89,7 @@ void	Selection::initEntityLayout(Device &device, std::vector<VkDescriptorSetLayo
 							.getSetLayout());
 }
 
-void	Selection::configureEntityPipeline(PipelineConfigInfo &config) {
+void	Selection::configureEntityPipeline(PipelineConfig &config) {
 	Pipeline::setVertexInputDescriptions<Vertex>(config);
 }
 
@@ -130,34 +133,14 @@ void	Selection::updateWindow(const FrameContext &ctx) {
 		if (!camera || !transform)
 			return ;
 		glm::vec2	viewportOrigin(ctx.request->origin.x, ctx.request->origin.y);
-		VkExtent2D	imgExtent = ctx.request->img->getExtent();
+		VkExtent2D	imgExtent = ctx.request->mainImage->getExtent();
 		glm::vec2	viewportSize(imgExtent.width, imgExtent.height);
 		auto	pos = glm::vec2(_inputState->getMousePos() - viewportOrigin);
 		glm::vec4	viewport(viewportOrigin, viewportSize);
 		if (pos.x < 0 || pos.y < 0 || pos.x > viewportSize.x || pos.y > viewportSize.y)
 			return ;
 
-		Image	*entityImg = _imagePool->acquire(Image::Config()
-							.setWidth(imgExtent.width)
-							.setHeight(imgExtent.height)
-							.setFormats({VK_FORMAT_R32_UINT})
-							.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-							.setUsage(VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
-							.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
-		auto	depthImage = _imagePool->acquire(Image::Config()
-			.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
-			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT));
-		FrameContext	renderCtx = ctx;
-		VkClearValue	clear{};
-		clear.color.uint32[0] = 0xFFFFFFFF;
-		if (auto renderer = RenderPass(*_device, renderCtx.commandBuffer, imgExtent)
-							.setClearValue(clear)
-							.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
-							.addDepthWrite(depthImage, depthImage->getFormat())
-							.beginPass(renderCtx))
-			renderEntityID(renderer);
-
+		auto	entityImg = ctx.request->secondaryImages["entityID"];
 		_buff = Buffer::create(*_device, sizeof(uint32_t), 1,
 							VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 							VMA_MEMORY_USAGE_AUTO_PREFER_HOST,

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 21:48:43                                        */
+/*  Last Modified: 2026/04/03 15:06:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -50,10 +50,10 @@ class	Selection : public ISystem {
 			uint32_t	transformIndex{0};
 		};
 
-		static void	configureTintPipeline(PipelineConfigInfo &config);
+		static void	configureTintPipeline(PipelineConfig &config);
 		static void	initEntityLayout(Device &, std::vector<VkDescriptorSetLayout> &setLayouts,
 						std::vector<VkPushConstantRange> &pushConstants);
-		static void	configureEntityPipeline(PipelineConfigInfo &config);
+		static void	configureEntityPipeline(PipelineConfig &config);
 
 		void	renderEntityID(const Renderer &renderer);
 		void	checkSelectionResult(const FrameContext &ctx);

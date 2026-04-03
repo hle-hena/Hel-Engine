@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/18 18:17:39                                        */
+/*  Last Modified: 2026/04/03 15:50:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,7 @@
 #version 450
 
 layout (location = 0) out vec4		outColor;
+layout (location = 1) out uint		outEntityID;
 
 layout (location = 0) in vec3		inColor;
 layout (location = 1) in vec3		inPos;
@@ -26,6 +27,11 @@ layout (binding = 0) uniform UniformBufferObject {
 	mat4	viewProjection;
 	float	elapsedTime;
 }	ubo;
+
+layout (push_constant) uniform Push {
+	uint	entityIndex;
+	uint	transformIndex;
+} push;
 
 float	squirrelHash(int position, uint noise1, uint noise2, uint noise3) {
 	uint mangled = position;
@@ -115,4 +121,5 @@ void	main() {
 	vec3 baseColor = triangleDebug ? hashColor(gl_PrimitiveID) :
 					(normalDebug ? vec3(normalize(inNormal) * 0.5 + 0.5) : inColor);
 	outColor = lightDebug ? vec4(lightRecieved, 1.) : vec4(baseColor * lightRecieved, 1.);
+	outEntityID = push.entityIndex;
 }

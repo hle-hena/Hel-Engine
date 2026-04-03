@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:58:58                                        */
+/*  Last Modified: 2026/04/03 15:06:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -52,10 +52,10 @@ class	Camera : public ISystem {
 
 		static void	initFrustumLayout(Device &device, std::vector<VkDescriptorSetLayout> &setLayouts,
 				std::vector<VkPushConstantRange> &pushConstants);
-		static void	configureFrustumPipeline(PipelineConfigInfo &config);
+		static void	configureFrustumPipeline(PipelineConfig &config);
 		static void	initSpriteLayout(Device &device, std::vector<VkDescriptorSetLayout> &setLayouts,
 				std::vector<VkPushConstantRange> &pushConstants);
-		static void	configureSpritePipeline(PipelineConfigInfo &config);
+		static void	configureSpritePipeline(PipelineConfig &config);
 
 		AssetManager	*_assetManager;
 		PipelineMap		*_frustumPipeline;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:58:48                                        */
+/*  Last Modified: 2026/04/03 15:06:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -64,7 +64,7 @@ void	Camera::initFrustumLayout(Device &, std::vector<VkDescriptorSetLayout> &,
 	pushConstant.push_back(vertexPush);
 }
 
-void	Camera::configureFrustumPipeline(PipelineConfigInfo &config) {
+void	Camera::configureFrustumPipeline(PipelineConfig &config) {
 	Pipeline::setVertexInputDescriptions<Vertex>(config);
 	config.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
 }
@@ -82,7 +82,7 @@ void	Camera::initSpriteLayout(Device &device, std::vector<VkDescriptorSetLayout>
 	setLayouts.push_back(set);
 }
 
-void	Camera::configureSpritePipeline(PipelineConfigInfo &config) {
+void	Camera::configureSpritePipeline(PipelineConfig &config) {
 	config.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 }
 

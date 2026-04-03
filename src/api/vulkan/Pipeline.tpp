@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/29 12:21:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/01/29 12:23:54                                        */
+/*  Last Modified: 2026/04/03 15:06:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,7 +19,7 @@
 namespace	hel {
 
 template <typename VertexType>
-void	Pipeline::setVertexInputDescriptions(PipelineConfigInfo &configInfo) {
+void	Pipeline::setVertexInputDescriptions(PipelineConfig &configInfo) {
 	configInfo.attributeDescription = VertexType::getAttributeDescriptions();
 	configInfo.bindingDescription = VertexType::getBindingDescriptions();
 }

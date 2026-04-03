@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 14:54:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 18:02:18                                        */
+/*  Last Modified: 2026/04/03 15:06:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,7 +45,7 @@ class	PipelineMap {
 		using LayoutCallback = std::function<void (Device &,
 								std::vector<VkDescriptorSetLayout> &,
 								std::vector<VkPushConstantRange> &)>;
-		using ConfigCallback = std::function<void (PipelineConfigInfo &)>;
+		using ConfigCallback = std::function<void (PipelineConfig &)>;
 		struct	Config {
 			Device						*device;
 			AssetManager				*assetManager;

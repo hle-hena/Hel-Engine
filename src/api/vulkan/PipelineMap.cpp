@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 15:07:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/31 16:51:08                                        */
+/*  Last Modified: 2026/04/03 16:00:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -103,8 +103,18 @@ bool	PipelineMap::bindPipeline(const RenderingConfig &renderingConfig,
 	if (inserted) {
 		if (!getLayout() || !getStageInfo())
 			return (true);
-		PipelineConfigInfo	config{};
-		Pipeline::defaultPipelineConfigInfo(config);
+		PipelineConfig	config{};
+		Pipeline::defaultPipelineconfig(config);
+		for (uint32_t i = 0; i < renderingConfig.colorFormats.size(); i++) {
+			VkPipelineColorBlendAttachmentState	attachment{};
+			attachment.colorWriteMask = (i != 0) ? 0 :
+											VK_COLOR_COMPONENT_R_BIT |
+											VK_COLOR_COMPONENT_G_BIT |
+											VK_COLOR_COMPONENT_B_BIT |
+											VK_COLOR_COMPONENT_A_BIT;
+			attachment.blendEnable = VK_FALSE;
+			Pipeline::setBlendAttachment(config, i, attachment);
+		}
 		_configPipeline(config);
 		config.pipelineLayout = _layout;
 
