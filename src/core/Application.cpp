@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 11:37:42                                        */
+/*  Last Modified: 2026/04/03 17:00:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -81,6 +81,13 @@ void	Application::loadPrimaryScene(void) {
 		transform->position = glm::vec3(0.f, 0.f, 0.f);
 		transform->scale = glm::vec3(400.f);
 	}
+
+	Entity::id	secondCamera = _registry.createEntity();
+	if (auto transform = _registry.addComponent<comp::Transform>(secondCamera).modify())
+		transform->position = {0.f, 0.f, 0.f};
+	_registry.addComponent<comp::Controller>(secondCamera);
+	_registry.addComponent<comp::EditorControllerTag>(secondCamera);
+	_registry.addComponent<comp::Camera>(secondCamera);
 }
 
 void	Application::run(void) {

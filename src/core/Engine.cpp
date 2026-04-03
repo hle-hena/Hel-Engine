@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/03 15:37:59                                        */
+/*  Last Modified: 2026/04/03 17:00:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -193,17 +193,29 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 						.beginPass(ctx)) {
 			writeGlobalData(renderer);
 			for (auto &system: _systems)
-				system->render(ctx, renderer);
+				system->render(renderer);
 		}
 		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
 						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
 						.setDepthLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+						.setDepthStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
 						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
 						.addDepthWrite(depthImage, depthImage->getFormat())
 						.beginPass(ctx)) {
 			writeGlobalData(renderer);
 			for (auto &system: _systems)
 				system->postProcessing(renderer);
+		}
+		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
+						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+						.setDepthLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
+						.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
+						.addDepthWrite(depthImage, depthImage->getFormat())
+						.beginPass(ctx)) {
+			writeGlobalData(renderer);
+			for (auto &system: _systems)
+				system->renderUI(renderer);
 		}
 		for (auto &system: _systems)
 			system->updateWindow(ctx);

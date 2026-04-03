@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/03 15:06:33                                        */
+/*  Last Modified: 2026/04/03 16:50:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <cstdint>
 # include <glm/glm.hpp>
 
 # include "ecs/systems/ISystem.hpp"
@@ -38,16 +39,17 @@ class	Camera : public ISystem {
 		void	init(void) override;
 
 		void	update(const FrameContext &ctx) override;
-		void	postProcessing(const Renderer &conf) override;
+		void	renderUI(const Renderer &conf) override;
 
 	private:
 		struct	FrustumPush {
 			glm::mat4	modelMatrix;
 			glm::mat4	invViewProjection;
 		};
-		struct	SpritePush {
-			glm::vec3	worldPos;
-			float		size;
+		struct	EntityData {
+			uint32_t	entityIndex{0};
+			uint32_t	transformIndex{0};
+			float		size{0};
 		};
 
 		static void	initFrustumLayout(Device &device, std::vector<VkDescriptorSetLayout> &setLayouts,

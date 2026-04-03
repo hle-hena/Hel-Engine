@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/03 15:49:30                                        */
+/*  Last Modified: 2026/04/03 16:04:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -101,7 +101,8 @@ void	Render::configureSelectedPipeline(PipelineConfig &config) {
 	Pipeline::setBlendAttachment(config, 1, attachment);
 }
 
-void	Render::render(const FrameContext &ctx, const Renderer &renderer) {
+void	Render::render(const Renderer &renderer) {
+	auto	ctx = renderer.frameContext();
 	if (!ctx.commandBuffer)
 		return ;
 

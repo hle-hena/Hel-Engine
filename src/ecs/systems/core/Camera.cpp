@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/03 15:06:31                                        */
+/*  Last Modified: 2026/04/03 16:58:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,7 @@
 #include "ecs/systems/core/Camera.hpp"
 #include "api/vulkan/Device.hpp"
 #include "ecs/AssetManager.hpp"
+#include "ecs/Entity.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
 #include "ecs/assets/Geometry.hpp"
@@ -25,6 +26,7 @@
 #include "core/Engine.hpp"
 #include "api/vulkan/Renderer.hpp"
 #include "api/vulkan/Sampler.hpp"
+#include <vulkan/vulkan_core.h>
 
 namespace	hel::sys {
 
@@ -71,10 +73,14 @@ void	Camera::configureFrustumPipeline(PipelineConfig &config) {
 
 void	Camera::initSpriteLayout(Device &device, std::vector<VkDescriptorSetLayout> &setLayouts,
 								std::vector<VkPushConstantRange> &pushConstant) {
-	VkPushConstantRange	vertexPush{};
-	vertexPush.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	vertexPush.size = sizeof(SpritePush);
-	pushConstant.push_back(vertexPush);
+	VkPushConstantRange	push{};
+	push.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+	push.size = sizeof(EntityData);
+	pushConstant.push_back(push);
+
+	setLayouts.push_back(DescriptorFactory(device)
+							.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_ALL)
+							.getSetLayout());
 	auto	set = DescriptorFactory(device)
 							.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 								VK_SHADER_STAGE_FRAGMENT_BIT, Sampler::getSampler(device, {}), 1)
@@ -84,6 +90,15 @@ void	Camera::initSpriteLayout(Device &device, std::vector<VkDescriptorSetLayout>
 
 void	Camera::configureSpritePipeline(PipelineConfig &config) {
 	config.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+	config.depthStencilInfo.depthTestEnable = VK_FALSE;
+
+	VkPipelineColorBlendAttachmentState	attachment{};
+	attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
+								VK_COLOR_COMPONENT_G_BIT |
+								VK_COLOR_COMPONENT_B_BIT |
+								VK_COLOR_COMPONENT_A_BIT;
+	attachment.blendEnable = VK_FALSE;
+	Pipeline::setBlendAttachment(config, 1, attachment);
 }
 
 void	Camera::update(const FrameContext &) {
@@ -105,7 +120,7 @@ void	Camera::update(const FrameContext &) {
 	}
 }
 
-void	Camera::postProcessing(const Renderer &renderer) {
+void	Camera::renderUI(const Renderer &renderer) {
 	auto	&ctx = renderer.frameContext();
 	auto	selfHandle = ctx.request->handle;
 	auto	selfCam = _registry->getComponent<comp::Camera>(selfHandle);
@@ -127,6 +142,9 @@ void	Camera::postProcessing(const Renderer &renderer) {
 		.writeImage(0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 					*texture->image.get(), texture->image->getFormat(), sampler)
 		.update();
+	auto	transformSet = _registry->buildComponentSet<comp::Transform>(*_device, ctx.descriptorPool);
+	if (!transformSet)
+		return ;
 	for (auto entity : entities) {
 		if (entity == selfHandle)	{ continue ; }
 		auto	mesh = _assetManager->get<FullGeometry>("assets/models/frustum.obj");
@@ -146,8 +164,10 @@ void	Camera::postProcessing(const Renderer &renderer) {
 
 		float	size = 0.05f * glm::distance(transform->position, selfTransform->position);
 		drawCommand(renderer, _spritePipeline)
+			.addBinding(transformSet->sets[0])
 			.addBinding(set->sets[0])
-			.addPush(VK_SHADER_STAGE_VERTEX_BIT, SpritePush{transform->position, size})
+			.addPush(VK_SHADER_STAGE_ALL_GRAPHICS, EntityData{entity,
+					transform.getDenseIndex(), size})
 			.submitNoVertex(4);
 	}
 }
