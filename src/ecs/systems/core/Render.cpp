@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/03 16:04:34                                        */
+/*  Last Modified: 2026/04/08 17:20:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,8 +30,8 @@
 namespace	hel::sys {
 
 void	Render::init(void) {
+	_assetManager = &_registry->getAssetManager();
 	{
-		_assetManager = &_registry->getAssetManager();
 		PipelineMap::Config	config;
 		config.device = _device;
 		config.assetManager = &_registry->getAssetManager();
@@ -44,7 +44,6 @@ void	Render::init(void) {
 		_selectedObjectPipeline = createPipeline(config);
 	}
 	{
-		_assetManager = &_registry->getAssetManager();
 		PipelineMap::Config	config;
 		config.device = _device;
 		config.assetManager = &_registry->getAssetManager();
@@ -112,7 +111,8 @@ void	Render::render(const Renderer &renderer) {
 	auto	entities = _registry->view<comp::Transform, comp::Model>();
 	for (auto entity: entities) {
 		auto	mesh = _assetManager->get<Geometry>(entities.get<comp::Model>(entity)->filePath);
-		if (!mesh)	{ continue ; }
+		auto	hidden = _registry->getComponent<comp::HideEntityTag>(entity);
+		if (!mesh || hidden)	{ continue ; }
 		auto	transform = entities.get<comp::Transform>(entity);
 
 		//TODO -> sort those calls later on.

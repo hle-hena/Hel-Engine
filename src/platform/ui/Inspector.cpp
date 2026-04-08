@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 20:08:30                                        */
+/*  Last Modified: 2026/04/08 17:22:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,7 +36,6 @@ void	Inspector::render(Window *window, const ImVec2 &) {
 		return ;
 	if (ImGui::Button("Remove entity")) {
 		removeEntity(handle);
-		ImGui::End();
 		return ;
 	}
 	ImGui::SameLine();

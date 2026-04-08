@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/31 13:44:43                                        */
+/*  Last Modified: 2026/04/08 17:17:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,6 +35,10 @@ struct	EditorControllerTag {
 
 struct	BaseControllerTag {
 	static constexpr const char	*label = "Base Controller Tag";
+};
+
+struct	HideEntityTag {
+	static constexpr const char	*label = "Hide Entity Tag";
 };
 
 struct	Name {

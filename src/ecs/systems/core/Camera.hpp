@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/03 16:50:32                                        */
+/*  Last Modified: 2026/04/07 15:19:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,7 +25,6 @@
 namespace	hel {
 
 class	AssetManager;
-class	Window;
 
 }
 
@@ -39,7 +38,7 @@ class	Camera : public ISystem {
 		void	init(void) override;
 
 		void	update(const FrameContext &ctx) override;
-		void	renderUI(const Renderer &conf) override;
+		void	renderUI(const Renderer &renderer) override;
 
 	private:
 		struct	FrustumPush {

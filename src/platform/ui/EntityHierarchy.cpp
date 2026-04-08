@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 18:28:16                                        */
+/*  Last Modified: 2026/04/08 17:21:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "platform/ui/EntityHierarchy.hpp"
+#include "ecs/Component.hpp"
 #include "platform/ui/UIHelper.hpp"
 #include "platform/window/Window.hpp"
 
@@ -48,6 +49,8 @@ void	EntityHierarchy::moveEntity(View<comp::Hierarchy> &view,
 
 void	EntityHierarchy::showEntity(Window *window, View<comp::Hierarchy> view,
 					Entity::id handle) {
+	if (_registry->getComponent<comp::HideEntityTag>(handle))
+		return ;
 	auto	hierarchy = view.get<comp::Hierarchy>(handle);
 	auto	nameComp = _registry->getComponent<comp::Name>(handle);
 	std::string	name = "unknown entity (id: " +
