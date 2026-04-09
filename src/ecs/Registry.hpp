@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:40:01                                        */
+/*  Last Modified: 2026/04/09 18:44:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -32,7 +32,12 @@
 namespace	hel {
 
 class	AssetManager;
+
 template <typename... Components>
+struct	include {};
+template <typename... Components>
+struct	exclude {};
+template <typename Include, typename  Exclude = exclude<>>
 class	View;
 
 template <typename... T>
@@ -158,8 +163,8 @@ class	Registry {
 		template <typename... Component>
 		DescriptorSet::ptr	buildComponentSet(Device &device, DescriptorPool *dynamicPool);
 
-		template <typename... Components>
-		View<Components...>		view();
+		template <typename Include, typename Exclude = exclude<>>
+		View<Include, Exclude> view();
 
 	private:
 		template<typename Component>
@@ -174,7 +179,7 @@ class	Registry {
 		AssetManager				*_assetManager;
 		InputState					_inputState;
 
-	template <typename... Components>
+	template <typename Include, typename Exclude>
 	friend class View;
 };
 
@@ -193,7 +198,7 @@ struct	ComponentHandle {
 		const Component			*_comp{nullptr};
 		std::optional<uint32_t>	_index;
 	friend class	Registry;
-	template <typename... Components>
+	template <typename Include, typename Exclude>
 	friend class View;
 };
 

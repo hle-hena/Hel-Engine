@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 16:48:50                                        */
+/*  Last Modified: 2026/04/09 18:41:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -104,7 +104,7 @@ void	Camera::configureSpritePipeline(PipelineConfig &config) {
 }
 
 void	Camera::update(const FrameContext &) {
-	auto	entities = _registry->view<comp::Transform, comp::Camera>();
+	auto	entities = _registry->view<include<comp::Transform, comp::Camera>>();
 
 	for (auto entity: entities) {
 		auto	constTransform = entities.get<comp::Transform>(entity);
@@ -132,8 +132,8 @@ void	Camera::renderUI(const Renderer &renderer) {
 	auto	commandBuffer = ctx.commandBuffer;
 	if (!commandBuffer)	{ return ; }
 
-	auto	entities = _registry->view<comp::Camera,
-									comp::Transform>();
+	auto	entities = _registry->view<include<comp::Camera,
+									comp::Transform>>();
 	auto	sampler = Sampler::getSampler(*_device, {});
 	auto	set = DescriptorFactory(*_device)
 						.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,

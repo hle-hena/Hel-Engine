@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:20:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 11:56:03                                        */
+/*  Last Modified: 2026/04/09 18:42:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,7 +24,7 @@ void	SurfaceAllignement::init(void) {
 }
 
 void	SurfaceAllignement::update(const FrameContext &) {
-	auto	entities = _registry->view<comp::Transform, comp::SurfaceAllignement>();
+	auto	entities = _registry->view<include<comp::Transform, comp::SurfaceAllignement>>();
 
 	for (auto entity: entities) {
 		auto	constTransform = entities.get<comp::Transform>(entity);

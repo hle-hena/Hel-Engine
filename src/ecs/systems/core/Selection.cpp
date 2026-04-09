@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 16:50:23                                        */
+/*  Last Modified: 2026/04/09 18:41:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -103,7 +103,7 @@ void	Selection::renderEntityID(const Renderer &renderer) {
 	auto	set = _registry->buildComponentSet<comp::Transform>(*_device, ctx.descriptorPool);
 	if (!set)
 		return ;
-	auto	entities = _registry->view<comp::Transform, comp::Model>();
+	auto	entities = _registry->view<include<comp::Transform, comp::Model>>();
 	for (auto entity: entities) {
 		auto	mesh = _assetManager->get<Geometry>(entities.get<comp::Model>(entity)->filePath);
 		if (!mesh)	{ continue ; }

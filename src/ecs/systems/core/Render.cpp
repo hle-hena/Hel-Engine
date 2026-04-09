@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/08 17:20:05                                        */
+/*  Last Modified: 2026/04/09 18:41:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -108,7 +108,7 @@ void	Render::render(const Renderer &renderer) {
 	auto	set = _registry->buildComponentSet<comp::Transform>(*_device, ctx.descriptorPool);
 	if (!set)
 		return ;
-	auto	entities = _registry->view<comp::Transform, comp::Model>();
+	auto	entities = _registry->view<include<comp::Transform, comp::Model>>();
 	for (auto entity: entities) {
 		auto	mesh = _assetManager->get<Geometry>(entities.get<comp::Model>(entity)->filePath);
 		auto	hidden = _registry->getComponent<comp::HideEntityTag>(entity);

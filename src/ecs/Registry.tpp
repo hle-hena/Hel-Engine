@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:06:07                                        */
+/*  Last Modified: 2026/04/09 18:40:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -195,11 +195,9 @@ Pool<Component>	*Registry::getPool() {
 	return (static_cast<Pool<Component> *>(pool->second.get()));
 }
 
-template <typename... Components>
-View<Components...> Registry::view() {
-	static_assert(sizeof...(Components) > 0, "Cannot create an empty View. Please provide at least one component");
-	static_assert(is_unique<Components...>::value, "View contains duplicate component types");
-	return (View<Components...>(*this));
+template <typename Include, typename Exclude>
+View<Include, Exclude>	Registry::view() {
+	return View<Include, Exclude>(*this);
 }
 
 template <typename Component>

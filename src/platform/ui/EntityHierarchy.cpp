@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/08 17:21:09                                        */
+/*  Last Modified: 2026/04/09 18:43:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,7 +27,7 @@ expected<void, std::string>	EntityHierarchy::onInit(void) {
 	return {};
 }
 
-void	EntityHierarchy::moveEntity(View<comp::Hierarchy> &view,
+void	EntityHierarchy::moveEntity(View<include<comp::Hierarchy>> &view,
 					Entity::id srcHandle, Entity::id dstHandle) {
 	auto	srcHierarchy = view.get<comp::Hierarchy>(srcHandle).modify();
 
@@ -47,7 +47,7 @@ void	EntityHierarchy::moveEntity(View<comp::Hierarchy> &view,
 		dstHierarchy->childrenId.push_back(srcHandle);
 }
 
-void	EntityHierarchy::showEntity(Window *window, View<comp::Hierarchy> view,
+void	EntityHierarchy::showEntity(Window *window, View<include<comp::Hierarchy>> view,
 					Entity::id handle) {
 	if (_registry->getComponent<comp::HideEntityTag>(handle))
 		return ;
@@ -97,7 +97,7 @@ void	EntityHierarchy::render(Window *window, const ImVec2 &) {
 		_registry->createEntity();
 	ImGui::Separator();
 
-	auto	view = _registry->view<comp::Hierarchy>();
+	auto	view = _registry->view<include<comp::Hierarchy>>();
 	DropTarget("ENTITY")
 		.setResetPosition(true)
 		.addDummy()

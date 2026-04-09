@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/08 17:17:42                                        */
+/*  Last Modified: 2026/04/09 18:42:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -64,7 +64,7 @@ void	Transform::configurePipeline(PipelineConfig &config) {
 }
 
 void	Transform::update(const FrameContext &) {
-	auto	entities = _registry->view<comp::Transform>();
+	auto	entities = _registry->view<include<comp::Transform>>();
 
 	for (auto entity: entities) {
 		auto	constTransform = entities.get<comp::Transform>(entity);
