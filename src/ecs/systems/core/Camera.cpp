@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 18:41:30                                        */
+/*  Last Modified: 2026/04/09 19:35:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -132,8 +132,9 @@ void	Camera::renderUI(const Renderer &renderer) {
 	auto	commandBuffer = ctx.commandBuffer;
 	if (!commandBuffer)	{ return ; }
 
-	auto	entities = _registry->view<include<comp::Camera,
-									comp::Transform>>();
+	auto	entities = _registry->view<
+				include<comp::Camera, comp::Transform>,
+				exclude<comp::HideEntityTag>>();
 	auto	sampler = Sampler::getSampler(*_device, {});
 	auto	set = DescriptorFactory(*_device)
 						.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
