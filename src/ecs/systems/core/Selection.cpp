@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/03 15:56:15                                        */
+/*  Last Modified: 2026/04/09 16:50:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -65,6 +65,8 @@ void	Selection::configureTintPipeline(PipelineConfig &config) {
 
 	config.depthStencilInfo.depthTestEnable  = VK_FALSE;
 	config.depthStencilInfo.depthWriteEnable = VK_FALSE;
+
+	config.rasterizationInfo.cullMode = VK_CULL_MODE_NONE;
 
 	VkPipelineColorBlendAttachmentState	attachment{};
 	attachment.colorWriteMask = 0xF;

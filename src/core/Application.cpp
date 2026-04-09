@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/03 17:00:19                                        */
+/*  Last Modified: 2026/04/09 16:36:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -61,8 +61,7 @@ void	Application::loadPrimaryScene(void) {
 	}
 	if (auto transform = _registry.addComponent<comp::Transform>(handle).modify()) {
 		transform->position = glm::vec3(-2.f, 0.f, -2.f);
-		transform->scale = glm::vec3(4.f, 2.f, 4.f);
-		transform->scale.y = -transform->scale.y;
+		transform->scale = glm::vec3(4.f);
 	}
 	Entity::id	secondHandle = _registry.createEntity();
 	if (auto mesh = _registry.addComponent<comp::Model>(secondHandle).modify()) {
@@ -71,7 +70,6 @@ void	Application::loadPrimaryScene(void) {
 	if (auto transform = _registry.addComponent<comp::Transform>(secondHandle).modify()) {
 		transform->position = glm::vec3(2.f, 0.f, 2.f);
 		transform->scale = glm::vec3(4.f);
-		transform->scale.y = -transform->scale.y;
 	}
 	Entity::id	thirdHandle = _registry.createEntity();
 	if (auto mesh = _registry.addComponent<comp::Model>(thirdHandle).modify()) {

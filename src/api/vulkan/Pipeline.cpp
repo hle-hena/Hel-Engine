@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/03 15:23:37                                        */
+/*  Last Modified: 2026/04/08 18:21:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,6 +19,7 @@
 #include "utils/healthHelper.hpp"
 
 #include <cassert>
+#include <vulkan/vulkan_core.h>
 
 namespace hel {
 
@@ -109,7 +110,7 @@ void Pipeline::defaultPipelineconfig(PipelineConfig &config) {
 	config.rasterizationInfo.rasterizerDiscardEnable = VK_FALSE;
 	config.rasterizationInfo.polygonMode = VK_POLYGON_MODE_FILL;
 	config.rasterizationInfo.lineWidth = 1.0f;
-	config.rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+	config.rasterizationInfo.cullMode = VK_CULL_MODE_FRONT_BIT;
 	config.rasterizationInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	config.rasterizationInfo.depthBiasEnable = VK_FALSE;
 

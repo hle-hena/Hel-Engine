@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/03 16:58:02                                        */
+/*  Last Modified: 2026/04/09 16:48:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -69,6 +69,7 @@ void	Camera::initFrustumLayout(Device &, std::vector<VkDescriptorSetLayout> &,
 void	Camera::configureFrustumPipeline(PipelineConfig &config) {
 	Pipeline::setVertexInputDescriptions<Vertex>(config);
 	config.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+	config.rasterizationInfo.cullMode = VK_CULL_MODE_NONE;
 }
 
 void	Camera::initSpriteLayout(Device &device, std::vector<VkDescriptorSetLayout> &setLayouts,
@@ -98,6 +99,7 @@ void	Camera::configureSpritePipeline(PipelineConfig &config) {
 								VK_COLOR_COMPONENT_B_BIT |
 								VK_COLOR_COMPONENT_A_BIT;
 	attachment.blendEnable = VK_FALSE;
+	config.rasterizationInfo.cullMode = VK_CULL_MODE_NONE;
 	Pipeline::setBlendAttachment(config, 1, attachment);
 }
 
