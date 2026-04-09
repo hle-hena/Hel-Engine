@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 18:41:41                                        */
+/*  Last Modified: 2026/04/09 19:31:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "ecs/systems/core/Render.hpp"
+#include "api/vulkan/PipelineMap.hpp"
 #include "platform/window/Window.hpp"
 #include "api/vulkan/Device.hpp"
 #include "api/vulkan/Buffer.hpp"
@@ -108,23 +109,30 @@ void	Render::render(const Renderer &renderer) {
 	auto	set = _registry->buildComponentSet<comp::Transform>(*_device, ctx.descriptorPool);
 	if (!set)
 		return ;
-	auto	entities = _registry->view<include<comp::Transform, comp::Model>>();
-	for (auto entity: entities) {
-		auto	mesh = _assetManager->get<Geometry>(entities.get<comp::Model>(entity)->filePath);
-		auto	hidden = _registry->getComponent<comp::HideEntityTag>(entity);
-		if (!mesh || hidden)	{ continue ; }
-		auto	transform = entities.get<comp::Transform>(entity);
 
-		//TODO -> sort those calls later on.
-		auto	drawCall = ctx.window->getEntityFocus() == entity ?
-								drawCommand(renderer, _selectedObjectPipeline) :
-								drawCommand(renderer, _normalPipeline);
-		drawCall.addPush(VK_SHADER_STAGE_ALL_GRAPHICS, EntityData{entity, transform.getDenseIndex()})
-			.addBinding(set->sets[0])
-			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
-			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
-			.submit(mesh->triangleVertexCount);
-	}
+	auto	drawEntities = [&](auto entities, PipelineMap *pipeline) {
+		for (auto entity: entities) {
+			auto	mesh = _assetManager->get<Geometry>(entities.template get<comp::Model>(entity)->filePath);
+			if (!mesh)	{ continue ; }
+			auto	transform = entities.template get<comp::Transform>(entity);
+
+			drawCommand(renderer, pipeline)
+				.addPush(VK_SHADER_STAGE_ALL_GRAPHICS, EntityData{entity, transform.getDenseIndex()})
+				.addBinding(set->sets[0])
+				.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
+				.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
+				.submit(mesh->triangleVertexCount);
+		}
+	};
+
+	drawEntities(_registry->view<
+			include<comp::Transform, comp::Model, comp::SelectedTag>,
+			exclude<comp::HideEntityTag>
+		>(), _selectedObjectPipeline);
+	drawEntities(_registry->view<
+			include<comp::Transform, comp::Model>,
+			exclude<comp::HideEntityTag, comp::SelectedTag>
+		>(), _normalPipeline);
 }
 
 }

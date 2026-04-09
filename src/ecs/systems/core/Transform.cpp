@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 18:42:02                                        */
+/*  Last Modified: 2026/04/09 19:28:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -135,7 +135,7 @@ void	Transform::renderRotate(const Renderer &renderer) {
 void	Transform::renderUI(const Renderer &renderer) {
 	auto	ctx = renderer.frameContext();
 	auto	focusedEntity = ctx.window->getEntityFocus();
-	if (focusedEntity == Entity::NOT_REGISTERED) {
+	if (focusedEntity == Entity::NOT_REGISTERED || focusedEntity == ctx.request->handle) {
 		for (auto &handle: _handles)
 			_registry->removeEntity(handle);
 		_handles.clear();

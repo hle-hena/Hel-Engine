@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 17:27:45                                        */
+/*  Last Modified: 2026/04/09 19:08:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -76,9 +76,7 @@ class	Window {
 		Entity::id		getEntityReference(void) const {
 			return (_entityHandle.value_or(Entity::NOT_REGISTERED));
 		}
-		void			setEntityFocus(Entity::id handle) {
-			_focusHandle = handle;
-		}
+		void			setEntityFocus(Entity::id handle);
 		Entity::id		getEntityFocus(void) const {
 			return (_focusHandle.value_or(Entity::NOT_REGISTERED));
 		}

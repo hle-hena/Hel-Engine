@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 20:14:08                                        */
+/*  Last Modified: 2026/04/09 19:09:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "platform/window/Window.hpp"
+#include "ecs/Component.hpp"
 #include "platform/window/GLFW.hpp"
 #include "core/Application.hpp"
 
@@ -120,6 +121,12 @@ bool	Window::shouldClose(void) {
 
 void	Window::setEntityReference(Entity::id handle) {
 	_entityHandle = handle;
+}
+
+void	Window::setEntityFocus(Entity::id handle) {
+	_app.getRegistry().removeComponent<comp::SelectedTag>(*_focusHandle);
+	_focusHandle = handle;
+	_app.getRegistry().addComponent<comp::SelectedTag>(*_focusHandle);
 }
 
 void	Window::frameBufferResizedCallback(GLFWwindow *window,

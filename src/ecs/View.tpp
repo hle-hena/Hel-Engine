@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 16:09:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 18:39:13                                        */
+/*  Last Modified: 2026/04/09 19:00:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "View.hpp"
+#include "utils/healthHelper.hpp"
 
 namespace	hel {
 
@@ -69,11 +70,17 @@ void	View<include<Include...>, exclude<Exclude...>>::Iterator::moveNext(void) {
 template <typename... Include, typename... Exclude>
 bool		View<include<Include...>, exclude<Exclude...>>::Iterator::isValid(Entity::id handle) {
 	uint32_t	entityIndex = Entity::getIndex(handle);
-	return (std::apply([entityIndex, handle](auto*... pools){
+	bool		hasAllIncluded = std::apply([entityIndex, handle](auto*... pools){
 		return (... && (entityIndex < pools->indices.size() &&
 						pools->indices[entityIndex] != Entity::NOT_REGISTERED &&
 						pools->entities[pools->indices[entityIndex]] == handle));
-	}, view._includePools));
+	}, view._includePools);
+	bool		hasAnyExcluded = std::apply([entityIndex, handle](auto*... pools){
+		return (... || (entityIndex < pools->indices.size() &&
+						pools->indices[entityIndex] != Entity::NOT_REGISTERED &&
+						pools->entities[pools->indices[entityIndex]] == handle));
+	}, view._excludePools);
+	return (hasAllIncluded && !hasAnyExcluded);
 }
 
 
