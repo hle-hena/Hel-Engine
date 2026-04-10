@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 19:35:23                                        */
+/*  Last Modified: 2026/04/10 12:46:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -91,7 +91,6 @@ void	Camera::initSpriteLayout(Device &device, std::vector<VkDescriptorSetLayout>
 
 void	Camera::configureSpritePipeline(PipelineConfig &config) {
 	config.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-	config.depthStencilInfo.depthTestEnable = VK_FALSE;
 
 	VkPipelineColorBlendAttachmentState	attachment{};
 	attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |

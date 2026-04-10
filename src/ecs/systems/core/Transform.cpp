@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 22:11:42                                        */
+/*  Last Modified: 2026/04/10 12:45:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,6 +25,7 @@
 #include <glm/ext/quaternion_trigonometric.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/fwd.hpp>
+#include <glm/geometric.hpp>
 #include <vulkan/vulkan_core.h>
 
 namespace	hel::sys {
@@ -103,23 +104,27 @@ void	Transform::updateEntity(Entity::id handle) {
 
 void	Transform::renderMove(const Renderer &renderer) {
 	auto	focusedTransform = _registry->getComponent<comp::Transform>(renderer.frameContext().window->getEntityFocus());
-	if (!focusedTransform)	{ return ; }
+	auto	requestTransform = _registry->getComponent<comp::Transform>(renderer.frameContext().request->handle);
+	if (!focusedTransform || !requestTransform)	{ return ; }
 	if (_handles.empty()) {
+		float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05;
 		auto	createEntity = [&](const std::string &stringName,
 								const std::string &modelPath,
 								const glm::quat &offRotation = glm::quat(),
 								const glm::vec3 &offPosition = glm::vec3(),
+								const glm::vec3 &offScale = glm::vec3(1.f),
 								const glm::vec3 &tint = glm::vec3{1.f}){
 			Entity::id	newHandle = _registry->createEntity();
 			_registry->addComponent<comp::Name>(newHandle).modify()->name = stringName;
 			_registry->addComponent<comp::Model>(newHandle).modify()->filePath = modelPath;
+			auto	transform = _registry->addComponent<comp::Transform>(newHandle).modify();
+			transform->scale = glm::vec3(dist) * offScale;
+			transform->rotation = focusedTransform->rotation * offRotation;
+			transform->position = focusedTransform->position + (transform->rotation * (offPosition * transform->scale));
 			auto	offset = _registry->addComponent<comp::OffsetTransform>(newHandle).modify();
 			offset->rotation = offRotation;
 			offset->pos = offPosition;
-			auto	transform = _registry->addComponent<comp::Transform>(newHandle).modify();
-			transform->rotation = focusedTransform->rotation * offRotation;
-			transform->position = focusedTransform->position + (transform->rotation * offPosition);
-			transform->scale = glm::vec3(0.25f);
+			offset->scale = offScale;
 			_registry->addComponent<comp::HideEntityTag>(newHandle);
 			_registry->addComponent<comp::Tint>(newHandle).modify()->tint = tint;
 			updateEntity(newHandle);
@@ -128,35 +133,43 @@ void	Transform::renderMove(const Renderer &renderer) {
 		createEntity("X-Arrow", "assets/models/arrow.obj",
 				glm::angleAxis(glm::radians(-90.0f), glm::vec3(0, 0, 1)),
 				{},
+				glm::vec3(5.f),
 				{1.f, 0.f, 0.f});
 		createEntity("Y-Arrow", "assets/models/arrow.obj",
 				glm::quat(1, 0, 0, 0),
 				{},
+				glm::vec3(5.f),
 				{0.f, 0.8f, 0.f});
 		createEntity("Z-Arrow", "assets/models/arrow.obj",
 				glm::angleAxis(glm::radians(90.0f), glm::vec3(1, 0, 0)),
 				{},
+				glm::vec3(5.f),
 				{0.f, 0.f, 0.8f});
 		createEntity("XY-Plane", "assets/models/quad.obj",
 				glm::angleAxis(glm::radians(-90.0f), glm::vec3(1, 0, 0)),
-				{0.35f, 0.f, 0.35f},
+				{2.f, 0.f, 2.f},
+				glm::vec3(1.f),
 				{0.8f, 0.8f, 0.f});
 		createEntity("YZ-Plane", "assets/models/quad.obj",
 				glm::angleAxis(glm::radians(90.0f), glm::vec3(0, 0, 1)),
-				{0.35f, 0.f, 0.35f},
+				{2.f, 0.f, 2.f},
+				glm::vec3(1.f),
 				{0.f, 0.8f, 0.8f});
 		createEntity("ZX-Plane", "assets/models/quad.obj",
 				glm::quat(1, 0, 0, 0),
-				{0.35f, 0.f, 0.35f},
+				{2.f, 0.f, 2.f},
+				glm::vec3(1.f),
 				{0.8f, 0.f, 0.8f});
 	}
 
-	for (auto entity: _handles) {
-		if (focusedTransform->isDirty) {
+	if (focusedTransform->isDirty || requestTransform->isDirty) {
+		float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05;
+		for (auto entity: _handles) {
 			auto	transform = _registry->getComponent<comp::Transform>(entity).modify();
 			auto	offset = _registry->getComponent<comp::OffsetTransform>(entity);
+			transform->scale = glm::vec3(dist) * offset->scale;
 			transform->rotation = focusedTransform->rotation * offset->rotation;
-			transform->position = focusedTransform->position + (transform->rotation * offset->pos);
+			transform->position = focusedTransform->position + (transform->rotation * (offset->pos * transform->scale));
 			updateEntity(entity);
 		}
 	}
