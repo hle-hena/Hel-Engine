@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 19:05:03                                        */
+/*  Last Modified: 2026/04/10 11:52:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,6 +29,8 @@ void	Pool<Component>::syncBuffer(Device &device) {
 			typename Component::GPUType,
 			Component>;
 		if (!buffer || buffer->getSize() < nbComp * sizeof(BufferType)) {
+			//TODO -> remove it at some point, like after MAX_FRAME_IN_FLIGHT frames passed.
+			_oldBuffer = std::move(buffer);
 			buffer = Buffer::create(device, sizeof(BufferType) * std::max(nbComp, 8u),
 						1,
 						VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
@@ -220,6 +222,7 @@ DescriptorSet::ptr	Registry::buildComponentSet(Device &device,
 	bool	invalid = (!isGpuVisible<Component>() || ...);
 	if (invalid)
 		return (nullptr);
+	(getPool<Component>()->flushWrites(device), ...);
 	auto		factory = DescriptorFactory(device);
 	uint32_t	binding = 0;
 	((factory.addBinding(binding++, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,

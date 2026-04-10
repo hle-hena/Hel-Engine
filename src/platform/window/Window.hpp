@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 19:08:58                                        */
+/*  Last Modified: 2026/04/09 21:14:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -80,9 +80,14 @@ class	Window {
 		Entity::id		getEntityFocus(void) const {
 			return (_focusHandle.value_or(Entity::NOT_REGISTERED));
 		}
+		bool			focusChanged(void) const {
+			return (_focusChanged != 0);
+		}
 		VkExtent2D		getExtent(void) const {
 			return {_width, _height};
 		}
+
+		void	pollEvents(void);
 
 
 	private:
@@ -118,6 +123,7 @@ class	Window {
 		Swapchain					_swapchain;
 		std::optional<Entity::id>	_entityHandle;
 		std::optional<Entity::id>	_focusHandle;
+		int							_focusChanged{0};
 
 	friend class UiContext;
 };

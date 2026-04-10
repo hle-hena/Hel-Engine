@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 19:09:30                                        */
+/*  Last Modified: 2026/04/09 21:26:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,7 @@
 #include "ecs/Component.hpp"
 #include "platform/window/GLFW.hpp"
 #include "core/Application.hpp"
+#include <GLFW/glfw3.h>
 
 namespace	hel {
 
@@ -100,6 +101,12 @@ void	Window::deleteWindow(void) {
 	GLFW::release();
 }
 
+void	Window::pollEvents(void) {
+	glfwPollEvents();
+	if (_focusChanged > 0)
+		--_focusChanged;
+}
+
 bool	Window::shouldClose(void) {
 	auto	&inputState = _app.getRegistry().getInputState();
 
@@ -126,6 +133,7 @@ void	Window::setEntityReference(Entity::id handle) {
 void	Window::setEntityFocus(Entity::id handle) {
 	_app.getRegistry().removeComponent<comp::SelectedTag>(*_focusHandle);
 	_focusHandle = handle;
+	_focusChanged = 2;
 	_app.getRegistry().addComponent<comp::SelectedTag>(*_focusHandle);
 }
 

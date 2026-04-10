@@ -1,0 +1,59 @@
+/* *************************************************************************  */
+/*                                                                            */
+/*                                                                            */
+/*  File: gizmo.vert                                                          */
+/*  Project: Hel Engine                                                       */
+/*  Created: 2026/04/09 19:38:48 by hle-hena                                  */
+/*                                                                            */
+/*  Last Modified: 2026/04/09 19:54:01                                        */
+/*             By: hle-hena                                                   */
+/*                                                                            */
+/*    -----                                                                   */
+/*                                                                            */
+/*  Copyright (c) 2026 hle-hena                                               */
+/*                                                                            */
+/* *************************************************************************  */
+
+#version 450
+
+layout (location = 0) out vec3	fragColor;
+layout (location = 1) out vec3	fragPos;
+layout (location = 2) out vec3	fragNormal;
+
+layout (location = 0) in vec3	inPos;
+layout (location = 1) in vec3	inColor;
+layout (location = 2) in vec3	inNormal;
+
+layout (binding = 0) uniform UniformBufferObject {
+	mat4	viewProjection;
+	float	elapsedTime;
+}	ubo;
+
+struct	Transform {
+	mat4	modelMatrix;
+	mat4	normalMatrix;
+};
+layout(set = 1, binding = 0) readonly buffer Transforms {
+	Transform data[];
+} transforms;
+
+struct	Tint {
+	vec3	tint;
+};
+layout(set = 1, binding = 1) readonly buffer Tints {
+	Tint data[];
+} tints;
+
+layout (push_constant) uniform Push {
+	uint	entityIndex;
+	uint	transformIndex;
+} push;
+
+void	main() {
+	Transform	transform = transforms.data[push.transformIndex];
+	vec4	positionInWorld = transform.modelMatrix * vec4(inPos, 1.0);
+	gl_Position = ubo.viewProjection * positionInWorld;
+	fragColor = inColor;
+	fragPos = vec3(positionInWorld);
+	fragNormal = normalize(mat3(transform.normalMatrix) * inNormal);
+}

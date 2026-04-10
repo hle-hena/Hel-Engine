@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/08 16:11:31                                        */
+/*  Last Modified: 2026/04/09 20:45:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -49,12 +49,14 @@ class	Transform : public ISystem {
 		struct	EntityData {
 			uint32_t	entityIndex{0};
 			uint32_t	transformIndex{0};
+			uint32_t	tintIndex{0};
 		};
 		static void	initLayout(Device &device, std::vector<VkDescriptorSetLayout> &setLayouts,
 				std::vector<VkPushConstantRange> &pushConstants);
 		static void	configurePipeline(PipelineConfig &config);
 
-		void	renderArrow(const Renderer &renderer, Entity::id entityHandle, Entity::id arrowHandle);
+		void	updateEntity(Entity::id handle);
+
 		void	renderMove(const Renderer &renderer);
 
 		void	renderScale(const Renderer &renderer);

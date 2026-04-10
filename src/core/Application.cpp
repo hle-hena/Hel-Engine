@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 16:36:50                                        */
+/*  Last Modified: 2026/04/09 21:11:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -93,7 +93,7 @@ void	Application::run(void) {
 
 	while (_appWindow && _healthy) {
 		_registry.getInputState().newFrame();
-		glfwPollEvents();
+		_appWindow->pollEvents();
 
 		if (_appWindow->shouldClose()) {
 			break ;

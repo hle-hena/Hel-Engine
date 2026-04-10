@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 19:01:44                                        */
+/*  Last Modified: 2026/04/09 21:21:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -75,6 +75,14 @@ struct	Transform {
 	bool		isDirty{true};
 };
 
+struct	OffsetTransform {
+	static constexpr const char	*label = "Offset Transform";
+
+	glm::vec3	pos{0.f};
+	glm::quat	rotation{};
+	glm::vec3	scale{1.f};
+};
+
 struct	SurfaceAllignement {
 	static constexpr const char	*label = "Surface Allignement";
 
@@ -87,6 +95,22 @@ struct	Model {
 	static constexpr const char	*label = "Model";
 
 	std::string	filePath{""};
+};
+
+struct alignas(16)	TintGPU {
+	glm::vec3	tint;
+};
+
+struct	Tint {
+	static constexpr const char	*label = "Tint";
+	static constexpr const bool	gpuVisible = true;
+
+	using GPUType = TintGPU;
+	TintGPU	toGPU(void) {
+		return {tint};
+	}
+
+	glm::vec3	tint{1.f};
 };
 
 struct	Camera {
