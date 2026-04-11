@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/11 18:24:55                                        */
+/*  Last Modified: 2026/04/11 18:30:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,7 +30,8 @@ void	Pool<Component>::syncBuffer(Device &device) {
 			typename Component::GPUType,
 			Component>;
 		if (!buffer || buffer->getSize() < nbComp * sizeof(BufferType)) {
-			_pendingBuffers.push_back({Swapchain::MAX_FRAMES_IN_FLIGHT, std::move(buffer)});
+			if (buffer)
+				_pendingBuffers.push_back({Swapchain::MAX_FRAMES_IN_FLIGHT, std::move(buffer)});
 			buffer = Buffer::create(device, sizeof(BufferType) * std::max(nbComp, 8u),
 						1,
 						VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
