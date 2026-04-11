@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 12:07:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:40:28                                        */
+/*  Last Modified: 2026/04/11 18:27:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -60,8 +60,10 @@ void	Registry::resetAllDirty(void) {
 }
 
 void	Registry::updateBuffers(Device &device) {
-	for (auto &[type, pool]: _pools)
+	for (auto &[type, pool]: _pools) {
+		pool->removePendingBuffers();
 		pool->flushWrites(device);
+	}
 }
 
 }

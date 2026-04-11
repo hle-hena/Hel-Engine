@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/10 11:52:17                                        */
+/*  Last Modified: 2026/04/11 18:39:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "Registry.hpp"
+#include "api/vulkan/Swapchain.hpp"
 #include <iostream>
 #include <type_traits>
 
@@ -29,8 +30,8 @@ void	Pool<Component>::syncBuffer(Device &device) {
 			typename Component::GPUType,
 			Component>;
 		if (!buffer || buffer->getSize() < nbComp * sizeof(BufferType)) {
-			//TODO -> remove it at some point, like after MAX_FRAME_IN_FLIGHT frames passed.
-			_oldBuffer = std::move(buffer);
+			if (buffer)
+				_pendingBuffers.push_back({Swapchain::MAX_FRAMES_IN_FLIGHT, std::move(buffer)});
 			buffer = Buffer::create(device, sizeof(BufferType) * std::max(nbComp, 8u),
 						1,
 						VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
@@ -112,6 +113,14 @@ void	Pool<Component>::flushWrites(Device &device) {
 		syncBuffer(device, write);
 	}
 	_writes.clear();
+}
+
+template <typename Component>
+void	Pool<Component>::removePendingBuffers(void) {
+	std::erase_if(_pendingBuffers, [](auto &item){
+		auto	&[frameLeft, buffer] = item;
+		return (frameLeft-- == 0);
+	});
 }
 
 template <typename Component>
