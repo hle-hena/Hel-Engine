@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:40:01                                        */
+/*  Last Modified: 2026/04/11 18:24:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -65,7 +65,8 @@ struct	IPool {
 	virtual void	resetDirtyFlag(void) = 0;
 	virtual void	addWrite(uint32_t index, void *data) = 0;
 	virtual void	flushWrites(Device &device) = 0;
-	
+	virtual void	removePendingBuffers(void) = 0;
+
 	virtual bool		has(Entity::id handle) const = 0;
 	virtual void		*getRaw(Entity::id handle) = 0;
 	virtual const char	*getTypeName(void) const = 0;
@@ -87,6 +88,7 @@ struct	Pool : IPool {
 	void	resetDirtyFlag(void) override;
 	void	addWrite(uint32_t index, void *data) override;
 	void	flushWrites(Device &device) override;
+	void	removePendingBuffers(void) override;
 
 	bool		has(Entity::id handle) const override;
 	void		*getRaw(Entity::id handle) override;
@@ -94,6 +96,7 @@ struct	Pool : IPool {
 
 	private:
 		std::set<PendingWrite>	_writes{};
+		std::vector<std::pair<uint32_t, std::unique_ptr<Buffer>>>	_pendingBuffers;
 };
 
 template <typename Component>
