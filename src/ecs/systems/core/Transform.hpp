@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 20:45:26                                        */
+/*  Last Modified: 2026/04/11 18:06:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,9 +17,11 @@
 #pragma once
 
 #include "api/vulkan/PipelineMap.hpp"
+#include "core/RenderQueue.hpp"
 #include "ecs/systems/ISystem.hpp"
 #include <cstdint>
 #include <vector>
+#include <unordered_map>
 
 namespace	hel {
 
@@ -57,15 +59,41 @@ class	Transform : public ISystem {
 
 		void	updateEntity(Entity::id handle);
 
-		void	renderMove(const Renderer &renderer);
+
+		struct	GizmoContext {
+			GizmoContext(Transform *baseSystem, Window *window, Entity::id requestHandle);
+			~GizmoContext(void);
+			
+			operator bool(void) const	{ return (_fullyInit); }
+
+			void	freeHandles(void);
+
+			void	initMove(void);
+			void	initAction(void);
+
+			Action					action{Action::Move};
+			std::vector<Entity::id>	handles{};
+			
+			private:
+				uint32_t				_life{1};
+				Transform				*_baseSystem;
+				Registry				*_registry;
+				Window					*_window;
+				Entity::id				_requestHandle;
+				bool					_fullyInit{false};
+			friend class	Transform;
+		};
+		void	renderMove(const Renderer &renderer, GizmoContext &gizmoContext);
 
 		void	renderScale(const Renderer &renderer);
 		void	renderRotate(const Renderer &renderer);
 
 		AssetManager			*_assetManager;
 		PipelineMap				*_simplePipeline;
-		Action					_action{Action::Move};
-		std::vector<Entity::id>	_handles{};
+
+		std::unordered_map<RenderRequest, GizmoContext, RenderRequest::Hasher>	_gizmoContexts;
+
+	friend struct	GizmoContext;
 };
 
 }
