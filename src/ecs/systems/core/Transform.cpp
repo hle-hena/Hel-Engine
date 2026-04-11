@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/11 17:40:09                                        */
+/*  Last Modified: 2026/04/11 18:44:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -223,6 +223,8 @@ void	Transform::GizmoContext::initMove(void) {
 		offset->pos = offPosition;
 		offset->scale = offScale;
 		_registry->addComponent<comp::HideEntityTag>(newHandle);
+		_registry->addComponent<comp::HideEntityInHierarchyTag>(newHandle);
+		_registry->addComponent<comp::NonSelectableTag>(newHandle);
 		_registry->addComponent<comp::Tint>(newHandle).modify()->tint = tint;
 		_baseSystem->updateEntity(newHandle);
 		handles.push_back(newHandle);

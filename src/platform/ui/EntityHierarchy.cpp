@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 18:43:32                                        */
+/*  Last Modified: 2026/04/11 18:43:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -49,7 +49,7 @@ void	EntityHierarchy::moveEntity(View<include<comp::Hierarchy>> &view,
 
 void	EntityHierarchy::showEntity(Window *window, View<include<comp::Hierarchy>> view,
 					Entity::id handle) {
-	if (_registry->getComponent<comp::HideEntityTag>(handle))
+	if (_registry->getComponent<comp::HideEntityInHierarchyTag>(handle))
 		return ;
 	auto	hierarchy = view.get<comp::Hierarchy>(handle);
 	auto	nameComp = _registry->getComponent<comp::Name>(handle);

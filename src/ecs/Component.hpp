@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 21:21:09                                        */
+/*  Last Modified: 2026/04/11 18:44:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,6 +39,14 @@ struct	BaseControllerTag {
 
 struct	HideEntityTag {
 	static constexpr const char	*label = "Hide Entity Tag";
+};
+
+struct	HideEntityInHierarchyTag {
+	static constexpr const char	*label = "Hide Entity Tag";
+};
+
+struct	NonSelectableTag {
+	static constexpr const char	*label = "Non selectable Tag";
 };
 
 struct	SelectedTag {
