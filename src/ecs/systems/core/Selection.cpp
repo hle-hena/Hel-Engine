@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 18:44:10                                        */
+/*  Last Modified: 2026/04/13 18:47:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -158,11 +158,12 @@ void	Selection::updateWindow(const FrameContext &ctx) {
 	if (!entityImg)
 		return ;
 
-	_requests.insert_or_assign(*ctx.request, Read::Queue::newRequest<uint32_t>(ctx.frameIndex)
-		.setSrcImage(entityImg)
-		.setOffset({(int32_t)pos.x, (int32_t)pos.y, 0})
-		.setExtent({1, 1, 1})
-		.push(*_device));
+	_requests.insert_or_assign(*ctx.request,
+		Read::Queue::newRequest<uint32_t>(ctx.frameIndex)
+			.setSrcImage(entityImg)
+			.setOffset({(int32_t)pos.x, (int32_t)pos.y, 0})
+			.setExtent({1, 1, 1})
+			.push(*_device));
 }
 
 void	Selection::postProcessing(const Renderer &renderer) {

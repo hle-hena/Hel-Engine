@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/13 18:33:14 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 18:42:07                                        */
+/*  Last Modified: 2026/04/13 18:48:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,7 +36,7 @@ Read::Context	Read::Builder<ReadType>::push(Device &device) {
 						VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
 						VMA_ALLOCATION_CREATE_MAPPED_BIT |
 						VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-	if (!_context.buffer)
+	if (!_context.buffer || !_request.srcImage)
 		return (std::move(_context));
 	_request.dstBuffer = _context.buffer.get();
 	Read::Queue::_requests.push_back(_request);

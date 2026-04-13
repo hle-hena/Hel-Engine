@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 18:44:41                                        */
+/*  Last Modified: 2026/04/13 18:46:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -95,11 +95,7 @@ class	Transform : public ISystem {
 
 		std::unordered_map<RenderRequest, GizmoContext, RenderRequest::Hasher>	_gizmoContexts;
 
-		struct	ReadContext {
-			std::unique_ptr<Buffer>	buffer;
-			uint32_t				frameIndex;
-		};
-		std::unordered_map<RenderRequest, ReadContext, RenderRequest::Hasher>	_requests;
+		std::unordered_map<RenderRequest, Read::Context, RenderRequest::Hasher>	_requests;
 
 	friend struct	GizmoContext;
 };

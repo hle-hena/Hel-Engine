@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/13 15:14:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 18:42:26                                        */
+/*  Last Modified: 2026/04/13 18:48:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -44,14 +44,14 @@ class	Read {
 };
 
 struct	Read::Request {
-	Image		*srcImage;
-	Buffer		*dstBuffer;
-	VkOffset3D	offset;
-	VkExtent3D	extent;
+	Image		*srcImage{nullptr};
+	Buffer		*dstBuffer{nullptr};
+	VkOffset3D	offset{0, 0, 0};
+	VkExtent3D	extent{1, 1, 1};
 };
 
 struct	Read::Context {
-	std::unique_ptr<Buffer>	buffer;
+	std::unique_ptr<Buffer>	buffer{nullptr};
 	uint32_t				frameIndex;
 };
 
@@ -60,7 +60,7 @@ struct	Read::Builder {
 	SETTER(Offset, VkOffset3D, _request.offset);
 	SETTER(Extent, VkExtent3D, _request.extent);
 	SETTER(SrcImage, Image *, _request.srcImage);
-	Context	push(Device &device);
+	Context	push(Device &device);//TODO -> Check the current request cache to try to re use
 
 	private:
 		Builder(uint32_t frameIndex);
