@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 16:10:40                                        */
+/*  Last Modified: 2026/04/13 16:22:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -166,11 +166,6 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 			.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
 			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
 			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT));
-	Image	*entityImg = _imagePool->acquire(Image::Config()
-						.setFormats({VK_FORMAT_R32_UINT})
-						.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-						.setUsage(VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
-						.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
 	auto	swapImage = swapchain.getSwapImage(imageIndex);
 
 	VkCommandBufferBeginInfo	beginInfo{};
@@ -179,6 +174,11 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 	if (vkBeginCommandBuffer(ctx.commandBuffer, &beginInfo))
 		return ;
 	for (auto &renderRequest: RenderQueue::flush()) {
+		Image	*entityImg = _imagePool->acquire(Image::Config()
+							.setFormats({VK_FORMAT_R32_UINT})
+							.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+							.setUsage(VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
+							.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
 		auto	renderImg = renderRequest.mainImage;
 		ctx.request = &renderRequest;
 		renderRequest.secondaryImages["entityID"] = entityImg;

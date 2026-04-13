@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 15:59:18                                        */
+/*  Last Modified: 2026/04/13 16:16:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -126,8 +126,11 @@ void	Selection::update(const FrameContext &ctx) {
 		if (req.frameIndex == ctx.frameIndex) {
 			uint32_t	*data = static_cast<uint32_t *>(req.buffer->getMapped());
 
-			if (!_registry->getComponent<comp::NonSelectableTag>(data[0])) {
-				ctx.window->setEntityFocus(data[0]);
+			Entity::id	handle = data[0];
+			if (handle == Entity::NOT_REGISTERED)
+				ctx.window->setEntityFocus(handle);
+			else if (!_registry->getComponent<comp::NonSelectableTag>(handle)) {
+				ctx.window->setEntityFocus(handle);
 			}
 			return (true);
 		}
