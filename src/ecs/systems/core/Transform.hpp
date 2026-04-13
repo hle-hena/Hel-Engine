@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 15:22:28                                        */
+/*  Last Modified: 2026/04/13 18:44:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,6 +45,7 @@ class	Transform : public ISystem {
 		void	init(void) override;
 
 		void	update(const FrameContext &ctx) override;
+		void	registerUI(const FrameContext &ctx) override;
 		void	renderUI(const Renderer &renderer) override;
 
 	private:
@@ -71,8 +72,9 @@ class	Transform : public ISystem {
 			void	initMove(void);
 			void	initAction(void);
 
-			Action					action{Action::Move};
-			std::vector<Entity::id>	handles{};
+			Action							action{Action::Move};
+			std::unordered_map<std::string,
+								Entity::id>	handles{};
 			
 			private:
 				uint32_t				_life{1};
@@ -92,6 +94,12 @@ class	Transform : public ISystem {
 		PipelineMap				*_simplePipeline;
 
 		std::unordered_map<RenderRequest, GizmoContext, RenderRequest::Hasher>	_gizmoContexts;
+
+		struct	ReadContext {
+			std::unique_ptr<Buffer>	buffer;
+			uint32_t				frameIndex;
+		};
+		std::unordered_map<RenderRequest, ReadContext, RenderRequest::Hasher>	_requests;
 
 	friend struct	GizmoContext;
 };

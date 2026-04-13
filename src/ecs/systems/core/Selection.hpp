@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 15:33:50                                        */
+/*  Last Modified: 2026/04/13 18:44:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -65,12 +65,7 @@ class	Selection : public ISystem {
 		PipelineMap					*_entityIDPipeline{nullptr};
 		InputState					*_inputState{nullptr};
 
-		struct	ReadContext {
-			std::unique_ptr<Buffer>	buffer;
-			ReadRequest				request;
-			uint32_t				frameIndex;
-		};
-		std::unordered_map<RenderRequest, ReadContext, RenderRequest::Hasher>	_requests;
+		std::unordered_map<RenderRequest, Read::Context, RenderRequest::Hasher>	_requests;
 };
 
 }

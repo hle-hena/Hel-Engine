@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/21 19:38:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 15:21:33                                        */
+/*  Last Modified: 2026/04/13 18:42:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,7 +21,18 @@
 namespace	hel {
 
 std::vector<RenderRequest>	RenderQueue::_requests = {};
-std::vector<ReadRequest>	ReadQueue::_requests = {};
+std::vector<Read::Request>	Read::Queue::_requests = {};
+
+
+
+void	Read::Queue::execute(VkCommandBuffer commandBuffer) {
+	for (auto &req: _requests)
+		req.srcImage->copyTo(commandBuffer, req.dstBuffer,
+							req.offset, req.extent);
+	_requests.clear();
+}
+
+
 
 bool	RenderRequest::operator==(const RenderRequest &other) const {
 	bool	sameHandle = (other.handle == this->handle);

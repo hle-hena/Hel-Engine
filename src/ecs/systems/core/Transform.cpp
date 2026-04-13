@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/11 18:44:48                                        */
+/*  Last Modified: 2026/04/13 18:00:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,6 +16,7 @@
 
 #include "ecs/systems/core/Transform.hpp"
 #include "api/vulkan/PipelineMap.hpp"
+#include "core/Frame.hpp"
 #include "ecs/Entity.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
@@ -86,7 +87,9 @@ void	Transform::update(const FrameContext &) {
 		transform->worldMatrix = T * R * S;
 		transform->normalMatrix = glm::transpose(glm::inverse(transform->worldMatrix));
 	}
+}
 
+void	Transform::registerUI(const FrameContext &) {
 	std::erase_if(_gizmoContexts, [](auto &item){
 		auto	&[key, value] = item;
 		return (--value._life == 0);
@@ -115,7 +118,7 @@ void	Transform::renderMove(const Renderer &renderer, GizmoContext &gizmo) {
 
 	if (focusedTransform->isDirty || requestTransform->isDirty) {
 		float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05;
-		for (auto entity: gizmo.handles) {
+		for (auto &[key, entity]: gizmo.handles) {
 			auto	transform = _registry->getComponent<comp::Transform>(entity).modify();
 			auto	offset = _registry->getComponent<comp::OffsetTransform>(entity);
 			transform->scale = glm::vec3(dist) * offset->scale;
@@ -129,7 +132,7 @@ void	Transform::renderMove(const Renderer &renderer, GizmoContext &gizmo) {
 	auto	set = _registry->buildComponentSet<comp::Transform, comp::Tint>(*_device, ctx.descriptorPool);
 	if (!set)
 		return ;
-	for (auto entity: gizmo.handles) {
+	for (auto &[key, entity]: gizmo.handles) {
 		auto	mesh = _assetManager->get<Geometry>(_registry->getComponent<comp::Model>(entity)->filePath);
 		auto	transform = _registry->getComponent<comp::Transform>(entity);
 		auto	tint = _registry->getComponent<comp::Tint>(entity);
@@ -193,7 +196,7 @@ Transform::GizmoContext::~GizmoContext(void) {
 }
 
 void	Transform::GizmoContext::freeHandles(void) {
-	for (auto entity: handles)
+	for (auto &[key, entity]: handles)
 		_registry->removeEntity(entity);
 	handles.clear();
 }
@@ -212,7 +215,6 @@ void	Transform::GizmoContext::initMove(void) {
 							const glm::vec3 &offScale = glm::vec3(1.f),
 							const glm::vec3 &tint = glm::vec3{1.f}){
 		Entity::id	newHandle = _registry->createEntity();
-		_registry->addComponent<comp::Name>(newHandle).modify()->name = stringName;
 		_registry->addComponent<comp::Model>(newHandle).modify()->filePath = modelPath;
 		auto	transform = _registry->addComponent<comp::Transform>(newHandle).modify();
 		transform->scale = glm::vec3(dist) * offScale;
@@ -227,7 +229,7 @@ void	Transform::GizmoContext::initMove(void) {
 		_registry->addComponent<comp::NonSelectableTag>(newHandle);
 		_registry->addComponent<comp::Tint>(newHandle).modify()->tint = tint;
 		_baseSystem->updateEntity(newHandle);
-		handles.push_back(newHandle);
+		handles[stringName] = newHandle;
 	};
 	createEntity("X-Arrow", "assets/models/arrow.obj",
 			glm::angleAxis(glm::radians(-90.0f), glm::vec3(0, 0, 1)),

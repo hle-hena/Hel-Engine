@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 16:16:46                                        */
+/*  Last Modified: 2026/04/13 18:44:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,6 +23,7 @@
 #include "ecs/Component.hpp"
 #include "platform/window/Window.hpp"
 #include "api/vulkan/ImagePool.hpp"
+#include <cstdint>
 
 namespace	hel::sys {
 
@@ -156,20 +157,12 @@ void	Selection::updateWindow(const FrameContext &ctx) {
 	auto	entityImg = ctx.request->secondaryImages["entityID"];
 	if (!entityImg)
 		return ;
-	ReadContext	request;
-	request.buffer = Buffer::create(*_device, sizeof(uint32_t), 1,
-						VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-						VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
-						VMA_ALLOCATION_CREATE_MAPPED_BIT |
-						VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-	request.request = ReadRequest()
+
+	_requests.insert_or_assign(*ctx.request, Read::Queue::newRequest<uint32_t>(ctx.frameIndex)
 		.setSrcImage(entityImg)
-		.setDstBuffer(request.buffer.get())
 		.setOffset({(int32_t)pos.x, (int32_t)pos.y, 0})
-		.setExtent({1, 1, 1});
-	request.frameIndex = ctx.frameIndex;
-	ReadQueue::push(request.request);
-	_requests.insert_or_assign(*ctx.request, std::move(request));
+		.setExtent({1, 1, 1})
+		.push(*_device));
 }
 
 void	Selection::postProcessing(const Renderer &renderer) {

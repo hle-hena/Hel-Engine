@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/13 15:14:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 16:12:16                                        */
+/*  Last Modified: 2026/04/13 18:42:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,7 @@
 #include "ecs/Entity.hpp"
 #include "utils/Setters.hpp"
 #include <cstdint>
+#include <memory>
 #include <ui/ImGui/imgui.h>
 #include <unordered_map>
 #include <utility>
@@ -29,36 +30,63 @@
 
 namespace	hel {
 
-class	Image;
+class	Read {
+	private:
+		struct	Request;
 
-struct	ReadRequest {
+		template<typename ReadType>
+		struct	Builder;
+
+	public:
+		struct	Context;
+
+		class	Queue;
+};
+
+struct	Read::Request {
 	Image		*srcImage;
 	Buffer		*dstBuffer;
 	VkOffset3D	offset;
 	VkExtent3D	extent;
-	uint32_t	frameIndex;
-
-	SETTER(SrcImage, Image *, srcImage)
-	SETTER(DstBuffer, Buffer *, dstBuffer)
-	SETTER(Offset, VkOffset3D, offset)
-	SETTER(Extent, VkExtent3D, extent)
-	SETTER(FrameIndex, uint32_t, frameIndex)
 };
 
-class	ReadQueue {
-	public:
-		static void		push(const ReadRequest &request) {
-			_requests.push_back(request);
-		}
-		static void		execute(VkCommandBuffer commandBuffer) {
-			for (auto &req: _requests)
-				req.srcImage->copyTo(commandBuffer, req.dstBuffer, req.offset, req.extent);
-			_requests.clear();
-		}
+struct	Read::Context {
+	std::unique_ptr<Buffer>	buffer;
+	uint32_t				frameIndex;
+};
+
+template	<typename ReadType>
+struct	Read::Builder {
+	SETTER(Offset, VkOffset3D, _request.offset);
+	SETTER(Extent, VkExtent3D, _request.extent);
+	SETTER(SrcImage, Image *, _request.srcImage);
+	Context	push(Device &device);
 
 	private:
-		static std::vector<ReadRequest>	_requests;
+		Builder(uint32_t frameIndex);
+
+		Context	_context;
+		Request	_request;
+
+	friend class	Queue;
 };
+
+class	Read::Queue {
+	public:
+		template <typename ReadType>
+		static Builder<ReadType>	newRequest(uint32_t frameIndex) {
+			return (Builder<ReadType>(frameIndex));
+		}
+		static void		execute(VkCommandBuffer commandBuffer);
+
+	private:
+		static std::vector<Request>	_requests;
+
+	template <typename ReadType>
+	friend struct	Builder;
+};
+
+
 
 
 
@@ -88,3 +116,5 @@ class	RenderQueue {
 };
 
 }
+
+#include "core/Queues.tpp"
