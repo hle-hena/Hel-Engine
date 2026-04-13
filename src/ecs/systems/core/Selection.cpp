@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/11 18:45:08                                        */
+/*  Last Modified: 2026/04/13 15:59:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,8 @@
 /* *************************************************************************  */
 
 #include "ecs/systems/core/Selection.hpp"
+#include "core/Queues.hpp"
+#include "ecs/Entity.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/assets/Geometry.hpp"
 #include "ecs/AssetManager.hpp"
@@ -118,45 +120,53 @@ void	Selection::renderEntityID(const Renderer &renderer) {
 	}
 }
 
-void	Selection::checkSelectionResult(const FrameContext &ctx) {
-	if (!_needReadback || ctx.frameIndex != _frameRequested)	{ return ; }
+void	Selection::update(const FrameContext &ctx) {
+	std::erase_if(_requests, [&](auto &item){
+		auto	&[key, req] = item;
+		if (req.frameIndex == ctx.frameIndex) {
+			uint32_t	*data = static_cast<uint32_t *>(req.buffer->getMapped());
 
-	uint32_t	*data = static_cast<uint32_t *>(_buff->getMapped());
-
-	if (!_registry->getComponent<comp::NonSelectableTag>(data[0])) {
-		ctx.window->setEntityFocus(data[0]);
-	}
-	_buff = nullptr;
-	_needReadback = false;
+			if (!_registry->getComponent<comp::NonSelectableTag>(data[0])) {
+				ctx.window->setEntityFocus(data[0]);
+			}
+			return (true);
+		}
+		return (false);
+	});
 }
 
 void	Selection::updateWindow(const FrameContext &ctx) {
-	if (_inputState->isPressed<input::Mouse>(0)) {
-		auto	camera = _registry->getComponent<comp::Camera>(ctx.request->handle);
-		auto	transform = _registry->getComponent<comp::Transform>(ctx.request->handle);
-		if (!camera || !transform)
-			return ;
-		glm::vec2	viewportOrigin(ctx.request->origin.x, ctx.request->origin.y);
-		VkExtent2D	imgExtent = ctx.request->mainImage->getExtent();
-		glm::vec2	viewportSize(imgExtent.width, imgExtent.height);
-		auto	pos = glm::vec2(_inputState->getMousePos() - viewportOrigin);
-		glm::vec4	viewport(viewportOrigin, viewportSize);
-		if (pos.x < 0 || pos.y < 0 || pos.x > viewportSize.x || pos.y > viewportSize.y)
-			return ;
+	if (!_inputState->isPressed<input::Mouse>(0))
+		return ;
+	auto	camera = _registry->getComponent<comp::Camera>(ctx.request->handle);
+	auto	transform = _registry->getComponent<comp::Transform>(ctx.request->handle);
+	if (!camera || !transform)
+		return ;
+	glm::vec2	viewportOrigin(ctx.request->origin.x, ctx.request->origin.y);
+	VkExtent2D	imgExtent = ctx.request->mainImage->getExtent();
+	glm::vec2	viewportSize(imgExtent.width, imgExtent.height);
+	auto	pos = glm::vec2(_inputState->getMousePos() - viewportOrigin);
+	glm::vec4	viewport(viewportOrigin, viewportSize);
+	if (pos.x < 0 || pos.y < 0 || pos.x > viewportSize.x || pos.y > viewportSize.y)
+		return ;
 
-		auto	entityImg = ctx.request->secondaryImages["entityID"];
-		_buff = Buffer::create(*_device, sizeof(uint32_t), 1,
-							VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-							VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
-							VMA_ALLOCATION_CREATE_MAPPED_BIT |
-							VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-		VkOffset3D	mouseOffset = { (int32_t)pos.x, (int32_t)pos.y, 0 };
-		VkExtent3D	pixelExtent = { 1, 1, 1 };
-		entityImg->copyTo(ctx.commandBuffer, _buff.get(), mouseOffset, pixelExtent);
-		_needReadback = true;
-		_frameRequested = ctx.frameIndex;
-	} else
-		checkSelectionResult(ctx);
+	auto	entityImg = ctx.request->secondaryImages["entityID"];
+	if (!entityImg)
+		return ;
+	ReadContext	request;
+	request.buffer = Buffer::create(*_device, sizeof(uint32_t), 1,
+						VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+						VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+						VMA_ALLOCATION_CREATE_MAPPED_BIT |
+						VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+	request.request = ReadRequest()
+		.setSrcImage(entityImg)
+		.setDstBuffer(request.buffer.get())
+		.setOffset({(int32_t)pos.x, (int32_t)pos.y, 0})
+		.setExtent({1, 1, 1});
+	request.frameIndex = ctx.frameIndex;
+	ReadQueue::push(request.request);
+	_requests.insert_or_assign(*ctx.request, std::move(request));
 }
 
 void	Selection::postProcessing(const Renderer &renderer) {

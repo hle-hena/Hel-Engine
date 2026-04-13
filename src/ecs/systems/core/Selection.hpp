@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/03 15:06:42                                        */
+/*  Last Modified: 2026/04/13 15:33:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,10 +16,12 @@
 
 #pragma once
 
+#include <cstdint>
 # include <vulkan/vulkan.h>
 # include <glm/glm.hpp>
 # include <memory>
 
+#include "core/Queues.hpp"
 # include "ecs/systems/ISystem.hpp"
 # include "api/vulkan/PipelineMap.hpp"
 # include "api/vulkan/Buffer.hpp"
@@ -41,6 +43,7 @@ class	Selection : public ISystem {
 
 		void	init(void) override;
 
+		void	update(const FrameContext &ctx) override;
 		void	updateWindow(const FrameContext &ctx) override;
 		void	postProcessing(const Renderer &conf) override;
 
@@ -56,15 +59,18 @@ class	Selection : public ISystem {
 		static void	configureEntityPipeline(PipelineConfig &config);
 
 		void	renderEntityID(const Renderer &renderer);
-		void	checkSelectionResult(const FrameContext &ctx);
 
-		AssetManager			*_assetManager;
-		PipelineMap				*_tintPipeline{nullptr};
-		PipelineMap				*_entityIDPipeline{nullptr};
-		InputState				*_inputState{nullptr};
-		std::unique_ptr<Buffer>	_buff;
-		bool					_needReadback{false};
-		uint32_t				_frameRequested;
+		AssetManager				*_assetManager;
+		PipelineMap					*_tintPipeline{nullptr};
+		PipelineMap					*_entityIDPipeline{nullptr};
+		InputState					*_inputState{nullptr};
+
+		struct	ReadContext {
+			std::unique_ptr<Buffer>	buffer;
+			ReadRequest				request;
+			uint32_t				frameIndex;
+		};
+		std::unordered_map<RenderRequest, ReadContext, RenderRequest::Hasher>	_requests;
 };
 
 }

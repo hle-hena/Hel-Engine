@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/21 19:38:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/11 17:36:14                                        */
+/*  Last Modified: 2026/04/13 15:21:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,21 +14,14 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "core/RenderQueue.hpp"
+#include "core/Queues.hpp"
 #include "utils/mathUtils.hpp"
 #include <algorithm>
 
 namespace	hel {
 
 std::vector<RenderRequest>	RenderQueue::_requests = {};
-
-void	RenderQueue::push(const RenderRequest &request) {
-	_requests.push_back(request);
-}
-
-std::vector<RenderRequest>	RenderQueue::flush(void) {
-	return (std::move(_requests));
-}
+std::vector<ReadRequest>	ReadQueue::_requests = {};
 
 bool	RenderRequest::operator==(const RenderRequest &other) const {
 	bool	sameHandle = (other.handle == this->handle);

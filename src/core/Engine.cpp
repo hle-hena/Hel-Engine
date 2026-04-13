@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/08 18:00:16                                        */
+/*  Last Modified: 2026/04/13 16:10:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,7 +15,7 @@
 /* *************************************************************************  */
 
 #include "core/Engine.hpp"
-#include "core/RenderQueue.hpp"
+#include "core/Queues.hpp"
 
 #include "api/vulkan/Device.hpp"
 #include "api/vulkan/Swapchain.hpp"
@@ -128,6 +128,7 @@ void	Engine::createImagePool(void) {
 }
 
 void	Engine::tick(Window *window, uint32_t frameIndex) {
+	window->getSwapchain().waitForFrameFence(frameIndex);
 	auto	frameCtx = _frame.getContext(window, frameIndex, _lastFrameTime);
 	auto	&ui = window->getUI();
 	_lastFrameTime = _timer.lap();
@@ -227,8 +228,9 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 					.beginPass(ctx)) {
 		ui.renderFrame(ctx.commandBuffer);
 	}
-
 	swapImage->transitionLayout(ctx.commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	ReadQueue::execute(ctx.commandBuffer);
+
 	vkEndCommandBuffer(ctx.commandBuffer);
 
 	swapchain.submitCommandBuffer(ctx.commandBuffer, ctx.frameIndex);

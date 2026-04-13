@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/11 18:06:18                                        */
+/*  Last Modified: 2026/04/13 15:22:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,7 +17,7 @@
 #pragma once
 
 #include "api/vulkan/PipelineMap.hpp"
-#include "core/RenderQueue.hpp"
+#include "core/Queues.hpp"
 #include "ecs/systems/ISystem.hpp"
 #include <cstdint>
 #include <vector>
