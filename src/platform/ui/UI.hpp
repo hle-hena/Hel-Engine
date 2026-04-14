@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:57:38                                        */
+/*  Last Modified: 2026/04/14 11:28:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -55,7 +55,7 @@ class	UI : public ISystem {
 		const auto	&getPanelRegistry(void) const
 					{ return (_panelRegistry); }
 
-		void	registerUI(const FrameContext &ctx) override;
+		void	updateInteraction(const FrameContext &ctx) override;
 
 	private:
 		void	addDock(Window *window, const ImVec2 &size);

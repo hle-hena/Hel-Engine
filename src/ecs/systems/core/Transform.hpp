@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 18:46:06                                        */
+/*  Last Modified: 2026/04/14 11:33:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,15 +17,18 @@
 #pragma once
 
 #include "api/vulkan/PipelineMap.hpp"
+#include "core/Frame.hpp"
 #include "core/Queues.hpp"
 #include "ecs/systems/ISystem.hpp"
 #include <cstdint>
+#include <optional>
 #include <vector>
 #include <unordered_map>
 
 namespace	hel {
 
 class	AssetManager;
+class	InputState;
 
 }
 
@@ -45,8 +48,8 @@ class	Transform : public ISystem {
 		void	init(void) override;
 
 		void	update(const FrameContext &ctx) override;
-		void	registerUI(const FrameContext &ctx) override;
-		void	renderUI(const Renderer &renderer) override;
+		void	updateInteraction(const FrameContext &ctx) override;
+		void	renderInteraction(const Renderer &renderer) override;
 
 	private:
 		struct	EntityData {
@@ -59,7 +62,6 @@ class	Transform : public ISystem {
 		static void	configurePipeline(PipelineConfig &config);
 
 		void	updateEntity(Entity::id handle);
-
 
 		struct	GizmoContext {
 			GizmoContext(Transform *baseSystem, Window *window, Entity::id requestHandle);
@@ -77,25 +79,27 @@ class	Transform : public ISystem {
 								Entity::id>	handles{};
 			
 			private:
-				uint32_t				_life{1};
-				Transform				*_baseSystem;
-				Registry				*_registry;
-				Window					*_window;
-				Entity::id				_requestHandle;
-				bool					_fullyInit{false};
+				uint32_t						_life{1};
+				Transform						*_baseSystem;
+				Registry						*_registry;
+				Window							*_window;
+				Entity::id						_requestHandle;
+				std::optional<Read::Context>	_read;
+				bool							_fullyInit{false};
 			friend class	Transform;
 		};
-		void	renderMove(const Renderer &renderer, GizmoContext &gizmoContext);
 
+		void	renderMove(const Renderer &renderer, GizmoContext &gizmoContext);
 		void	renderScale(const Renderer &renderer);
 		void	renderRotate(const Renderer &renderer);
 
+		void	registerClick(const FrameContext &ctx, GizmoContext &gizmo);
+
 		AssetManager			*_assetManager;
+		InputState				*_inputState{nullptr};
 		PipelineMap				*_simplePipeline;
 
 		std::unordered_map<RenderRequest, GizmoContext, RenderRequest::Hasher>	_gizmoContexts;
-
-		std::unordered_map<RenderRequest, Read::Context, RenderRequest::Hasher>	_requests;
 
 	friend struct	GizmoContext;
 };

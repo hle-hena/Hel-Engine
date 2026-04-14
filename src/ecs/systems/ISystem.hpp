@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 20:45:01                                        */
+/*  Last Modified: 2026/04/14 11:31:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -49,13 +49,12 @@ class	ISystem {
 							const FrameContext &frameCtx) final;
 		virtual void	init(void) = 0;
 
-		virtual void	registerUI(const FrameContext &) {}
+		virtual void	updateInteraction(const FrameContext &) {}
 		virtual void	update(const FrameContext &) {}
 
 		virtual void	render(const Renderer &) {}
 		virtual void	postProcessing(const Renderer &) {}
-		virtual void	renderUI(const Renderer &) {}
-		virtual void	updateWindow(const FrameContext &) {}
+		virtual void	renderInteraction(const Renderer &) {}
 
 	protected:
 		virtual PipelineMap	*createPipeline(const

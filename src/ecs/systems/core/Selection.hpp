@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 18:44:52                                        */
+/*  Last Modified: 2026/04/14 11:31:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,7 +19,6 @@
 #include <cstdint>
 # include <vulkan/vulkan.h>
 # include <glm/glm.hpp>
-# include <memory>
 
 #include "core/Queues.hpp"
 # include "ecs/systems/ISystem.hpp"
@@ -44,8 +43,8 @@ class	Selection : public ISystem {
 		void	init(void) override;
 
 		void	update(const FrameContext &ctx) override;
-		void	updateWindow(const FrameContext &ctx) override;
-		void	postProcessing(const Renderer &conf) override;
+		void	postProcessing(const Renderer &renderer) override;
+		void	renderInteraction(const Renderer &renderer) override;
 
 	private:
 		struct	EntityData {

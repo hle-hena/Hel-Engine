@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 18:42:54                                        */
+/*  Last Modified: 2026/04/14 11:29:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -134,20 +134,16 @@ void	Engine::tick(Window *window, uint32_t frameIndex) {
 	_lastFrameTime = _timer.lap();
 	_imagePool->releaseAll();
 
-	UITick(ui, frameCtx);
-	updateTick(frameCtx);
+	updateTick(ui, frameCtx);
 	_registry.updateBuffers(_device);
 	renderTick(window, ui, frameCtx);
 }
 
-void	Engine::UITick(UiContext &ui, FrameContext &frameCtx) {
+void	Engine::updateTick(UiContext &ui, FrameContext &frameCtx) {
 	ui.newFrame();
 	for (auto &system: _systems)
-		system->registerUI(frameCtx);
+		system->updateInteraction(frameCtx);
 	ui.endFrame();
-}
-
-void	Engine::updateTick(FrameContext &frameCtx) {
 	for (auto &system: _systems)
 		system->update(frameCtx);
 }
@@ -215,10 +211,8 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 						.beginPass(ctx)) {
 			writeGlobalData(renderer);
 			for (auto &system: _systems)
-				system->renderUI(renderer);
+				system->renderInteraction(renderer);
 		}
-		for (auto &system: _systems)
-			system->updateWindow(ctx);
 		renderImg->transitionLayout(ctx.commandBuffer,
 					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	}

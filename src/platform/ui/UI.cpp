@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 20:10:46                                        */
+/*  Last Modified: 2026/04/14 11:28:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -106,7 +106,7 @@ void	UI::addDock(Window *window, const ImVec2 &size) {
 	ImGui::PopStyleVar(2);
 }
 
-void	UI::registerUI(const FrameContext &ctx) {
+void	UI::updateInteraction(const FrameContext &ctx) {
 	auto	windowExtent = ctx.window->getExtent();
 	float	windowWidth = static_cast<float>(windowExtent.width);
 	float	windowHeight = static_cast<float>(windowExtent.height);

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:52:57                                        */
+/*  Last Modified: 2026/04/14 11:23:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -66,8 +66,7 @@ class	Engine {
 		void			createDescriptorPools(void);
 		void			createImagePool(void);
 
-		void			UITick(UiContext &ui, FrameContext &frameCtx);
-		void			updateTick(FrameContext &frameCtx);
+		void			updateTick(UiContext &ui, FrameContext &frameCtx);
 		void			renderTick(Window *window, UiContext &ui,
 								FrameContext &frameCtx);
 

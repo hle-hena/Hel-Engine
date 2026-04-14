@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 18:00:05                                        */
+/*  Last Modified: 2026/04/14 11:33:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,6 +23,7 @@
 #include "ecs/AssetManager.hpp"
 #include "ecs/assets/Geometry.hpp"
 #include "platform/window/Window.hpp"
+#include <algorithm>
 #include <glm/ext/quaternion_trigonometric.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/fwd.hpp>
@@ -33,6 +34,7 @@ namespace	hel::sys {
 
 void	Transform::init(void) {
 	_assetManager = &_registry->getAssetManager();
+	_inputState = &_registry->getInputState();
 
 	PipelineMap::Config	conf{};
 	conf.device = _device;
@@ -89,11 +91,47 @@ void	Transform::update(const FrameContext &) {
 	}
 }
 
-void	Transform::registerUI(const FrameContext &) {
-	std::erase_if(_gizmoContexts, [](auto &item){
-		auto	&[key, value] = item;
-		return (--value._life == 0);
+void	Transform::updateInteraction(const FrameContext &ctx) {
+	std::erase_if(_gizmoContexts, [&](auto &gizmoIt){
+		auto	&[key, gizmo] = gizmoIt;
+		if (--gizmo._life == 0)
+			return (true);
+
+		if (gizmo._read.has_value() && gizmo._read->frameIndex == ctx.frameIndex) {
+			uint32_t	*data = static_cast<uint32_t *>(gizmo._read->buffer->getMapped());
+
+			Entity::id	handle = data[0];
+			auto it = std::find_if(gizmo.handles.begin(), gizmo.handles.end(), [&](const auto &pair){
+				return (pair.second == handle);
+			});
+			gizmo._read.reset();
+			if (it == gizmo.handles.end())
+				return (false);
+			std::cout << it->first << std::endl;
+		}
+		return (false);
 	});
+}
+
+void	Transform::registerClick(const FrameContext &ctx, GizmoContext &gizmo) {
+	auto	entityImg = ctx.request->secondaryImages["entityID"];
+	auto	camera = _registry->getComponent<comp::Camera>(ctx.request->handle);
+	auto	transform = _registry->getComponent<comp::Transform>(ctx.request->handle);
+	if (!_inputState->isPressed<input::Mouse>(0) || !entityImg || !camera || !transform)
+		return ;
+	glm::vec2	viewportOrigin(ctx.request->origin.x, ctx.request->origin.y);
+	VkExtent2D	imgExtent = ctx.request->mainImage->getExtent();
+	glm::vec2	viewportSize(imgExtent.width, imgExtent.height);
+	auto	pos = glm::vec2(_inputState->getMousePos() - viewportOrigin);
+	glm::vec4	viewport(viewportOrigin, viewportSize);
+	if (pos.x < 0 || pos.y < 0 || pos.x > viewportSize.x || pos.y > viewportSize.y)
+		return ;
+
+	gizmo._read = Read::Queue::newRequest<uint32_t>(ctx.frameIndex)
+			.setSrcImage(entityImg)
+			.setOffset({(int32_t)pos.x, (int32_t)pos.y, 0})
+			.setExtent({1, 1, 1})
+			.push(*_device);
 }
 
 void	Transform::updateEntity(Entity::id handle) {
@@ -155,7 +193,7 @@ void	Transform::renderRotate(const Renderer &renderer) {
 
 }
 
-void	Transform::renderUI(const Renderer &renderer) {
+void	Transform::renderInteraction(const Renderer &renderer) {
 	auto	ctx = renderer.frameContext();
 	if (ctx.window->getEntityFocus() == Entity::NOT_REGISTERED)
 		return	;
@@ -178,6 +216,8 @@ void	Transform::renderUI(const Renderer &renderer) {
 			renderRotate(renderer);
 			break ;
 	}
+
+	registerClick(ctx, gizmo);
 }
 
 

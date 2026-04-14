@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 18:47:46                                        */
+/*  Last Modified: 2026/04/14 11:30:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,8 +28,9 @@
 namespace	hel::sys {
 
 void	Selection::init(void) {
+	_inputState = &_registry->getInputState();
+	_assetManager = &_registry->getAssetManager();
 	{
-		_assetManager = &_registry->getAssetManager();
 		PipelineMap::Config	config;
 		config.device = _device;
 		config.assetManager = _assetManager;
@@ -39,10 +40,8 @@ void	Selection::init(void) {
 		};
 		config.configurePipeline = configureTintPipeline;
 		_tintPipeline = createPipeline(config);
-		_inputState = &_registry->getInputState();
 	}
 	{
-		_assetManager = &_registry->getAssetManager();
 		PipelineMap::Config	config;
 		config.device = _device;
 		config.assetManager = &_registry->getAssetManager();
@@ -139,7 +138,8 @@ void	Selection::update(const FrameContext &ctx) {
 	});
 }
 
-void	Selection::updateWindow(const FrameContext &ctx) {
+void	Selection::renderInteraction(const Renderer &renderer) {
+	auto	ctx = renderer.frameContext();
 	if (!_inputState->isPressed<input::Mouse>(0))
 		return ;
 	auto	camera = _registry->getComponent<comp::Camera>(ctx.request->handle);
