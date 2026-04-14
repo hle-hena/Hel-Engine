@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/11 18:34:39                                        */
+/*  Last Modified: 2026/04/14 12:15:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,7 @@
 #pragma once
 
 # include <cstdint>
+#include <tuple>
 # include <typeindex>
 # include <unordered_map>
 # include <set>
@@ -150,8 +151,10 @@ class	Registry {
 			return (_pools);
 		}
 
-		template <typename Component, typename... Args>
-		ComponentHandle<Component>	addComponent(Entity::id handle, Args&&... args);
+		template <typename Component>
+		ComponentHandle<Component>	addComponent(Entity::id handle);
+		template <typename... Components>
+		std::tuple<ComponentHandle<Components>...>	addComponents(Entity::id handle);
 		template <typename Component>
 		ComponentHandle<Component>	getComponent(Entity::id handle);
 		template <typename Component>
@@ -170,8 +173,6 @@ class	Registry {
 		View<Include, Exclude> view();
 
 	private:
-		template<typename Component>
-		void	prepareComponent(Component &component);
 		template <typename Component>
 		Pool<Component>			*getPool();
 

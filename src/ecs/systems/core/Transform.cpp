@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/14 11:33:57                                        */
+/*  Last Modified: 2026/04/14 12:19:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -113,27 +113,6 @@ void	Transform::updateInteraction(const FrameContext &ctx) {
 	});
 }
 
-void	Transform::registerClick(const FrameContext &ctx, GizmoContext &gizmo) {
-	auto	entityImg = ctx.request->secondaryImages["entityID"];
-	auto	camera = _registry->getComponent<comp::Camera>(ctx.request->handle);
-	auto	transform = _registry->getComponent<comp::Transform>(ctx.request->handle);
-	if (!_inputState->isPressed<input::Mouse>(0) || !entityImg || !camera || !transform)
-		return ;
-	glm::vec2	viewportOrigin(ctx.request->origin.x, ctx.request->origin.y);
-	VkExtent2D	imgExtent = ctx.request->mainImage->getExtent();
-	glm::vec2	viewportSize(imgExtent.width, imgExtent.height);
-	auto	pos = glm::vec2(_inputState->getMousePos() - viewportOrigin);
-	glm::vec4	viewport(viewportOrigin, viewportSize);
-	if (pos.x < 0 || pos.y < 0 || pos.x > viewportSize.x || pos.y > viewportSize.y)
-		return ;
-
-	gizmo._read = Read::Queue::newRequest<uint32_t>(ctx.frameIndex)
-			.setSrcImage(entityImg)
-			.setOffset({(int32_t)pos.x, (int32_t)pos.y, 0})
-			.setExtent({1, 1, 1})
-			.push(*_device);
-}
-
 void	Transform::updateEntity(Entity::id handle) {
 	auto	constTransform = _registry->getComponent<comp::Transform>(handle);
 	if (!constTransform)
@@ -220,6 +199,27 @@ void	Transform::renderInteraction(const Renderer &renderer) {
 	registerClick(ctx, gizmo);
 }
 
+void	Transform::registerClick(const FrameContext &ctx, GizmoContext &gizmo) {
+	auto	entityImg = ctx.request->secondaryImages["entityID"];
+	auto	camera = _registry->getComponent<comp::Camera>(ctx.request->handle);
+	auto	transform = _registry->getComponent<comp::Transform>(ctx.request->handle);
+	if (!_inputState->isPressed<input::Mouse>(0) || !entityImg || !camera || !transform)
+		return ;
+	glm::vec2	viewportOrigin(ctx.request->origin.x, ctx.request->origin.y);
+	VkExtent2D	imgExtent = ctx.request->mainImage->getExtent();
+	glm::vec2	viewportSize(imgExtent.width, imgExtent.height);
+	auto	pos = glm::vec2(_inputState->getMousePos() - viewportOrigin);
+	glm::vec4	viewport(viewportOrigin, viewportSize);
+	if (pos.x < 0 || pos.y < 0 || pos.x > viewportSize.x || pos.y > viewportSize.y)
+		return ;
+
+	gizmo._read = Read::Queue::newRequest<uint32_t>(ctx.frameIndex)
+			.setSrcImage(entityImg)
+			.setOffset({(int32_t)pos.x, (int32_t)pos.y, 0})
+			.setExtent({1, 1, 1})
+			.push(*_device);
+}
+
 
 
 Transform::GizmoContext::GizmoContext(Transform *baseSystem, Window *window,
@@ -255,19 +255,21 @@ void	Transform::GizmoContext::initMove(void) {
 							const glm::vec3 &offScale = glm::vec3(1.f),
 							const glm::vec3 &tint = glm::vec3{1.f}){
 		Entity::id	newHandle = _registry->createEntity();
-		_registry->addComponent<comp::Model>(newHandle).modify()->filePath = modelPath;
-		auto	transform = _registry->addComponent<comp::Transform>(newHandle).modify();
+		auto	added = _registry->addComponents<comp::Model,
+							comp::Transform, comp::OffsetTransform,
+							comp::HideEntityTag, comp::HideEntityInHierarchyTag,
+							comp::NonSelectableTag, comp::Tint>(newHandle);
+		std::get<0>(added).modify()->filePath = modelPath;
+		auto	transform = std::get<1>(added).modify();
 		transform->scale = glm::vec3(dist) * offScale;
 		transform->rotation = focusedTransform->rotation * offRotation;
-		transform->position = focusedTransform->position + (transform->rotation * (offPosition * transform->scale));
-		auto	offset = _registry->addComponent<comp::OffsetTransform>(newHandle).modify();
+		transform->position = focusedTransform->position + (transform->rotation
+								* (offPosition * transform->scale));
+		auto	offset = std::get<2>(added).modify();
 		offset->rotation = offRotation;
 		offset->pos = offPosition;
 		offset->scale = offScale;
-		_registry->addComponent<comp::HideEntityTag>(newHandle);
-		_registry->addComponent<comp::HideEntityInHierarchyTag>(newHandle);
-		_registry->addComponent<comp::NonSelectableTag>(newHandle);
-		_registry->addComponent<comp::Tint>(newHandle).modify()->tint = tint;
+		std::get<6>(added).modify()->tint = tint;
 		_baseSystem->updateEntity(newHandle);
 		handles[stringName] = newHandle;
 	};

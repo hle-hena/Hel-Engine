@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/11 18:39:05                                        */
+/*  Last Modified: 2026/04/14 12:11:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,7 @@
 #include "Registry.hpp"
 #include "api/vulkan/Swapchain.hpp"
 #include <iostream>
+#include <tuple>
 #include <type_traits>
 
 namespace	hel {
@@ -144,8 +145,8 @@ const char	*Pool<Component>::getTypeName(void) const {
 
 
 
-template <typename Component, typename... Args>
-ComponentHandle<Component>	Registry::addComponent(Entity::id entityHandle, Args&&... args) {
+template <typename Component>
+ComponentHandle<Component>	Registry::addComponent(Entity::id entityHandle) {
 	ComponentHandle<Component>	compHandle;
 	if (!isValidHandle(entityHandle))	{ return (compHandle); }
 	compHandle._pool = getPool<Component>();
@@ -159,14 +160,19 @@ ComponentHandle<Component>	Registry::addComponent(Entity::id entityHandle, Args&
 		compHandle._comp = &compHandle._pool->components[*compHandle._index];
 		return (compHandle);
 	}
-	Component	&component = compHandle._pool->components.emplace_back(std::forward<Args>(args)...);
+	Component	&component = compHandle._pool->components.emplace_back();
 	compHandle._pool->entities.push_back(entityHandle);
 	compHandle._pool->indices[entityIndex] = compHandle._pool->components.size() - 1;
 	compHandle._index = compHandle._pool->indices[entityIndex];
 	compHandle._comp = &component;
 	compHandle._pool->isDirty = true;
-	prepareComponent(component);
 	return (compHandle);
+}
+
+template <typename... Components>
+std::tuple<ComponentHandle<Components>...>	Registry::addComponents(Entity::id handle) {
+	static_assert(is_unique<Components...>::value, "Duplicate values in the addComponents call.");
+	return (std::make_tuple(addComponent<Components>(handle)...));
 }
 
 template <typename Component>
@@ -208,14 +214,8 @@ Pool<Component>	*Registry::getPool() {
 
 template <typename Include, typename Exclude>
 View<Include, Exclude>	Registry::view() {
-	return View<Include, Exclude>(*this);
-}
-
-template <typename Component>
-void	Registry::prepareComponent(Component &component) {
-	if constexpr (requires { component.init(_assetManager); }) {
-		component.init(_assetManager);
-	}
+	//TODO -> check if Include or Exclude has duplicates/isEmpty.
+	return (View<Include, Exclude>(*this));
 }
 
 template <typename T>
