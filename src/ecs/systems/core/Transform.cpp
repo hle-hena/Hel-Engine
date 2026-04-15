@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/15 15:50:26                                        */
+/*  Last Modified: 2026/04/15 16:44:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -331,35 +331,35 @@ void	Transform::GizmoContext::initMove(void) {
 		_baseSystem->updateEntity(newHandle);
 		handles[stringName] = newHandle;
 	};
-	createEntity("X-Arrow", "assets/models/arrow.obj",
+	createEntity("X-Arrow", "assets/models/move_arrow.obj",
 			glm::angleAxis(glm::radians(-90.0f), glm::vec3(0, 0, 1)),
 			{},
-			glm::vec3(5.f),
+			glm::vec3(0.25f),
 			{1.f, 0.f, 0.f});
-	createEntity("Y-Arrow", "assets/models/arrow.obj",
+	createEntity("Y-Arrow", "assets/models/move_arrow.obj",
 			glm::quat(1, 0, 0, 0),
 			{},
-			glm::vec3(5.f),
+			glm::vec3(0.25f),
 			{0.f, 0.8f, 0.f});
-	createEntity("Z-Arrow", "assets/models/arrow.obj",
+	createEntity("Z-Arrow", "assets/models/move_arrow.obj",
 			glm::angleAxis(glm::radians(90.0f), glm::vec3(1, 0, 0)),
 			{},
-			glm::vec3(5.f),
+			glm::vec3(0.25f),
 			{0.f, 0.f, 0.8f});
 	createEntity("XY-Plane", "assets/models/quad.obj",
 			glm::angleAxis(glm::radians(-90.0f), glm::vec3(1, 0, 0)),
 			{2.f, 0.f, 2.f},
-			glm::vec3(1.f),
+			glm::vec3(0.5f),
 			{0.8f, 0.8f, 0.f});
 	createEntity("YZ-Plane", "assets/models/quad.obj",
 			glm::angleAxis(glm::radians(90.0f), glm::vec3(0, 0, 1)),
 			{2.f, 0.f, 2.f},
-			glm::vec3(1.f),
+			glm::vec3(0.5f),
 			{0.f, 0.8f, 0.8f});
 	createEntity("ZX-Plane", "assets/models/quad.obj",
 			glm::quat(1, 0, 0, 0),
 			{2.f, 0.f, 2.f},
-			glm::vec3(1.f),
+			glm::vec3(0.5f),
 			{0.8f, 0.f, 0.8f});
 	_fullyInit = true;
 }
