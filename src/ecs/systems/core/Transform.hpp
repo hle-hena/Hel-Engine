@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/14 15:21:25                                        */
+/*  Last Modified: 2026/04/15 18:00:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,9 +19,14 @@
 #include "api/vulkan/PipelineMap.hpp"
 #include "core/Frame.hpp"
 #include "core/Queues.hpp"
+#include "ecs/Registry.hpp"
+#include "ecs/Component.hpp"
 #include "ecs/systems/ISystem.hpp"
 #include <cstdint>
+#include <glm/fwd.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <optional>
+#include <tuple>
 #include <vector>
 #include <unordered_map>
 
@@ -72,11 +77,14 @@ class	Transform : public ISystem {
 			void	freeHandles(void);
 
 			void	dragMove(const FrameContext &ctx);
+			void	dragScale(const FrameContext &ctx);
 
+			struct	EntityFactory;
 			void	initMove(void);
+			void	initScale(void);
 			void	initAction(void);
 
-			Action							action{Action::Move};
+			Action							action{Action::Scale};
 			std::unordered_map<std::string,
 								Entity::id>	handles{};
 			
@@ -92,9 +100,7 @@ class	Transform : public ISystem {
 			friend class	Transform;
 		};
 
-		void	renderMove(const Renderer &renderer, GizmoContext &gizmoContext);
-		void	renderScale(const Renderer &renderer);
-		void	renderRotate(const Renderer &renderer);
+		void	renderGizmo(const Renderer &renderer, GizmoContext &gizmoContext);
 
 		void	registerDrag(const FrameContext &ctx, GizmoContext &gizmo);
 		void	registerClick(const FrameContext &ctx, GizmoContext &gizmo);
@@ -106,6 +112,36 @@ class	Transform : public ISystem {
 		std::unordered_map<RenderRequest, GizmoContext, RenderRequest::Hasher>	_gizmoContexts;
 
 	friend struct	GizmoContext;
+	friend struct	GizmoContext::EntityFactory;
+};
+
+struct	Transform::GizmoContext::EntityFactory {
+	using transformComp = ComponentHandle<hel::comp::Transform>;
+
+	EntityFactory(Transform::GizmoContext *baseSystem,
+				transformComp &parentTransform, float scale,
+				const std::string &entityName);
+	~EntityFactory(void);
+
+	EntityFactory	&setTint(float r, float g, float b);
+	EntityFactory	&setModel(const std::string &filepath);
+	EntityFactory	&setOffScale(const glm::vec3 &offScale);
+	EntityFactory	&setOffPos(const glm::vec3 &offPos);
+	EntityFactory	&setOffRot(const glm::quat &offRot);
+
+	private:
+		Transform::GizmoContext	*_baseGizmo;
+		transformComp			&_parentTransform;
+		float					_scale;
+		Entity::id				_handle;
+
+		std::tuple<ComponentHandle<comp::Model>,
+			ComponentHandle<comp::Transform>,
+			ComponentHandle<comp::OffsetTransform>,
+			ComponentHandle<comp::HideEntityTag>,
+			ComponentHandle<comp::HideEntityInHierarchyTag>,
+			ComponentHandle<comp::NonSelectableTag>,
+			ComponentHandle<comp::Tint>>			_addedComp;
 };
 
 }

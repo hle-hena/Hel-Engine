@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/15 16:44:41                                        */
+/*  Last Modified: 2026/04/15 18:02:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -132,7 +132,7 @@ void	Transform::updateEntity(Entity::id handle) {
 	transform->normalMatrix = glm::transpose(glm::inverse(transform->worldMatrix));
 }
 
-void	Transform::renderMove(const Renderer &renderer, GizmoContext &gizmo) {
+void	Transform::renderGizmo(const Renderer &renderer, GizmoContext &gizmo) {
 	if (!gizmo)	{ return ; }
 	gizmo._life++;
 	auto	focusedTransform = _registry->getComponent<comp::Transform>(gizmo._window->getEntityFocus());
@@ -170,14 +170,6 @@ void	Transform::renderMove(const Renderer &renderer, GizmoContext &gizmo) {
 	}
 }
 
-void	Transform::renderScale(const Renderer &renderer) {
-
-}
-
-void	Transform::renderRotate(const Renderer &renderer) {
-
-}
-
 void	Transform::renderInteraction(const Renderer &renderer) {
 	auto	ctx = renderer.frameContext();
 	if (ctx.window->getEntityFocus() == Entity::NOT_REGISTERED)
@@ -188,22 +180,13 @@ void	Transform::renderInteraction(const Renderer &renderer) {
 								renderer.frameContext().request->handle);
 	auto	&gizmo = it->second;
 
-	registerClick(ctx, gizmo);
-	registerDrag(ctx, gizmo);
-
+	
 	if (!gizmo || ctx.window->focusChanged())
 		gizmo.initAction();
-	switch (gizmo.action) {
-		case Action::Move:
-			renderMove(renderer, gizmo);
-			break ;
-		case Action::Scale:
-			renderScale(renderer);
-			break ;
-		default:
-			renderRotate(renderer);
-			break ;
-	}
+
+	registerClick(ctx, gizmo);
+	registerDrag(ctx, gizmo);
+	renderGizmo(renderer, gizmo);
 }
 
 void	Transform::registerClick(const FrameContext &ctx, GizmoContext &gizmo) {
@@ -239,6 +222,9 @@ void	Transform::registerDrag(const FrameContext &ctx, GizmoContext &gizmo) {
 	switch (gizmo.action) {
 		case Action::Move:
 			gizmo.dragMove(ctx);
+			break;
+		case Action::Scale:
+			gizmo.dragScale(ctx);
 			break;
 		default:
 			std::cout << *gizmo._dragName << std::endl;
@@ -299,6 +285,44 @@ void	Transform::GizmoContext::dragMove(const FrameContext &ctx) {
 	_baseSystem->updateEntity(ctx.window->getEntityFocus());
 }
 
+void	Transform::GizmoContext::dragScale(const FrameContext &ctx) {
+	auto	focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus());
+	auto	requestCamera = _registry->getComponent<comp::Camera>(_requestHandle);
+
+	glm::vec4	clipPos = ctx.globalData.viewProjection *
+						glm::vec4(focusedTransform->position, 1.0f);
+
+	float	screenScale = (2.0f * tanf(requestCamera->fov / 2.0f) * clipPos.w) /
+				static_cast<float>(ctx.request->mainImage->getExtent().height);
+	glm::vec3	camRight = {requestCamera->view[0][0],
+							requestCamera->view[1][0],
+							requestCamera->view[2][0]};
+	glm::vec3	camUp = {requestCamera->view[0][1],
+						requestCamera->view[1][1],
+						requestCamera->view[2][1]};
+
+	auto		mouseDelta = _baseSystem->_inputState->getMouseDelta();
+	const char	*axis = "XYZ";
+	glm::vec3	axisVec[3] = {
+		{1., 0., 0.},
+		{0., 1., 0.},
+		{0., 0., 1.}
+	};
+	glm::vec3	finalOffset(0.0f);
+
+	for (auto i = 0; i < 3; i++) {
+		if (_dragName->find(axis[i]) == std::string::npos)
+			continue ;
+		glm::vec3	scaleDir = axisVec[i];
+		float		scaleAmount = (mouseDelta.x * glm::dot(scaleDir, camRight) - 
+							mouseDelta.y * glm::dot(scaleDir, camUp)) * screenScale;
+		finalOffset += scaleDir * scaleAmount;
+	}
+
+	focusedTransform.modify()->scale += finalOffset;
+	_baseSystem->updateEntity(ctx.window->getEntityFocus());
+}
+
 void	Transform::GizmoContext::initMove(void) {
 	auto	focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus());
 	auto	requestTransform = _registry->getComponent<comp::Transform>(_requestHandle);
@@ -306,62 +330,55 @@ void	Transform::GizmoContext::initMove(void) {
 		return ;
 	freeHandles();
 	float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05;
-	auto	createEntity = [&](const std::string &stringName,
-							const std::string &modelPath,
-							const glm::quat &offRotation = glm::quat(),
-							const glm::vec3 &offPosition = glm::vec3(),
-							const glm::vec3 &offScale = glm::vec3(1.f),
-							const glm::vec3 &tint = glm::vec3{1.f}){
-		Entity::id	newHandle = _registry->createEntity();
-		auto	added = _registry->addComponents<comp::Model,
-							comp::Transform, comp::OffsetTransform,
-							comp::HideEntityTag, comp::HideEntityInHierarchyTag,
-							comp::NonSelectableTag, comp::Tint>(newHandle);
-		std::get<0>(added).modify()->filePath = modelPath;
-		auto	transform = std::get<1>(added).modify();
-		transform->scale = glm::vec3(dist) * offScale;
-		transform->rotation = focusedTransform->rotation * offRotation;
-		transform->position = focusedTransform->position + (transform->rotation
-								* (offPosition * transform->scale));
-		auto	offset = std::get<2>(added).modify();
-		offset->rotation = offRotation;
-		offset->pos = offPosition;
-		offset->scale = offScale;
-		std::get<6>(added).modify()->tint = tint;
-		_baseSystem->updateEntity(newHandle);
-		handles[stringName] = newHandle;
-	};
-	createEntity("X-Arrow", "assets/models/move_arrow.obj",
-			glm::angleAxis(glm::radians(-90.0f), glm::vec3(0, 0, 1)),
-			{},
-			glm::vec3(0.25f),
-			{1.f, 0.f, 0.f});
-	createEntity("Y-Arrow", "assets/models/move_arrow.obj",
-			glm::quat(1, 0, 0, 0),
-			{},
-			glm::vec3(0.25f),
-			{0.f, 0.8f, 0.f});
-	createEntity("Z-Arrow", "assets/models/move_arrow.obj",
-			glm::angleAxis(glm::radians(90.0f), glm::vec3(1, 0, 0)),
-			{},
-			glm::vec3(0.25f),
-			{0.f, 0.f, 0.8f});
-	createEntity("XY-Plane", "assets/models/quad.obj",
-			glm::angleAxis(glm::radians(-90.0f), glm::vec3(1, 0, 0)),
-			{2.f, 0.f, 2.f},
-			glm::vec3(0.5f),
-			{0.8f, 0.8f, 0.f});
-	createEntity("YZ-Plane", "assets/models/quad.obj",
-			glm::angleAxis(glm::radians(90.0f), glm::vec3(0, 0, 1)),
-			{2.f, 0.f, 2.f},
-			glm::vec3(0.5f),
-			{0.f, 0.8f, 0.8f});
-	createEntity("ZX-Plane", "assets/models/quad.obj",
-			glm::quat(1, 0, 0, 0),
-			{2.f, 0.f, 2.f},
-			glm::vec3(0.5f),
-			{0.8f, 0.f, 0.8f});
+
+	EntityFactory(this, requestTransform, dist, "X-Arrow")
+		.setModel("assets/models/move_arrow.obj").setTint(1.f, 0.f, 0.f)
+		.setOffRot(glm::angleAxis(glm::radians(-90.0f), glm::vec3(0, 0, 1)))
+		.setOffScale(glm::vec3(0.25f));
+	EntityFactory(this, requestTransform, dist, "Y-Arrow")
+		.setModel("assets/models/move_arrow.obj").setTint(0.f, 1.f, 0.f)
+		.setOffScale(glm::vec3(0.25f));
+	EntityFactory(this, requestTransform, dist, "Z-Arrow")
+		.setModel("assets/models/move_arrow.obj").setTint(0.f, 0.f, 1.f)
+		.setOffRot(glm::angleAxis(glm::radians(90.0f), glm::vec3(1, 0, 0)))
+		.setOffScale(glm::vec3(0.25f));
+
+	EntityFactory(this, requestTransform, dist, "XY-Plane")
+		.setModel("assets/models/quad.obj").setTint(0.8f, 0.8f, 0.f)
+		.setOffRot(glm::angleAxis(glm::radians(-90.0f), glm::vec3(1, 0, 0)))
+		.setOffPos({2.f, 0.f, 2.f}).setOffScale(glm::vec3(0.5f));
+	EntityFactory(this, requestTransform, dist, "YZ-Plane")
+		.setModel("assets/models/quad.obj").setTint(0.f, 0.8f, 0.8f)
+		.setOffRot(glm::angleAxis(glm::radians(90.0f), glm::vec3(0, 0, 1)))
+		.setOffPos({2.f, 0.f, 2.f}).setOffScale(glm::vec3(0.5f));
+	EntityFactory(this, requestTransform, dist, "ZX-Plane")
+		.setModel("assets/models/quad.obj").setTint(0.8f, 0.f, 0.8f)
+		.setOffPos({2.f, 0.f, 2.f}).setOffScale(glm::vec3(0.5f));
 	_fullyInit = true;
+	focusedTransform.modify();
+}
+
+void	Transform::GizmoContext::initScale(void) {
+	auto	focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus());
+	auto	requestTransform = _registry->getComponent<comp::Transform>(_requestHandle);
+	if (!focusedTransform || !requestTransform)
+		return ;
+	freeHandles();
+	float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05;
+
+	EntityFactory(this, requestTransform, dist, "X-Arrow")
+		.setModel("assets/models/scale_arrow.obj").setTint(1.f, 0.f, 0.f)
+		.setOffRot(glm::angleAxis(glm::radians(-90.0f), glm::vec3(0, 0, 1)))
+		.setOffScale(glm::vec3(0.25f));
+	EntityFactory(this, requestTransform, dist, "Y-Arrow")
+		.setModel("assets/models/scale_arrow.obj").setTint(0.f, 1.f, 0.f)
+		.setOffScale(glm::vec3(0.25f));
+	EntityFactory(this, requestTransform, dist, "Z-Arrow")
+		.setModel("assets/models/scale_arrow.obj").setTint(0.f, 0.f, 1.f)
+		.setOffRot(glm::angleAxis(glm::radians(90.0f), glm::vec3(1, 0, 0)))
+		.setOffScale(glm::vec3(0.25f));
+	_fullyInit = true;
+	focusedTransform.modify();
 }
 
 void	Transform::GizmoContext::initAction(void) {
@@ -371,10 +388,82 @@ void	Transform::GizmoContext::initAction(void) {
 			initMove();
 			break ;
 		case Action::Scale:
+			initScale();
 			break ;
 		default:
 			break ;
 	}
+}
+
+
+
+Transform::GizmoContext::EntityFactory::EntityFactory(
+	Transform::GizmoContext *baseGizmo, transformComp &parentTransform,
+	float scale, const std::string &entityName)
+	:	_baseGizmo(baseGizmo),
+		_parentTransform(parentTransform),
+		_scale(scale) {
+	_handle = _baseGizmo->_registry->createEntity();
+	_addedComp = _baseGizmo->_registry->addComponents<comp::Model,
+						comp::Transform, comp::OffsetTransform,
+						comp::HideEntityTag, comp::HideEntityInHierarchyTag,
+						comp::NonSelectableTag, comp::Tint>(_handle);
+	auto	transform = std::get<1>(_addedComp).modify();
+	transform->scale = glm::vec3(scale);
+	transform->rotation = parentTransform->rotation;
+	transform->position = parentTransform->position;
+	_baseGizmo->handles[entityName] = _handle;
+}
+
+Transform::GizmoContext::EntityFactory::~EntityFactory(void) {
+	_baseGizmo->_baseSystem->updateEntity(_handle);
+}
+
+Transform::GizmoContext::EntityFactory	&
+Transform::GizmoContext::EntityFactory::setTint(float r, float g, float b) {
+	std::get<6>(_addedComp).modify()->tint = {r, g, b};
+	return (*this);
+}
+
+Transform::GizmoContext::EntityFactory	&
+Transform::GizmoContext::EntityFactory::setModel(const std::string &filepath) {
+	std::get<0>(_addedComp).modify()->filePath = filepath;
+	return (*this);
+}
+
+Transform::GizmoContext::EntityFactory	&
+Transform::GizmoContext::EntityFactory::setOffScale(const glm::vec3 &offScale) {
+	auto	offset = std::get<2>(_addedComp).modify();
+	offset->scale = offScale;
+
+	auto	transform = std::get<1>(_addedComp).modify();
+	transform->scale = glm::vec3(_scale) * offset->scale;
+	transform->position = _parentTransform->position + (transform->rotation
+							* (offset->pos * transform->scale));
+	return (*this);
+}
+
+Transform::GizmoContext::EntityFactory	&
+Transform::GizmoContext::EntityFactory::setOffPos(const glm::vec3 &offPos) {
+	auto	offset = std::get<2>(_addedComp).modify();
+	offset->pos = offPos;
+
+	auto	transform = std::get<1>(_addedComp).modify();
+	transform->position = _parentTransform->position + (transform->rotation
+							* (offset->pos * transform->scale));
+	return (*this);
+}
+
+Transform::GizmoContext::EntityFactory	&
+Transform::GizmoContext::EntityFactory::setOffRot(const glm::quat &offRot) {
+	auto	offset = std::get<2>(_addedComp).modify();
+	offset->rotation = offRot;
+
+	auto	transform = std::get<1>(_addedComp).modify();
+	transform->rotation = _parentTransform->rotation * offset->rotation;
+	transform->position = _parentTransform->position + (transform->rotation
+							* (offset->pos * transform->scale));
+	return (*this);
 }
 
 }
