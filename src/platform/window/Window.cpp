@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 21:26:47                                        */
+/*  Last Modified: 2026/04/14 15:31:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -156,7 +156,7 @@ void	Window::keyCallback(GLFWwindow *window, int key, int,
 							int action, int mods) {
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
-	if (appWindow->_uiContext.capturesKeyboard())
+	if (action != GLFW_RELEASE && appWindow->_uiContext.capturesKeyboard())
 		return ;
 	appWindow->getApp().getRegistry().getInputState().setState<input::Key>(key, action, mods);
 }
@@ -165,7 +165,7 @@ void	Window::mouseButtonCallback(GLFWwindow *window, int button,
 							int action, int mods) {
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
-	if (appWindow->_uiContext.capturesMouse())
+	if (action != GLFW_RELEASE && appWindow->_uiContext.capturesMouse())
 		return ;
 	appWindow->getApp().getRegistry().getInputState().setState<input::Mouse>(button, action, mods);
 }

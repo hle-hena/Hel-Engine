@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/14 11:33:36                                        */
+/*  Last Modified: 2026/04/14 15:21:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -71,6 +71,8 @@ class	Transform : public ISystem {
 
 			void	freeHandles(void);
 
+			void	dragMove(const FrameContext &ctx);
+
 			void	initMove(void);
 			void	initAction(void);
 
@@ -85,6 +87,7 @@ class	Transform : public ISystem {
 				Window							*_window;
 				Entity::id						_requestHandle;
 				std::optional<Read::Context>	_read;
+				std::optional<std::string>		_dragName;
 				bool							_fullyInit{false};
 			friend class	Transform;
 		};
@@ -93,6 +96,7 @@ class	Transform : public ISystem {
 		void	renderScale(const Renderer &renderer);
 		void	renderRotate(const Renderer &renderer);
 
+		void	registerDrag(const FrameContext &ctx, GizmoContext &gizmo);
 		void	registerClick(const FrameContext &ctx, GizmoContext &gizmo);
 
 		AssetManager			*_assetManager;

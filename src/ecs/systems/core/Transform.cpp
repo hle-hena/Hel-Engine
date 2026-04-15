@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/14 12:19:18                                        */
+/*  Last Modified: 2026/04/15 15:50:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,12 +22,15 @@
 #include "ecs/Component.hpp"
 #include "ecs/AssetManager.hpp"
 #include "ecs/assets/Geometry.hpp"
+#include "platform/input/InputState.hpp"
 #include "platform/window/Window.hpp"
+#include <GLFW/glfw3.h>
 #include <algorithm>
 #include <glm/ext/quaternion_trigonometric.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/fwd.hpp>
 #include <glm/geometric.hpp>
+#include <string>
 #include <vulkan/vulkan_core.h>
 
 namespace	hel::sys {
@@ -107,7 +110,10 @@ void	Transform::updateInteraction(const FrameContext &ctx) {
 			gizmo._read.reset();
 			if (it == gizmo.handles.end())
 				return (false);
-			std::cout << it->first << std::endl;
+
+			glfwSetInputMode(ctx.window->getWindow(),
+						GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			gizmo._dragName = it->first;
 		}
 		return (false);
 	});
@@ -182,6 +188,9 @@ void	Transform::renderInteraction(const Renderer &renderer) {
 								renderer.frameContext().request->handle);
 	auto	&gizmo = it->second;
 
+	registerClick(ctx, gizmo);
+	registerDrag(ctx, gizmo);
+
 	if (!gizmo || ctx.window->focusChanged())
 		gizmo.initAction();
 	switch (gizmo.action) {
@@ -195,8 +204,6 @@ void	Transform::renderInteraction(const Renderer &renderer) {
 			renderRotate(renderer);
 			break ;
 	}
-
-	registerClick(ctx, gizmo);
 }
 
 void	Transform::registerClick(const FrameContext &ctx, GizmoContext &gizmo) {
@@ -209,7 +216,6 @@ void	Transform::registerClick(const FrameContext &ctx, GizmoContext &gizmo) {
 	VkExtent2D	imgExtent = ctx.request->mainImage->getExtent();
 	glm::vec2	viewportSize(imgExtent.width, imgExtent.height);
 	auto	pos = glm::vec2(_inputState->getMousePos() - viewportOrigin);
-	glm::vec4	viewport(viewportOrigin, viewportSize);
 	if (pos.x < 0 || pos.y < 0 || pos.x > viewportSize.x || pos.y > viewportSize.y)
 		return ;
 
@@ -220,6 +226,25 @@ void	Transform::registerClick(const FrameContext &ctx, GizmoContext &gizmo) {
 			.push(*_device);
 }
 
+void	Transform::registerDrag(const FrameContext &ctx, GizmoContext &gizmo) {
+	if (!gizmo._dragName.has_value())
+		return ;
+	if (_inputState->isReleased<input::Mouse>(0)) {
+		glfwSetInputMode(ctx.window->getWindow(),
+					GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		gizmo._dragName.reset();
+		return ;
+	}
+
+	switch (gizmo.action) {
+		case Action::Move:
+			gizmo.dragMove(ctx);
+			break;
+		default:
+			std::cout << *gizmo._dragName << std::endl;
+			break;
+	};
+}
 
 
 Transform::GizmoContext::GizmoContext(Transform *baseSystem, Window *window,
@@ -239,6 +264,39 @@ void	Transform::GizmoContext::freeHandles(void) {
 	for (auto &[key, entity]: handles)
 		_registry->removeEntity(entity);
 	handles.clear();
+}
+
+void	Transform::GizmoContext::dragMove(const FrameContext &ctx) {
+	auto	focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus());
+	auto	requestCamera = _registry->getComponent<comp::Camera>(_requestHandle);
+
+	glm::vec4	clipPos = ctx.globalData.viewProjection *
+						glm::vec4(focusedTransform->position, 1.0f);
+
+	float	screenScale = (2.0f * tanf(requestCamera->fov / 2.0f) * clipPos.w) /
+				static_cast<float>(ctx.request->mainImage->getExtent().height);
+	glm::vec3	camRight = {requestCamera->view[0][0],
+							requestCamera->view[1][0],
+							requestCamera->view[2][0]};
+	glm::vec3	camUp = {requestCamera->view[0][1],
+						requestCamera->view[1][1],
+						requestCamera->view[2][1]};
+
+	auto		mouseDelta = _baseSystem->_inputState->getMouseDelta();
+	const char	*axis = "XYZ";
+	glm::vec3	finalOffset(0.0f);
+
+	for (auto i = 0; i < 3; i++) {
+		if (_dragName->find(axis[i]) == std::string::npos)
+			continue ;
+		glm::vec3	moveDir = focusedTransform->worldMatrix[i];
+		float		moveAmount = (mouseDelta.x * glm::dot(moveDir, camRight) - 
+							mouseDelta.y * glm::dot(moveDir, camUp)) * screenScale;
+		finalOffset += moveDir * moveAmount;
+	}
+
+	focusedTransform.modify()->position += finalOffset;
+	_baseSystem->updateEntity(ctx.window->getEntityFocus());
 }
 
 void	Transform::GizmoContext::initMove(void) {
