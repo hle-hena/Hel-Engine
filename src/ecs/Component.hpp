@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/15 18:05:08                                        */
+/*  Last Modified: 2026/04/16 19:12:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <glm/ext/matrix_float4x4.hpp>
 # define GLM_FORCE_RADIANS
 # define GLM_FORCE_DEPTH_ZERO_TO_ONE
 # include <glm/glm.hpp>
@@ -105,6 +106,12 @@ struct	Model {
 	std::string	filePath{""};
 };
 
+struct	Sprite {
+	static constexpr const char	*label = "Sprite";
+
+	std::string	filePath{""};
+};
+
 struct alignas(16)	TintGPU {
 	glm::vec3	tint;
 };
@@ -121,8 +128,18 @@ struct	Tint {
 	glm::vec3	tint{1.f};
 };
 
+struct	CameraGPU {
+	glm::mat4	viewMatrix;
+};
+
 struct	Camera {
 	static constexpr const char	*label = "Camera";
+	static constexpr const bool	gpuVisible = true;
+
+	using GPUType = CameraGPU;
+	CameraGPU	toGPU(void) {
+		return {view};
+	}
 
 	float		fov{70};
 	float		near{0.1f};

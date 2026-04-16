@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/16 17:13:08                                        */
+/*  Last Modified: 2026/04/16 19:23:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -277,13 +277,16 @@ void	Transform::GizmoContext::dragMove(const FrameContext &) {
 
 	glm::vec3 finalOffset(0.0f);
 	if (activeAxes.size() == 1) {
-		glm::vec3	moveDir = focusedTransform->worldMatrix[activeAxes[0]];
+		glm::vec3	moveDir = glm::normalize(
+								focusedTransform->worldMatrix[activeAxes[0]]);
 		float		moveAmount = (mouseDelta.x * glm::dot(moveDir, right) - 
 							mouseDelta.y * glm::dot(moveDir, up)) * multiplier;
 		finalOffset = moveDir * moveAmount;
 	} else if (activeAxes.size() == 2) {
-		glm::vec3	axisA = focusedTransform->worldMatrix[activeAxes[0]];
-		glm::vec3	axisB = focusedTransform->worldMatrix[activeAxes[1]];
+		glm::vec3	axisA = glm::normalize(
+								focusedTransform->worldMatrix[activeAxes[0]]);
+		glm::vec3	axisB = glm::normalize(
+								focusedTransform->worldMatrix[activeAxes[1]]);
 		auto		projectToScreen = [&](glm::vec3 dir) -> glm::vec2 {
 			return (glm::vec2(glm::dot(dir, right), -glm::dot(dir, up)));
 		};

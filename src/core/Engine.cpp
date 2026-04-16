@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/14 11:29:37                                        */
+/*  Last Modified: 2026/04/16 19:05:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,6 +35,7 @@
 #include "ecs/systems/core/EditorController.hpp"
 #include "ecs/systems/core/HideMouse.hpp"
 #include "ecs/systems/core/Render.hpp"
+#include "ecs/systems/core/Sprite.hpp"
 #include "ecs/systems/core/Selection.hpp"
 #include "ecs/systems/core/Transform.hpp"
 #include "ecs/systems/runtime/BaseController.hpp"
@@ -74,6 +75,7 @@ bool	Engine::init(Window &window) {
 	_systems.push_back(std::make_unique<sys::Transform>());
 	_systems.push_back(std::make_unique<sys::Camera>());
 	_systems.push_back(std::make_unique<sys::Render>());
+	_systems.push_back(std::make_unique<sys::Sprite>());
 	_systems.push_back(std::make_unique<sys::UI>());
 	_systems.push_back(std::make_unique<sys::Selection>());
 
