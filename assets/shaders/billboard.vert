@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/24 17:02:11 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/03 16:55:21                                        */
+/*  Last Modified: 2026/04/16 17:55:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,8 +28,8 @@ struct	Transform {
 	mat4	normalMatrix;
 };
 layout(set = 1, binding = 0) readonly buffer Transforms {
-	Transform data[];
-} transforms;
+	Transform	data[];
+}	transforms;
 
 layout (push_constant) uniform Push {
 	uint	entityIndex;
@@ -51,8 +51,9 @@ void	main() {
 		vec2(1.0, 1.0)
 	);
 
-	vec3	right = vec3(ubo.viewProjection[0][0], ubo.viewProjection[1][0], ubo.viewProjection[2][0]);
-	vec3	up = vec3(ubo.viewProjection[0][1], ubo.viewProjection[1][1], ubo.viewProjection[2][1]);
+	mat4	mat = ubo.viewProjection;
+	vec3	right = normalize(vec3(mat[0][0], mat[1][0], mat[2][0]));
+	vec3	up = normalize(vec3(mat[0][1], mat[1][1], mat[2][1]));
 	vec2	offset = offsets[gl_VertexIndex] * push.size;
 	vec3	pointPos = transforms.data[push.transformIndex].modelMatrix[3].xyz;
 	vec3	worldPos = pointPos + right * offset.x + up * offset.y;

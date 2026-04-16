@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/16 16:02:48                                        */
+/*  Last Modified: 2026/04/16 17:13:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -253,7 +253,7 @@ void	Transform::GizmoContext::freeHandles(void) {
 	handles.clear();
 }
 
-void	Transform::GizmoContext::dragMove(const FrameContext &ctx) {
+void	Transform::GizmoContext::dragMove(const FrameContext &) {
 	auto	focusedTransform = _registry->getComponent<comp::Transform>
 											(_window->getEntityFocus());
 	auto	requestTransform = _registry->getComponent<comp::Transform>
