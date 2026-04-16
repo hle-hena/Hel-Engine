@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/16 19:23:52                                        */
+/*  Last Modified: 2026/04/16 19:34:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -228,7 +228,7 @@ void	Transform::registerDrag(const FrameContext &ctx, GizmoContext &gizmo) {
 			gizmo.dragScale(ctx);
 			break;
 		default:
-			std::cout << *gizmo._dragName << std::endl;
+			gizmo.dragRotate(ctx);
 			break;
 	};
 }
@@ -343,6 +343,11 @@ void	Transform::GizmoContext::dragScale(const FrameContext &ctx) {
 	_baseSystem->updateEntity(ctx.window->getEntityFocus());
 }
 
+void	Transform::GizmoContext::dragRotate(const FrameContext &ctx) {
+	std::cout << "In your dream\n";
+	(void)ctx;
+}
+
 void	Transform::GizmoContext::initMove(void) {
 	auto	focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus());
 	auto	requestTransform = _registry->getComponent<comp::Transform>(_requestHandle);
@@ -401,6 +406,29 @@ void	Transform::GizmoContext::initScale(void) {
 	focusedTransform.modify();
 }
 
+void	Transform::GizmoContext::initRotate(void) {
+	auto	focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus());
+	auto	requestTransform = _registry->getComponent<comp::Transform>(_requestHandle);
+	if (!focusedTransform || !requestTransform)
+		return ;
+	freeHandles();
+	float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05;
+
+	EntityFactory(this, requestTransform, dist, "X-Torus")
+		.setModel("assets/models/rotate_torus.obj").setTint(1.f, 0.f, 0.f)
+		.setOffRot(glm::angleAxis(glm::radians(-90.0f), glm::vec3(0, 0, 1)))
+		.setOffScale(glm::vec3(0.25f));
+	EntityFactory(this, requestTransform, dist, "Y-Torus")
+		.setModel("assets/models/rotate_torus.obj").setTint(0.f, 1.f, 0.f)
+		.setOffScale(glm::vec3(0.25f));
+	EntityFactory(this, requestTransform, dist, "Z-Torus")
+		.setModel("assets/models/rotate_torus.obj").setTint(0.f, 0.f, 1.f)
+		.setOffRot(glm::angleAxis(glm::radians(90.0f), glm::vec3(1, 0, 0)))
+		.setOffScale(glm::vec3(0.25f));
+	_fullyInit = true;
+	focusedTransform.modify();
+}
+
 void	Transform::GizmoContext::initAction(void) {
 	_fullyInit = false;
 	switch (action) {
@@ -411,6 +439,7 @@ void	Transform::GizmoContext::initAction(void) {
 			initScale();
 			break ;
 		default:
+			initRotate();
 			break ;
 	}
 }

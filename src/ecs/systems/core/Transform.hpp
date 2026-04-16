@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/16 14:55:46                                        */
+/*  Last Modified: 2026/04/16 19:37:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -78,13 +78,15 @@ class	Transform : public ISystem {
 
 			void	dragMove(const FrameContext &ctx);
 			void	dragScale(const FrameContext &ctx);
+			void	dragRotate(const FrameContext &ctx);
 
 			struct	EntityFactory;
 			void	initMove(void);
 			void	initScale(void);
+			void	initRotate(void);
 			void	initAction(void);
 
-			Action							action{Action::Move};
+			Action							action{Action::Rotate};
 			std::unordered_map<std::string,
 								Entity::id>	handles{};
 			
