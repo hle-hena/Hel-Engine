@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/15 18:02:23                                        */
+/*  Last Modified: 2026/04/16 16:02:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,6 +26,7 @@
 #include "platform/window/Window.hpp"
 #include <GLFW/glfw3.h>
 #include <algorithm>
+#include <glm/common.hpp>
 #include <glm/ext/quaternion_trigonometric.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/fwd.hpp>
@@ -253,47 +254,62 @@ void	Transform::GizmoContext::freeHandles(void) {
 }
 
 void	Transform::GizmoContext::dragMove(const FrameContext &ctx) {
-	auto	focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus());
-	auto	requestCamera = _registry->getComponent<comp::Camera>(_requestHandle);
+	auto	focusedTransform = _registry->getComponent<comp::Transform>
+											(_window->getEntityFocus());
+	auto	requestTransform = _registry->getComponent<comp::Transform>
+											(_requestHandle);
+	auto	requestCamera = _registry->getComponent<comp::Camera>
+											(_requestHandle);
+	float	multiplier = GIZMO_SENSIBILITY * std::max(1.f, glm::distance(
+					focusedTransform->position, requestTransform->position));
 
-	glm::vec4	clipPos = ctx.globalData.viewProjection *
-						glm::vec4(focusedTransform->position, 1.0f);
-
-	float	screenScale = (2.0f * tanf(requestCamera->fov / 2.0f) * clipPos.w) /
-				static_cast<float>(ctx.request->mainImage->getExtent().height);
-	glm::vec3	camRight = {requestCamera->view[0][0],
-							requestCamera->view[1][0],
-							requestCamera->view[2][0]};
-	glm::vec3	camUp = {requestCamera->view[0][1],
-						requestCamera->view[1][1],
+	glm::vec3	right = {requestCamera->view[0][0], requestCamera->view[1][0],
+						requestCamera->view[2][0]};
+	glm::vec3	up = {requestCamera->view[0][1], requestCamera->view[1][1],
 						requestCamera->view[2][1]};
+	glm::vec2	mouseDelta = _baseSystem->_inputState->getMouseDelta();
+	const char	*axisNames = "XYZ";
 
-	auto		mouseDelta = _baseSystem->_inputState->getMouseDelta();
-	const char	*axis = "XYZ";
-	glm::vec3	finalOffset(0.0f);
+	std::vector<int>	activeAxes;
+	for (int i = 0; i < 3; i++)
+		if (_dragName->find(axisNames[i]) != std::string::npos)
+			activeAxes.push_back(i);
 
-	for (auto i = 0; i < 3; i++) {
-		if (_dragName->find(axis[i]) == std::string::npos)
-			continue ;
-		glm::vec3	moveDir = focusedTransform->worldMatrix[i];
-		float		moveAmount = (mouseDelta.x * glm::dot(moveDir, camRight) - 
-							mouseDelta.y * glm::dot(moveDir, camUp)) * screenScale;
-		finalOffset += moveDir * moveAmount;
+	glm::vec3 finalOffset(0.0f);
+	if (activeAxes.size() == 1) {
+		glm::vec3	moveDir = focusedTransform->worldMatrix[activeAxes[0]];
+		float		moveAmount = (mouseDelta.x * glm::dot(moveDir, right) - 
+							mouseDelta.y * glm::dot(moveDir, up)) * multiplier;
+		finalOffset = moveDir * moveAmount;
+	} else if (activeAxes.size() == 2) {
+		glm::vec3	axisA = focusedTransform->worldMatrix[activeAxes[0]];
+		glm::vec3	axisB = focusedTransform->worldMatrix[activeAxes[1]];
+		auto		projectToScreen = [&](glm::vec3 dir) -> glm::vec2 {
+			return (glm::vec2(glm::dot(dir, right), -glm::dot(dir, up)));
+		};
+
+		glm::vec2	projA = projectToScreen(axisA);
+		glm::vec2	projB = projectToScreen(axisB);
+
+		float	det = projA.x * projB.y - projA.y * projB.x;
+		if (std::abs(det) > 0.0001f) {
+			float	u = (mouseDelta.x * projB.y - mouseDelta.y * projB.x) / det;
+			float	v = (projA.x * mouseDelta.y - projA.y * mouseDelta.x) / det;
+			finalOffset = (axisA * u + axisB * v) * multiplier * 2.f;
+		}
 	}
 
 	focusedTransform.modify()->position += finalOffset;
-	_baseSystem->updateEntity(ctx.window->getEntityFocus());
+	_baseSystem->updateEntity(_window->getEntityFocus());
 }
 
 void	Transform::GizmoContext::dragScale(const FrameContext &ctx) {
 	auto	focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus());
+	auto	requestTransform = _registry->getComponent<comp::Transform>(_requestHandle);
 	auto	requestCamera = _registry->getComponent<comp::Camera>(_requestHandle);
 
-	glm::vec4	clipPos = ctx.globalData.viewProjection *
-						glm::vec4(focusedTransform->position, 1.0f);
-
-	float	screenScale = (2.0f * tanf(requestCamera->fov / 2.0f) * clipPos.w) /
-				static_cast<float>(ctx.request->mainImage->getExtent().height);
+	float	multiplier = GIZMO_SENSIBILITY * std::max(1.f, glm::distance(
+					focusedTransform->position, requestTransform->position));
 	glm::vec3	camRight = {requestCamera->view[0][0],
 							requestCamera->view[1][0],
 							requestCamera->view[2][0]};
@@ -315,8 +331,9 @@ void	Transform::GizmoContext::dragScale(const FrameContext &ctx) {
 			continue ;
 		glm::vec3	scaleDir = axisVec[i];
 		float		scaleAmount = (mouseDelta.x * glm::dot(scaleDir, camRight) - 
-							mouseDelta.y * glm::dot(scaleDir, camUp)) * screenScale;
-		finalOffset += scaleDir * scaleAmount;
+							mouseDelta.y * glm::dot(scaleDir, camUp)) * multiplier;
+		finalOffset = scaleDir * scaleAmount;
+		break ;
 	}
 
 	focusedTransform.modify()->scale += finalOffset;

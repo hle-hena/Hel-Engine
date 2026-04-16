@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/14 12:11:25                                        */
+/*  Last Modified: 2026/04/16 15:30:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -157,14 +157,12 @@ ComponentHandle<Component>	Registry::addComponent(Entity::id entityHandle) {
 	if (compHandle._index != Entity::NOT_REGISTERED) {
 		std::cout << "Cannot add a component when one already exists. " <<
 			"Use getComponent to get it and modify to modifiy it." << std::endl;
-		compHandle._comp = &compHandle._pool->components[*compHandle._index];
 		return (compHandle);
 	}
-	Component	&component = compHandle._pool->components.emplace_back();
+	compHandle._pool->components.emplace_back();
 	compHandle._pool->entities.push_back(entityHandle);
 	compHandle._pool->indices[entityIndex] = compHandle._pool->components.size() - 1;
 	compHandle._index = compHandle._pool->indices[entityIndex];
-	compHandle._comp = &component;
 	compHandle._pool->isDirty = true;
 	return (compHandle);
 }
@@ -187,7 +185,6 @@ ComponentHandle<Component>	Registry::getComponent(Entity::id entityHandle) {
 	if (denseIndex == Entity::NOT_REGISTERED)
 		return (compHandle);
 	compHandle._index = denseIndex;
-	compHandle._comp = &compHandle._pool->components[denseIndex];
 	return (compHandle);
 }
 
@@ -250,7 +247,7 @@ DescriptorSet::ptr	Registry::buildComponentSet(Device &device,
 template <typename Component>
 ModificationProxy<Component>	ComponentHandle<Component>::modify(void) {
 	if (_index.has_value())
-		return {const_cast<Component *>(_comp), _pool, *_index};
+		return {_pool, *_index};
 	return {};
 }
 

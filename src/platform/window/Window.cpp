@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/14 15:31:22                                        */
+/*  Last Modified: 2026/04/16 15:32:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -131,7 +131,8 @@ void	Window::setEntityReference(Entity::id handle) {
 }
 
 void	Window::setEntityFocus(Entity::id handle) {
-	_app.getRegistry().removeComponent<comp::SelectedTag>(*_focusHandle);
+	if (_focusHandle.has_value())
+		_app.getRegistry().removeComponent<comp::SelectedTag>(*_focusHandle);
 	_focusHandle = handle;
 	_focusChanged = 2;
 	_app.getRegistry().addComponent<comp::SelectedTag>(*_focusHandle);

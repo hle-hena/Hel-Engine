@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/14 12:15:08                                        */
+/*  Last Modified: 2026/04/16 15:26:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -108,24 +108,23 @@ struct	Pool : IPool {
 template <typename Component>
 struct	ModificationProxy {
 	ModificationProxy(void) {};
-	ModificationProxy(Component *comp, IPool *p, uint32_t compIndex)
-		:	component(comp),
-			pool{p},
-			index{compIndex} {}
+	ModificationProxy(Pool<Component> *pool, uint32_t denseIndex)
+		:	_pool{pool},
+			_index{denseIndex} {}
 	~ModificationProxy(void) {
+		auto	component = &_pool->components[*_index];
 		if constexpr (requires { component->isDirty = true; }) {
 			if (component)
 				component->isDirty = true;
 		}
-		pool->addWrite(index, component);
+		_pool->addWrite(*_index, component);
 	}
-	Component	*operator->(void) { return component; };
-	explicit operator bool() const { return (component != nullptr); }
+	Component	*operator->(void) { return &_pool->components[*_index]; };
+	explicit operator bool() const { return (_index.has_value()); }
 
 	private:
-		Component	*component{nullptr};
-		IPool		*pool{nullptr};
-		uint32_t	index;
+		Pool<Component>			*_pool{nullptr};
+		std::optional<uint32_t>	_index;
 };
 
 template <typename Component>
@@ -193,13 +192,12 @@ struct	ComponentHandle {
 		ComponentHandle(void) = default;
 
 		operator bool(void) const	{ return (_index.has_value()); }
-		const Component	*operator->(void)	{ return (_comp); }
+		const Component	*operator->(void)	{ return (&_pool->components[*_index]); }
 		ModificationProxy<Component>	modify(void);
 		uint32_t						getDenseIndex(void) const	{ return (*_index); }
 
 	private:
 		Pool<Component>			*_pool{nullptr};
-		const Component			*_comp{nullptr};
 		std::optional<uint32_t>	_index;
 	friend class	Registry;
 	template <typename Include, typename Exclude>

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 16:09:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 19:37:26                                        */
+/*  Last Modified: 2026/04/16 15:26:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,7 +35,6 @@ ComponentHandle<Component>	View<include<Include...>, exclude<Exclude...>>::get(E
 	ComponentHandle<Component>	compHandle;
 	compHandle._pool = std::get<Pool<Component>*>(_includePools);
 	compHandle._index = compHandle._pool->indices[Entity::getIndex(handle)];
-	compHandle._comp = &compHandle._pool->components[*compHandle._index];
 	return (compHandle);
 }
 

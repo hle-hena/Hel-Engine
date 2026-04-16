@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/15 18:00:58                                        */
+/*  Last Modified: 2026/04/16 14:55:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -84,11 +84,13 @@ class	Transform : public ISystem {
 			void	initScale(void);
 			void	initAction(void);
 
-			Action							action{Action::Scale};
+			Action							action{Action::Move};
 			std::unordered_map<std::string,
 								Entity::id>	handles{};
 			
 			private:
+				static constexpr float			GIZMO_SENSIBILITY = 0.0001;
+
 				uint32_t						_life{1};
 				Transform						*_baseSystem;
 				Registry						*_registry;
