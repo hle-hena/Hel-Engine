@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/16 19:37:26                                        */
+/*  Last Modified: 2026/04/17 14:32:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,6 +23,7 @@
 #include "ecs/Component.hpp"
 #include "ecs/systems/ISystem.hpp"
 #include <cstdint>
+# define GLM_FORCE_RADIANS
 #include <glm/fwd.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <optional>
@@ -76,6 +77,7 @@ class	Transform : public ISystem {
 
 			void	freeHandles(void);
 
+			bool	teleportMouse(const FrameContext &ctx);
 			void	dragMove(const FrameContext &ctx);
 			void	dragScale(const FrameContext &ctx);
 			void	dragRotate(const FrameContext &ctx);
@@ -100,6 +102,7 @@ class	Transform : public ISystem {
 				Entity::id						_requestHandle;
 				std::optional<Read::Context>	_read;
 				std::optional<std::string>		_dragName;
+				bool							_startDrag{false};
 				bool							_fullyInit{false};
 			friend class	Transform;
 		};

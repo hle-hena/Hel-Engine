@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/16 19:34:51                                        */
+/*  Last Modified: 2026/04/17 14:30:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,9 +24,13 @@
 #include "ecs/assets/Geometry.hpp"
 #include "platform/input/InputState.hpp"
 #include "platform/window/Window.hpp"
+#include "utils/mathUtils.hpp"
 #include <GLFW/glfw3.h>
 #include <algorithm>
+#include <cstdint>
+# define GLM_FORCE_RADIANS
 #include <glm/common.hpp>
+#include <glm/ext/quaternion_transform.hpp>
 #include <glm/ext/quaternion_trigonometric.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/fwd.hpp>
@@ -112,8 +116,7 @@ void	Transform::updateInteraction(const FrameContext &ctx) {
 			if (it == gizmo.handles.end())
 				return (false);
 
-			glfwSetInputMode(ctx.window->getWindow(),
-						GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			gizmo._startDrag = true;
 			gizmo._dragName = it->first;
 		}
 		return (false);
@@ -253,7 +256,40 @@ void	Transform::GizmoContext::freeHandles(void) {
 	handles.clear();
 }
 
-void	Transform::GizmoContext::dragMove(const FrameContext &) {
+bool Transform::GizmoContext::teleportMouse(const FrameContext &ctx) {
+	bool		changed = false;
+	glm::vec2	renderOrigin = {ctx.request->origin.x, ctx.request->origin.y};
+	auto		imgExtent = ctx.request->mainImage->getExtent();
+	glm::vec2	renderExtent = {imgExtent.width, imgExtent.height};
+	auto		mousePos = _baseSystem->_inputState->getMousePos() - renderOrigin;
+	float		padding = 3.f;
+	glm::vec2	newPos = mousePos;
+
+	if (mousePos.x <= 0)
+		newPos.x = renderExtent.x - padding;
+	else if (mousePos.x >= renderExtent.x)
+		newPos.x = padding;
+
+	if (mousePos.y <= 0)
+		newPos.y = renderExtent.y - padding;
+	else if (mousePos.y >= renderExtent.y)
+		newPos.y = padding;
+
+	if (newPos != mousePos) {
+		changed = true;
+		newPos += renderOrigin;
+		glfwSetCursorPos(ctx.window->getWindow(), newPos.x, newPos.y);
+		_baseSystem->_inputState->resetMousePos(newPos);
+	}
+	return (changed);
+}
+
+void	Transform::GizmoContext::dragMove(const FrameContext &ctx) {
+	if (_startDrag)
+		_startDrag = false;
+	if (teleportMouse(ctx))
+		return ;
+
 	auto	focusedTransform = _registry->getComponent<comp::Transform>
 											(_window->getEntityFocus());
 	auto	requestTransform = _registry->getComponent<comp::Transform>
@@ -307,6 +343,11 @@ void	Transform::GizmoContext::dragMove(const FrameContext &) {
 }
 
 void	Transform::GizmoContext::dragScale(const FrameContext &ctx) {
+	if (_startDrag)
+		_startDrag = false;
+	if (teleportMouse(ctx))
+		return ;
+
 	auto	focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus());
 	auto	requestTransform = _registry->getComponent<comp::Transform>(_requestHandle);
 	auto	requestCamera = _registry->getComponent<comp::Camera>(_requestHandle);
@@ -344,8 +385,43 @@ void	Transform::GizmoContext::dragScale(const FrameContext &ctx) {
 }
 
 void	Transform::GizmoContext::dragRotate(const FrameContext &ctx) {
-	std::cout << "In your dream\n";
-	(void)ctx;
+	static glm::quat	initialRot;
+	static glm::vec2	initialMousePos;
+	static glm::vec2	rotationCenter;
+
+	auto		focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus()).modify();
+	auto		renderCamera = _registry->getComponent<comp::Camera>(_requestHandle);
+	if (_startDrag) {
+		initialRot = focusedTransform->rotation;
+		initialMousePos = _baseSystem->_inputState->getMousePos();
+		auto		renderExtent = ctx.request->mainImage->getExtent();
+		glm::vec2	renderSize  = {renderExtent.width, renderExtent.height};
+		glm::vec2	renderOrigin = {ctx.request->origin.x, ctx.request->origin.y};
+
+		glm::vec4	clip = ctx.globalData.viewProjection * glm::vec4(focusedTransform->position, 1.0f);
+		glm::vec2	screenSpaceRotationCenter  = (glm::vec2(clip) / clip.w) * 0.5f + 0.5f;
+
+		rotationCenter = renderOrigin + screenSpaceRotationCenter * renderSize;
+		_startDrag = false;
+	}
+	uint32_t	axisIndex = 0;
+	const char	*axisNames = "XYZ";
+	for (auto i = 0; i < 3; i++)
+		if (_dragName->find(axisNames[i]) != std::string::npos)
+			axisIndex = i;
+
+	glm::vec2	mousePos = _baseSystem->_inputState->getMousePos();
+	float		rotationAmount = mathUtils::getAngle(rotationCenter, initialMousePos, mousePos);
+	glm::vec3	axis = glm::normalize(glm::vec3(focusedTransform->worldMatrix[axisIndex]));
+	glm::vec4 viewSpaceAxis = renderCamera->view * glm::vec4(axis, 0.0f);
+	if (viewSpaceAxis.z > 0.0f)
+		rotationAmount = -rotationAmount;
+	glm::quat	addedRotation = glm::angleAxis(rotationAmount, axis);
+	focusedTransform->rotation = glm::normalize(addedRotation * initialRot);
+	_baseSystem->updateEntity(ctx.window->getEntityFocus());
+
+	initialMousePos = mousePos;
+	initialRot = focusedTransform->rotation;
 }
 
 void	Transform::GizmoContext::initMove(void) {
