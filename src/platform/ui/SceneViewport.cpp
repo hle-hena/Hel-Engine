@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/17 14:17:25                                        */
+/*  Last Modified: 2026/04/17 14:34:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,7 +21,6 @@
 #include "api/vulkan/ImagePool.hpp"
 #include "core/Queues.hpp"
 #include "platform/ui/UIHelper.hpp"
-#include <ui/ImGui/imgui.h>
 
 namespace	hel::sys {
 
@@ -60,8 +59,6 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 		glfwGetInputMode(window->getWindow(), GLFW_CURSOR) ==
 			GLFW_CURSOR_DISABLED || ImGui::IsItemHovered()))
 		ImGui::SetNextFrameWantCaptureMouse(false);
-	ImGui::SetNextFrameWantCaptureMouse(false);
-	// if (ImGui::IsItemHovered() && window->)
 	if (ImGui::IsItemClicked())
 		window->setEntityReference(_handle);
 
