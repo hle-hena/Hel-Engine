@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 16:44:08                                        */
+/*  Last Modified: 2026/04/21 18:25:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,15 +17,14 @@
 #pragma once
 
 #include <cstdint>
-# include <vulkan/vulkan.h>
-# include <optional>
-# include <vector>
+#include <vulkan/vulkan.h>
+#include <optional>
+#include <vector>
 #include <vulkan/vulkan_core.h>
 
-# include "utils/Setters.hpp"
-# include "api/vulkan/PipelineMap.hpp"
-# include "api/vulkan/Descriptors.hpp"
-# include "core/Frame.hpp"
+#include "utils/Setters.hpp"
+#include "api/vulkan/PipelineMap.hpp"
+#include "api/vulkan/Descriptors.hpp"
 
 namespace	hel {
 
@@ -86,8 +85,8 @@ class Renderer {
 		explicit Renderer(FrameContext &frameContext, RenderPass &&pass);
 		explicit operator	bool(void) const;
 
-		FrameContext		&frameContext(void) const	{ return (_frameContext); }
-		uint32_t			passIndex(void) const	{ return (_frameContext.passIndex); }
+		FrameContext		&frameContext(void) const;
+		uint32_t			passIndex(void) const;
 
 		PASSKEY(ISystemKey, sys::ISystem)
 		struct	Draw;
@@ -118,7 +117,7 @@ struct	Renderer::Draw {
 	private:
 		Draw(Device &device, FrameContext &frameContext, VkCommandBuffer commandBuffer,
 			VkPipelineLayout pipelineLayout)
-			: _device{device}, _frameContext{frameContext},
+			: _device{&device}, _frameContext{&frameContext},
 				_commandBuffer{commandBuffer}, _pipelineLayout{pipelineLayout} {}
 
 		struct	PushInfos {
@@ -137,8 +136,8 @@ struct	Renderer::Draw {
 			VkIndexType		indexType;
 		};
 
-		Device							&_device;
-		FrameContext					&_frameContext;
+		Device							*_device;
+		FrameContext					*_frameContext;
 		VkCommandBuffer					_commandBuffer;
 		VkPipelineLayout				_pipelineLayout;
 		std::vector<VkDescriptorSet>	_sets{};

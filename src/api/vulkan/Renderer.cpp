@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 16:45:46                                        */
+/*  Last Modified: 2026/04/21 18:25:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -116,6 +116,14 @@ Renderer::operator	bool(void) const {
 	return (_pass._isValid);
 }
 
+FrameContext	&Renderer::frameContext(void) const	{
+	return (_frameContext);
+}
+
+uint32_t	Renderer::passIndex(void) const	{
+	return (_frameContext.passIndex);
+}
+
 Renderer::Draw	Renderer::drawCommand(PipelineMap *pipeline, ISystemKey) const {
 	pipeline->bindPipeline(_config, _commandBuffer);
 	Draw	drawCall {_device, _frameContext, _commandBuffer, pipeline->getLayout()};
@@ -143,9 +151,9 @@ Renderer::Draw	&Renderer::Draw::addBinding(VkDescriptorSet set) {
 Renderer::Draw	&Renderer::Draw::addDynamicBinding(VkDescriptorSet set,
 											uint32_t stride, uint32_t *retOffset) {
 	_sets.push_back(set);
-	uint32_t	alignement = _device.getPhysProperties().properties.limits
+	uint32_t	alignement = _device->getPhysProperties().properties.limits
 										.minUniformBufferOffsetAlignment;
-	uint32_t	offset = ((stride + alignement - 1) & ~(alignement - 1)) * _frameContext.passIndex;
+	uint32_t	offset = ((stride + alignement - 1) & ~(alignement - 1)) * _frameContext->passIndex;
 	if (retOffset)
 		(*retOffset = offset);
 	_setsOffsets.push_back(offset);

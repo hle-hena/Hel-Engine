@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/21 19:38:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 18:42:43                                        */
+/*  Last Modified: 2026/04/21 18:32:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,6 +22,8 @@ namespace	hel {
 
 std::vector<RenderRequest>	RenderQueue::_requests = {};
 std::vector<Read::Request>	Read::Queue::_requests = {};
+std::vector<std::pair<uint32_t,
+		Renderer::Draw>>	DrawQueue::_requests = {};
 
 
 
@@ -31,6 +33,22 @@ void	Read::Queue::execute(VkCommandBuffer commandBuffer) {
 							req.offset, req.extent);
 	_requests.clear();
 }
+
+
+
+void	DrawQueue::requestDraw(uint32_t level, Renderer::Draw &&drawCommand) {
+	_requests.push_back({level, std::move(drawCommand)});
+}
+
+void	DrawQueue::execute(void) {
+	std::sort(_requests.begin(), _requests.end(), [](const auto &a, const auto &b) {
+		return (a.first < b.first);
+	});
+	for (auto &req: _requests)
+		req.second.submit();
+	_requests.clear();
+}
+
 
 
 

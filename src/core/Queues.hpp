@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/13 15:14:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 18:48:53                                        */
+/*  Last Modified: 2026/04/21 18:28:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,7 @@
 
 #include "api/vulkan/Buffer.hpp"
 #include "api/vulkan/Image.hpp"
+#include "api/vulkan/Renderer.hpp"
 #include "ecs/Entity.hpp"
 #include "utils/Setters.hpp"
 #include <cstdint>
@@ -86,6 +87,20 @@ class	Read::Queue {
 	friend struct	Builder;
 };
 
+
+
+class	DrawQueue {
+	public:
+		static void	requestDraw(uint32_t level, Renderer::Draw &&drawCommand);
+		static void	execute(void);
+
+		
+	private:
+		static std::vector<std::pair<uint32_t, Renderer::Draw>>	_requests;
+
+	template <typename ReadType>
+	friend struct	Builder;
+};
 
 
 
