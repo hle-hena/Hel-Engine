@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/16 17:56:14                                        */
+/*  Last Modified: 2026/04/21 16:40:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -162,7 +162,8 @@ void	Camera::renderInteraction(const Renderer &renderer) {
 					glm::inverse(projection * camera->view)})
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
 			.addIndexBuffer(mesh->lineIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
-			.submit(mesh->lineVertexCount);
+			.setVertexCount(mesh->lineVertexCount)
+			.submit();
 
 		float	size = 0.1f * glm::distance(transform->position, selfTransform->position);
 		drawCommand(renderer, _spritePipeline)
@@ -170,7 +171,8 @@ void	Camera::renderInteraction(const Renderer &renderer) {
 			.addBinding(texture_d->sets[0])
 			.addPush(VK_SHADER_STAGE_ALL_GRAPHICS, EntityData{entity,
 					transform.getDenseIndex(), size})
-			.submitNoVertex(4);
+			.setVertexCount(4)
+			.submit();
 	}
 }
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/22 12:19:09 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 17:21:34                                        */
+/*  Last Modified: 2026/04/21 16:35:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,25 +15,43 @@
 /* *************************************************************************  */
 
 #include "api/vulkan/Renderer.hpp"
+#include <cstdint>
+#include <cstring>
+#include <iostream>
 
 namespace	hel {
 
 template <size_t N>
 Renderer::Draw	&Renderer::Draw::addVertexBuffers(const VkBuffer (&buffers)[N],
 								const VkDeviceSize (&offsets)[N]) {
+	if (N >= 8) {
+		std::cerr << "Max allowed vertex buffers: 8\n";
+		return (*this);
+	}
 	if (_hasVertex)
 		return (*this);
-	vkCmdBindVertexBuffers(_commandBuffer, 0, N, buffers, offsets);
+	_vertexInfos.bufferCount = N;
+	for (size_t i = 0; i < N; i++) {
+		_vertexInfos.buffers[i] = buffers[i];
+		_vertexInfos.offsets[i] = offsets[i];
+	}
 	_hasVertex = true;
 	return (*this);
 }
 
 template <typename T>
 Renderer::Draw	&Renderer::Draw::addPush(VkShaderStageFlags stage, const T &data) {
+	uint32_t	structSize = sizeof(T);
+	if (structSize > 128) {
+		std::cerr << "Please don't use push constant for big structs." <<
+				" Create a component and use the SSBO.\n";
+		return (*this);
+	}
 	if (_hasPush)
 		return (*this);
-	vkCmdPushConstants(_commandBuffer, _pipelineLayout,
-					stage, 0, sizeof(T), &data);
+	_pushInfos.stage = stage;
+	_pushInfos.structSize = structSize;
+	memcpy(_pushInfos.data, &data, structSize);
 	_hasPush = true;
 	return (*this);
 }

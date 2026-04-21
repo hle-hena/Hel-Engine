@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 19:37:05                                        */
+/*  Last Modified: 2026/04/21 16:42:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -120,7 +120,8 @@ void	Render::render(const Renderer &renderer) {
 				.addBinding(set->sets[0])
 				.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
 				.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
-				.submit(mesh->triangleVertexCount);
+				.setVertexCount(mesh->triangleVertexCount)
+				.submit();
 		}
 	};
 

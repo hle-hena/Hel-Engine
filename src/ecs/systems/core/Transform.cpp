@@ -170,7 +170,8 @@ void	Transform::renderGizmo(const Renderer &renderer, GizmoContext &gizmo) {
 			.addBinding(set->sets[0])
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
 			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
-			.submit(mesh->triangleVertexCount);
+			.setVertexCount(mesh->triangleVertexCount)
+			.submit();
 	}
 }
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:44:21                                        */
+/*  Last Modified: 2026/04/21 16:45:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -119,7 +119,7 @@ Renderer::operator	bool(void) const {
 Renderer::Draw	Renderer::drawCommand(PipelineMap *pipeline, ISystemKey) const {
 	pipeline->bindPipeline(_config, _commandBuffer);
 	Draw	drawCall {_device, _frameContext, _commandBuffer, pipeline->getLayout()};
-	drawCall.addBinding(_frameContext.globalSet, sizeof(GlobalUBO), nullptr);
+	drawCall.addDynamicBinding(_frameContext.globalSet, sizeof(GlobalUBO), nullptr);
 	return (drawCall);
 }
 
@@ -127,7 +127,9 @@ Renderer::Draw	&Renderer::Draw::addIndexBuffer(VkBuffer buffer, VkDeviceSize off
 							VkIndexType indexType, uint32_t firstIndex) {
 	if (_hasIndex)
 		return (*this);
-	vkCmdBindIndexBuffer(_commandBuffer, buffer, offset, indexType);
+	_indexInfos.buffer = buffer;
+	_indexInfos.offset = offset;
+	_indexInfos.indexType = indexType;
 	_hasIndex = true;
 	_firstIndex = firstIndex;
 	return (*this);
@@ -138,42 +140,40 @@ Renderer::Draw	&Renderer::Draw::addBinding(VkDescriptorSet set) {
 	return (*this);
 }
 
-Renderer::Draw	&Renderer::Draw::addBinding(VkDescriptorSet set,
-											uint32_t stride, uint32_t *pOffset) {
+Renderer::Draw	&Renderer::Draw::addDynamicBinding(VkDescriptorSet set,
+											uint32_t stride, uint32_t *retOffset) {
 	_sets.push_back(set);
 	uint32_t	alignement = _device.getPhysProperties().properties.limits
 										.minUniformBufferOffsetAlignment;
 	uint32_t	offset = ((stride + alignement - 1) & ~(alignement - 1)) * _frameContext.passIndex;
-	if (pOffset)
-		(*pOffset = offset);
+	if (retOffset)
+		(*retOffset = offset);
 	_setsOffsets.push_back(offset);
 	return (*this);
 }
 
-void	Renderer::Draw::submit(uint32_t indexCount, uint32_t instanceCount,
-				uint32_t firstInstance) {
-	if (!_hasVertex)
+void	Renderer::Draw::submit(void) {
+	if (!_count.has_value())
 		return ;
+	if (_hasPush) {
+		vkCmdPushConstants(_commandBuffer, _pipelineLayout,
+				_pushInfos.stage, 0, _pushInfos.structSize, _pushInfos.data);
+	}
+	if (_hasVertex) {
+		vkCmdBindVertexBuffers(_commandBuffer, 0, _vertexInfos.bufferCount,
+							_vertexInfos.buffers, _vertexInfos.offsets);
+	}
 	vkCmdBindDescriptorSets(_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
 							_pipelineLayout, 0, _sets.size(), _sets.data(),
 							_setsOffsets.size(), _setsOffsets.data());
-	if (_hasIndex)
-		vkCmdDrawIndexed(_commandBuffer, indexCount, instanceCount,
-						_firstIndex, 0, instanceCount);
+	if (_hasIndex) {
+		vkCmdBindIndexBuffer(_commandBuffer, _indexInfos.buffer,
+							_indexInfos.offset, _indexInfos.indexType);
+		vkCmdDrawIndexed(_commandBuffer, _count.value(), 1,
+			_firstIndex, 0, 0);
+	}
 	else
-		vkCmdDraw(_commandBuffer, indexCount, instanceCount, 0, firstInstance);
-}
-
-void	Renderer::Draw::submitNoVertex(uint32_t indexCount, uint32_t instanceCount,
-				uint32_t firstInstance) {
-	vkCmdBindDescriptorSets(_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-							_pipelineLayout, 0, _sets.size(), _sets.data(),
-							_setsOffsets.size(), _setsOffsets.data());
-	if (_hasIndex)
-		vkCmdDrawIndexed(_commandBuffer, indexCount, instanceCount,
-						_firstIndex, 0, instanceCount);
-	else
-		vkCmdDraw(_commandBuffer, indexCount, instanceCount, 0, firstInstance);
+		vkCmdDraw(_commandBuffer, _count.value(), 1, 0, 0);
 }
 
 }

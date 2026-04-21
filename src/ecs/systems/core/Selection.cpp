@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/14 11:30:53                                        */
+/*  Last Modified: 2026/04/21 16:41:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -116,7 +116,8 @@ void	Selection::renderEntityID(const Renderer &renderer) {
 			.addBinding(set->sets[0])
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
 			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
-			.submit(mesh->triangleVertexCount);
+			.setVertexCount(mesh->triangleVertexCount)
+			.submit();
 	}
 }
 
@@ -168,7 +169,8 @@ void	Selection::renderInteraction(const Renderer &renderer) {
 
 void	Selection::postProcessing(const Renderer &renderer) {
 	drawCommand(renderer, _tintPipeline)
-		.submitNoVertex(3);
+		.setVertexCount(3)
+		.submit();
 }
 
 }

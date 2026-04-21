@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/16 19:21:10                                        */
+/*  Last Modified: 2026/04/21 16:40:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -131,7 +131,8 @@ void	Sprite::render(const Renderer &renderer) {
 			.addBinding(texture_d->sets[0])
 			.addPush(VK_SHADER_STAGE_ALL_GRAPHICS, EntityData{entity,
 					transform.getDenseIndex(), renderCam.getDenseIndex()})
-			.submitNoVertex(4);
+			.setVertexCount(4)
+			.submit();
 	}
 }
 
