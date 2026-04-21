@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/16 19:05:32                                        */
+/*  Last Modified: 2026/04/21 19:31:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -214,6 +214,15 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 			writeGlobalData(renderer);
 			for (auto &system: _systems)
 				system->renderInteraction(renderer);
+		}
+		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
+						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
+						.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
+						.addDepthWrite(depthImage, depthImage->getFormat())
+						.beginPass(ctx)) {
+			writeGlobalData(renderer);
+			DrawQueue::execute();
 		}
 		renderImg->transitionLayout(ctx.commandBuffer,
 					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

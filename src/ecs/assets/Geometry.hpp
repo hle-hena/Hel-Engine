@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:01:55 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/25 10:57:08                                        */
+/*  Last Modified: 2026/04/21 21:14:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,8 +29,9 @@ class	Device;
 
 struct	Vertex {
 	glm::vec3	position{0.};
-	glm::vec3	color{1.};
+	glm::vec2	uv{0.};
 	glm::vec3	normal{0.};
+	glm::vec3	color{0.};
 
 	static std::vector<VkVertexInputBindingDescription>		getBindingDescriptions(void);
 	static std::vector<VkVertexInputAttributeDescription>	getAttributeDescriptions(void);

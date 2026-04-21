@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 16:40:54                                        */
+/*  Last Modified: 2026/04/21 20:48:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -100,8 +100,8 @@ void	Sprite::render(const Renderer &renderer) {
 	if (!commandBuffer)	{ return ; }
 
 	auto	entities = _registry->view<
-				include<comp::Sprite, comp::Transform>,
-				exclude<comp::HideEntityTag>>();
+				include<comp::Texture, comp::Transform>,
+				exclude<comp::HideEntityTag, comp::Model>>();
 	auto	sampler = Sampler::getSampler(*_device, {});
 	auto	SSBO_d = _registry->buildComponentSet<comp::Transform, comp::Camera>(*_device, ctx.descriptorPool);
 	if (!SSBO_d)
@@ -109,7 +109,7 @@ void	Sprite::render(const Renderer &renderer) {
 	for (auto entity : entities) {
 		if (entity == renderHandle)	{ continue ; }
 		auto	transform = entities.get<comp::Transform>(entity);
-		auto	texture = _assetManager->get<Texture>(entities.get<comp::Sprite>
+		auto	texture = _assetManager->get<Texture>(entities.get<comp::Texture>
 			(entity)->filePath);
 		if (!texture)	{ continue ; }
 

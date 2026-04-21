@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/17 14:32:25                                        */
+/*  Last Modified: 2026/04/21 20:55:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -63,9 +63,14 @@ class	Transform : public ISystem {
 			uint32_t	transformIndex{0};
 			uint32_t	tintIndex{0};
 		};
-		static void	initLayout(Device &device, std::vector<VkDescriptorSetLayout> &setLayouts,
+		static void	initSimpleLayout(Device &device,
+				std::vector<VkDescriptorSetLayout> &setLayouts,
 				std::vector<VkPushConstantRange> &pushConstants);
-		static void	configurePipeline(PipelineConfig &config);
+		static void	configureSimplePipeline(PipelineConfig &config);
+		static void	initNDCLayout(Device &device,
+				std::vector<VkDescriptorSetLayout> &setLayouts,
+				std::vector<VkPushConstantRange> &pushConstants);
+		static void	configureNDCPipeline(PipelineConfig &config);
 
 		void	updateEntity(Entity::id handle);
 
@@ -88,12 +93,12 @@ class	Transform : public ISystem {
 			void	initRotate(void);
 			void	initAction(void);
 
-			Action							action{Action::Rotate};
+			static Action					action;
 			std::unordered_map<std::string,
 								Entity::id>	handles{};
-			
+ 
 			private:
-				static constexpr float			GIZMO_SENSIBILITY = 0.0001;
+				static constexpr float			GIZMO_SENSIBILITY = 0.00025;
 
 				uint32_t						_life{1};
 				Transform						*_baseSystem;
@@ -107,14 +112,15 @@ class	Transform : public ISystem {
 			friend class	Transform;
 		};
 
-		void	renderGizmo(const Renderer &renderer, GizmoContext &gizmoContext);
-
 		void	registerDrag(const FrameContext &ctx, GizmoContext &gizmo);
 		void	registerClick(const FrameContext &ctx, GizmoContext &gizmo);
+		void	renderGizmo(const Renderer &renderer, GizmoContext &gizmoContext);
+		void	renderUI(const Renderer &renderer, GizmoContext &gizmoContext);
 
 		AssetManager			*_assetManager;
 		InputState				*_inputState{nullptr};
 		PipelineMap				*_simplePipeline;
+		PipelineMap				*_NDCPipeline;
 
 		std::unordered_map<RenderRequest, GizmoContext, RenderRequest::Hasher>	_gizmoContexts;
 
@@ -125,24 +131,33 @@ class	Transform : public ISystem {
 struct	Transform::GizmoContext::EntityFactory {
 	using transformComp = ComponentHandle<hel::comp::Transform>;
 
-	EntityFactory(Transform::GizmoContext *baseSystem,
-				transformComp &parentTransform, float scale,
-				const std::string &entityName);
-	~EntityFactory(void);
-
+	EntityFactory(Transform::GizmoContext *baseGizmo,
+				transformComp parentTransform, float scale,
+				const std::string &entityName);	
 	EntityFactory	&setTint(float r, float g, float b);
 	EntityFactory	&setModel(const std::string &filepath);
 	EntityFactory	&setOffScale(const glm::vec3 &offScale);
 	EntityFactory	&setOffPos(const glm::vec3 &offPos);
 	EntityFactory	&setOffRot(const glm::quat &offRot);
 
+
+	EntityFactory(Transform::GizmoContext *baseGizmo,
+		const std::string &entityName);
+	EntityFactory	&setPos(float x, float y);
+	EntityFactory	&setScale(float x, float y);
+	EntityFactory	&setTexture(const std::string &filePath);
+
+
+	~EntityFactory(void);
+
 	private:
 		Transform::GizmoContext	*_baseGizmo;
-		transformComp			&_parentTransform;
+		transformComp			_parentTransform;
 		float					_scale;
 		Entity::id				_handle;
 
 		std::tuple<ComponentHandle<comp::Model>,
+			ComponentHandle<comp::Texture>,
 			ComponentHandle<comp::Transform>,
 			ComponentHandle<comp::OffsetTransform>,
 			ComponentHandle<comp::HideEntityTag>,

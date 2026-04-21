@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: gizmo.vert                                                          */
+/*  File: NDC.vert                                                            */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/04/09 19:38:48 by hle-hena                                  */
+/*  Created: 2026/04/21 14:56:31 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 18:59:21                                        */
+/*  Last Modified: 2026/04/21 21:06:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,9 +16,8 @@
 
 #version 450
 
-layout (location = 0) out vec3	fragColor;
-layout (location = 1) out vec3	fragPos;
-layout (location = 2) out vec3	fragNormal;
+layout (location = 0) out vec2	fragUV;
+layout (location = 1) out vec3	fragColor;
 
 layout (location = 0) in vec3	inPos;
 layout (location = 1) in vec2	inUV;
@@ -48,13 +47,15 @@ layout(set = 1, binding = 1) readonly buffer Tints {
 layout (push_constant) uniform Push {
 	uint	entityIndex;
 	uint	transformIndex;
+	uint	tintIndex;
 } push;
 
 void	main() {
 	Transform	transform = transforms.data[push.transformIndex];
-	vec4	positionInWorld = transform.modelMatrix * vec4(inPos, 1.0);
-	gl_Position = ubo.viewProjection * positionInWorld;
-	fragColor = inColor;
-	fragPos = vec3(positionInWorld);
-	fragNormal = normalize(mat3(transform.normalMatrix) * inNormal);
+	Tint	tint = push.tintIndex != 0xFFFFFFFF ? tints.data[push.tintIndex] : Tint(vec3(1.));
+	vec2	displacement = vec2(transform.modelMatrix[3][0], transform.modelMatrix[3][1]);
+	vec2	scale = vec2(transform.modelMatrix[0][0], transform.modelMatrix[1][1]);
+	gl_Position = vec4((inPos.xy * scale) + displacement, 0, 1.);
+	fragColor = inColor * tint.tint;
+	fragUV = inUV;
 }

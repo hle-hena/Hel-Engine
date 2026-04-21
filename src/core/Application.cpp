@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/16 19:06:59                                        */
+/*  Last Modified: 2026/04/21 20:48:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -88,7 +88,7 @@ void	Application::loadPrimaryScene(void) {
 	_registry.addComponent<comp::Camera>(secondCamera);
 
 	Entity::id	spriteHandle = _registry.createEntity();
-	if (auto sprite = _registry.addComponent<comp::Sprite>(spriteHandle).modify()) {
+	if (auto sprite = _registry.addComponent<comp::Texture>(spriteHandle).modify()) {
 		sprite->filePath = "assets/images/cameraSprite.png";
 	}
 	if (auto transform = _registry.addComponent<comp::Transform>(spriteHandle).modify()) {

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 18:00:18                                        */
+/*  Last Modified: 2026/04/21 18:58:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,8 +21,9 @@ layout (location = 1) out vec3	fragPos;
 layout (location = 2) out vec3	fragNormal;
 
 layout (location = 0) in vec3	inPos;
-layout (location = 1) in vec3	inColor;
+layout (location = 1) in vec2	inUV;
 layout (location = 2) in vec3	inNormal;
+layout (location = 3) in vec3	inColor;
 
 layout (binding = 0) uniform UniformBufferObject {
 	mat4	viewProjection;

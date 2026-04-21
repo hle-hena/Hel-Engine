@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/16 19:12:36                                        */
+/*  Last Modified: 2026/04/21 20:47:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -106,8 +106,8 @@ struct	Model {
 	std::string	filePath{""};
 };
 
-struct	Sprite {
-	static constexpr const char	*label = "Sprite";
+struct	Texture {
+	static constexpr const char	*label = "Texture";
 
 	std::string	filePath{""};
 };

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 18:25:25                                        */
+/*  Last Modified: 2026/04/21 21:12:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,7 +21,8 @@
 
 namespace	hel {
 
-uint32_t	RenderPass::_passIndex = 0;
+uint32_t			RenderPass::_passIndex = 0;
+VkPipelineLayout	Renderer::Draw::_lastLayout = VK_NULL_HANDLE;
 
 RenderPass::RenderPass(Device &device, VkCommandBuffer commandBuffer,
 						VkExtent2D extent)
@@ -125,11 +126,17 @@ uint32_t	Renderer::passIndex(void) const	{
 }
 
 Renderer::Draw	Renderer::drawCommand(PipelineMap *pipeline, ISystemKey) const {
-	pipeline->bindPipeline(_config, _commandBuffer);
-	Draw	drawCall {_device, _frameContext, _commandBuffer, pipeline->getLayout()};
+	Draw	drawCall(this, pipeline);
 	drawCall.addDynamicBinding(_frameContext.globalSet, sizeof(GlobalUBO), nullptr);
 	return (drawCall);
 }
+
+Renderer::Draw::Draw(const Renderer *renderer, PipelineMap *pipeline)
+	:	_pipeline(pipeline),
+		_device(&renderer->_device),
+		_frameContext(&renderer->_frameContext),
+		_commandBuffer(renderer->_commandBuffer),
+		_config(renderer->_config) {}
 
 Renderer::Draw	&Renderer::Draw::addIndexBuffer(VkBuffer buffer, VkDeviceSize offset,
 							VkIndexType indexType, uint32_t firstIndex) {
@@ -163,8 +170,11 @@ Renderer::Draw	&Renderer::Draw::addDynamicBinding(VkDescriptorSet set,
 void	Renderer::Draw::submit(void) {
 	if (!_count.has_value())
 		return ;
+	auto	pipelineLayout = _pipeline->getLayout();
+	if (_lastLayout != pipelineLayout)
+		_pipeline->bindPipeline(_config, _commandBuffer);
 	if (_hasPush) {
-		vkCmdPushConstants(_commandBuffer, _pipelineLayout,
+		vkCmdPushConstants(_commandBuffer, pipelineLayout,
 				_pushInfos.stage, 0, _pushInfos.structSize, _pushInfos.data);
 	}
 	if (_hasVertex) {
@@ -172,7 +182,7 @@ void	Renderer::Draw::submit(void) {
 							_vertexInfos.buffers, _vertexInfos.offsets);
 	}
 	vkCmdBindDescriptorSets(_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-							_pipelineLayout, 0, _sets.size(), _sets.data(),
+							pipelineLayout, 0, _sets.size(), _sets.data(),
 							_setsOffsets.size(), _setsOffsets.data());
 	if (_hasIndex) {
 		vkCmdBindIndexBuffer(_commandBuffer, _indexInfos.buffer,

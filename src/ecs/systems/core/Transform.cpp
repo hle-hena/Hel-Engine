@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/17 14:30:18                                        */
+/*  Last Modified: 2026/04/21 21:05:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,18 +16,23 @@
 
 #include "ecs/systems/core/Transform.hpp"
 #include "api/vulkan/PipelineMap.hpp"
+#include "api/vulkan/Renderer.hpp"
+#include "api/vulkan/Sampler.hpp"
 #include "core/Frame.hpp"
+#include "core/Queues.hpp"
 #include "ecs/Entity.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
 #include "ecs/AssetManager.hpp"
 #include "ecs/assets/Geometry.hpp"
+#include "ecs/assets/Texture.hpp"
 #include "platform/input/InputState.hpp"
 #include "platform/window/Window.hpp"
 #include "utils/mathUtils.hpp"
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <cstdint>
+#include <ui/ImGui/imgui.h>
 # define GLM_FORCE_RADIANS
 #include <glm/common.hpp>
 #include <glm/ext/quaternion_transform.hpp>
@@ -40,23 +45,40 @@
 
 namespace	hel::sys {
 
+Transform::Action	Transform::GizmoContext::action = Action::Move;
+
 void	Transform::init(void) {
 	_assetManager = &_registry->getAssetManager();
 	_inputState = &_registry->getInputState();
 
-	PipelineMap::Config	conf{};
-	conf.device = _device;
-	conf.assetManager = _assetManager;
-	conf.shaderPaths = {
-			"assets/shaders/gizmo.vert.spv",
-			"assets/shaders/gizmo.frag.spv"
-	};
-	conf.initPipelineLayout = initLayout;
-	conf.configurePipeline = configurePipeline;
-	_simplePipeline = createPipeline(conf);
+	{
+		PipelineMap::Config	conf{};
+		conf.device = _device;
+		conf.assetManager = _assetManager;
+		conf.shaderPaths = {
+				"assets/shaders/gizmo.vert.spv",
+				"assets/shaders/gizmo.frag.spv"
+		};
+		conf.initPipelineLayout = initSimpleLayout;
+		conf.configurePipeline = configureSimplePipeline;
+		_simplePipeline = createPipeline(conf);
+	}
+	{
+		PipelineMap::Config	conf{};
+		conf.device = _device;
+		conf.assetManager = _assetManager;
+		conf.shaderPaths = {
+				"assets/shaders/NDC.vert.spv",
+				"assets/shaders/NDC.frag.spv"
+		};
+		conf.initPipelineLayout = initNDCLayout;
+		conf.configurePipeline = configureNDCPipeline;
+		_NDCPipeline = createPipeline(conf);
+	}
 }
 
-void	Transform::initLayout(Device &device, std::vector<VkDescriptorSetLayout> &setLayouts,
+void	Transform::initSimpleLayout(Device &device,
+						std::vector<VkDescriptorSetLayout> &setLayouts,
 						std::vector<VkPushConstantRange> &pushConstants) {
 	VkPushConstantRange	vertexPush{};
 	vertexPush.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
@@ -68,8 +90,42 @@ void	Transform::initLayout(Device &device, std::vector<VkDescriptorSetLayout> &s
 							.getSetLayout());
 }
 
-void	Transform::configurePipeline(PipelineConfig &config) {
+void	Transform::configureSimplePipeline(PipelineConfig &config) {
 	Pipeline::setVertexInputDescriptions<Vertex>(config);
+
+	config.rasterizationInfo.cullMode = VK_CULL_MODE_NONE;
+
+	VkPipelineColorBlendAttachmentState	attachment{};
+	attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
+								VK_COLOR_COMPONENT_G_BIT |
+								VK_COLOR_COMPONENT_B_BIT |
+								VK_COLOR_COMPONENT_A_BIT;
+	attachment.blendEnable = VK_FALSE;
+	Pipeline::setBlendAttachment(config, 1, attachment);
+}
+
+void	Transform::initNDCLayout(Device &device,
+						std::vector<VkDescriptorSetLayout> &setLayouts,
+						std::vector<VkPushConstantRange> &pushConstants) {
+	VkPushConstantRange	vertexPush{};
+	vertexPush.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+	vertexPush.size = sizeof(EntityData);
+	pushConstants.push_back(vertexPush);
+	setLayouts.push_back(DescriptorFactory(device)
+							.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_ALL)
+							.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_ALL)
+							.getSetLayout());
+	setLayouts.push_back(DescriptorFactory(device)
+							.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+								VK_SHADER_STAGE_FRAGMENT_BIT, Sampler::getSampler(device, {}), 1)
+							.getSetLayout());
+}
+
+void	Transform::configureNDCPipeline(PipelineConfig &config) {
+	Pipeline::setVertexInputDescriptions<Vertex>(config);
+
+	config.depthStencilInfo.depthTestEnable = VK_FALSE;
+	config.depthStencilInfo.depthWriteEnable = VK_FALSE;
 
 	config.rasterizationInfo.cullMode = VK_CULL_MODE_NONE;
 
@@ -116,8 +172,19 @@ void	Transform::updateInteraction(const FrameContext &ctx) {
 			if (it == gizmo.handles.end())
 				return (false);
 
-			gizmo._startDrag = true;
-			gizmo._dragName = it->first;
+			std::string	name = it->first;
+			if (name.find("Icon") != std::string::npos) {
+				gizmo._fullyInit = false;
+				if (name.find("Move") != std::string::npos)
+					gizmo.action = Action::Move;
+				else if (name.find("Scale") != std::string::npos)
+					gizmo.action = Action::Scale;
+				else
+					gizmo.action = Action::Rotate;
+			} else {
+				gizmo._startDrag = true;
+				gizmo._dragName = it->first;
+			}
 		}
 		return (false);
 	});
@@ -145,7 +212,9 @@ void	Transform::renderGizmo(const Renderer &renderer, GizmoContext &gizmo) {
 
 	if (focusedTransform->isDirty || requestTransform->isDirty) {
 		float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05;
-		for (auto &[key, entity]: gizmo.handles) {
+		for (auto &[name, entity]: gizmo.handles) {
+			if (name.find("Icon") != std::string::npos)
+				continue ;
 			auto	transform = _registry->getComponent<comp::Transform>(entity).modify();
 			auto	offset = _registry->getComponent<comp::OffsetTransform>(entity);
 			transform->scale = glm::vec3(dist) * offset->scale;
@@ -159,7 +228,9 @@ void	Transform::renderGizmo(const Renderer &renderer, GizmoContext &gizmo) {
 	auto	set = _registry->buildComponentSet<comp::Transform, comp::Tint>(*_device, ctx.descriptorPool);
 	if (!set)
 		return ;
-	for (auto &[key, entity]: gizmo.handles) {
+	for (auto &[name, entity]: gizmo.handles) {
+		if (name.find("Icon") != std::string::npos)
+			continue ;
 		auto	mesh = _assetManager->get<Geometry>(_registry->getComponent<comp::Model>(entity)->filePath);
 		auto	transform = _registry->getComponent<comp::Transform>(entity);
 		auto	tint = _registry->getComponent<comp::Tint>(entity);
@@ -172,6 +243,55 @@ void	Transform::renderGizmo(const Renderer &renderer, GizmoContext &gizmo) {
 			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
 			.setVertexCount(mesh->triangleVertexCount)
 			.submit();
+	}
+}
+
+void	Transform::renderUI(const Renderer &renderer, GizmoContext &gizmo) {
+	{
+		auto	moveTint = _registry->getComponent<comp::Tint>(gizmo.handles["Move-Icon"]).modify();
+		auto	scaleTint = _registry->getComponent<comp::Tint>(gizmo.handles["Scale-Icon"]).modify();
+		auto	rotateTint = _registry->getComponent<comp::Tint>(gizmo.handles["Rotate-Icon"]).modify();
+
+		auto		activeColIm = ImGui::GetStyleColorVec4(ImGuiCol_HeaderActive);
+		auto		nonActiveColIm = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+		glm::vec3	activeCol(activeColIm.x, activeColIm.y, activeColIm.z);
+		glm::vec3	nonActiveCol(nonActiveColIm.x, nonActiveColIm.y, nonActiveColIm.z);
+		moveTint->tint = (gizmo.action == Action::Move ? activeCol : nonActiveCol);
+		scaleTint->tint = (gizmo.action == Action::Scale ? activeCol : nonActiveCol);
+		rotateTint->tint = (gizmo.action == Action::Rotate ? activeCol : nonActiveCol);
+	}
+
+	auto	ctx = renderer.frameContext();
+	auto	SSBO_d = _registry->buildComponentSet<comp::Transform, comp::Tint>(*_device, ctx.descriptorPool);
+	if (!SSBO_d)
+		return ;
+	auto	sampler = Sampler::getSampler(*_device, {});
+	for (auto &[name, entity]: gizmo.handles) {
+		if (name.find("Icon") == std::string::npos)
+			continue ;
+		auto	mesh = _assetManager->get<Geometry>(_registry->getComponent<comp::Model>(entity)->filePath);
+		auto	texture = _assetManager->get<Texture>(_registry->getComponent<comp::Texture>(entity)->filePath);
+		auto	transform = _registry->getComponent<comp::Transform>(entity);
+		auto	tint = _registry->getComponent<comp::Tint>(entity);
+		if (!mesh || !texture)	{ continue ; }
+
+		auto	texture_d = DescriptorFactory(*_device)
+							.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+								VK_SHADER_STAGE_FRAGMENT_BIT, sampler, 1)
+							.build(*ctx.descriptorPool);
+		DescriptorWriter(*_device, texture_d.get())
+			.writeImage(0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+						*texture->image.get(), texture->image->getFormat(), sampler)
+			.update();
+
+		auto	draw = drawCommand(renderer, _NDCPipeline)
+			.addPush(VK_SHADER_STAGE_ALL_GRAPHICS, EntityData{entity, transform.getDenseIndex(), tint.getDenseIndex()})
+			.addBinding(SSBO_d->sets[0])
+			.addBinding(texture_d->sets[0])
+			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
+			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
+			.setVertexCount(mesh->triangleVertexCount);
+		DrawQueue::requestDraw(0, std::move(draw));
 	}
 }
 
@@ -192,6 +312,7 @@ void	Transform::renderInteraction(const Renderer &renderer) {
 	registerClick(ctx, gizmo);
 	registerDrag(ctx, gizmo);
 	renderGizmo(renderer, gizmo);
+	renderUI(renderer, gizmo);
 }
 
 void	Transform::registerClick(const FrameContext &ctx, GizmoContext &gizmo) {
@@ -519,25 +640,54 @@ void	Transform::GizmoContext::initAction(void) {
 			initRotate();
 			break ;
 	}
+	if (_fullyInit) {
+		auto	col = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+		EntityFactory(this, "Move-Icon")
+			.setModel("assets/models/icon_space.obj")
+			.setTexture("assets/images/moveGizmoIcon.png")
+			.setTint(col.x, col.y, col.z)
+			.setPos(0.6, -0.9).setScale(0.1, 0.1);
+		EntityFactory(this, "Scale-Icon")
+			.setModel("assets/models/icon_space.obj")
+			.setTexture("assets/images/scaleGizmoIcon.png")
+			.setTint(col.x, col.y, col.z)
+			.setPos(0.75, -0.9).setScale(0.1, 0.1);
+		EntityFactory(this, "Rotate-Icon")
+			.setModel("assets/models/icon_space.obj")
+			.setTexture("assets/images/rotateGizmoIcon.png")
+			.setTint(col.x, col.y, col.z)
+			.setPos(0.9, -0.9).setScale(0.1, 0.1);
+	}
 }
 
 
 
 Transform::GizmoContext::EntityFactory::EntityFactory(
-	Transform::GizmoContext *baseGizmo, transformComp &parentTransform,
+	Transform::GizmoContext *baseGizmo, transformComp parentTransform,
 	float scale, const std::string &entityName)
 	:	_baseGizmo(baseGizmo),
 		_parentTransform(parentTransform),
 		_scale(scale) {
 	_handle = _baseGizmo->_registry->createEntity();
 	_addedComp = _baseGizmo->_registry->addComponents<comp::Model,
-						comp::Transform, comp::OffsetTransform,
+						comp::Texture, comp::Transform, comp::OffsetTransform,
 						comp::HideEntityTag, comp::HideEntityInHierarchyTag,
 						comp::NonSelectableTag, comp::Tint>(_handle);
-	auto	transform = std::get<1>(_addedComp).modify();
+	auto	transform = std::get<2>(_addedComp).modify();
 	transform->scale = glm::vec3(scale);
 	transform->rotation = parentTransform->rotation;
 	transform->position = parentTransform->position;
+	_baseGizmo->handles[entityName] = _handle;
+}
+
+Transform::GizmoContext::EntityFactory::EntityFactory(Transform::GizmoContext *baseGizmo,
+	const std::string &entityName)
+	:	_baseGizmo(baseGizmo){
+	_handle = _baseGizmo->_registry->createEntity();
+	_addedComp = _baseGizmo->_registry->addComponents<comp::Model,
+						comp::Texture, comp::Transform, comp::OffsetTransform,
+						comp::HideEntityTag, comp::HideEntityInHierarchyTag,
+						comp::NonSelectableTag, comp::Tint>(_handle);
 	_baseGizmo->handles[entityName] = _handle;
 }
 
@@ -547,7 +697,7 @@ Transform::GizmoContext::EntityFactory::~EntityFactory(void) {
 
 Transform::GizmoContext::EntityFactory	&
 Transform::GizmoContext::EntityFactory::setTint(float r, float g, float b) {
-	std::get<6>(_addedComp).modify()->tint = {r, g, b};
+	std::get<7>(_addedComp).modify()->tint = {r, g, b};
 	return (*this);
 }
 
@@ -559,10 +709,10 @@ Transform::GizmoContext::EntityFactory::setModel(const std::string &filepath) {
 
 Transform::GizmoContext::EntityFactory	&
 Transform::GizmoContext::EntityFactory::setOffScale(const glm::vec3 &offScale) {
-	auto	offset = std::get<2>(_addedComp).modify();
+	auto	offset = std::get<3>(_addedComp).modify();
 	offset->scale = offScale;
 
-	auto	transform = std::get<1>(_addedComp).modify();
+	auto	transform = std::get<2>(_addedComp).modify();
 	transform->scale = glm::vec3(_scale) * offset->scale;
 	transform->position = _parentTransform->position + (transform->rotation
 							* (offset->pos * transform->scale));
@@ -571,10 +721,10 @@ Transform::GizmoContext::EntityFactory::setOffScale(const glm::vec3 &offScale) {
 
 Transform::GizmoContext::EntityFactory	&
 Transform::GizmoContext::EntityFactory::setOffPos(const glm::vec3 &offPos) {
-	auto	offset = std::get<2>(_addedComp).modify();
+	auto	offset = std::get<3>(_addedComp).modify();
 	offset->pos = offPos;
 
-	auto	transform = std::get<1>(_addedComp).modify();
+	auto	transform = std::get<2>(_addedComp).modify();
 	transform->position = _parentTransform->position + (transform->rotation
 							* (offset->pos * transform->scale));
 	return (*this);
@@ -582,13 +732,35 @@ Transform::GizmoContext::EntityFactory::setOffPos(const glm::vec3 &offPos) {
 
 Transform::GizmoContext::EntityFactory	&
 Transform::GizmoContext::EntityFactory::setOffRot(const glm::quat &offRot) {
-	auto	offset = std::get<2>(_addedComp).modify();
+	auto	offset = std::get<3>(_addedComp).modify();
 	offset->rotation = offRot;
 
-	auto	transform = std::get<1>(_addedComp).modify();
+	auto	transform = std::get<2>(_addedComp).modify();
 	transform->rotation = _parentTransform->rotation * offset->rotation;
 	transform->position = _parentTransform->position + (transform->rotation
 							* (offset->pos * transform->scale));
+	return (*this);
+}
+
+Transform::GizmoContext::EntityFactory	&
+Transform::GizmoContext::EntityFactory::setPos(float x, float y) {
+	auto	transform = std::get<2>(_addedComp).modify();
+	transform->position.x = x;
+	transform->position.y = y;
+	return (*this);
+}
+
+Transform::GizmoContext::EntityFactory	&
+Transform::GizmoContext::EntityFactory::setScale(float x, float y) {
+	auto	transform = std::get<2>(_addedComp).modify();
+	transform->scale.x = x;
+	transform->scale.y = y;
+	return (*this);
+}
+
+Transform::GizmoContext::EntityFactory	&
+Transform::GizmoContext::EntityFactory::setTexture(const std::string &filePath) {
+	std::get<1>(_addedComp).modify()->filePath = filePath;
 	return (*this);
 }
 

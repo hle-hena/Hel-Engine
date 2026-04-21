@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:03:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 18:09:18                                        */
+/*  Last Modified: 2026/04/21 18:58:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,7 +37,7 @@ struct hash<hel::Vertex>
 	size_t	operator()(const hel::Vertex &vertex) const
 	{
 		size_t	seed = 0;
-		hel::mathUtils::hashCombine(seed, vertex.position, vertex.color, vertex.normal);
+		hel::mathUtils::hashCombine(seed, vertex.position, vertex.uv, vertex.normal, vertex.color);
 		return (seed);
 	}	
 };
@@ -58,14 +58,16 @@ std::vector<VkVertexInputAttributeDescription>	Vertex::getAttributeDescriptions(
 	std::vector<VkVertexInputAttributeDescription>	attributeDescriptions{};
 
 	attributeDescriptions.push_back({0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)});
-	attributeDescriptions.push_back({1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)});
+	attributeDescriptions.push_back({1, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)});
 	attributeDescriptions.push_back({2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal)});
+	attributeDescriptions.push_back({3, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)});
 
 	return (attributeDescriptions);
 }
 
 bool	Vertex::operator==(const Vertex &other) const {
-	return (position == other.position && color == other.color && normal == other.normal);
+	return (position == other.position && uv == other.uv
+			&& normal == other.normal && color == other.color);
 }
 
 Geometry::GeometryVectors	Geometry::loadFile(const std::string &path, bool fullLoad) {
@@ -97,18 +99,23 @@ Geometry::GeometryVectors	Geometry::loadFile(const std::string &path, bool fullL
 						attrib.vertices[3 * index.vertex_index + 2]
 					};
 
-					vertex.color= {
+					vertex.color = {
 						attrib.colors[3 * index.vertex_index + 0],
 						attrib.colors[3 * index.vertex_index + 1],
 						attrib.colors[3 * index.vertex_index + 2]
 					};
 				}
-				if (index.normal_index >= 0)
-				{
+				if (index.normal_index >= 0) {
 					vertex.normal = {
 						attrib.normals[3 * index.normal_index + 0],
 						attrib.normals[3 * index.normal_index + 1],
 						attrib.normals[3 * index.normal_index + 2]
+					};
+				}
+				if (index.texcoord_index >= 0) {
+					vertex.uv = {
+						attrib.texcoords[2 * index.texcoord_index + 0],
+						1 - attrib.texcoords[2 * index.texcoord_index + 1]
 					};
 				}
 				if (uniqueVertices.find(vertex) == uniqueVertices.end()) {

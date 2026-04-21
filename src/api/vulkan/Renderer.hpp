@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 18:25:14                                        */
+/*  Last Modified: 2026/04/21 21:12:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -99,6 +99,7 @@ class Renderer {
 		RenderingConfig		_config;
 
 		RenderPass			_pass;
+	friend struct	Draw;
 };
 
 struct	Renderer::Draw {
@@ -115,10 +116,7 @@ struct	Renderer::Draw {
 	void	submit(void);
 
 	private:
-		Draw(Device &device, FrameContext &frameContext, VkCommandBuffer commandBuffer,
-			VkPipelineLayout pipelineLayout)
-			: _device{&device}, _frameContext{&frameContext},
-				_commandBuffer{commandBuffer}, _pipelineLayout{pipelineLayout} {}
+		Draw(const Renderer *renderer, PipelineMap *pipeline);
 
 		struct	PushInfos {
 			VkShaderStageFlags	stage;
@@ -136,10 +134,11 @@ struct	Renderer::Draw {
 			VkIndexType		indexType;
 		};
 
+		PipelineMap						*_pipeline;
 		Device							*_device;
 		FrameContext					*_frameContext;
 		VkCommandBuffer					_commandBuffer;
-		VkPipelineLayout				_pipelineLayout;
+		RenderingConfig					_config;
 		std::vector<VkDescriptorSet>	_sets{};
 		std::vector<uint32_t>			_setsOffsets{};
 		VertexInfos						_vertexInfos;
@@ -150,6 +149,8 @@ struct	Renderer::Draw {
 		bool							_hasPush{false};
 		uint32_t						_firstIndex{0};
 		std::optional<uint32_t>			_count;
+
+		static VkPipelineLayout			_lastLayout;
 
 	friend class Renderer;
 };
