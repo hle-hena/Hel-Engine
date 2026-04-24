@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 21:12:12                                        */
+/*  Last Modified: 2026/04/24 16:26:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,7 +24,6 @@
 
 #include "utils/Setters.hpp"
 #include "api/vulkan/PipelineMap.hpp"
-#include "api/vulkan/Descriptors.hpp"
 
 namespace	hel {
 
@@ -150,7 +149,7 @@ struct	Renderer::Draw {
 		uint32_t						_firstIndex{0};
 		std::optional<uint32_t>			_count;
 
-		static VkPipelineLayout			_lastLayout;
+		static PipelineMap				*_lastPipeline;
 
 	friend class Renderer;
 };

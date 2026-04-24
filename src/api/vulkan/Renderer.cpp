@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 21:12:41                                        */
+/*  Last Modified: 2026/04/24 16:26:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,8 +21,8 @@
 
 namespace	hel {
 
-uint32_t			RenderPass::_passIndex = 0;
-VkPipelineLayout	Renderer::Draw::_lastLayout = VK_NULL_HANDLE;
+uint32_t	RenderPass::_passIndex = 0;
+PipelineMap	*Renderer::Draw::_lastPipeline = VK_NULL_HANDLE;
 
 RenderPass::RenderPass(Device &device, VkCommandBuffer commandBuffer,
 						VkExtent2D extent)
@@ -170,9 +170,9 @@ Renderer::Draw	&Renderer::Draw::addDynamicBinding(VkDescriptorSet set,
 void	Renderer::Draw::submit(void) {
 	if (!_count.has_value())
 		return ;
-	auto	pipelineLayout = _pipeline->getLayout();
-	if (_lastLayout != pipelineLayout)
+	if (_lastPipeline != _pipeline)
 		_pipeline->bindPipeline(_config, _commandBuffer);
+	auto	pipelineLayout = _pipeline->getLayout();
 	if (_hasPush) {
 		vkCmdPushConstants(_commandBuffer, pipelineLayout,
 				_pushInfos.stage, 0, _pushInfos.structSize, _pushInfos.data);

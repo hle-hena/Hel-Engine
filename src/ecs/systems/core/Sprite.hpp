@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/16 19:03:13                                        */
+/*  Last Modified: 2026/04/24 15:13:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,7 +20,6 @@
 # include <glm/glm.hpp>
 
 #include "api/vulkan/Descriptors.hpp"
-#include "core/Frame.hpp"
 # include "ecs/systems/ISystem.hpp"
 # include "api/vulkan/PipelineMap.hpp"
 
@@ -39,7 +38,6 @@ class	Sprite : public ISystem {
 
 		void	init(void) override;
 
-		void	update(const FrameContext &ctx) override;
 		void	render(const Renderer &renderer) override;
 
 	private:
@@ -55,12 +53,6 @@ class	Sprite : public ISystem {
 
 		AssetManager	*_assetManager;
 		PipelineMap		*_pipeline;
-
-		struct	Context {
-			std::vector<std::unique_ptr<DescriptorSet>>	sets;
-			uint32_t	frameIndex;
-		};
-		std::unordered_map<RenderRequest, Context, RenderRequest::Hasher>	_frameContexts;
 };
 
 }

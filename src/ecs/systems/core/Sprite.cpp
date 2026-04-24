@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 20:48:38                                        */
+/*  Last Modified: 2026/04/24 16:21:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -78,19 +78,9 @@ void	Sprite::configurePipeline(PipelineConfig &config) {
 	Pipeline::setBlendAttachment(config, 1, attachment);
 }
 
-void	Sprite::update(const FrameContext &ctx) {
-	std::erase_if(_frameContexts, [&](auto &item){
-		auto	&[key, context] = item;
-		return (context.frameIndex == ctx.frameIndex);
-	});
-}
-
 void	Sprite::render(const Renderer &renderer) {
 	auto	ctx = renderer.frameContext();
 
-	auto	[it, inserted] = _frameContexts.try_emplace(*renderer.frameContext().request);
-	auto	&context = it->second;
-	context.frameIndex = ctx.frameIndex;
 	auto	renderHandle = ctx.request->handle;
 	auto	renderCam = _registry->getComponent<comp::Camera>(renderHandle);
 	auto	renderTransform = _registry->getComponent<comp::Transform>(renderHandle);
@@ -117,10 +107,6 @@ void	Sprite::render(const Renderer &renderer) {
 							.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 								VK_SHADER_STAGE_FRAGMENT_BIT, sampler, 1)
 							.build(*ctx.descriptorPool);
-		// auto	&texture_d = context.sets.emplace_back(DescriptorFactory(*_device)
-		// 					.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-		// 						VK_SHADER_STAGE_FRAGMENT_BIT, sampler, 1)
-		// 					.build(*ctx.descriptorPool));
 		DescriptorWriter(*_device, texture_d.get())
 			.writeImage(0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 						*texture->image.get(), texture->image->getFormat(), sampler)

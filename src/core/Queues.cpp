@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/21 19:38:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 18:32:17                                        */
+/*  Last Modified: 2026/04/24 16:29:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -41,6 +41,7 @@ void	DrawQueue::requestDraw(uint32_t level, Renderer::Draw &&drawCommand) {
 }
 
 void	DrawQueue::execute(void) {
+	//TODO -> try to keep the order of the request which are on the same level.
 	std::sort(_requests.begin(), _requests.end(), [](const auto &a, const auto &b) {
 		return (a.first < b.first);
 	});
