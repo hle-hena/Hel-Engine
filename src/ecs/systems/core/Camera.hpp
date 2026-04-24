@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:58:58                                        */
+/*  Last Modified: 2026/04/14 11:29:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <cstdint>
 # include <glm/glm.hpp>
 
 # include "ecs/systems/ISystem.hpp"
@@ -24,7 +25,6 @@
 namespace	hel {
 
 class	AssetManager;
-class	Window;
 
 }
 
@@ -38,24 +38,25 @@ class	Camera : public ISystem {
 		void	init(void) override;
 
 		void	update(const FrameContext &ctx) override;
-		void	postProcessing(const Renderer &conf) override;
+		void	renderInteraction(const Renderer &renderer) override;
 
 	private:
 		struct	FrustumPush {
 			glm::mat4	modelMatrix;
 			glm::mat4	invViewProjection;
 		};
-		struct	SpritePush {
-			glm::vec3	worldPos;
-			float		size;
+		struct	EntityData {
+			uint32_t	entityIndex{0};
+			uint32_t	transformIndex{0};
+			float		size{0};
 		};
 
 		static void	initFrustumLayout(Device &device, std::vector<VkDescriptorSetLayout> &setLayouts,
 				std::vector<VkPushConstantRange> &pushConstants);
-		static void	configureFrustumPipeline(PipelineConfigInfo &config);
+		static void	configureFrustumPipeline(PipelineConfig &config);
 		static void	initSpriteLayout(Device &device, std::vector<VkDescriptorSetLayout> &setLayouts,
 				std::vector<VkPushConstantRange> &pushConstants);
-		static void	configureSpritePipeline(PipelineConfigInfo &config);
+		static void	configureSpritePipeline(PipelineConfig &config);
 
 		AssetManager	*_assetManager;
 		PipelineMap		*_frustumPipeline;

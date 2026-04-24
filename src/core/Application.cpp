@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 11:37:42                                        */
+/*  Last Modified: 2026/04/21 20:48:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -61,8 +61,7 @@ void	Application::loadPrimaryScene(void) {
 	}
 	if (auto transform = _registry.addComponent<comp::Transform>(handle).modify()) {
 		transform->position = glm::vec3(-2.f, 0.f, -2.f);
-		transform->scale = glm::vec3(4.f, 2.f, 4.f);
-		transform->scale.y = -transform->scale.y;
+		transform->scale = glm::vec3(4.f);
 	}
 	Entity::id	secondHandle = _registry.createEntity();
 	if (auto mesh = _registry.addComponent<comp::Model>(secondHandle).modify()) {
@@ -71,7 +70,6 @@ void	Application::loadPrimaryScene(void) {
 	if (auto transform = _registry.addComponent<comp::Transform>(secondHandle).modify()) {
 		transform->position = glm::vec3(2.f, 0.f, 2.f);
 		transform->scale = glm::vec3(4.f);
-		transform->scale.y = -transform->scale.y;
 	}
 	Entity::id	thirdHandle = _registry.createEntity();
 	if (auto mesh = _registry.addComponent<comp::Model>(thirdHandle).modify()) {
@@ -81,6 +79,22 @@ void	Application::loadPrimaryScene(void) {
 		transform->position = glm::vec3(0.f, 0.f, 0.f);
 		transform->scale = glm::vec3(400.f);
 	}
+
+	Entity::id	secondCamera = _registry.createEntity();
+	if (auto transform = _registry.addComponent<comp::Transform>(secondCamera).modify())
+		transform->position = {0.f, 0.f, 0.f};
+	_registry.addComponent<comp::Controller>(secondCamera);
+	_registry.addComponent<comp::EditorControllerTag>(secondCamera);
+	_registry.addComponent<comp::Camera>(secondCamera);
+
+	Entity::id	spriteHandle = _registry.createEntity();
+	if (auto sprite = _registry.addComponent<comp::Texture>(spriteHandle).modify()) {
+		sprite->filePath = "assets/images/cameraSprite.png";
+	}
+	if (auto transform = _registry.addComponent<comp::Transform>(spriteHandle).modify()) {
+		transform->position = glm::vec3(0.f, 0.f, 0.f);
+		transform->scale = glm::vec3(1.f);
+	}
 }
 
 void	Application::run(void) {
@@ -88,7 +102,7 @@ void	Application::run(void) {
 
 	while (_appWindow && _healthy) {
 		_registry.getInputState().newFrame();
-		glfwPollEvents();
+		_appWindow->pollEvents();
 
 		if (_appWindow->shouldClose()) {
 			break ;

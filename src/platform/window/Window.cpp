@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 20:14:08                                        */
+/*  Last Modified: 2026/04/16 15:32:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,8 +15,10 @@
 /* *************************************************************************  */
 
 #include "platform/window/Window.hpp"
+#include "ecs/Component.hpp"
 #include "platform/window/GLFW.hpp"
 #include "core/Application.hpp"
+#include <GLFW/glfw3.h>
 
 namespace	hel {
 
@@ -99,6 +101,12 @@ void	Window::deleteWindow(void) {
 	GLFW::release();
 }
 
+void	Window::pollEvents(void) {
+	glfwPollEvents();
+	if (_focusChanged > 0)
+		--_focusChanged;
+}
+
 bool	Window::shouldClose(void) {
 	auto	&inputState = _app.getRegistry().getInputState();
 
@@ -122,6 +130,14 @@ void	Window::setEntityReference(Entity::id handle) {
 	_entityHandle = handle;
 }
 
+void	Window::setEntityFocus(Entity::id handle) {
+	if (_focusHandle.has_value())
+		_app.getRegistry().removeComponent<comp::SelectedTag>(*_focusHandle);
+	_focusHandle = handle;
+	_focusChanged = 2;
+	_app.getRegistry().addComponent<comp::SelectedTag>(*_focusHandle);
+}
+
 void	Window::frameBufferResizedCallback(GLFWwindow *window,
 												int width, int height) {
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
@@ -141,7 +157,7 @@ void	Window::keyCallback(GLFWwindow *window, int key, int,
 							int action, int mods) {
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
-	if (appWindow->_uiContext.capturesKeyboard())
+	if (action != GLFW_RELEASE && appWindow->_uiContext.capturesKeyboard())
 		return ;
 	appWindow->getApp().getRegistry().getInputState().setState<input::Key>(key, action, mods);
 }
@@ -150,7 +166,7 @@ void	Window::mouseButtonCallback(GLFWwindow *window, int button,
 							int action, int mods) {
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
-	if (appWindow->_uiContext.capturesMouse())
+	if (action != GLFW_RELEASE && appWindow->_uiContext.capturesMouse())
 		return ;
 	appWindow->getApp().getRegistry().getInputState().setState<input::Mouse>(button, action, mods);
 }

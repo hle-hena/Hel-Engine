@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: RenderQueue.cpp                                                     */
+/*  File: sprite.frag                                                         */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/03/21 19:38:48 by hle-hena                                  */
+/*  Created: 2026/04/16 18:05:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 19:46:44                                        */
+/*  Last Modified: 2026/04/16 18:24:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,18 +14,27 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "core/RenderQueue.hpp"
+#version 450
 
-namespace	hel {
+layout(location = 0) out vec4	outColor;
+layout(location = 1) out uint	outEntityIndex;
 
-std::vector<RenderRequest>	RenderQueue::_requests = {};
+layout(location = 0) in     vec2 inUV;
 
-void	RenderQueue::push(const RenderRequest &request) {
-	_requests.push_back(request);
-}
+layout(set = 2, binding = 0) uniform sampler2D iconTexture;
 
-std::vector<RenderRequest>	RenderQueue::flush(void) {
-	return (std::move(_requests));
-}
+layout (push_constant) uniform Push {
+	uint	entityIndex;
+	uint	transformIndex;
+	uint	cameraIndex;
+}	push;
 
+
+void	main() {
+    vec4 texColor = texture(iconTexture, inUV);
+    outColor = texColor;
+    outEntityIndex = push.entityIndex;
+
+    if (outColor.a < 0.01)
+        discard;
 }

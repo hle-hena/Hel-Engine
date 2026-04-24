@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/11 18:30:10                                        */
+/*  Last Modified: 2026/04/16 15:30:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,7 @@
 #include "Registry.hpp"
 #include "api/vulkan/Swapchain.hpp"
 #include <iostream>
+#include <tuple>
 #include <type_traits>
 
 namespace	hel {
@@ -119,7 +120,7 @@ template <typename Component>
 void	Pool<Component>::removePendingBuffers(void) {
 	std::erase_if(_pendingBuffers, [](auto &item){
 		auto	&[frameLeft, buffer] = item;
-		return (--frameLeft == 0);
+		return (frameLeft-- == 0);
 	});
 }
 
@@ -144,8 +145,8 @@ const char	*Pool<Component>::getTypeName(void) const {
 
 
 
-template <typename Component, typename... Args>
-ComponentHandle<Component>	Registry::addComponent(Entity::id entityHandle, Args&&... args) {
+template <typename Component>
+ComponentHandle<Component>	Registry::addComponent(Entity::id entityHandle) {
 	ComponentHandle<Component>	compHandle;
 	if (!isValidHandle(entityHandle))	{ return (compHandle); }
 	compHandle._pool = getPool<Component>();
@@ -156,17 +157,20 @@ ComponentHandle<Component>	Registry::addComponent(Entity::id entityHandle, Args&
 	if (compHandle._index != Entity::NOT_REGISTERED) {
 		std::cout << "Cannot add a component when one already exists. " <<
 			"Use getComponent to get it and modify to modifiy it." << std::endl;
-		compHandle._comp = &compHandle._pool->components[*compHandle._index];
 		return (compHandle);
 	}
-	Component	&component = compHandle._pool->components.emplace_back(std::forward<Args>(args)...);
+	compHandle._pool->components.emplace_back();
 	compHandle._pool->entities.push_back(entityHandle);
 	compHandle._pool->indices[entityIndex] = compHandle._pool->components.size() - 1;
 	compHandle._index = compHandle._pool->indices[entityIndex];
-	compHandle._comp = &component;
 	compHandle._pool->isDirty = true;
-	prepareComponent(component);
 	return (compHandle);
+}
+
+template <typename... Components>
+std::tuple<ComponentHandle<Components>...>	Registry::addComponents(Entity::id handle) {
+	static_assert(is_unique<Components...>::value, "Duplicate values in the addComponents call.");
+	return (std::make_tuple(addComponent<Components>(handle)...));
 }
 
 template <typename Component>
@@ -181,15 +185,14 @@ ComponentHandle<Component>	Registry::getComponent(Entity::id entityHandle) {
 	if (denseIndex == Entity::NOT_REGISTERED)
 		return (compHandle);
 	compHandle._index = denseIndex;
-	compHandle._comp = &compHandle._pool->components[denseIndex];
 	return (compHandle);
 }
 
 template <typename Component>
 void	Registry::removeComponent(Entity::id handle) {
 	if (!isValidHandle(handle))	{ return ; }
-	Pool<Component>	&pool = getPool<Component>();
-	pool.removeEntity(handle);
+	Pool<Component>	*pool = getPool<Component>();
+	pool->removeEntity(handle);
 }
 
 
@@ -206,18 +209,10 @@ Pool<Component>	*Registry::getPool() {
 	return (static_cast<Pool<Component> *>(pool->second.get()));
 }
 
-template <typename... Components>
-View<Components...> Registry::view() {
-	static_assert(sizeof...(Components) > 0, "Cannot create an empty View. Please provide at least one component");
-	static_assert(is_unique<Components...>::value, "View contains duplicate component types");
-	return (View<Components...>(*this));
-}
-
-template <typename Component>
-void	Registry::prepareComponent(Component &component) {
-	if constexpr (requires { component.init(_assetManager); }) {
-		component.init(_assetManager);
-	}
+template <typename Include, typename Exclude>
+View<Include, Exclude>	Registry::view() {
+	//TODO -> check if Include or Exclude has duplicates/isEmpty.
+	return (View<Include, Exclude>(*this));
 }
 
 template <typename T>
@@ -233,6 +228,7 @@ DescriptorSet::ptr	Registry::buildComponentSet(Device &device,
 	bool	invalid = (!isGpuVisible<Component>() || ...);
 	if (invalid)
 		return (nullptr);
+	(getPool<Component>()->flushWrites(device), ...);
 	auto		factory = DescriptorFactory(device);
 	uint32_t	binding = 0;
 	((factory.addBinding(binding++, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
@@ -251,7 +247,7 @@ DescriptorSet::ptr	Registry::buildComponentSet(Device &device,
 template <typename Component>
 ModificationProxy<Component>	ComponentHandle<Component>::modify(void) {
 	if (_index.has_value())
-		return {const_cast<Component *>(_comp), _pool, *_index};
+		return {_pool, *_index};
 	return {};
 }
 

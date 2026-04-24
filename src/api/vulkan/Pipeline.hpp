@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/05 12:26:57                                        */
+/*  Last Modified: 2026/04/03 15:20:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,26 +25,25 @@ namespace hel {
 
 class	Device;
 
-struct	PipelineConfigInfo {
-	PipelineConfigInfo() = default;
-	PipelineConfigInfo(const PipelineConfigInfo &) = delete;
-	PipelineConfigInfo	&operator=(const PipelineConfigInfo&) = delete;
+struct	PipelineConfig {
+	PipelineConfig() = default;
+	PipelineConfig(const PipelineConfig &) = delete;
+	PipelineConfig	&operator=(const PipelineConfig&) = delete;
 
-	std::vector<VkVertexInputAttributeDescription>	attributeDescription{};
-	std::vector<VkVertexInputBindingDescription>	bindingDescription{};
-	VkPipelineViewportStateCreateInfo				viewportInfo;
-	VkPipelineInputAssemblyStateCreateInfo			inputAssemblyInfo;
-	VkPipelineRasterizationStateCreateInfo			rasterizationInfo;
-	VkPipelineMultisampleStateCreateInfo			multisampleInfo;
-	VkPipelineColorBlendAttachmentState				colorBlendAttachment;
-	VkPipelineColorBlendStateCreateInfo				colorBlendInfo;
-	VkPipelineDepthStencilStateCreateInfo			depthStencilInfo;
-	std::vector<VkDynamicState>						dynamicStateEnables{};
-	VkPipelineDynamicStateCreateInfo				dynamicStateInfo;
-	VkPipelineLayout								pipelineLayout{nullptr};
-	uint32_t										subpass{0};
+	std::vector<VkVertexInputAttributeDescription>		attributeDescription{};
+	std::vector<VkVertexInputBindingDescription>		bindingDescription{};
+	VkPipelineViewportStateCreateInfo					viewportInfo;
+	VkPipelineInputAssemblyStateCreateInfo				inputAssemblyInfo;
+	VkPipelineRasterizationStateCreateInfo				rasterizationInfo;
+	VkPipelineMultisampleStateCreateInfo				multisampleInfo;
+	std::vector<VkPipelineColorBlendAttachmentState>	colorBlendAttachment{};
+	VkPipelineDepthStencilStateCreateInfo				depthStencilInfo;
+	std::vector<VkDynamicState>							dynamicStateEnables{};
+	VkPipelineDynamicStateCreateInfo					dynamicStateInfo;
+	VkPipelineLayout									pipelineLayout{nullptr};
+	uint32_t											subpass{0};
 
-	VkPipelineRenderingCreateInfo					renderingInfo{};
+	VkPipelineRenderingCreateInfo						renderingInfo{};
 };
 
 class	Pipeline {
@@ -63,13 +62,15 @@ class	Pipeline {
 		}
 
 		void	bind(VkCommandBuffer commandBuffer);
-		bool	createGraphicsPipeline(const PipelineConfigInfo &configInfo,
+		bool	createGraphicsPipeline(PipelineConfig &config,
 					const std::vector<VkPipelineShaderStageCreateInfo> &stageInfo);
 		void	deleteGraphicsPipeline(void);
 
-		static void	defaultPipelineConfigInfo(PipelineConfigInfo &configInfo);
+		static void	defaultPipelineconfig(PipelineConfig &config);
+		static void	setBlendAttachment(PipelineConfig &config, uint32_t index,
+						VkPipelineColorBlendAttachmentState attachment);
 		template <typename VertexType>
-		static void	setVertexInputDescriptions(PipelineConfigInfo &configInfo);
+		static void	setVertexInputDescriptions(PipelineConfig &config);
 
 	private:
 		bool				_healthy{true};
