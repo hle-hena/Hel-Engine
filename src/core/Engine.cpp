@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:56:57                                        */
+/*  Last Modified: 2026/04/21 19:31:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,7 +15,7 @@
 /* *************************************************************************  */
 
 #include "core/Engine.hpp"
-#include "core/RenderQueue.hpp"
+#include "core/Queues.hpp"
 
 #include "api/vulkan/Device.hpp"
 #include "api/vulkan/Swapchain.hpp"
@@ -35,6 +35,7 @@
 #include "ecs/systems/core/EditorController.hpp"
 #include "ecs/systems/core/HideMouse.hpp"
 #include "ecs/systems/core/Render.hpp"
+#include "ecs/systems/core/Sprite.hpp"
 #include "ecs/systems/core/Selection.hpp"
 #include "ecs/systems/core/Transform.hpp"
 #include "ecs/systems/runtime/BaseController.hpp"
@@ -74,6 +75,7 @@ bool	Engine::init(Window &window) {
 	_systems.push_back(std::make_unique<sys::Transform>());
 	_systems.push_back(std::make_unique<sys::Camera>());
 	_systems.push_back(std::make_unique<sys::Render>());
+	_systems.push_back(std::make_unique<sys::Sprite>());
 	_systems.push_back(std::make_unique<sys::UI>());
 	_systems.push_back(std::make_unique<sys::Selection>());
 
@@ -128,25 +130,22 @@ void	Engine::createImagePool(void) {
 }
 
 void	Engine::tick(Window *window, uint32_t frameIndex) {
+	window->getSwapchain().waitForFrameFence(frameIndex);
 	auto	frameCtx = _frame.getContext(window, frameIndex, _lastFrameTime);
 	auto	&ui = window->getUI();
 	_lastFrameTime = _timer.lap();
 	_imagePool->releaseAll();
 
-	UITick(ui, frameCtx);
-	updateTick(frameCtx);
+	updateTick(ui, frameCtx);
 	_registry.updateBuffers(_device);
 	renderTick(window, ui, frameCtx);
 }
 
-void	Engine::UITick(UiContext &ui, FrameContext &frameCtx) {
+void	Engine::updateTick(UiContext &ui, FrameContext &frameCtx) {
 	ui.newFrame();
 	for (auto &system: _systems)
-		system->registerUI(frameCtx);
+		system->updateInteraction(frameCtx);
 	ui.endFrame();
-}
-
-void	Engine::updateTick(FrameContext &frameCtx) {
 	for (auto &system: _systems)
 		system->update(frameCtx);
 }
@@ -173,29 +172,57 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 	if (vkBeginCommandBuffer(ctx.commandBuffer, &beginInfo))
 		return ;
 	for (auto &renderRequest: RenderQueue::flush()) {
-		auto	renderImg = renderRequest.img;
+		Image	*entityImg = _imagePool->acquire(Image::Config()
+							.setFormats({VK_FORMAT_R32_UINT})
+							.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+							.setUsage(VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
+							.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
+		auto	renderImg = renderRequest.mainImage;
 		ctx.request = &renderRequest;
+		renderRequest.secondaryImages["entityID"] = entityImg;
 		updateGlobalData(ctx);
-		for (auto &system: _systems)
-			system->updateWindow(ctx);
+		VkClearValue	clear{};
+		clear.color.uint32[0] = 0xFFFFFFFF;
 		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
+						.setDepthStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
+						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
+						.setClearValue(clear)
+						.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
+						.addDepthWrite(depthImage, depthImage->getFormat())
+						.beginPass(ctx)) {
+			writeGlobalData(renderer);
+			for (auto &system: _systems)
+				system->render(renderer);
+		}
+		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
+						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+						.setDepthLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
 						.setDepthStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
 						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
 						.addDepthWrite(depthImage, depthImage->getFormat())
 						.beginPass(ctx)) {
 			writeGlobalData(renderer);
 			for (auto &system: _systems)
-				system->render(ctx, renderer);
+				system->postProcessing(renderer);
 		}
 		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
 						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
-						.setDepthLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
 						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
+						.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
 						.addDepthWrite(depthImage, depthImage->getFormat())
 						.beginPass(ctx)) {
 			writeGlobalData(renderer);
 			for (auto &system: _systems)
-				system->postProcessing(renderer);
+				system->renderInteraction(renderer);
+		}
+		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
+						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
+						.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
+						.addDepthWrite(depthImage, depthImage->getFormat())
+						.beginPass(ctx)) {
+			writeGlobalData(renderer);
+			DrawQueue::execute();
 		}
 		renderImg->transitionLayout(ctx.commandBuffer,
 					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -206,8 +233,9 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 					.beginPass(ctx)) {
 		ui.renderFrame(ctx.commandBuffer);
 	}
-
 	swapImage->transitionLayout(ctx.commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	Read::Queue::execute(ctx.commandBuffer);
+
 	vkEndCommandBuffer(ctx.commandBuffer);
 
 	swapchain.submitCommandBuffer(ctx.commandBuffer, ctx.frameIndex);
@@ -218,7 +246,7 @@ void	Engine::updateGlobalData(FrameContext &ctx) {
 	auto	handle = ctx.request->handle;
 	ctx.globalData.viewProjection = glm::mat4{1.f};
 	if (auto camera = _registry.getComponent<comp::Camera>(handle)) {
-		auto	extent = ctx.request->img->getExtent();
+		auto	extent = ctx.request->mainImage->getExtent();
 		float	aspect = (float)extent.width / extent.height;
 		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), aspect, camera->near, camera->far);
 		projection[1][1] *= -1;

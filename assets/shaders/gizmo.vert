@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: basic.vert                                                          */
+/*  File: gizmo.vert                                                          */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/27 17:07:52 by hle-hena                                  */
+/*  Created: 2026/04/09 19:38:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 18:58:58                                        */
+/*  Last Modified: 2026/04/21 18:59:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,6 +37,13 @@ struct	Transform {
 layout(set = 1, binding = 0) readonly buffer Transforms {
 	Transform data[];
 } transforms;
+
+struct	Tint {
+	vec3	tint;
+};
+layout(set = 1, binding = 1) readonly buffer Tints {
+	Tint data[];
+} tints;
 
 layout (push_constant) uniform Push {
 	uint	entityIndex;

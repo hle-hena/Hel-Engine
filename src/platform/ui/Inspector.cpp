@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 20:08:30                                        */
+/*  Last Modified: 2026/04/21 15:38:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,7 @@
 #include "ecs/Component.hpp"
 #include "platform/ui/UIHelper.hpp"
 
+#include <ui/ImGui/imgui.h>
 #include <ui/ImGui/imgui_stdlib.h>
 
 namespace	hel::sys {
@@ -36,7 +37,6 @@ void	Inspector::render(Window *window, const ImVec2 &) {
 		return ;
 	if (ImGui::Button("Remove entity")) {
 		removeEntity(handle);
-		ImGui::End();
 		return ;
 	}
 	ImGui::SameLine();
@@ -106,8 +106,9 @@ void	Inspector::setBuiltInDrawFunc(void) {
 	setDrawFunc<comp::EditorControllerTag>([](Window *, void *){});
 
 	setDrawFunc<comp::Transform>([](Window *window, void *raw){
-		auto	transform = static_cast<comp::Transform *>(raw);
-		bool	changed = false;
+		auto		transform = static_cast<comp::Transform *>(raw);
+		bool		changed = false;
+		static bool	displayMat = true;
 
 		auto	table = Table("Transform");
 		changed |= TableRow(table, window, "Position")
@@ -135,6 +136,25 @@ void	Inspector::setBuiltInDrawFunc(void) {
 			.build();
 		if (changed)
 			transform->isDirty = true;
+		table.newRow({Table::WStretch});
+		table.setNextCell([&]{
+			if (ImGui::Button(displayMat ? "Click to hide the resulting matrix"
+									: "Click to display the resulting matrix", {-1.f, 0.f}))
+				displayMat = !displayMat;
+		});
+		if (displayMat) {
+			Table::ColumnSizing	sizing(4, Table::WStretch);
+			for (auto i = 0; i < 4; i++) {
+				table.newRow(sizing);
+				for (auto j = 0; j < 4; j++) {
+					table.setNextCell([&]{
+						ImGui::PushID(i * 4 + j);
+						ImGui::Text("%.3f", transform->worldMatrix[j][i]);
+						ImGui::PopID();
+					});
+				}
+			}
+		}
 	});
 
 	setDrawFunc<comp::Model>([](Window *window, void *raw){

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:44:58                                        */
+/*  Last Modified: 2026/04/13 16:10:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -251,10 +251,13 @@ Image	*Swapchain::getOffImage(void) {
 	return (_offscreenImage.get());
 }
 
-bool	Swapchain::acquireNextImage(Window &window, uint32_t currentFrame, uint32_t *imageIndex) {
-	vkWaitForFences(_device.getLogical(), 1, &_inFlightFences[currentFrame],
+void	Swapchain::waitForFrameFence(uint32_t frameIndex) {
+	vkWaitForFences(_device.getLogical(), 1, &_inFlightFences[frameIndex],
 					VK_TRUE, UINT64_MAX);
+	vkResetFences(_device.getLogical(), 1, &_inFlightFences[frameIndex]);
+}
 
+bool	Swapchain::acquireNextImage(Window &window, uint32_t currentFrame, uint32_t *imageIndex) {
 	VkResult	result = vkAcquireNextImageKHR(_device.getLogical(), _swapchain,
 												UINT64_MAX, _imageAvailable[currentFrame],
 												VK_NULL_HANDLE, imageIndex);
@@ -267,7 +270,6 @@ bool	Swapchain::acquireNextImage(Window &window, uint32_t currentFrame, uint32_t
 		std::cerr << "Failed to acquire a swapchain image" << std::endl;
 		return (true);
 	}
-	vkResetFences(_device.getLogical(), 1, &_inFlightFences[currentFrame]);
 	return (false);
 }
 

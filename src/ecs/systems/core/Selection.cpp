@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:59:40                                        */
+/*  Last Modified: 2026/04/21 16:41:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,18 +15,22 @@
 /* *************************************************************************  */
 
 #include "ecs/systems/core/Selection.hpp"
+#include "core/Queues.hpp"
+#include "ecs/Entity.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/assets/Geometry.hpp"
 #include "ecs/AssetManager.hpp"
 #include "ecs/Component.hpp"
 #include "platform/window/Window.hpp"
 #include "api/vulkan/ImagePool.hpp"
+#include <cstdint>
 
 namespace	hel::sys {
 
 void	Selection::init(void) {
+	_inputState = &_registry->getInputState();
+	_assetManager = &_registry->getAssetManager();
 	{
-		_assetManager = &_registry->getAssetManager();
 		PipelineMap::Config	config;
 		config.device = _device;
 		config.assetManager = _assetManager;
@@ -36,10 +40,8 @@ void	Selection::init(void) {
 		};
 		config.configurePipeline = configureTintPipeline;
 		_tintPipeline = createPipeline(config);
-		_inputState = &_registry->getInputState();
 	}
 	{
-		_assetManager = &_registry->getAssetManager();
 		PipelineMap::Config	config;
 		config.device = _device;
 		config.assetManager = &_registry->getAssetManager();
@@ -53,7 +55,7 @@ void	Selection::init(void) {
 	}
 }
 
-void	Selection::configureTintPipeline(PipelineConfigInfo &config) {
+void	Selection::configureTintPipeline(PipelineConfig &config) {
 	config.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 
 	config.depthStencilInfo.stencilTestEnable = VK_TRUE;
@@ -66,13 +68,18 @@ void	Selection::configureTintPipeline(PipelineConfigInfo &config) {
 	config.depthStencilInfo.depthTestEnable  = VK_FALSE;
 	config.depthStencilInfo.depthWriteEnable = VK_FALSE;
 
-	config.colorBlendAttachment.blendEnable = VK_TRUE;
-	config.colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-	config.colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-	config.colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-	config.colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-	config.colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-	config.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+	config.rasterizationInfo.cullMode = VK_CULL_MODE_NONE;
+
+	VkPipelineColorBlendAttachmentState	attachment{};
+	attachment.colorWriteMask = 0xF;
+	attachment.blendEnable = VK_TRUE;
+	attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	attachment.colorBlendOp = VK_BLEND_OP_ADD;
+	attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+	attachment.alphaBlendOp = VK_BLEND_OP_ADD;
+	Pipeline::setBlendAttachment(config, 0, attachment);
 }
 
 void	Selection::initEntityLayout(Device &device, std::vector<VkDescriptorSetLayout> &setLayouts,
@@ -86,7 +93,7 @@ void	Selection::initEntityLayout(Device &device, std::vector<VkDescriptorSetLayo
 							.getSetLayout());
 }
 
-void	Selection::configureEntityPipeline(PipelineConfigInfo &config) {
+void	Selection::configureEntityPipeline(PipelineConfig &config) {
 	Pipeline::setVertexInputDescriptions<Vertex>(config);
 }
 
@@ -98,7 +105,7 @@ void	Selection::renderEntityID(const Renderer &renderer) {
 	auto	set = _registry->buildComponentSet<comp::Transform>(*_device, ctx.descriptorPool);
 	if (!set)
 		return ;
-	auto	entities = _registry->view<comp::Transform, comp::Model>();
+	auto	entities = _registry->view<include<comp::Transform, comp::Model>>();
 	for (auto entity: entities) {
 		auto	mesh = _assetManager->get<Geometry>(entities.get<comp::Model>(entity)->filePath);
 		if (!mesh)	{ continue ; }
@@ -109,72 +116,61 @@ void	Selection::renderEntityID(const Renderer &renderer) {
 			.addBinding(set->sets[0])
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
 			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
-			.submit(mesh->triangleVertexCount);
+			.setVertexCount(mesh->triangleVertexCount)
+			.submit();
 	}
 }
 
-void	Selection::checkSelectionResult(const FrameContext &ctx) {
-	if (!_needReadback || ctx.frameIndex != _frameRequested)	{ return ; }
+void	Selection::update(const FrameContext &ctx) {
+	std::erase_if(_requests, [&](auto &item){
+		auto	&[key, req] = item;
+		if (req.frameIndex == ctx.frameIndex) {
+			uint32_t	*data = static_cast<uint32_t *>(req.buffer->getMapped());
 
-	uint32_t	*data = static_cast<uint32_t *>(_buff->getMapped());
-
-	ctx.window->setEntityFocus(data[0]);
-	_buff = nullptr;
-	_needReadback = false;
+			Entity::id	handle = data[0];
+			if (handle == Entity::NOT_REGISTERED)
+				ctx.window->setEntityFocus(handle);
+			else if (!_registry->getComponent<comp::NonSelectableTag>(handle)) {
+				ctx.window->setEntityFocus(handle);
+			}
+			return (true);
+		}
+		return (false);
+	});
 }
 
-void	Selection::updateWindow(const FrameContext &ctx) {
-	if (_inputState->isPressed<input::Mouse>(0)) {
-		auto	camera = _registry->getComponent<comp::Camera>(ctx.request->handle);
-		auto	transform = _registry->getComponent<comp::Transform>(ctx.request->handle);
-		if (!camera || !transform)
-			return ;
-		glm::vec2	viewportOrigin(ctx.request->origin.x, ctx.request->origin.y);
-		VkExtent2D	imgExtent = ctx.request->img->getExtent();
-		glm::vec2	viewportSize(imgExtent.width, imgExtent.height);
-		auto	pos = glm::vec2(_inputState->getMousePos() - viewportOrigin);
-		glm::vec4	viewport(viewportOrigin, viewportSize);
-		if (pos.x < 0 || pos.y < 0 || pos.x > viewportSize.x || pos.y > viewportSize.y)
-			return ;
+void	Selection::renderInteraction(const Renderer &renderer) {
+	auto	ctx = renderer.frameContext();
+	if (!_inputState->isPressed<input::Mouse>(0))
+		return ;
+	auto	camera = _registry->getComponent<comp::Camera>(ctx.request->handle);
+	auto	transform = _registry->getComponent<comp::Transform>(ctx.request->handle);
+	if (!camera || !transform)
+		return ;
+	glm::vec2	viewportOrigin(ctx.request->origin.x, ctx.request->origin.y);
+	VkExtent2D	imgExtent = ctx.request->mainImage->getExtent();
+	glm::vec2	viewportSize(imgExtent.width, imgExtent.height);
+	auto	pos = glm::vec2(_inputState->getMousePos() - viewportOrigin);
+	glm::vec4	viewport(viewportOrigin, viewportSize);
+	if (pos.x < 0 || pos.y < 0 || pos.x > viewportSize.x || pos.y > viewportSize.y)
+		return ;
 
-		Image	*entityImg = _imagePool->acquire(Image::Config()
-							.setWidth(imgExtent.width)
-							.setHeight(imgExtent.height)
-							.setFormats({VK_FORMAT_R32_UINT})
-							.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-							.setUsage(VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
-							.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
-		auto	depthImage = _imagePool->acquire(Image::Config()
-			.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
-			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT));
-		FrameContext	renderCtx = ctx;
-		VkClearValue	clear{};
-		clear.color.uint32[0] = 0xFFFFFFFF;
-		if (auto renderer = RenderPass(*_device, renderCtx.commandBuffer, imgExtent)
-							.setClearValue(clear)
-							.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
-							.addDepthWrite(depthImage, depthImage->getFormat())
-							.beginPass(renderCtx))
-			renderEntityID(renderer);
+	auto	entityImg = ctx.request->secondaryImages["entityID"];
+	if (!entityImg)
+		return ;
 
-		_buff = Buffer::create(*_device, sizeof(uint32_t), 1,
-							VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-							VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
-							VMA_ALLOCATION_CREATE_MAPPED_BIT |
-							VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-		VkOffset3D	mouseOffset = { (int32_t)pos.x, (int32_t)pos.y, 0 };
-		VkExtent3D	pixelExtent = { 1, 1, 1 };
-		entityImg->copyTo(ctx.commandBuffer, _buff.get(), mouseOffset, pixelExtent);
-		_needReadback = true;
-		_frameRequested = ctx.frameIndex;
-	} else
-		checkSelectionResult(ctx);
+	_requests.insert_or_assign(*ctx.request,
+		Read::Queue::newRequest<uint32_t>(ctx.frameIndex)
+			.setSrcImage(entityImg)
+			.setOffset({(int32_t)pos.x, (int32_t)pos.y, 0})
+			.setExtent({1, 1, 1})
+			.push(*_device));
 }
 
 void	Selection::postProcessing(const Renderer &renderer) {
 	drawCommand(renderer, _tintPipeline)
-		.submitNoVertex(3);
+		.setVertexCount(3)
+		.submit();
 }
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 16:04:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 11:51:13                                        */
+/*  Last Modified: 2026/04/09 18:35:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,8 +22,8 @@
 
 namespace	hel {
 
-template <typename... Components>
-class	View {
+template <typename... Include, typename... Exclude>
+class	View<include<Include...>, exclude<Exclude...>> {
 	public:
 		View(Registry &registry);
 
@@ -55,7 +55,8 @@ class	View {
 		std::vector<Entity::id>		*findSmallestPool(void);
 
 		Registry							&_registry;
-		std::tuple<Pool<Components>* ...>	_pools;
+		std::tuple<Pool<Include>* ...>		_includePools;
+		std::tuple<Pool<Exclude>* ...>		_excludePools;
 		std::vector<Entity::id>				*_leadEntityList;
 		size_t								_maxEntities;
 };

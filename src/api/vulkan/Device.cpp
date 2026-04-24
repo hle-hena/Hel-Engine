@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 17:58:48                                        */
+/*  Last Modified: 2026/04/03 15:26:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -146,6 +146,7 @@ bool	Device::createLogicalDevice(void) {
 	features2.pNext = &dynamicFeature;
 
 	features2.features.geometryShader = VK_TRUE;
+	features2.features.independentBlend = VK_TRUE;
 	if (supportedFeatures.samplerAnisotropy)
 		features2.features.samplerAnisotropy = VK_TRUE;
 

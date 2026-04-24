@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:59:22                                        */
+/*  Last Modified: 2026/04/03 16:04:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -38,18 +38,18 @@ class	Render : public ISystem {
 
 		void	init(void) override;
 
-		void	render(const FrameContext &ctx, const Renderer &conf) override;
+		void	render(const Renderer &conf) override;
 
 	private:
-		struct	PushConstantData {
+		struct	EntityData {
 			uint32_t	entityIndex{0};
 			uint32_t	transformIndex{0};
 		};
 
 		static void	initLayout(Device &, std::vector<VkDescriptorSetLayout> &setLayouts,
 						std::vector<VkPushConstantRange> &pushConstants);
-		static void	configureNormalPipeline(PipelineConfigInfo &config);
-		static void	configureSelectedPipeline(PipelineConfigInfo &config);
+		static void	configureNormalPipeline(PipelineConfig &config);
+		static void	configureSelectedPipeline(PipelineConfig &config);
 
 		AssetManager	*_assetManager;
 		PipelineMap		*_normalPipeline{nullptr};

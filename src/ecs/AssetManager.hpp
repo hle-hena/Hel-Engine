@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/26 14:31:25 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 20:00:17                                        */
+/*  Last Modified: 2026/04/08 17:31:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,8 +30,8 @@ class	AssetManager {
 	public:
 		AssetManager(Device &device);
 
-		template <typename Component>
-		std::shared_ptr<Component>	get(const std::string &path);
+		template <typename Asset>
+		std::shared_ptr<Asset>	get(const std::string &path);
 
 		static std::vector<char>	readFile(const std::string &path);
 
@@ -39,8 +39,8 @@ class	AssetManager {
 		using assetGroup = std::unordered_map<std::string, std::shared_ptr<void>>;
 		using assetMap = std::unordered_map<std::type_index, assetGroup>;
 
-		template <typename Component>
-		std::shared_ptr<Component>	load(const std::string &path);
+		template <typename Asset>
+		std::shared_ptr<Asset>	load(const std::string &path);
 
 		Device		&_device;
 		assetMap	_assets;

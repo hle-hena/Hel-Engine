@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/01 20:23:26                                        */
+/*  Last Modified: 2026/04/24 16:26:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,14 +16,14 @@
 
 #pragma once
 
-# include <vulkan/vulkan.h>
-# include <optional>
-# include <vector>
+#include <cstdint>
+#include <vulkan/vulkan.h>
+#include <optional>
+#include <vector>
+#include <vulkan/vulkan_core.h>
 
-# include "utils/Setters.hpp"
-# include "api/vulkan/PipelineMap.hpp"
-# include "api/vulkan/Descriptors.hpp"
-# include "core/Frame.hpp"
+#include "utils/Setters.hpp"
+#include "api/vulkan/PipelineMap.hpp"
 
 namespace	hel {
 
@@ -84,8 +84,8 @@ class Renderer {
 		explicit Renderer(FrameContext &frameContext, RenderPass &&pass);
 		explicit operator	bool(void) const;
 
-		FrameContext		&frameContext(void) const	{ return (_frameContext); }
-		uint32_t			passIndex(void) const	{ return (_frameContext.passIndex); }
+		FrameContext		&frameContext(void) const;
+		uint32_t			passIndex(void) const;
 
 		PASSKEY(ISystemKey, sys::ISystem)
 		struct	Draw;
@@ -98,39 +98,58 @@ class Renderer {
 		RenderingConfig		_config;
 
 		RenderPass			_pass;
+	friend struct	Draw;
 };
 
 struct	Renderer::Draw {
+	Draw	&addBinding(VkDescriptorSet set);
+	Draw	&addDynamicBinding(VkDescriptorSet set, uint32_t stride, uint32_t *offset);
+	template <typename T>
+	Draw	&addPush(VkShaderStageFlags stage, const T &data);
 	template <size_t N>
 	Draw	&addVertexBuffers(const VkBuffer (&buffers)[N],
 							const VkDeviceSize (&offsets)[N]);
 	Draw	&addIndexBuffer(VkBuffer buffer, VkDeviceSize offset,
 							VkIndexType indexType, uint32_t firstIndex = 0);
-	Draw	&addBinding(VkDescriptorSet set);
-	Draw	&addBinding(VkDescriptorSet set, uint32_t stride, uint32_t *offset);
-	template <typename T>
-	Draw	&addPush(VkShaderStageFlags stage, const T &data);
-	void	submit(uint32_t indexCount, uint32_t instanceCount = 1,
-				uint32_t firstInstance = 0);
-	void	submitNoVertex(uint32_t indexCount, uint32_t instanceCount = 1,
-				uint32_t firstInstance = 0);
+	SETTER(VertexCount, uint32_t, _count)
+	void	submit(void);
 
 	private:
-		Draw(Device &device, FrameContext &frameContext, VkCommandBuffer commandBuffer,
-			VkPipelineLayout pipelineLayout)
-			: _device{device}, _frameContext{frameContext},
-				_commandBuffer{commandBuffer}, _pipelineLayout{pipelineLayout} {}
+		Draw(const Renderer *renderer, PipelineMap *pipeline);
 
-		Device							&_device;
-		FrameContext					&_frameContext;
+		struct	PushInfos {
+			VkShaderStageFlags	stage;
+			uint32_t			structSize;
+			uint8_t				data[128];
+		};
+		struct	VertexInfos {
+			uint32_t			bufferCount;
+			VkBuffer			buffers[8];
+			VkDeviceSize		offsets[8];
+		};
+		struct	IndexInfos {
+			VkBuffer		buffer;
+			VkDeviceSize	offset;
+			VkIndexType		indexType;
+		};
+
+		PipelineMap						*_pipeline;
+		Device							*_device;
+		FrameContext					*_frameContext;
 		VkCommandBuffer					_commandBuffer;
-		VkPipelineLayout				_pipelineLayout;
+		RenderingConfig					_config;
 		std::vector<VkDescriptorSet>	_sets{};
 		std::vector<uint32_t>			_setsOffsets{};
+		VertexInfos						_vertexInfos;
 		bool							_hasVertex{false};
+		IndexInfos						_indexInfos;
 		bool							_hasIndex{false};
+		PushInfos						_pushInfos;
 		bool							_hasPush{false};
 		uint32_t						_firstIndex{0};
+		std::optional<uint32_t>			_count;
+
+		static PipelineMap				*_lastPipeline;
 
 	friend class Renderer;
 };

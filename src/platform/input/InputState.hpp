@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 15:01:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 20:01:26                                        */
+/*  Last Modified: 2026/04/17 14:29:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -71,6 +71,15 @@ class	InputState {
 		}
 		glm::vec2	getMouseDelta(void) {
 			return (_mouseDelta.value_or(glm::vec2{0.f, 0.f}));
+		}
+
+		void	resetMousePos(const glm::vec2 &newMousePos) {
+			_mouseDelta.reset();
+			_mousePos = newMousePos;
+		}
+		void	resetMousePos(void) {
+			_mouseDelta.reset();
+			_mousePos.reset();
 		}
 
 	private:
