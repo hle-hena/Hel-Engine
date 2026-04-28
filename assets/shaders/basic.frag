@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/03 15:50:32                                        */
+/*  Last Modified: 2026/04/28 16:15:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,11 +22,14 @@ layout (location = 1) out uint		outEntityID;
 layout (location = 0) in vec3		inColor;
 layout (location = 1) in vec3		inPos;
 layout (location = 2) in vec3		inNormal;
+layout (location = 3) in vec2		inUV;
 
 layout (binding = 0) uniform UniformBufferObject {
 	mat4	viewProjection;
 	float	elapsedTime;
 }	ubo;
+
+layout(set = 2, binding = 0) uniform sampler2D materialTexture;
 
 layout (push_constant) uniform Push {
 	uint	entityIndex;
@@ -77,17 +80,17 @@ vec3	getThreeLightsColor(vec3 surfaceNormal, bool lightDebug) {
 	Spotlight	redSpotlight = Spotlight(
 		vec3(cos(ubo.elapsedTime * 0.5) * 3, 10., sin(ubo.elapsedTime * 0.5) * 3),
 		vec4(normalize(vec3(0., -1., 0.)), 0.5 + cos(ubo.elapsedTime * 3) * 0.1),
-		vec4(1., 0., 0., (sin(ubo.elapsedTime) * 0.25 + 0.75) * 100.)
+		vec4(1., 0., 0., (sin(ubo.elapsedTime) * 0.25 + 0.75) * 5000.)
 	);
 	Spotlight	greenSpotlight = Spotlight(
 		vec3(cos(ubo.elapsedTime * 0.5 + lightOffset) * 3, 10., sin(ubo.elapsedTime * 0.5 + lightOffset) * 3),
 		vec4(normalize(vec3(0., -1., 0.)), 0.5 + cos(ubo.elapsedTime * 3) * 0.1),
-		vec4(0., 1., 0., (sin(ubo.elapsedTime) * 0.25 + 0.75) * 100.)
+		vec4(0., 1., 0., (sin(ubo.elapsedTime) * 0.25 + 0.75) * 5000.)
 	);
 	Spotlight	blueSpotlight = Spotlight(
 		vec3(cos(ubo.elapsedTime * 0.5 + 2 * lightOffset) * 3, 10., sin(ubo.elapsedTime * 0.5 + 2 * lightOffset) * 3),
 		vec4(normalize(vec3(0., -1., 0.)), 0.5 + cos(ubo.elapsedTime * 3) * 0.1),
-		vec4(0., 0., 1., (sin(ubo.elapsedTime) * 0.25 + 0.75) * 100.)
+		vec4(0., 0., 1., (sin(ubo.elapsedTime) * 0.25 + 0.75) * 5000.)
 	);
 
 	return (getColorFromSpotlight(surfaceNormal, redSpotlight, lightDebug) +
@@ -118,8 +121,9 @@ void	main() {
 	float	ambientLight = 0.01;
 	vec3	lightRecieved = vec3(ambientLight) + getThreeLightsColor(surfaceNormal, lightDebug);
 
-	vec3 baseColor = triangleDebug ? hashColor(gl_PrimitiveID) :
-					(normalDebug ? vec3(normalize(inNormal) * 0.5 + 0.5) : inColor);
+	vec3	texColor = texture(materialTexture, inUV).xyz;
+	vec3	baseColor = triangleDebug ? hashColor(gl_PrimitiveID) :
+					(normalDebug ? vec3(normalize(inNormal) * 0.5 + 0.5) : texColor);
 	outColor = lightDebug ? vec4(lightRecieved, 1.) : vec4(baseColor * lightRecieved, 1.);
 	outEntityID = push.entityIndex;
 }

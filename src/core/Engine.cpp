@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 19:31:06                                        */
+/*  Last Modified: 2026/04/27 22:31:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -43,12 +43,15 @@
 
 #include <iostream>
 
+#include "utils/VFS.hpp"
+
 namespace hel {
 
 Engine::Engine(Device &device, Registry &registry)
 	:	_device{device},
 		_registry{registry} {
 	_timer.start();
+	VFS::load({});
 }
 
 Engine::~Engine(void) {

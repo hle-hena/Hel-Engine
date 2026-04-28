@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 21:05:21                                        */
+/*  Last Modified: 2026/04/27 20:12:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -231,7 +231,7 @@ void	Transform::renderGizmo(const Renderer &renderer, GizmoContext &gizmo) {
 	for (auto &[name, entity]: gizmo.handles) {
 		if (name.find("Icon") != std::string::npos)
 			continue ;
-		auto	mesh = _assetManager->get<Geometry>(_registry->getComponent<comp::Model>(entity)->filePath);
+		auto	mesh = _assetManager->get<Geometry>(_registry->getComponent<comp::Model>(entity)->modelName);
 		auto	transform = _registry->getComponent<comp::Transform>(entity);
 		auto	tint = _registry->getComponent<comp::Tint>(entity);
 		if (!mesh)	{ continue ; }
@@ -240,7 +240,7 @@ void	Transform::renderGizmo(const Renderer &renderer, GizmoContext &gizmo) {
 			.addPush(VK_SHADER_STAGE_ALL_GRAPHICS, EntityData{entity, transform.getDenseIndex(), tint.getDenseIndex()})
 			.addBinding(set->sets[0])
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
-			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
+			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer())
 			.setVertexCount(mesh->triangleVertexCount)
 			.submit();
 	}
@@ -269,7 +269,7 @@ void	Transform::renderUI(const Renderer &renderer, GizmoContext &gizmo) {
 	for (auto &[name, entity]: gizmo.handles) {
 		if (name.find("Icon") == std::string::npos)
 			continue ;
-		auto	mesh = _assetManager->get<Geometry>(_registry->getComponent<comp::Model>(entity)->filePath);
+		auto	mesh = _assetManager->get<Geometry>(_registry->getComponent<comp::Model>(entity)->modelName);
 		auto	texture = _assetManager->get<Texture>(_registry->getComponent<comp::Texture>(entity)->filePath);
 		auto	transform = _registry->getComponent<comp::Transform>(entity);
 		auto	tint = _registry->getComponent<comp::Tint>(entity);
@@ -289,7 +289,7 @@ void	Transform::renderUI(const Renderer &renderer, GizmoContext &gizmo) {
 			.addBinding(SSBO_d->sets[0])
 			.addBinding(texture_d->sets[0])
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
-			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
+			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer())
 			.setVertexCount(mesh->triangleVertexCount);
 		DrawQueue::requestDraw(0, std::move(draw));
 	}
@@ -555,27 +555,27 @@ void	Transform::GizmoContext::initMove(void) {
 	float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05;
 
 	EntityFactory(this, requestTransform, dist, "X-Arrow")
-		.setModel("assets/models/move_arrow.obj").setTint(1.f, 0.f, 0.f)
+		.setModel("move_arrow").setTint(1.f, 0.f, 0.f)
 		.setOffRot(glm::angleAxis(glm::radians(-90.0f), glm::vec3(0, 0, 1)))
 		.setOffScale(glm::vec3(0.25f));
 	EntityFactory(this, requestTransform, dist, "Y-Arrow")
-		.setModel("assets/models/move_arrow.obj").setTint(0.f, 1.f, 0.f)
+		.setModel("move_arrow").setTint(0.f, 1.f, 0.f)
 		.setOffScale(glm::vec3(0.25f));
 	EntityFactory(this, requestTransform, dist, "Z-Arrow")
-		.setModel("assets/models/move_arrow.obj").setTint(0.f, 0.f, 1.f)
+		.setModel("move_arrow").setTint(0.f, 0.f, 1.f)
 		.setOffRot(glm::angleAxis(glm::radians(90.0f), glm::vec3(1, 0, 0)))
 		.setOffScale(glm::vec3(0.25f));
 
 	EntityFactory(this, requestTransform, dist, "XY-Plane")
-		.setModel("assets/models/quad.obj").setTint(0.8f, 0.8f, 0.f)
+		.setModel("quad").setTint(0.8f, 0.8f, 0.f)
 		.setOffRot(glm::angleAxis(glm::radians(-90.0f), glm::vec3(1, 0, 0)))
 		.setOffPos({2.f, 0.f, 2.f}).setOffScale(glm::vec3(0.5f));
 	EntityFactory(this, requestTransform, dist, "YZ-Plane")
-		.setModel("assets/models/quad.obj").setTint(0.f, 0.8f, 0.8f)
+		.setModel("quad").setTint(0.f, 0.8f, 0.8f)
 		.setOffRot(glm::angleAxis(glm::radians(90.0f), glm::vec3(0, 0, 1)))
 		.setOffPos({2.f, 0.f, 2.f}).setOffScale(glm::vec3(0.5f));
 	EntityFactory(this, requestTransform, dist, "ZX-Plane")
-		.setModel("assets/models/quad.obj").setTint(0.8f, 0.f, 0.8f)
+		.setModel("quad").setTint(0.8f, 0.f, 0.8f)
 		.setOffPos({2.f, 0.f, 2.f}).setOffScale(glm::vec3(0.5f));
 	_fullyInit = true;
 	focusedTransform.modify();
@@ -590,14 +590,14 @@ void	Transform::GizmoContext::initScale(void) {
 	float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05;
 
 	EntityFactory(this, requestTransform, dist, "X-Arrow")
-		.setModel("assets/models/scale_arrow.obj").setTint(1.f, 0.f, 0.f)
+		.setModel("scale_arrow").setTint(1.f, 0.f, 0.f)
 		.setOffRot(glm::angleAxis(glm::radians(-90.0f), glm::vec3(0, 0, 1)))
 		.setOffScale(glm::vec3(0.25f));
 	EntityFactory(this, requestTransform, dist, "Y-Arrow")
-		.setModel("assets/models/scale_arrow.obj").setTint(0.f, 1.f, 0.f)
+		.setModel("scale_arrow").setTint(0.f, 1.f, 0.f)
 		.setOffScale(glm::vec3(0.25f));
 	EntityFactory(this, requestTransform, dist, "Z-Arrow")
-		.setModel("assets/models/scale_arrow.obj").setTint(0.f, 0.f, 1.f)
+		.setModel("scale_arrow").setTint(0.f, 0.f, 1.f)
 		.setOffRot(glm::angleAxis(glm::radians(90.0f), glm::vec3(1, 0, 0)))
 		.setOffScale(glm::vec3(0.25f));
 	_fullyInit = true;
@@ -613,14 +613,14 @@ void	Transform::GizmoContext::initRotate(void) {
 	float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05;
 
 	EntityFactory(this, requestTransform, dist, "X-Torus")
-		.setModel("assets/models/rotate_torus.obj").setTint(1.f, 0.f, 0.f)
+		.setModel("rotate_torus").setTint(1.f, 0.f, 0.f)
 		.setOffRot(glm::angleAxis(glm::radians(-90.0f), glm::vec3(0, 0, 1)))
 		.setOffScale(glm::vec3(0.25f));
 	EntityFactory(this, requestTransform, dist, "Y-Torus")
-		.setModel("assets/models/rotate_torus.obj").setTint(0.f, 1.f, 0.f)
+		.setModel("rotate_torus").setTint(0.f, 1.f, 0.f)
 		.setOffScale(glm::vec3(0.25f));
 	EntityFactory(this, requestTransform, dist, "Z-Torus")
-		.setModel("assets/models/rotate_torus.obj").setTint(0.f, 0.f, 1.f)
+		.setModel("rotate_torus").setTint(0.f, 0.f, 1.f)
 		.setOffRot(glm::angleAxis(glm::radians(90.0f), glm::vec3(1, 0, 0)))
 		.setOffScale(glm::vec3(0.25f));
 	_fullyInit = true;
@@ -643,17 +643,17 @@ void	Transform::GizmoContext::initAction(void) {
 	if (_fullyInit) {
 		auto	col = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
 		EntityFactory(this, "Move-Icon")
-			.setModel("assets/models/icon_space.obj")
+			.setModel("icon_space")
 			.setTexture("assets/images/moveGizmoIcon.png")
 			.setTint(col.x, col.y, col.z)
 			.setPos(0.6, -0.9).setScale(0.1, 0.1);
 		EntityFactory(this, "Scale-Icon")
-			.setModel("assets/models/icon_space.obj")
+			.setModel("icon_space")
 			.setTexture("assets/images/scaleGizmoIcon.png")
 			.setTint(col.x, col.y, col.z)
 			.setPos(0.75, -0.9).setScale(0.1, 0.1);
 		EntityFactory(this, "Rotate-Icon")
-			.setModel("assets/models/icon_space.obj")
+			.setModel("icon_space")
 			.setTexture("assets/images/rotateGizmoIcon.png")
 			.setTint(col.x, col.y, col.z)
 			.setPos(0.9, -0.9).setScale(0.1, 0.1);
@@ -703,7 +703,7 @@ Transform::GizmoContext::EntityFactory::setTint(float r, float g, float b) {
 
 Transform::GizmoContext::EntityFactory	&
 Transform::GizmoContext::EntityFactory::setModel(const std::string &filepath) {
-	std::get<0>(_addedComp).modify()->filePath = filepath;
+	std::get<0>(_addedComp).modify()->modelName = filepath;
 	return (*this);
 }
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 15:38:47                                        */
+/*  Last Modified: 2026/04/27 20:14:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -161,9 +161,9 @@ void	Inspector::setBuiltInDrawFunc(void) {
 		auto	*model = static_cast<comp::Model *>(raw);
 
 		auto	table = Table("Model");
-		TableRow(table, window, "Model filepath")
+		TableRow(table, window, "Model name")
 			.setType(TableRow::Type::InputText)
-			.setStart(&model->filePath)
+			.setStart(&model->modelName)
 			.build();
 	});
 

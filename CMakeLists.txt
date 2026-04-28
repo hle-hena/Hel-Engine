@@ -100,6 +100,27 @@ endforeach()
 add_custom_target(compile_shaders ALL DEPENDS ${SPV_FILES})
 add_dependencies(hel compile_shaders)
 
+find_package(Git REQUIRED)
+
+set(SPONZA_EXTRACT_DIR "${CMAKE_SOURCE_DIR}/assets/models/sponza")
+
+if(NOT EXISTS "${SPONZA_EXTRACT_DIR}/sponza.obj")
+	message(STATUS "Sponza not found. Cloning from GitHub...")
+	execute_process(
+		COMMAND ${GIT_EXECUTABLE} clone --depth 1
+			https://github.com/jimmiebergmann/Sponza.git
+			"${SPONZA_EXTRACT_DIR}"
+		RESULT_VARIABLE GIT_RESULT
+	)
+	if(NOT GIT_RESULT EQUAL 0)
+		message(FATAL_ERROR "Failed to clone Sponza repo (exit code: ${GIT_RESULT})")
+	endif()
+	file(REMOVE_RECURSE "${SPONZA_EXTRACT_DIR}/.git")
+	message(STATUS "Sponza assets ready at: ${SPONZA_EXTRACT_DIR}")
+else()
+	message(STATUS "Sponza assets already present, skipping clone.")
+endif()
+
 set(MODELS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/assets/models")
 set(MODELS_DEST_DIR "${CMAKE_BINARY_DIR}/assets/models")
 add_custom_target(copy_models ALL

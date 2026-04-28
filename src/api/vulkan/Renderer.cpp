@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/24 16:26:48                                        */
+/*  Last Modified: 2026/04/27 17:34:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -138,8 +138,8 @@ Renderer::Draw::Draw(const Renderer *renderer, PipelineMap *pipeline)
 		_commandBuffer(renderer->_commandBuffer),
 		_config(renderer->_config) {}
 
-Renderer::Draw	&Renderer::Draw::addIndexBuffer(VkBuffer buffer, VkDeviceSize offset,
-							VkIndexType indexType, uint32_t firstIndex) {
+Renderer::Draw	&Renderer::Draw::addIndexBuffer(VkBuffer buffer, uint32_t firstIndex,
+							VkIndexType indexType, VkDeviceSize offset) {
 	if (_hasIndex)
 		return (*this);
 	_indexInfos.buffer = buffer;

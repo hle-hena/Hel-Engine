@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/24 15:13:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 18:06:35                                        */
+/*  Last Modified: 2026/04/28 15:10:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,12 +20,14 @@
 #include <assetLoader/stb_image.h>
 
 #include <iostream>
+#include "utils/VFS.hpp"
 
 namespace	hel {
 
 Texture::RawTexture	Texture::loadFile(const std::string &path) {
 	RawTexture	raw{};
-	raw.pixels = stbi_load(path.c_str(), &raw.width, &raw.height,
+	auto	realPath = VFS::getFilepath(path);
+	raw.pixels = stbi_load(realPath.c_str(), &raw.width, &raw.height,
 							&raw.channels, STBI_rgb_alpha);
 	return (raw);
 }
