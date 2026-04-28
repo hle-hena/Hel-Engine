@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 20:47:57                                        */
+/*  Last Modified: 2026/04/27 20:11:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -103,7 +103,7 @@ struct	SurfaceAllignement {
 struct	Model {
 	static constexpr const char	*label = "Model";
 
-	std::string	filePath{""};
+	std::string	modelName{""};
 };
 
 struct	Texture {

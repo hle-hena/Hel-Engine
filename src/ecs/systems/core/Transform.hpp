@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 20:55:18                                        */
+/*  Last Modified: 2026/04/27 20:11:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -135,7 +135,7 @@ struct	Transform::GizmoContext::EntityFactory {
 				transformComp parentTransform, float scale,
 				const std::string &entityName);	
 	EntityFactory	&setTint(float r, float g, float b);
-	EntityFactory	&setModel(const std::string &filepath);
+	EntityFactory	&setModel(const std::string &modelName);
 	EntityFactory	&setOffScale(const glm::vec3 &offScale);
 	EntityFactory	&setOffPos(const glm::vec3 &offPos);
 	EntityFactory	&setOffRot(const glm::quat &offRot);

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/24 16:26:32                                        */
+/*  Last Modified: 2026/04/27 17:35:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -109,8 +109,9 @@ struct	Renderer::Draw {
 	template <size_t N>
 	Draw	&addVertexBuffers(const VkBuffer (&buffers)[N],
 							const VkDeviceSize (&offsets)[N]);
-	Draw	&addIndexBuffer(VkBuffer buffer, VkDeviceSize offset,
-							VkIndexType indexType, uint32_t firstIndex = 0);
+	Draw	&addIndexBuffer(VkBuffer buffer, uint32_t firstIndex = 0,
+							VkIndexType indexType = VK_INDEX_TYPE_UINT32,
+							VkDeviceSize offset = 0);
 	SETTER(VertexCount, uint32_t, _count)
 	void	submit(void);
 

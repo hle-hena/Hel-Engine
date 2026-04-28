@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 16:40:36                                        */
+/*  Last Modified: 2026/04/27 20:10:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -149,7 +149,7 @@ void	Camera::renderInteraction(const Renderer &renderer) {
 		return ;
 	for (auto entity : entities) {
 		if (entity == selfHandle)	{ continue ; }
-		auto	mesh = _assetManager->get<FullGeometry>("assets/models/frustum.obj");
+		auto	mesh = _assetManager->get<FullGeometry>("frustum");
 		if (!mesh)	{ continue ; }
 		auto	transform = entities.get<comp::Transform>(entity);
 		auto	camera = entities.get<comp::Camera>(entity);
@@ -161,7 +161,7 @@ void	Camera::renderInteraction(const Renderer &renderer) {
 					FrustumPush{transform->worldMatrix,
 					glm::inverse(projection * camera->view)})
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
-			.addIndexBuffer(mesh->lineIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
+			.addIndexBuffer(mesh->lineIndexBuffer->getBuffer())
 			.setVertexCount(mesh->lineVertexCount)
 			.submit();
 
