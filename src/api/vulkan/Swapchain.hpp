@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 16:09:32                                        */
+/*  Last Modified: 2026/04/28 17:58:04                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -62,8 +62,6 @@ class	Swapchain
 		bool			recreateSwapChain(Window &window);
 		void			deleteSwapChain(void);
 
-		Image			*getDepthImage(void);
-		Image			*getOffImage(void);
 		Image			*getSwapImage(uint32_t imageIndex);
 		void			waitForFrameFence(uint32_t frameIndex);
 		bool			acquireNextImage(Window &window, uint32_t currentFrame, uint32_t *imageIndex);
@@ -77,25 +75,16 @@ class	Swapchain
 		VkPresentModeKHR	selectSwapPresent(std::vector<VkPresentModeKHR> &presents);
 		VkExtent2D			selectSwapExtent(const VkSurfaceCapabilitiesKHR &presents,
 													GLFWwindow *window);
-		VkFormat			selectDepthFormat(const std::vector<VkFormat> &candidates,
-										VkImageTiling tiling,
-										VkFormatFeatureFlags features);
 
 		bool	createSwapchainImageViews(std::vector<VkImage> &images,
 									VkFormat format, VkExtent2D extent);
 		bool	createSyncObjects(void);
-
-		bool	createOffscreenResources(VkExtent2D extent);
-		bool	createDepthImage(VkExtent2D extent);
-		bool	createOffscreenImage(VkExtent2D extent);
 
 		bool						_healthy{true};
 		std::string					_reason{""};
 		Device						&_device;
 		VkSwapchainKHR				_swapchain{VK_NULL_HANDLE};
 		std::vector<Image::ptr>		_swapImages;
-		Image::ptr					_offscreenImage;
-		Image::ptr					_depthImage;
 		std::array<VkSemaphore,	MAX_FRAMES_IN_FLIGHT>	_imageAvailable{VK_NULL_HANDLE};
 		std::array<VkSemaphore,	MAX_FRAMES_IN_FLIGHT>	_renderFinished{VK_NULL_HANDLE};
 		std::array<VkFence,		MAX_FRAMES_IN_FLIGHT>	_inFlightFences{VK_NULL_HANDLE};

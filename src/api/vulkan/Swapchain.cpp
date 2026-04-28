@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 16:10:07                                        */
+/*  Last Modified: 2026/04/28 17:58:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,8 +34,6 @@ Swapchain::~Swapchain(void) {
 void	Swapchain::deleteSwapChain(void) {
 	vkDeviceWaitIdle(_device.getLogical());
 	_swapImages.clear();
-	_offscreenImage = nullptr;
-	_depthImage = nullptr;
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		if (_renderFinished[i] != VK_NULL_HANDLE)
 			vkDestroySemaphore(_device.getLogical(), _renderFinished[i], nullptr);
@@ -113,8 +111,7 @@ bool	Swapchain::initiateSwapChain(Window &window) {
 	std::vector<VkImage>	images(imageCount);
 	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, images.data());
 
-	return (createOffscreenResources(extent) ||
-		createSwapchainImageViews(images, format.format, extent) ||
+	return (createSwapchainImageViews(images, format.format, extent) ||
 		createSyncObjects());
 }
 
@@ -170,57 +167,6 @@ bool	Swapchain::createSwapchainImageViews(std::vector<VkImage> &images,
 	return (false);
 }
 
-bool	Swapchain::createOffscreenResources(VkExtent2D extent) {
-	//TODO -> image pool instead of a creation in there.
-	return (createDepthImage(extent) || createOffscreenImage(extent));
-}
-
-bool	Swapchain::createDepthImage(VkExtent2D extent) {
-	auto	depthFormat = selectDepthFormat(
-		{VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
-		VK_IMAGE_TILING_OPTIMAL,
-		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-	);
-
-	Image::Config	config{};
-	config.format = {depthFormat};
-	config.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-	config.width = extent.width;
-	config.height = extent.height;
-	config.aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
-	_depthImage = Image::create(_device, config);
-	return (!_depthImage);
-}
-
-bool	Swapchain::createOffscreenImage(VkExtent2D extent) {
-	Image::Config	config{};
-	config.width = extent.width;
-	config.height = extent.height;
-	config.aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
-	config.format = {VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM};
-	config.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-	_offscreenImage = Image::create(_device, config);
-	return (!_offscreenImage);
-}
-
-VkFormat	Swapchain::selectDepthFormat(const std::vector<VkFormat> &candidates,
-										VkImageTiling tiling,
-										VkFormatFeatureFlags features) {
-	for (VkFormat format: candidates) {
-		VkFormatProperties	properties;
-		vkGetPhysicalDeviceFormatProperties(_device.getPhysical(), format, &properties);
-
-		if (tiling == VK_IMAGE_TILING_LINEAR &&
-			(properties.linearTilingFeatures & features) == features)
-			return (format);
-		else if (tiling == VK_IMAGE_TILING_OPTIMAL &&
-			(properties.optimalTilingFeatures & features) == features)
-			return (format);
-	}
-
-	return (VK_FORMAT_UNDEFINED);
-}
-
 bool	Swapchain::createSyncObjects(void) {
 	VkSemaphoreCreateInfo	semaphoreInfo{};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -239,16 +185,8 @@ bool	Swapchain::createSyncObjects(void) {
 	return (false);
 }
 
-Image	*Swapchain::getDepthImage(void) {
-	return (_depthImage.get());
-}
-
 Image	*Swapchain::getSwapImage(uint32_t imageIndex) {
 	return (_swapImages[imageIndex].get());
-}
-
-Image	*Swapchain::getOffImage(void) {
-	return (_offscreenImage.get());
 }
 
 void	Swapchain::waitForFrameFence(uint32_t frameIndex) {
