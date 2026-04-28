@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/27 22:31:14                                        */
+/*  Last Modified: 2026/04/28 18:16:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -31,15 +31,15 @@
 
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
-#include "ecs/systems/core/Camera.hpp"
-#include "ecs/systems/core/EditorController.hpp"
-#include "ecs/systems/core/HideMouse.hpp"
-#include "ecs/systems/core/Render.hpp"
-#include "ecs/systems/core/Sprite.hpp"
-#include "ecs/systems/core/Selection.hpp"
-#include "ecs/systems/core/Transform.hpp"
-#include "ecs/systems/runtime/BaseController.hpp"
-#include "ecs/systems/runtime/SurfaceAllignement.hpp"
+#include "ecs/systems/Camera.hpp"
+#include "ecs/systems/EditorController.hpp"
+#include "ecs/systems/HideMouse.hpp"
+#include "ecs/systems/Render.hpp"
+#include "ecs/systems/Sprite.hpp"
+#include "ecs/systems/Selection.hpp"
+#include "ecs/systems/Transform.hpp"
+#include "ecs/systems/BaseController.hpp"
+#include "ecs/systems/SurfaceAllignement.hpp"
 
 #include <iostream>
 

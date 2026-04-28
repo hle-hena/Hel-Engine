@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/27 17:38:53                                        */
+/*  Last Modified: 2026/04/28 18:16:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,7 +14,7 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/systems/core/Selection.hpp"
+#include "ecs/systems/Selection.hpp"
 #include "core/Queues.hpp"
 #include "ecs/Entity.hpp"
 #include "ecs/Registry.hpp"

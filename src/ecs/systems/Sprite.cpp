@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/24 16:21:07                                        */
+/*  Last Modified: 2026/04/28 18:16:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,7 +14,7 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/systems/core/Sprite.hpp"
+#include "ecs/systems/Sprite.hpp"
 #include "api/vulkan/Device.hpp"
 #include "core/Frame.hpp"
 #include "ecs/AssetManager.hpp"
