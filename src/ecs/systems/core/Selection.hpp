@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/14 11:31:03                                        */
+/*  Last Modified: 2026/04/27 17:39:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,13 +17,12 @@
 #pragma once
 
 #include <cstdint>
-# include <vulkan/vulkan.h>
-# include <glm/glm.hpp>
+#include <vulkan/vulkan.h>
+#include <glm/glm.hpp>
 
 #include "core/Queues.hpp"
-# include "ecs/systems/ISystem.hpp"
-# include "api/vulkan/PipelineMap.hpp"
-# include "api/vulkan/Buffer.hpp"
+#include "ecs/systems/ISystem.hpp"
+#include "api/vulkan/PipelineMap.hpp"
 
 namespace	hel {
 
@@ -52,16 +51,10 @@ class	Selection : public ISystem {
 			uint32_t	transformIndex{0};
 		};
 
-		static void	configureTintPipeline(PipelineConfig &config);
-		static void	initEntityLayout(Device &, std::vector<VkDescriptorSetLayout> &setLayouts,
-						std::vector<VkPushConstantRange> &pushConstants);
-		static void	configureEntityPipeline(PipelineConfig &config);
-
-		void	renderEntityID(const Renderer &renderer);
+		static void	configurePipeline(PipelineConfig &config);
 
 		AssetManager				*_assetManager;
 		PipelineMap					*_tintPipeline{nullptr};
-		PipelineMap					*_entityIDPipeline{nullptr};
 		InputState					*_inputState{nullptr};
 
 		std::unordered_map<RenderRequest, Read::Context, RenderRequest::Hasher>	_requests;

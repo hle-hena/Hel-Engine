@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 16:42:25                                        */
+/*  Last Modified: 2026/04/27 23:14:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,9 +22,11 @@
 #include "ecs/AssetManager.hpp"
 #include "ecs/Component.hpp"
 #include "ecs/assets/Geometry.hpp"
+#include "ecs/assets/Texture.hpp"
 #include "ecs/assets/Shader.hpp"
 #include "core/Engine.hpp"
 #include "api/vulkan/Renderer.hpp"
+#include "api/vulkan/Sampler.hpp"
 #include <vulkan/vulkan_core.h>
 
 namespace	hel::sys {
@@ -66,6 +68,10 @@ void	Render::initLayout(Device &device, std::vector<VkDescriptorSetLayout> &setL
 	setLayouts.push_back(DescriptorFactory(device)
 							.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_ALL)
 							.getSetLayout());
+	setLayouts.push_back(DescriptorFactory(device)
+							.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+								VK_SHADER_STAGE_FRAGMENT_BIT, Sampler::getSampler(device, {}), 1)
+							.getSetLayout());
 }
 
 void	Render::configureNormalPipeline(PipelineConfig &config) {
@@ -105,23 +111,39 @@ void	Render::render(const Renderer &renderer) {
 	if (!ctx.commandBuffer)
 		return ;
 
-	auto	set = _registry->buildComponentSet<comp::Transform>(*_device, ctx.descriptorPool);
-	if (!set)
+	auto	sampler = Sampler::getSampler(*_device, {});
+	auto	SSBO_d = _registry->buildComponentSet<comp::Transform>(*_device, ctx.descriptorPool);
+	if (!SSBO_d)
 		return ;
 
 	auto	drawEntities = [&](auto entities, PipelineMap *pipeline) {
 		for (auto entity: entities) {
-			auto	mesh = _assetManager->get<Geometry>(entities.template get<comp::Model>(entity)->filePath);
+			auto	mesh = _assetManager->get<Geometry>(entities.template get<comp::Model>(entity)->modelName);
 			if (!mesh)	{ continue ; }
 			auto	transform = entities.template get<comp::Transform>(entity);
 
-			drawCommand(renderer, pipeline)
-				.addPush(VK_SHADER_STAGE_ALL_GRAPHICS, EntityData{entity, transform.getDenseIndex()})
-				.addBinding(set->sets[0])
-				.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
-				.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32)
-				.setVertexCount(mesh->triangleVertexCount)
-				.submit();
+			for (auto &submesh: mesh->submeshes) {
+				auto	texture = _assetManager->get<Texture>(mesh->materialPaths[submesh.materialID]);
+				if (!texture)	{ continue ; }
+
+				auto	texture_d = DescriptorFactory(*_device)
+									.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+										VK_SHADER_STAGE_FRAGMENT_BIT, sampler, 1)
+									.build(*ctx.descriptorPool);
+				DescriptorWriter(*_device, texture_d.get())
+					.writeImage(0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+								*texture->image.get(), texture->image->getFormat(), sampler)
+					.update();
+
+				drawCommand(renderer, pipeline)
+					.addPush(VK_SHADER_STAGE_ALL_GRAPHICS, EntityData{entity, transform.getDenseIndex()})
+					.addBinding(SSBO_d->sets[0])
+					.addBinding(texture_d->sets[0])
+					.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
+					.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer(), submesh.triFirstIndex)
+					.setVertexCount(submesh.triIndexCount)
+					.submit();
+			}
 		}
 	};
 

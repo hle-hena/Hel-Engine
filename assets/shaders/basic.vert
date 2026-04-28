@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 18:58:58                                        */
+/*  Last Modified: 2026/04/27 21:11:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,6 +19,7 @@
 layout (location = 0) out vec3	fragColor;
 layout (location = 1) out vec3	fragPos;
 layout (location = 2) out vec3	fragNormal;
+layout (location = 3) out vec2	fragUV;
 
 layout (location = 0) in vec3	inPos;
 layout (location = 1) in vec2	inUV;
@@ -50,4 +51,5 @@ void	main() {
 	fragColor = inColor;
 	fragPos = vec3(positionInWorld);
 	fragNormal = normalize(mat3(transform.normalMatrix) * inNormal);
+	fragUV = inUV;
 }
