@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 20:12:13                                        */
+/*  Last Modified: 2026/04/28 18:07:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -434,7 +434,6 @@ void	ColoredDummy::build(void) {
 	ImVec2	rectMax = {_pos.x + _size.x, _pos.y + _size.y};
 
 	ImGui::SetCursorScreenPos(_pos);
-	// ImGui::Dummy(_size);
 	draw->AddRectFilled(_pos, rectMax, IM_COL32(255, 0, 0, 100));
 	ImGui::SetCursorScreenPos(_endPos);
 	ImGui::GetCurrentWindow()->DC.IsSetPos = false;
