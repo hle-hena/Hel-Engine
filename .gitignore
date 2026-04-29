@@ -2,3 +2,7 @@
 build/
 .cache/
 assets/models/sponza
+vcpkg/installed/
+vcpkg/buildtrees/
+vcpkg/downloads/
+vcpkg/packages/

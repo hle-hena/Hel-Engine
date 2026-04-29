@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:03:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/27 23:26:17                                        */
+/*  Last Modified: 2026/04/29 14:23:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,7 +25,6 @@
 
 #include <unordered_map>
 #include <algorithm>
-#include <glm/gtx/hash.hpp>
 #include "Geometry.hpp"
 #include "utils/VFS.hpp"
 
@@ -37,7 +36,10 @@ struct hash<hel::Vertex>
 	size_t	operator()(const hel::Vertex &vertex) const
 	{
 		size_t	seed = 0;
-		hel::mathUtils::hashCombine(seed, vertex.position, vertex.uv, vertex.normal, vertex.color);
+		hel::mathUtils::hashCombine(seed, vertex.position.x, vertex.position.y,
+			vertex.position.z, vertex.uv.x, vertex.uv.y, vertex.normal.x,
+			vertex.normal.y, vertex.normal.z, vertex.color.x, vertex.color.y,
+			vertex.color.z);
 		return (seed);
 	}	
 };
