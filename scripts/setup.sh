@@ -14,7 +14,8 @@ if [ -f /etc/debian_version ]; then
 		ninja-build \
 		glslang-tools \
 		vulkan-validationlayers \
-		spirv-tools
+		spirv-tools \
+		cmake
 elif [ -f /etc/arch-release ]; then
 	sudo pacman -S --needed \
 		vulkan-headers \
@@ -28,7 +29,8 @@ elif [ -f /etc/arch-release ]; then
 		ninja \
 		glslang \
 		vulkan-validation-layers \
-		spirv-tools
+		spirv-tools \
+		cmake
 elif [ -f /etc/fedora-release ]; then
 	sudo dnf install -y \
 		vulkan-headers \
@@ -42,12 +44,15 @@ elif [ -f /etc/fedora-release ]; then
 		ninja-build \
 		glslang \
 		vulkan-validation-layers \
-		spirv-tools
+		spirv-tools \
+		cmake
 else
 	echo "Unsupported distro. Please install dependencies manually."
 	exit 1
 fi
 
-echo -e "\n\n\nDone! You can now build with:"
+echo -e "\n\n\nDone! You can now execute the following commands in order."
 echo -e '\tgit submodule update --init'
 echo -e '\tcmake -S . -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build -j'
+echo -e '\tcd build'
+echo -e '/t./hel'
