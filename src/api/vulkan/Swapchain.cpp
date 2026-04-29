@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/29 15:32:19                                        */
+/*  Last Modified: 2026/04/29 17:15:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,15 +36,17 @@ void	Swapchain::deleteSwapChain(void) {
 	vkDeviceWaitIdle(_device.getLogical());
 	_swapImages.clear();
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		if (_inFlightFences[i] != VK_NULL_HANDLE)
+			vkDestroyFence(_device.getLogical(), _inFlightFences[i], nullptr);
+	}
+	for (size_t i = 0; i < _renderFinished.size(); i++) {
 		if (_renderFinished[i] != VK_NULL_HANDLE)
 			vkDestroySemaphore(_device.getLogical(), _renderFinished[i], nullptr);
 		if (_imageAvailable[i] != VK_NULL_HANDLE)
 			vkDestroySemaphore(_device.getLogical(), _imageAvailable[i], nullptr);
-		if (_inFlightFences[i] != VK_NULL_HANDLE)
-			vkDestroyFence(_device.getLogical(), _inFlightFences[i], nullptr);
 	}
-	_renderFinished.fill(VK_NULL_HANDLE);
-	_imageAvailable.fill(VK_NULL_HANDLE);
+	_renderFinished.clear();
+	_imageAvailable.clear();
 	_inFlightFences.fill(VK_NULL_HANDLE);
 	if (_swapchain != VK_NULL_HANDLE)
 		vkDestroySwapchainKHR(_device.getLogical(), _swapchain, nullptr);
@@ -169,17 +171,23 @@ bool	Swapchain::createSwapchainImageViews(std::vector<VkImage> &images,
 }
 
 bool	Swapchain::createSyncObjects(void) {
+	size_t	imageCount = _swapImages.size();
+	_imageAvailable.resize(imageCount);
+	_renderFinished.resize(imageCount);
 	VkSemaphoreCreateInfo	semaphoreInfo{};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	for (size_t i = 0; i < imageCount; i++) {
+		if (vkCreateSemaphore(_device.getLogical(), &semaphoreInfo, nullptr, &_imageAvailable[i]) != VK_SUCCESS ||
+			vkCreateSemaphore(_device.getLogical(), &semaphoreInfo, nullptr, &_renderFinished[i]) != VK_SUCCESS)
+			RETURN_SET_UNHEALTHY("Failed to create synchronization object for a swapchain", true);
+	}
 
 	VkFenceCreateInfo	fenceInfo{};
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
 	for (size_t i = 0; i < Swapchain::MAX_FRAMES_IN_FLIGHT; i++) {
-		if (vkCreateSemaphore(_device.getLogical(), &semaphoreInfo, nullptr, &_imageAvailable[i]) != VK_SUCCESS ||
-			vkCreateSemaphore(_device.getLogical(), &semaphoreInfo, nullptr, &_renderFinished[i]) != VK_SUCCESS ||
-			vkCreateFence(_device.getLogical(), &fenceInfo, nullptr, &_inFlightFences[i]) != VK_SUCCESS)
+		if (vkCreateFence(_device.getLogical(), &fenceInfo, nullptr, &_inFlightFences[i]) != VK_SUCCESS)
 			RETURN_SET_UNHEALTHY("Failed to create synchronization object for a swapchain", true);
 	}
 
@@ -212,7 +220,7 @@ bool	Swapchain::acquireNextImage(Window &window, uint32_t currentFrame, uint32_t
 	return (false);
 }
 
-bool	Swapchain::submitCommandBuffer(VkCommandBuffer commandBuffer, uint32_t currentFrame) {
+bool	Swapchain::submitCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, uint32_t currentFrame) {
 	VkSubmitInfo	submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -225,7 +233,7 @@ bool	Swapchain::submitCommandBuffer(VkCommandBuffer commandBuffer, uint32_t curr
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffer;
 
-	VkSemaphore	signalSemaphores[] = {_renderFinished[currentFrame]};
+	VkSemaphore	signalSemaphores[] = {_renderFinished[imageIndex]};
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -241,7 +249,7 @@ bool	Swapchain::present(Window &window, uint32_t imageIndex, uint32_t currentFra
 	VkPresentInfoKHR	presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = &_renderFinished[currentFrame];
+	presentInfo.pWaitSemaphores = &_renderFinished[imageIndex];
 	VkSwapchainKHR	swapChains[] = {_swapchain};
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapChains;

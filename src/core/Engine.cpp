@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/28 18:16:30                                        */
+/*  Last Modified: 2026/04/29 17:15:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -241,7 +241,7 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 
 	vkEndCommandBuffer(ctx.commandBuffer);
 
-	swapchain.submitCommandBuffer(ctx.commandBuffer, ctx.frameIndex);
+	swapchain.submitCommandBuffer(ctx.commandBuffer, imageIndex, ctx.frameIndex);
 	swapchain.present(*window, imageIndex, ctx.frameIndex);
 }
 

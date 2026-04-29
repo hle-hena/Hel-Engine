@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/28 17:58:04                                        */
+/*  Last Modified: 2026/04/29 17:15:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -65,7 +65,7 @@ class	Swapchain
 		Image			*getSwapImage(uint32_t imageIndex);
 		void			waitForFrameFence(uint32_t frameIndex);
 		bool			acquireNextImage(Window &window, uint32_t currentFrame, uint32_t *imageIndex);
-		bool			submitCommandBuffer(VkCommandBuffer commandBuffer, uint32_t currentFrame);
+		bool			submitCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, uint32_t currentFrame);
 		bool			present(Window &window, uint32_t imageIndex, uint32_t currentFrame);
 
 		bool	_frameBufferResized{false};
@@ -85,8 +85,8 @@ class	Swapchain
 		Device						&_device;
 		VkSwapchainKHR				_swapchain{VK_NULL_HANDLE};
 		std::vector<Image::ptr>		_swapImages;
-		std::array<VkSemaphore,	MAX_FRAMES_IN_FLIGHT>	_imageAvailable{VK_NULL_HANDLE};
-		std::array<VkSemaphore,	MAX_FRAMES_IN_FLIGHT>	_renderFinished{VK_NULL_HANDLE};
+		std::vector<VkSemaphore>	_imageAvailable{VK_NULL_HANDLE};
+		std::vector<VkSemaphore>	_renderFinished{VK_NULL_HANDLE};
 		std::array<VkFence,		MAX_FRAMES_IN_FLIGHT>	_inFlightFences{VK_NULL_HANDLE};
 };
 
