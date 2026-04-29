@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/28 18:06:36                                        */
+/*  Last Modified: 2026/04/29 15:32:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,7 @@
 #include "utils/healthHelper.hpp"
 
 #include <limits>
+#include <algorithm>
 #include <iostream>
 
 namespace	hel {
