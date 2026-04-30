@@ -26,7 +26,7 @@ concept	hasInputOffset = requires {
 template <typename T>
 void	InputState::setState(size_t index, int action, int mods) {
 	if constexpr (requires { T::isValid(index); })
-		if (!T::isValid(index))	{ return ; }
+		if (!T::isValid(static_cast<int>(index)))	{ return ; }
 	size_t pos = index;
 	if constexpr (hasInputOffset<T>)
 		pos += T::OFFSET;

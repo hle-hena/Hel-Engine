@@ -126,14 +126,14 @@ class	StyleEditor : public Panel<StyleEditor> {
 												ImGuiCol_DockingPreview,
 												ImGuiCol_DockingEmptyBg};
 
-		bool	colorPicker(const std::string &label, ImVec4 &color);
+		bool	colorPicker(const std::string &colorName, ImVec4 &color);
 		struct	ColorSelectableStyle {
 			const char		*format{"%s"};
 			bool			isSelected{false};
 			const ImVec2	&tabSize;		
 			const ImVec2	&tabPadding;		
 		};
-		bool	colorSelectable(const std::string &label, const ImVec4 &color,
+		bool	colorSelectable(const std::string &colorName, const ImVec4 &color,
 							const ColorSelectableStyle &style);
 
 		static ImVec4	resolveColor(const Color &col);

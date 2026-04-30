@@ -91,7 +91,7 @@ Geometry::GeometryVectors	Geometry::loadFile(const std::string &modelName, bool 
 
 	GeometryVectors							vec;
 	std::unordered_map<Vertex, uint32_t>	uniqueVertices;
-	Submesh									*submesh;
+	Submesh									*submesh = nullptr;
 
 	for (auto &mat: materials) {
 		if (mat.diffuse_texname.empty())
@@ -176,7 +176,7 @@ Geometry::GeometryVectors	Geometry::loadFile(const std::string &modelName, bool 
 					submesh->lineIndexCount += 2;
 				}
 			}
-			vertexIndexOffset += faceVertices;
+			vertexIndexOffset += static_cast<uint32_t>(faceVertices);
 		}
 	}
 

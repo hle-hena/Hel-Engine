@@ -172,8 +172,8 @@ void	StyleEditor::applyPalette(ImGuiCol col, ImVec4 colValue) {
 	ImGui::GetStyle().Colors[col] = colValue;
 }
 
-bool	StyleEditor::colorPicker(const std::string &label, ImVec4 &color) {
-	ImGui::SeparatorText(("Modify the " + label + " color !").c_str());
+bool	StyleEditor::colorPicker(const std::string &colorName, ImVec4 &color) {
+	ImGui::SeparatorText(("Modify the " + colorName + " color !").c_str());
 
 	auto	avail = ImGui::GetContentRegionAvail();
 	float	pickerWidth = avail.x * 0.8f;
@@ -186,7 +186,7 @@ bool	StyleEditor::colorPicker(const std::string &label, ImVec4 &color) {
 									ImGuiColorEditFlags_NoSidePreview |
 									ImGuiColorEditFlags_NoLabel |
 									ImGuiColorEditFlags_NoSmallPreview;
-	return (ImGui::ColorPicker3(label.c_str(), &color.x, pickerFlags));
+	return (ImGui::ColorPicker3(colorName.c_str(), &color.x, pickerFlags));
 }
 
 bool	StyleEditor::basePopup(Color &color) {
@@ -302,12 +302,12 @@ void	StyleEditor::showColorSection(const char *sectionName,
 	}
 }
 
-bool	StyleEditor::colorSelectable(const std::string &label,
+bool	StyleEditor::colorSelectable(const std::string &colorName,
 									const ImVec4 &color,
 									const ColorSelectableStyle &style) {
 	if (style.isSelected)	{ ImGui::PushStyleColor(ImGuiCol_Header,
 			ImGui::GetStyleColorVec4(ImGuiCol_TabSelected)); }
-	ImGui::PushID(label.c_str());
+	ImGui::PushID(colorName.c_str());
 
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.f, 0.f});
 
@@ -315,7 +315,7 @@ bool	StyleEditor::colorSelectable(const std::string &label,
 														0, style.tabSize);
 	ImGui::PopStyleVar();
 	if (ImGui::IsItemHovered())
-		ImGui::SetTooltip(style.format, label.c_str());
+		ImGui::SetTooltip(style.format, colorName.c_str());
 
 	ImGui::GetWindowDrawList()->AddRectFilled(
 		ImGui::GetItemRectMin() + style.tabPadding,
@@ -334,12 +334,12 @@ void	StyleEditor::baseColorEditor(void) {
 	ImVec2	childSize = {_tabSize.x,
 		_tabSize.y * static_cast<float>(_baseColorsLabel.size())};
 	ImGui::BeginChild("ColorTabSelection", childSize);
-	for (auto &label: _baseColorsLabel) {
-		if (colorSelectable(label, _baseColors[label],
+	for (auto &colorName: _baseColorsLabel) {
+		if (colorSelectable(colorName, _baseColors[colorName],
 						{"Click to change the %s color !",
 						label == _colorTabSelected,
 						_tabSize, _tabPadding}))
-			_colorTabSelected = label;
+			_colorTabSelected = colorName;
 	}
 	ImGui::EndChild();
 

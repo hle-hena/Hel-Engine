@@ -51,26 +51,26 @@ void	Inspector::render(Window *window, const ImVec2 &) {
 	ImGui::Separator();
 	for (auto &[type, pool]: _registry->getPools()) {
 		if (pool->has(handle)) {
-			auto	label = pool->getTypeName();
+			auto	typeName = pool->getTypeName();
 
 			bool	uiOpened = false;
 			if (type != typeid(comp::Hierarchy)) {
 				bool	isVisible = true;
-				uiOpened = ImGui::CollapsingHeader(label, &isVisible,
+				uiOpened = ImGui::CollapsingHeader(typeName, &isVisible,
 												ImGuiTreeNodeFlags_DefaultOpen);
 				if (!isVisible) {
 					pool->removeEntity(handle);
 					continue ;
 				}
 			} else
-				uiOpened = ImGui::CollapsingHeader(label,
+				uiOpened = ImGui::CollapsingHeader(typeName,
 												ImGuiTreeNodeFlags_DefaultOpen);
 			if (uiOpened) {
 				auto	it = _drawFuncs.find(type);
 				if (it != _drawFuncs.end())
 					_drawFuncs[type](window, pool->getRaw(handle));
 				else
-					ImGui::TextDisabled("No UI integration for %s", label);
+					ImGui::TextDisabled("No UI integration for %s", typeName);
 			}
 			ImGui::Separator();
 		}
