@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:12 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:44:11                                        */
+/*  Last Modified: 2026/04/30 22:50:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -59,8 +59,8 @@ class	Application {
 		std::string						_reason{""};
 		VulkanContext					_vkContext;
 		Window::windowPtr				_appWindow{nullptr};
-		Registry						_registry;
 		AssetManager					_assetManager;
+		Registry						_registry;
 		Engine							_engine;
 };
 

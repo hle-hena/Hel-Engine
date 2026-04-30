@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:43:42                                        */
+/*  Last Modified: 2026/04/30 22:50:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,8 +25,8 @@ namespace hel {
 
 Application::Application(void)
 	:	_vkContext{*this},
-		_registry{_assetManager},
 		_assetManager{_vkContext.getDevice()},
+		_registry{_assetManager},
 		_engine{_vkContext.getDevice(), _registry} {
 	if (!GLFW::acquire())
 		RETURN_SET_UNHEALTHY("Couldn't init glfw.");
