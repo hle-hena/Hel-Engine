@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 21:08:45                                        */
+/*  Last Modified: 2026/04/30 23:12:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,7 +36,7 @@ void	Inspector::render(Window *window, const ImVec2 &) {
 	if (handle == Entity::NOT_REGISTERED)
 		return ;
 	if (ImGui::Button("Remove entity")) {
-		removeEntity(handle);
+		removeEntity(window, handle);
 		return ;
 	}
 	ImGui::SameLine();
@@ -80,11 +80,15 @@ void	Inspector::render(Window *window, const ImVec2 &) {
 	addNewComponentPopup(handle);
 }
 
-void	Inspector::removeEntity(Entity::id handle) {
+void	Inspector::removeEntity(Window *window, Entity::id handle) {
 	auto	hierarchy = _registry->getComponent<comp::Hierarchy>(handle);
 	for (auto childHandle: hierarchy->childrenId)
-		removeEntity(childHandle);
+		removeEntity(window, childHandle);
 	_registry->removeEntity(handle);
+	if (window->getEntityFocus() == handle)
+		window->setEntityFocus(Entity::NOT_REGISTERED);
+	if (window->getEntityReference() == handle)
+		window->setEntityReference(Entity::NOT_REGISTERED);
 }
 
 void	Inspector::addNewComponentPopup(Entity::id handle) {

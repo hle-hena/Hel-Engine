@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:51:05                                        */
+/*  Last Modified: 2026/04/30 23:35:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -297,7 +297,8 @@ void	Transform::renderUI(const Renderer &renderer, GizmoContext &gizmo) {
 
 void	Transform::renderInteraction(const Renderer &renderer) {
 	auto	ctx = renderer.frameContext();
-	if (ctx.window->getEntityFocus() == Entity::NOT_REGISTERED)
+	if (ctx.window->getEntityFocus() == Entity::NOT_REGISTERED
+		|| !_registry->isValidHandle(ctx.request->handle))
 		return	;
 	auto	[it, inserted] = _gizmoContexts.try_emplace(*renderer.frameContext().request,
 								this,
@@ -305,9 +306,10 @@ void	Transform::renderInteraction(const Renderer &renderer) {
 								renderer.frameContext().request->handle);
 	auto	&gizmo = it->second;
 
-	
 	if (!gizmo || ctx.window->focusChanged())
 		gizmo.initAction();
+	if (!gizmo)
+		return ;
 
 	registerClick(ctx, gizmo);
 	registerDrag(ctx, gizmo);

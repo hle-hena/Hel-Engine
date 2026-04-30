@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 21:01:07                                        */
+/*  Last Modified: 2026/04/30 23:21:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -150,6 +150,8 @@ class	Registry {
 			return (_pools);
 		}
 
+		bool	isValidHandle(Entity::id handle);
+
 		template <typename Component>
 		ComponentHandle<Component>	addComponent(Entity::id handle);
 		template <typename... Components>
@@ -175,8 +177,6 @@ class	Registry {
 		template <typename Component>
 		Pool<Component>			*getPool();
 
-		bool	isValidHandle(Entity::id handle);
-
 		std::vector<Entity::id>		_aliveEntities{};
 		PoolMap						_pools;
 		AssetManager				*_assetManager;
@@ -194,7 +194,9 @@ struct	ComponentHandle {
 		operator bool(void) const	{ return (_index.has_value()); }
 		const Component	*operator->(void)	{ return (&_pool->components[*_index]); }
 		ModificationProxy<Component>	modify(void);
-		uint32_t						getDenseIndex(void) const	{ return (*_index); }
+		uint32_t						getDenseIndex(void) const {
+			return (_index.value_or(Entity::NOT_REGISTERED));
+		}
 
 	private:
 		Pool<Component>			*_pool{nullptr};
