@@ -108,12 +108,12 @@ typename View<include<Include...>, exclude<Exclude...>>::Iterator	&View<include<
 }
 
 template <typename... Include, typename... Exclude>
-bool		View<include<Include...>, exclude<Exclude...>>::Iterator::operator==(const Iterator &other) const {
+bool		View<include<Include...>, exclude<Exclude...>>::Iterator::operator==(const View<include<Include...>, exclude<Exclude...>>::Iterator &other) const {
 	return (index == other.index);
 }
 
 template <typename... Include, typename... Exclude>
-bool		View<include<Include...>, exclude<Exclude...>>::Iterator::operator!=(const Iterator &other) const {
+bool		View<include<Include...>, exclude<Exclude...>>::Iterator::operator!=(const View<include<Include...>, exclude<Exclude...>>::Iterator &other) const {
 	return (index != other.index);
 }
 

@@ -1,42 +1,71 @@
 {
-"version": 3,
-"configurePresets": [
-	{
-	"name": "linux-debug",
-	"displayName": "Linux Debug",
-	"generator": "Unix Makefiles",
-	"binaryDir": "${sourceDir}/build",
-	"cacheVariables": {
-		"CMAKE_BUILD_TYPE": "Debug",
-		"CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-	}
-	},
-	{
-	"name": "linux-release",
-	"displayName": "Linux Release",
-	"generator": "Unix Makefiles",
-	"binaryDir": "${sourceDir}/build",
-	"cacheVariables": {
-		"CMAKE_BUILD_TYPE": "Release"
-	}
-	},
-	{
-	"name": "windows-debug",
-	"displayName": "Windows Debug",
-	"generator": "Visual Studio 17 2022",
-	"binaryDir": "${sourceDir}/build",
-	"cacheVariables": {
-		"CMAKE_BUILD_TYPE": "Debug"
-	}
-	},
-	{
-	"name": "windows-release",
-	"displayName": "Windows Release",
-	"generator": "Visual Studio 17 2022",
-	"binaryDir": "${sourceDir}/build",
-	"cacheVariables": {
-		"CMAKE_BUILD_TYPE": "Release"
-	}
-	}
-]
+	"version": 3,
+	"configurePresets": [
+		{
+			"name": "base",
+			"hidden": true,
+			"binaryDir": "${sourceDir}/out/build/${presetName}",
+			"cacheVariables": {
+				"CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+				"CMAKE_CXX_STANDARD": "20",
+				"CMAKE_CXX_STANDARD_REQUIRED": "ON"
+			}
+		},
+		{
+			"name": "linux-debug",
+			"displayName": "Linux Debug",
+			"inherits": "base",
+			"generator": "Unix Makefiles",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			},
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Linux"
+			}
+		},
+		{
+			"name": "linux-release",
+			"displayName": "Linux Release",
+			"inherits": "base",
+			"generator": "Unix Makefiles",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
+			},
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Linux"
+			}
+		},
+		{
+			"name": "windows-debug",
+			"displayName": "Windows Debug",
+			"inherits": "base",
+			"generator": "Ninja",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			},
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Windows"
+			}
+		},
+		{
+			"name": "windows-release",
+			"displayName": "Windows Release",
+			"inherits": "base",
+			"generator": "Ninja",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
+			},
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Windows"
+			}
+		}
+	]
 }

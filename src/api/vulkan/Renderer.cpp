@@ -51,7 +51,7 @@ Renderer	RenderPass::beginPass(FrameContext &frameContext) {
 	renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
 	renderingInfo.renderArea = {{0, 0}, _extent};
 	renderingInfo.layerCount = 1;
-	renderingInfo.colorAttachmentCount = _colorsInfo.size();
+	renderingInfo.colorAttachmentCount = static_cast<uint32_t>(_colorsInfo.size());
 	renderingInfo.pColorAttachments = _colorsInfo.data();
 	if (_depthInfo.has_value()) {
 		renderingInfo.pDepthAttachment = &(*_depthInfo);

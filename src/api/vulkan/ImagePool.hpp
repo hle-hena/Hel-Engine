@@ -19,6 +19,7 @@
 # include <vulkan/vulkan.h>
 # include <unordered_map>
 # include <memory>
+#include <string>
 
 # include "api/vulkan/Image.hpp"
 

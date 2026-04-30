@@ -4,7 +4,7 @@ import re
 comp_structs = []
 
 def read_file(filename):
-    with open(filename, "r") as f:
+    with open(filename, "r", encoding="utf-8", errors="ignore") as f:
         dest = [l[:-1] for l in f.readlines()]
     return (dest)
 

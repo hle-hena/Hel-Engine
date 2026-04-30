@@ -32,14 +32,14 @@ struct	PipelineConfig {
 
 	std::vector<VkVertexInputAttributeDescription>		attributeDescription{};
 	std::vector<VkVertexInputBindingDescription>		bindingDescription{};
-	VkPipelineViewportStateCreateInfo					viewportInfo;
-	VkPipelineInputAssemblyStateCreateInfo				inputAssemblyInfo;
-	VkPipelineRasterizationStateCreateInfo				rasterizationInfo;
-	VkPipelineMultisampleStateCreateInfo				multisampleInfo;
+	VkPipelineViewportStateCreateInfo					viewportInfo{};
+	VkPipelineInputAssemblyStateCreateInfo				inputAssemblyInfo{};
+	VkPipelineRasterizationStateCreateInfo				rasterizationInfo{};
+	VkPipelineMultisampleStateCreateInfo				multisampleInfo{};
 	std::vector<VkPipelineColorBlendAttachmentState>	colorBlendAttachment{};
-	VkPipelineDepthStencilStateCreateInfo				depthStencilInfo;
+	VkPipelineDepthStencilStateCreateInfo				depthStencilInfo{};
 	std::vector<VkDynamicState>							dynamicStateEnables{};
-	VkPipelineDynamicStateCreateInfo					dynamicStateInfo;
+	VkPipelineDynamicStateCreateInfo					dynamicStateInfo{};
 	VkPipelineLayout									pipelineLayout{nullptr};
 	uint32_t											subpass{0};
 

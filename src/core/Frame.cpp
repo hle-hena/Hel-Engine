@@ -40,7 +40,7 @@ tl::expected<void, std::string>	Frame::init(Device &device,
 		.build(*descriptorPool);
 
 	DescriptorWriter	writer(device, _descriptorSets.get());
-	for (size_t i = 0; i < frameCount; i++) {
+	for (uint32_t i = 0; i < frameCount; i++) {
 		_globalUbos[i] = Buffer::create(device, sizeof(GlobalUBO), 32,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
 			VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);

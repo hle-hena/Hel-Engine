@@ -31,7 +31,7 @@ expected<void, std::string>	IPanel::setup(Registry *registry, ImagePool *imagePo
 };
 
 void	IPanel::changeOwner(Dock *newOwner, size_t insertIdx) {
-	insertIdx = std::clamp(insertIdx, 0ul, newOwner->_panels.size());
+	insertIdx = std::clamp(insertIdx, 0ull, newOwner->_panels.size());
 	newOwner->_panels.insert(newOwner->_panels.begin() + insertIdx, this);
 	if (_owner) {
 		auto	it = std::find(_owner->_panels.begin(),
