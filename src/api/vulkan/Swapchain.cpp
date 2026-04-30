@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/29 17:15:02                                        */
+/*  Last Modified: 2026/04/30 20:40:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -245,7 +245,7 @@ bool	Swapchain::submitCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imag
 	return (false);
 }
 
-bool	Swapchain::present(Window &window, uint32_t imageIndex, uint32_t currentFrame) {
+bool	Swapchain::present(Window &window, uint32_t imageIndex) {
 	VkPresentInfoKHR	presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	presentInfo.waitSemaphoreCount = 1;

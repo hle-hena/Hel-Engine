@@ -1,4 +1,5 @@
 #include "ecs/ComponentList.hpp"
+#include "ecs/Component.hpp"
 
 namespace	hel {
 
@@ -7,35 +8,35 @@ std::vector<const char *>	ComponentList::_componentList{"EditorControllerTag", "
 void	ComponentList::addComponent(Registry &registry, Entity::id handle, const char *componentName) {
 
 
-	if (componentName == "EditorControllerTag")
+	if (componentName == std::string("EditorControllerTag"))
 		return ((void)registry.addComponent<comp::EditorControllerTag>(handle));
-	if (componentName == "BaseControllerTag")
+	if (componentName == std::string("BaseControllerTag"))
 		return ((void)registry.addComponent<comp::BaseControllerTag>(handle));
-	if (componentName == "HideEntityTag")
+	if (componentName == std::string("HideEntityTag"))
 		return ((void)registry.addComponent<comp::HideEntityTag>(handle));
-	if (componentName == "HideEntityInHierarchyTag")
+	if (componentName == std::string("HideEntityInHierarchyTag"))
 		return ((void)registry.addComponent<comp::HideEntityInHierarchyTag>(handle));
-	if (componentName == "NonSelectableTag")
+	if (componentName == std::string("NonSelectableTag"))
 		return ((void)registry.addComponent<comp::NonSelectableTag>(handle));
-	if (componentName == "Name")
+	if (componentName == std::string("Name"))
 		return ((void)registry.addComponent<comp::Name>(handle));
-	if (componentName == "Transform")
+	if (componentName == std::string("Transform"))
 		return ((void)registry.addComponent<comp::Transform>(handle));
-	if (componentName == "OffsetTransform")
+	if (componentName == std::string("OffsetTransform"))
 		return ((void)registry.addComponent<comp::OffsetTransform>(handle));
-	if (componentName == "SurfaceAllignement")
+	if (componentName == std::string("SurfaceAllignement"))
 		return ((void)registry.addComponent<comp::SurfaceAllignement>(handle));
-	if (componentName == "Model")
+	if (componentName == std::string("Model"))
 		return ((void)registry.addComponent<comp::Model>(handle));
-	if (componentName == "Texture")
+	if (componentName == std::string("Texture"))
 		return ((void)registry.addComponent<comp::Texture>(handle));
-	if (componentName == "Tint")
+	if (componentName == std::string("Tint"))
 		return ((void)registry.addComponent<comp::Tint>(handle));
-	if (componentName == "Camera")
+	if (componentName == std::string("Camera"))
 		return ((void)registry.addComponent<comp::Camera>(handle));
-	if (componentName == "Controller")
+	if (componentName == std::string("Controller"))
 		return ((void)registry.addComponent<comp::Controller>(handle));
-	if (componentName == "Hierarchy")
+	if (componentName == std::string("Hierarchy"))
 		return ((void)registry.addComponent<comp::Hierarchy>(handle));
 	return ;
 }

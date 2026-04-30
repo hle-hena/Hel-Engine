@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/29 17:15:12                                        */
+/*  Last Modified: 2026/04/30 20:44:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -242,7 +242,7 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 	vkEndCommandBuffer(ctx.commandBuffer);
 
 	swapchain.submitCommandBuffer(ctx.commandBuffer, imageIndex, ctx.frameIndex);
-	swapchain.present(*window, imageIndex, ctx.frameIndex);
+	swapchain.present(*window, imageIndex);
 }
 
 void	Engine::updateGlobalData(FrameContext &ctx) {
@@ -250,7 +250,8 @@ void	Engine::updateGlobalData(FrameContext &ctx) {
 	ctx.globalData.viewProjection = glm::mat4{1.f};
 	if (auto camera = _registry.getComponent<comp::Camera>(handle)) {
 		auto	extent = ctx.request->mainImage->getExtent();
-		float	aspect = (float)extent.width / extent.height;
+		float	aspect = static_cast<float>(extent.width) /
+						static_cast<float>(extent.height);
 		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), aspect, camera->near, camera->far);
 		projection[1][1] *= -1;
 		ctx.projection = projection;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:03:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/29 14:23:29                                        */
+/*  Last Modified: 2026/04/30 21:00:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -113,7 +113,7 @@ Geometry::GeometryVectors	Geometry::loadFile(const std::string &modelName, bool 
 			currentMaterialID = currentMaterialID > 0 ? currentMaterialID : 0;
 			if (f == 0 || currentMaterialID != lastMaterialID) {
 				submesh = &vec.submeshes.emplace_back();
-				submesh->materialID = currentMaterialID;
+				submesh->materialID = static_cast<uint32_t>(currentMaterialID);
 				submesh->triFirstIndex = triIndexOffset;
 				submesh->lineFirstIndex = lineIndexOffset;
 				lastMaterialID = currentMaterialID;
@@ -126,29 +126,32 @@ Geometry::GeometryVectors	Geometry::loadFile(const std::string &modelName, bool 
 				tinyobj::index_t	index = shape.mesh.indices[vertexIndexOffset + v];
 				Vertex	vertex{};
 				if (index.vertex_index >= 0) {
+					uint32_t	vertIndex = static_cast<uint32_t>(index.vertex_index);
 					vertex.position = {
-						attrib.vertices[3 * index.vertex_index + 0],
-						attrib.vertices[3 * index.vertex_index + 1],
-						attrib.vertices[3 * index.vertex_index + 2]
+						attrib.vertices[3 * vertIndex + 0],
+						attrib.vertices[3 * vertIndex + 1],
+						attrib.vertices[3 * vertIndex + 2]
 					};
 
 					vertex.color = {
-						attrib.colors[3 * index.vertex_index + 0],
-						attrib.colors[3 * index.vertex_index + 1],
-						attrib.colors[3 * index.vertex_index + 2]
+						attrib.colors[3 * vertIndex + 0],
+						attrib.colors[3 * vertIndex + 1],
+						attrib.colors[3 * vertIndex + 2]
 					};
 				}
 				if (index.normal_index >= 0) {
+					uint32_t	normIndex = static_cast<uint32_t>(index.normal_index);
 					vertex.normal = {
-						attrib.normals[3 * index.normal_index + 0],
-						attrib.normals[3 * index.normal_index + 1],
-						attrib.normals[3 * index.normal_index + 2]
+						attrib.normals[3 * normIndex + 0],
+						attrib.normals[3 * normIndex + 1],
+						attrib.normals[3 * normIndex + 2]
 					};
 				}
 				if (index.texcoord_index >= 0) {
+					uint32_t	texIndex = static_cast<uint32_t>(index.texcoord_index);
 					vertex.uv = {
-						attrib.texcoords[2 * index.texcoord_index + 0],
-						1 - attrib.texcoords[2 * index.texcoord_index + 1]
+						attrib.texcoords[2 * texIndex + 0],
+						1 - attrib.texcoords[2 * texIndex + 1]
 					};
 				}
 				if (uniqueVertices.find(vertex) == uniqueVertices.end()) {
@@ -227,7 +230,7 @@ std::shared_ptr<Geometry>	Geometry::load(Device &device, const std::string &mode
 										VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 	asset->triangleIndexBuffer = createBuffer(device, vec.triangleIndices,
 										VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-	asset->triangleVertexCount = vec.triangleIndices.size();
+	asset->triangleVertexCount = static_cast<uint32_t>(vec.triangleIndices.size());
 	asset->submeshes = std::move(vec.submeshes);
 	asset->materialPaths = std::move(vec.materialPaths);
 	if (asset->materialPaths.empty())
@@ -250,11 +253,11 @@ std::shared_ptr<FullGeometry>	FullGeometry::load(Device &device, const std::stri
 										VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 	asset->triangleIndexBuffer = createBuffer(device, vec.triangleIndices,
 										VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-	asset->triangleVertexCount = vec.triangleIndices.size();
+	asset->triangleVertexCount = static_cast<uint32_t>(vec.triangleIndices.size());
 
 	asset->lineIndexBuffer = createBuffer(device, vec.lineIndices,
 										VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-	asset->lineVertexCount = vec.lineIndices.size();
+	asset->lineVertexCount = static_cast<uint32_t>(vec.lineIndices.size());
 	asset->submeshes = std::move(vec.submeshes);
 	asset->materialPaths = std::move(vec.materialPaths);
 	if (asset->materialPaths.empty())

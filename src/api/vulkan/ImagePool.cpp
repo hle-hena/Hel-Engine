@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 18:18:05                                        */
+/*  Last Modified: 2026/04/30 20:27:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -76,8 +76,8 @@ uint64_t	ImagePool::candidateScore(const Image::Config &requested,
 
 	waste += (candidate.width - requested.width) *
 			(candidate.height - requested.height) * 100;
-	waste += std::popcount(candidate.usage & ~requested.usage);
-	waste += std::popcount(candidate.aspectFlags & ~requested.aspectFlags);
+	waste += static_cast<uint64_t>(std::popcount(candidate.usage & ~requested.usage));
+	waste += static_cast<uint64_t>(std::popcount(candidate.aspectFlags & ~requested.aspectFlags));
 	for (auto fmt: candidate.format) {
 		if (std::find(requested.format.begin(), requested.format.end(), fmt) == requested.format.end())
 			waste += 1;

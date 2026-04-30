@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/27 17:34:48                                        */
+/*  Last Modified: 2026/04/30 20:37:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -156,11 +156,10 @@ Renderer::Draw	&Renderer::Draw::addBinding(VkDescriptorSet set) {
 }
 
 Renderer::Draw	&Renderer::Draw::addDynamicBinding(VkDescriptorSet set,
-											uint32_t stride, uint32_t *retOffset) {
+											uint32_t stride, uint32_t *retOffset, VkBufferUsageFlags setUsage) {
 	_sets.push_back(set);
-	uint32_t	alignement = _device->getPhysProperties().properties.limits
-										.minUniformBufferOffsetAlignment;
-	uint32_t	offset = ((stride + alignement - 1) & ~(alignement - 1)) * _frameContext->passIndex;
+	uint32_t	alignement = _device->getAligned(stride, setUsage);
+	uint32_t	offset = alignement * _frameContext->passIndex;
 	if (retOffset)
 		(*retOffset = offset);
 	_setsOffsets.push_back(offset);
@@ -182,8 +181,8 @@ void	Renderer::Draw::submit(void) {
 							_vertexInfos.buffers, _vertexInfos.offsets);
 	}
 	vkCmdBindDescriptorSets(_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-							pipelineLayout, 0, _sets.size(), _sets.data(),
-							_setsOffsets.size(), _setsOffsets.data());
+		pipelineLayout, 0, static_cast<uint32_t>(_sets.size()), _sets.data(),
+		static_cast<uint32_t>(_setsOffsets.size()), _setsOffsets.data());
 	if (_hasIndex) {
 		vkCmdBindIndexBuffer(_commandBuffer, _indexInfos.buffer,
 							_indexInfos.offset, _indexInfos.indexType);

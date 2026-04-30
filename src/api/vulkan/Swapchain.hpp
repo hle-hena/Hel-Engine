@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/29 17:15:24                                        */
+/*  Last Modified: 2026/04/30 20:40:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -46,7 +46,7 @@ class	Swapchain
 		Swapchain(const Swapchain &other) = delete;
 		Swapchain	&operator=(const Swapchain &other) = delete;
 		Swapchain(Swapchain &&other) = default;
-		Swapchain	&operator=(Swapchain &&other) = default;
+		Swapchain	&operator=(Swapchain &&other) = delete;
 
 		std::string		getReason(void) const {
 			return (_reason);
@@ -66,7 +66,7 @@ class	Swapchain
 		void			waitForFrameFence(uint32_t frameIndex);
 		bool			acquireNextImage(Window &window, uint32_t currentFrame, uint32_t *imageIndex);
 		bool			submitCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, uint32_t currentFrame);
-		bool			present(Window &window, uint32_t imageIndex, uint32_t currentFrame);
+		bool			present(Window &window, uint32_t imageIndex);
 
 		bool	_frameBufferResized{false};
 

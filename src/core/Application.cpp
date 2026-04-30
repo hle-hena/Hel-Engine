@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/27 23:43:20                                        */
+/*  Last Modified: 2026/04/30 20:43:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -103,8 +103,9 @@ void	Application::run(void) {
 }
 
 void	Application::addNewWindow(int width, int height, const std::string &windowName) {
-	Window::windowPtr window = Window::createWindow(width, height, windowName, *this,
-												_vkContext.getInstance().getVkInstance());
+	Window::windowPtr window = Window::createWindow(static_cast<uint32_t>(width),
+								static_cast<uint32_t>(height), windowName,
+								*this, _vkContext.getInstance().getVkInstance());
 	if (!window) {
 		std::cerr << "Failed to create a new window." << std::endl;
 		return ;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:19:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 18:02:19                                        */
+/*  Last Modified: 2026/04/30 21:12:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,7 @@
 #pragma once
 
 # include <string>
+#include <limits>
 # include <ui/ImGui/imgui.h>
 
 # include "utils/helExpect.hpp"
@@ -45,7 +46,8 @@ class	IPanel {
 		virtual bool	shouldClose(void) const final
 							{ return (_shouldClose); }
 
-		virtual void	changeOwner(Dock *newOwner, size_t insertIdx = -1) final;
+		virtual void	changeOwner(Dock *newOwner, size_t insertIdx =
+							std::numeric_limits<size_t>::max()) final;
 		virtual void	setOwner(Dock *newOwner) final;
 		virtual expected<void, std::string>	onInit(void) { return {}; }
 

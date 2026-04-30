@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:42:45                                        */
+/*  Last Modified: 2026/04/30 20:07:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -184,7 +184,7 @@ void	Image::transitionLayout(VkCommandBuffer commandBuffer,
 }
 
 void	Image::setData(void *data, VkDeviceSize size) {
-	auto	stagingBuffer = Buffer::create(_device, 1, size,
+	auto	stagingBuffer = Buffer::create(_device, 1, static_cast<uint32_t>(size),
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
 		VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 	stagingBuffer->map();

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 16:09:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/16 15:26:03                                        */
+/*  Last Modified: 2026/04/30 20:54:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -41,7 +41,7 @@ ComponentHandle<Component>	View<include<Include...>, exclude<Exclude...>>::get(E
 template <typename... Include, typename... Exclude>
 std::vector<Entity::id>	*View<include<Include...>, exclude<Exclude...>>::findSmallestPool(void) {
 	std::vector<Entity::id>	*smallestPool = nullptr;
-	size_t					minSize = -1;
+	size_t					minSize = static_cast<size_t>(-1);
 
 	std::apply([&](auto*... pools){
 		auto	check = [&](auto *pool){

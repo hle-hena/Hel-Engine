@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/16 15:32:15                                        */
+/*  Last Modified: 2026/04/30 21:20:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -77,8 +77,8 @@ Window::Window(uint32_t width, uint32_t height, const std::string &windowName,
 void	Window::initWindow(void) {
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-	_windowPtr = glfwCreateWindow(_width, _height, _windowName.c_str(),
-								nullptr, nullptr);
+	_windowPtr = glfwCreateWindow(static_cast<int>(_width),
+		static_cast<int>(_height), _windowName.c_str(), nullptr, nullptr);
 	glfwSetWindowUserPointer(_windowPtr, this);
 	glfwSetKeyCallback(_windowPtr, keyCallback);
 	glfwSetMouseButtonCallback(_windowPtr, mouseButtonCallback);
@@ -159,7 +159,8 @@ void	Window::keyCallback(GLFWwindow *window, int key, int,
 
 	if (action != GLFW_RELEASE && appWindow->_uiContext.capturesKeyboard())
 		return ;
-	appWindow->getApp().getRegistry().getInputState().setState<input::Key>(key, action, mods);
+	appWindow->getApp().getRegistry().getInputState()
+		.setState<input::Key>(static_cast<size_t>(key), action, mods);
 }
 
 void	Window::mouseButtonCallback(GLFWwindow *window, int button,
@@ -168,7 +169,8 @@ void	Window::mouseButtonCallback(GLFWwindow *window, int button,
 
 	if (action != GLFW_RELEASE && appWindow->_uiContext.capturesMouse())
 		return ;
-	appWindow->getApp().getRegistry().getInputState().setState<input::Mouse>(button, action, mods);
+	appWindow->getApp().getRegistry().getInputState()
+		.setState<input::Mouse>(static_cast<size_t>(button), action, mods);
 }
 
 void	Window::cursorEnterCallback(GLFWwindow *window, int entered) {

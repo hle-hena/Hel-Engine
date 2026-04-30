@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/16 15:26:20                                        */
+/*  Last Modified: 2026/04/30 21:01:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -206,5 +206,4 @@ struct	ComponentHandle {
 
 }
 
-# include "ecs/View.hpp"
 # include "ecs/Registry.tpp"

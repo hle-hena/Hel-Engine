@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 12:54:54 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 19:47:51                                        */
+/*  Last Modified: 2026/04/30 20:11:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -32,7 +32,7 @@ expected<void, std::string>	IPanel::setup(Registry *registry, ImagePool *imagePo
 
 void	IPanel::changeOwner(Dock *newOwner, size_t insertIdx) {
 	insertIdx = std::clamp(insertIdx, static_cast<size_t>(0), newOwner->_panels.size());
-	newOwner->_panels.insert(newOwner->_panels.begin() + insertIdx, this);
+	newOwner->_panels.insert(newOwner->_panels.begin() + static_cast<uint32_t>(insertIdx), this);
 	if (_owner) {
 		auto	it = std::find(_owner->_panels.begin(),
 							_owner->_panels.end(), this);

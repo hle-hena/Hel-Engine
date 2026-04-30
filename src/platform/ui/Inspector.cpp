@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/27 20:14:22                                        */
+/*  Last Modified: 2026/04/30 21:08:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -90,12 +90,14 @@ void	Inspector::removeEntity(Entity::id handle) {
 void	Inspector::addNewComponentPopup(Entity::id handle) {
 	if (_addNewComp) {
 		auto	items = ComponentList::getComponentList();
-		ImGui::Combo("Component type", &_newCompTypeIndex, items.data(), items.size());
+		ImGui::Combo("Component type", &_newCompTypeIndex, items.data(),
+					static_cast<int>(items.size()));
 		if (ImGui::Button("Cancel"))
 			_addNewComp = false;
 		ImGui::SameLine();
 		if (ImGui::Button("Add")) {
-			ComponentList::addComponent(*_registry, handle, items[_newCompTypeIndex]);
+			ComponentList::addComponent(*_registry, handle,
+						items[static_cast<size_t>(_newCompTypeIndex)]);
 			_addNewComp = false;
 		}
 	}
@@ -219,7 +221,7 @@ void	Inspector::setBuiltInDrawFunc(void) {
 		auto	surface = static_cast<comp::SurfaceAllignement *>(raw);
 
 		if (ImGui::DragFloat3("Up vector", &surface->localUp.x, 0.1f))
-			glm::normalize(surface->localUp);
+			surface->localUp = glm::normalize(surface->localUp);
 		ImGui::Checkbox("Dynamic allignement", &surface->isDynamic);
 	});
 

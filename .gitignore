@@ -1,6 +1,7 @@
 .vscode/
 build/
 .cache/
+.clangd
 assets/models/sponza
 vcpkg/installed/
 vcpkg/buildtrees/

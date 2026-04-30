@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/16 15:30:30                                        */
+/*  Last Modified: 2026/04/30 21:02:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "Registry.hpp"
+#include "ecs/View.hpp"
 #include "api/vulkan/Swapchain.hpp"
 #include <iostream>
 #include <tuple>

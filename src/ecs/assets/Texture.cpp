@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/24 15:13:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/28 15:10:32                                        */
+/*  Last Modified: 2026/04/30 20:49:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,13 +45,14 @@ std::shared_ptr<Texture> Texture::load(Device &device,
 
 	asset->image = Image::create(device,
 		Image::Config{}
-			.setWidth(raw.width)
-			.setHeight(raw.height)
+			.setWidth(static_cast<uint32_t>(raw.width))
+			.setHeight(static_cast<uint32_t>(raw.height))
 			.setFormats({VK_FORMAT_R8G8B8A8_SRGB})
-			.setUsage(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
+			.setUsage(VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+					VK_IMAGE_USAGE_SAMPLED_BIT)
 			.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
 
-	VkDeviceSize	size = raw.width * raw.height * 4;
+	VkDeviceSize	size = static_cast<VkDeviceSize>(raw.width * raw.height * 4);
 	asset->image->setData(raw.pixels, size);
 
 	stbi_image_free(raw.pixels);

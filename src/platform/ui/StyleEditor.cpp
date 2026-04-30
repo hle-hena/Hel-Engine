@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/18 11:20:37 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 20:09:57                                        */
+/*  Last Modified: 2026/04/30 21:18:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -191,19 +191,21 @@ bool	StyleEditor::colorPicker(const std::string &label, ImVec4 &color) {
 
 bool	StyleEditor::basePopup(Color &color) {
 	color.override = false;
-	int		nbColors = static_cast<int>(_baseColorsLabel.size());
-	int		nbColumns = sqrt(nbColors) + 0.5f;
+	float		nbColors = static_cast<float>(_baseColorsLabel.size());
+	float		nbColumns = round(sqrt(nbColors));
 	if (auto	table = Table("ChoseBaseColor")) {
 		ImVec2	avail = ImGui::GetContentRegionAvail() -
 						ImVec2(0.f, ImGui::GetFrameHeight() * 2);
-		ImVec2	tabSize = {avail.x / nbColumns, avail.y / std::ceil((float)nbColors / nbColumns)};
+		ImVec2	tabSize = {avail.x / nbColumns, avail.y / std::ceil(nbColors / nbColumns)};
 		ImVec2	tabPadding = {tabSize.x * 0.025f, tabSize.y * 0.05f};
-		for (auto row = 0; row < nbColors; row += nbColumns) {
-			int	columns = std::min(nbColumns, nbColors - row);
+		size_t	nbColors_t = static_cast<size_t>(nbColors);
+		size_t	nbColumns_t = static_cast<size_t>(nbColumns);
+		for (size_t row = 0; row < nbColors_t; row += nbColumns_t) {
+			size_t	columns = std::min(nbColumns_t, nbColors_t - row);
 			Table::ColumnSizing	sizing(columns, Table::WStretch);
 	
 			table.newRow(sizing);
-			for (auto column = 0; column < columns; column++) {
+			for (size_t column = 0; column < columns; column++) {
 				table.setNextCell([&]{
 					float	cellWidth = ImGui::GetContentRegionAvail().x;
 					float	itemWidth = tabSize.x;
@@ -329,7 +331,8 @@ bool	StyleEditor::colorSelectable(const std::string &label,
 }
 
 void	StyleEditor::baseColorEditor(void) {
-	ImVec2	childSize = {_tabSize.x, _tabSize.y * _baseColorsLabel.size()};
+	ImVec2	childSize = {_tabSize.x,
+		_tabSize.y * static_cast<float>(_baseColorsLabel.size())};
 	ImGui::BeginChild("ColorTabSelection", childSize);
 	for (auto &label: _baseColorsLabel) {
 		if (colorSelectable(label, _baseColors[label],

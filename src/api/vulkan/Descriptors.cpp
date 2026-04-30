@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 17:23:01                                        */
+/*  Last Modified: 2026/04/30 20:21:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -52,7 +52,7 @@ std::unique_ptr<DescriptorPool>	DescriptorPool::Builder::build(void) {
 		VkDescriptorPoolSize	push;
 		push.type = it.first;
 		push.descriptorCount = std::max(1u, static_cast<uint32_t>(
-											it.second * _pageSize));
+											it.second * static_cast<float>(_pageSize)));
 		poolSizes.push_back(push);
 	}
 
@@ -90,7 +90,7 @@ void	DescriptorPool::freeSets(DescriptorSet &handle) {
 	if (!(_poolCreationFlags & VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT))
 		return ;
 	Pool		*parent = handle.parentPool;
-	uint32_t	setCount = handle.sets.size();
+	uint32_t	setCount = static_cast<uint32_t>(handle.sets.size());
 	vkFreeDescriptorSets(_device.getLogical(), parent->_pool,
 						setCount, handle.sets.data());
 	parent->_allocatedSets -= setCount;
@@ -107,7 +107,7 @@ DescriptorPool::Pool::ptr	DescriptorPool::createNewPool(void) {
 	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	createInfo.flags = _poolCreationFlags;
 	createInfo.maxSets = _pageSize;
-	createInfo.poolSizeCount = _poolSizes.size();
+	createInfo.poolSizeCount = static_cast<uint32_t>(_poolSizes.size());
 	createInfo.pPoolSizes = _poolSizes.data();
 	
 	if (vkCreateDescriptorPool(_device.getLogical(), &createInfo, nullptr,
@@ -209,7 +209,7 @@ VkDescriptorSetLayout	DescriptorFactory::getSetLayout(void) {
 	VkDescriptorSetLayout			newSetLayout;
 	VkDescriptorSetLayoutCreateInfo	createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	createInfo.bindingCount = _bindings._bindings.size();
+	createInfo.bindingCount = static_cast<uint32_t>(_bindings._bindings.size());
 	createInfo.pBindings = _bindings._bindings.data();
 	if (vkCreateDescriptorSetLayout(_device.getLogical(), &createInfo, nullptr,
 									&newSetLayout))
@@ -279,7 +279,7 @@ DescriptorWriter	&DescriptorWriter::writeImage(uint32_t setIndex,
 }
 
 void	DescriptorWriter::update(void) {
-	vkUpdateDescriptorSets(_device.getLogical(), _writes.size(),
+	vkUpdateDescriptorSets(_device.getLogical(), static_cast<uint32_t>(_writes.size()),
 							_writes.data(), 0, nullptr);
 }
 
