@@ -36,18 +36,6 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
-#set(GENERATED_COMPONENT_CPP "${CMAKE_SOURCE_DIR}/src/ecs/ComponentList.cpp")
-#add_custom_command(
-#	OUTPUT "${GENERATED_COMPONENT_CPP}"
-#	COMMAND python3 "${CMAKE_SOURCE_DIR}/autoAddComponent.py"
-#	WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-#	COMMENT "Scanning for components and updating ComponentList.cpp..."
-#	VERBATIM
-#)
-#add_custom_target(run_python_script ALL
-#	DEPENDS "${GENERATED_COMPONENT_CPP}"
-#)
-
 file(GLOB_RECURSE HEL_SOURCES CONFIGURE_DEPENDS
 	"${CMAKE_SOURCE_DIR}/src/*.cpp"
 )
@@ -58,7 +46,6 @@ list(APPEND HEL_SOURCES ${EXTERNAL_SOURCES} "${GENERATED_COMPONENT_CPP}")
 list(REMOVE_DUPLICATES HEL_SOURCES)
 
 add_executable(hel ${HEL_SOURCES})
-#add_dependencies(hel run_python_script)
 
 target_include_directories(hel PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_include_directories(hel SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/external)
