@@ -53,6 +53,6 @@ fi
 
 echo -e "\n\n\nDone! You can now execute the following commands in order."
 echo -e '\tgit submodule update --init'
-echo -e '\tcmake -S . -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build -j'
+echo -e '\tcmake --preset linux-debug && cmake --build build -j'
 echo -e '\tcd build'
-echo -e '/t./hel'
+echo -e '\t./hel'
