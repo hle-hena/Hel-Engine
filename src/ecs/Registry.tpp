@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/16 15:30:30                                        */
+/*  Last Modified: 2026/04/30 21:02:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "Registry.hpp"
+#include "ecs/View.hpp"
 #include "api/vulkan/Swapchain.hpp"
 #include <iostream>
 #include <tuple>
@@ -25,7 +26,7 @@ namespace	hel {
 template <typename Component>
 void	Pool<Component>::syncBuffer(Device &device) {
 	if constexpr (requires { Component::gpuVisible == true; }) {
-		uint32_t	nbComp = components.size();
+		uint32_t	nbComp = static_cast<uint32_t>(components.size());
 		using BufferType = std::conditional_t<
 			requires { typename Component::GPUType; },
 			typename Component::GPUType,
@@ -71,7 +72,7 @@ void	Pool<Component>::removeEntity(Entity::id handle) {
 	uint32_t		entityIndex = Entity::getIndex(handle);
 	if (entityIndex >= indices.size() || indices[entityIndex] == Entity::NOT_REGISTERED)
 		return;
-	uint32_t		lastIndex = components.size() - 1;
+	uint32_t		lastIndex = static_cast<uint32_t>(components.size()) - 1;
 	uint32_t		removedIndex = indices[entityIndex];
 	if (removedIndex != lastIndex) {
 		components[removedIndex] = std::move(components[lastIndex]);
@@ -140,7 +141,8 @@ template <typename Component>
 const char	*Pool<Component>::getTypeName(void) const {
 	if constexpr (requires { Component::label; })
 		return (Component::label);
-	return (typeid(Component).name());
+	else
+		return (typeid(Component).name());
 }
 
 
@@ -161,7 +163,7 @@ ComponentHandle<Component>	Registry::addComponent(Entity::id entityHandle) {
 	}
 	compHandle._pool->components.emplace_back();
 	compHandle._pool->entities.push_back(entityHandle);
-	compHandle._pool->indices[entityIndex] = compHandle._pool->components.size() - 1;
+	compHandle._pool->indices[entityIndex] = static_cast<uint32_t>(compHandle._pool->components.size()) - 1;
 	compHandle._index = compHandle._pool->indices[entityIndex];
 	compHandle._pool->isDirty = true;
 	return (compHandle);
@@ -216,10 +218,11 @@ View<Include, Exclude>	Registry::view() {
 }
 
 template <typename T>
-constexpr bool isGpuVisible() {
-    if constexpr (requires { T::gpuVisible; })
-        return T::gpuVisible;
-    return false;
+constexpr bool	isGpuVisible() {
+	if constexpr (requires { T::gpuVisible; })
+		return T::gpuVisible;
+	else
+		return false;
 }
 
 template <typename... Component>

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 21:14:41                                        */
+/*  Last Modified: 2026/04/30 21:18:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,8 +36,8 @@ class	Window {
 		static constexpr int	HEIGHT = 600;
 		using windowPtr = std::unique_ptr<Window>;
 
-		Window(Window &&other) = default;
-		Window	&operator=(Window &&other) = default;
+		Window(Window &&other) = delete;
+		Window	&operator=(Window &&other) = delete;
 		~Window(void);
 
 		static windowPtr	createWindow(uint32_t width, uint32_t height,

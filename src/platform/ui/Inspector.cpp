@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/27 20:14:22                                        */
+/*  Last Modified: 2026/04/30 23:12:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,7 +36,7 @@ void	Inspector::render(Window *window, const ImVec2 &) {
 	if (handle == Entity::NOT_REGISTERED)
 		return ;
 	if (ImGui::Button("Remove entity")) {
-		removeEntity(handle);
+		removeEntity(window, handle);
 		return ;
 	}
 	ImGui::SameLine();
@@ -51,26 +51,26 @@ void	Inspector::render(Window *window, const ImVec2 &) {
 	ImGui::Separator();
 	for (auto &[type, pool]: _registry->getPools()) {
 		if (pool->has(handle)) {
-			auto	label = pool->getTypeName();
+			auto	typeName = pool->getTypeName();
 
 			bool	uiOpened = false;
 			if (type != typeid(comp::Hierarchy)) {
 				bool	isVisible = true;
-				uiOpened = ImGui::CollapsingHeader(label, &isVisible,
+				uiOpened = ImGui::CollapsingHeader(typeName, &isVisible,
 												ImGuiTreeNodeFlags_DefaultOpen);
 				if (!isVisible) {
 					pool->removeEntity(handle);
 					continue ;
 				}
 			} else
-				uiOpened = ImGui::CollapsingHeader(label,
+				uiOpened = ImGui::CollapsingHeader(typeName,
 												ImGuiTreeNodeFlags_DefaultOpen);
 			if (uiOpened) {
 				auto	it = _drawFuncs.find(type);
 				if (it != _drawFuncs.end())
 					_drawFuncs[type](window, pool->getRaw(handle));
 				else
-					ImGui::TextDisabled("No UI integration for %s", label);
+					ImGui::TextDisabled("No UI integration for %s", typeName);
 			}
 			ImGui::Separator();
 		}
@@ -80,22 +80,28 @@ void	Inspector::render(Window *window, const ImVec2 &) {
 	addNewComponentPopup(handle);
 }
 
-void	Inspector::removeEntity(Entity::id handle) {
+void	Inspector::removeEntity(Window *window, Entity::id handle) {
 	auto	hierarchy = _registry->getComponent<comp::Hierarchy>(handle);
 	for (auto childHandle: hierarchy->childrenId)
-		removeEntity(childHandle);
+		removeEntity(window, childHandle);
 	_registry->removeEntity(handle);
+	if (window->getEntityFocus() == handle)
+		window->setEntityFocus(Entity::NOT_REGISTERED);
+	if (window->getEntityReference() == handle)
+		window->setEntityReference(Entity::NOT_REGISTERED);
 }
 
 void	Inspector::addNewComponentPopup(Entity::id handle) {
 	if (_addNewComp) {
 		auto	items = ComponentList::getComponentList();
-		ImGui::Combo("Component type", &_newCompTypeIndex, items.data(), items.size());
+		ImGui::Combo("Component type", &_newCompTypeIndex, items.data(),
+					static_cast<int>(items.size()));
 		if (ImGui::Button("Cancel"))
 			_addNewComp = false;
 		ImGui::SameLine();
 		if (ImGui::Button("Add")) {
-			ComponentList::addComponent(*_registry, handle, items[_newCompTypeIndex]);
+			ComponentList::addComponent(*_registry, handle,
+						items[static_cast<size_t>(_newCompTypeIndex)]);
 			_addNewComp = false;
 		}
 	}
@@ -219,7 +225,7 @@ void	Inspector::setBuiltInDrawFunc(void) {
 		auto	surface = static_cast<comp::SurfaceAllignement *>(raw);
 
 		if (ImGui::DragFloat3("Up vector", &surface->localUp.x, 0.1f))
-			glm::normalize(surface->localUp);
+			surface->localUp = glm::normalize(surface->localUp);
 		ImGui::Checkbox("Dynamic allignement", &surface->isDynamic);
 	});
 

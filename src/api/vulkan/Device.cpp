@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/03 15:26:33                                        */
+/*  Last Modified: 2026/04/30 20:36:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -91,7 +91,7 @@ QueuesFamilyIndices	Device::findQueueFamilies(VkPhysicalDevice device, Window &b
 	auto	queueFamilies = enumerate<VkQueueFamilyProperties>(
 		ENUMERATE_WRAP(vkGetPhysicalDeviceQueueFamilyProperties, device)
 	);
-	int	i = 0;
+	uint32_t	i = 0;
 	for (const auto &queueFamily: queueFamilies) {
 		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
 			indices.graphicsFamily = i;
@@ -227,15 +227,15 @@ bool	Device::supportSurface(Window &window) {
 
 uint32_t	Device::getAligned(uint32_t stride, VkBufferUsageFlags usage) const {
 	auto	&limits = _physicalProperties.properties.limits;
-	auto	align = [stride](uint32_t alignment) {
+	auto	align = [stride](VkDeviceSize alignment) {
 		return ((stride + alignment - 1) & ~(alignment - 1));
 	};
 	if (usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT)
-		return (align(limits.minUniformBufferOffsetAlignment));
+		return (static_cast<uint32_t>(align(limits.minUniformBufferOffsetAlignment)));
 	if (usage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
-		return (align(limits.minStorageBufferOffsetAlignment));
+		return (static_cast<uint32_t>(align(limits.minStorageBufferOffsetAlignment)));
 	if (usage & VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT)
-		return (align(limits.minTexelBufferOffsetAlignment));
+		return (static_cast<uint32_t>(align(limits.minTexelBufferOffsetAlignment)));
 	return (stride);
 }
 

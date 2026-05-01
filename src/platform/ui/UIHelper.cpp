@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:52:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 20:12:13                                        */
+/*  Last Modified: 2026/04/30 21:10:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -112,7 +112,7 @@ bool	Table::beginNewTable(ColumnSizing columnSizing) {
 	if (_tableOpened)
 		return (false);
 	std::string	indexedName = std::string(_name) + "###Table" + std::to_string(_nbCol);
-	if (ImGui::BeginTable(indexedName.c_str(), _nbCol, ImGuiTableFlags_SizingFixedFit)) {
+	if (ImGui::BeginTable(indexedName.c_str(), static_cast<int>(_nbCol), ImGuiTableFlags_SizingFixedFit)) {
 		for (auto sizing: columnSizing)
 			ImGui::TableSetupColumn(nullptr, sizing);
 		_tableOpened = true;
@@ -130,7 +130,7 @@ void	Table::endTable(void) {
 }
 
 bool	Table::newRow(ColumnSizing columnSizing) {
-	uint32_t	nbCol = columnSizing.size();
+	uint32_t	nbCol = static_cast<uint32_t>(columnSizing.size());
 	if (nbCol != _nbCol || !_tableOpened) {
 		_nbCol = nbCol;
 		endTable();
@@ -194,7 +194,7 @@ bool	TableRow::buildVecDrag(void) {
 	ImGui::PushID(_rowName);
 
 	for (uint32_t i = 0; i < _range; i++) {
-		ImGui::PushID(i);
+		ImGui::PushID(static_cast<int>(i));
 		_table.setNextCell(_valueNames[i], [&]{
 				changed |= DragFloat(_window->getWindow(), _startFloat + i)
 								.setSpeed(_speeds[i])
@@ -236,7 +236,7 @@ bool	TableRow::buildDragRange(void) {
 	ImGui::PushID(_rowName);
 
 	for (uint32_t i = 0; i < _range; i++) {
-		ImGui::PushID(i);
+		ImGui::PushID(static_cast<int>(i));
 		_table.setNextCell(_valueNames[i], [&]{
 				changed |= DragFloat(_window->getWindow(), _startFloat + i)
 								.setSpeed(_speeds[i])
@@ -271,7 +271,7 @@ bool	TableRow::buildSimpleText(void) {
 	ImGui::PushID(_rowName);
 
 	for (uint32_t i = 0; i < _range; i++) {
-		ImGui::PushID(i);
+		ImGui::PushID(static_cast<int>(i));
 		_table.setNextCell(_valueNames[i], [&]{
 				ImGui::AlignTextToFramePadding();
 				ImGui::Text(_fmts[i], *(_startFloat + i));
@@ -302,7 +302,7 @@ bool	TableRow::buildInputText(void) {
 	ImGui::PushID(_rowName);
 
 	for (uint32_t i = 0; i < _range; i++) {
-		ImGui::PushID(i);
+		ImGui::PushID(static_cast<int>(i));
 		_table.setNextCell(_valueNames[i], [&]{
 				changed |= ImGui::InputText("##", _startString + i);
 			}
@@ -434,7 +434,6 @@ void	ColoredDummy::build(void) {
 	ImVec2	rectMax = {_pos.x + _size.x, _pos.y + _size.y};
 
 	ImGui::SetCursorScreenPos(_pos);
-	// ImGui::Dummy(_size);
 	draw->AddRectFilled(_pos, rectMax, IM_COL32(255, 0, 0, 100));
 	ImGui::SetCursorScreenPos(_endPos);
 	ImGui::GetCurrentWindow()->DC.IsSetPos = false;

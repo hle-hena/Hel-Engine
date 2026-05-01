@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:20:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 18:42:13                                        */
+/*  Last Modified: 2026/04/28 18:16:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,7 +14,7 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/systems/runtime/SurfaceAllignement.hpp"
+#include "ecs/systems/SurfaceAllignement.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
 

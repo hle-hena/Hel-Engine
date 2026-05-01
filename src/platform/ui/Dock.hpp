@@ -85,7 +85,7 @@ class	Dock {
 		std::unique_ptr<Dock>	_childOne{nullptr};
 		std::unique_ptr<Dock>	_childTwo{nullptr};
 		std::optional<float>	_splitRatio;
-		Splitter::Dir			_splitDir;
+		Splitter::Dir			_splitDir{Splitter::Dir::Right};
 		bool					_askForMerge{false};
 
 	friend class	IPanel;

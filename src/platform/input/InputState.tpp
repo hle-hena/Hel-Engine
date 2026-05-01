@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/21 14:36:02 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 20:01:39                                        */
+/*  Last Modified: 2026/04/30 21:05:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,10 +24,10 @@ concept	hasInputOffset = requires {
 };
 
 template <typename T>
-void	InputState::setState(int index, int action, int mods) {
+void	InputState::setState(size_t index, int action, int mods) {
 	if constexpr (requires { T::isValid(index); })
-		if (!T::isValid(index))	{ return ; }
-	int pos = index;
+		if (!T::isValid(static_cast<int>(index)))	{ return ; }
+	size_t pos = index;
 	if constexpr (hasInputOffset<T>)
 		pos += T::OFFSET;
 	_current.set(pos, action != GLFW_RELEASE);
@@ -35,34 +35,34 @@ void	InputState::setState(int index, int action, int mods) {
 }
 
 template <typename T>
-bool	InputState::isDown(int index) const {
-	int	pos = index;
+bool	InputState::isDown(size_t index) const {
+	size_t	pos = index;
 	if constexpr (hasInputOffset<T>)
 		pos += T::OFFSET;
 	return (_current.test(pos));
 }
 
 template <typename T>
-bool	InputState::isPressed(int index) const {
-	int	pos = index;
+bool	InputState::isPressed(size_t index) const {
+	size_t	pos = index;
 	if constexpr (hasInputOffset<T>)
 		pos += T::OFFSET;
 	return (!_previous.test(pos) && _current.test(pos));
 }
 
 template <typename T>
-bool	InputState::isReleased(int index) const {
-	int	pos	= index;
+bool	InputState::isReleased(size_t index) const {
+	size_t	pos	= index;
 	if constexpr (hasInputOffset<T>)
 		pos += T::OFFSET;
 	return (_previous.test(pos) && !_current.test(pos));
 }
 
 template <typename T>
-bool	InputState::hasAnyChanged(std::vector<int> indices) const {
+bool	InputState::hasAnyChanged(std::vector<size_t> indices) const {
 	bool	res = false;
 	for (auto index: indices) {
-		int pos = index;
+		size_t pos = index;
 		if constexpr (hasInputOffset<T>)
 			pos += T::OFFSET;
 		res += (_previous.test(pos) != _current.test(pos));

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 16:10:07                                        */
+/*  Last Modified: 2026/04/30 20:40:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,7 @@
 #include "utils/healthHelper.hpp"
 
 #include <limits>
+#include <algorithm>
 #include <iostream>
 
 namespace	hel {
@@ -34,18 +35,18 @@ Swapchain::~Swapchain(void) {
 void	Swapchain::deleteSwapChain(void) {
 	vkDeviceWaitIdle(_device.getLogical());
 	_swapImages.clear();
-	_offscreenImage = nullptr;
-	_depthImage = nullptr;
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		if (_inFlightFences[i] != VK_NULL_HANDLE)
+			vkDestroyFence(_device.getLogical(), _inFlightFences[i], nullptr);
+	}
+	for (size_t i = 0; i < _renderFinished.size(); i++) {
 		if (_renderFinished[i] != VK_NULL_HANDLE)
 			vkDestroySemaphore(_device.getLogical(), _renderFinished[i], nullptr);
 		if (_imageAvailable[i] != VK_NULL_HANDLE)
 			vkDestroySemaphore(_device.getLogical(), _imageAvailable[i], nullptr);
-		if (_inFlightFences[i] != VK_NULL_HANDLE)
-			vkDestroyFence(_device.getLogical(), _inFlightFences[i], nullptr);
 	}
-	_renderFinished.fill(VK_NULL_HANDLE);
-	_imageAvailable.fill(VK_NULL_HANDLE);
+	_renderFinished.clear();
+	_imageAvailable.clear();
 	_inFlightFences.fill(VK_NULL_HANDLE);
 	if (_swapchain != VK_NULL_HANDLE)
 		vkDestroySwapchainKHR(_device.getLogical(), _swapchain, nullptr);
@@ -113,8 +114,7 @@ bool	Swapchain::initiateSwapChain(Window &window) {
 	std::vector<VkImage>	images(imageCount);
 	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, images.data());
 
-	return (createOffscreenResources(extent) ||
-		createSwapchainImageViews(images, format.format, extent) ||
+	return (createSwapchainImageViews(images, format.format, extent) ||
 		createSyncObjects());
 }
 
@@ -129,7 +129,7 @@ bool	Swapchain::recreateSwapChain(Window &window) {
 VkSurfaceFormatKHR	Swapchain::selectSwapSurfaceFormat(std::vector<VkSurfaceFormatKHR> &formats) {
 	for (const auto &format: formats) {
 		if (format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
-			&& format.format == VK_FORMAT_B8G8R8A8_UNORM) //TODO -> if no UI, SRGB
+			&& format.format == VK_FORMAT_B8G8R8A8_UNORM)
 			return (format);
 	}
 	return (formats[0]);
@@ -170,85 +170,32 @@ bool	Swapchain::createSwapchainImageViews(std::vector<VkImage> &images,
 	return (false);
 }
 
-bool	Swapchain::createOffscreenResources(VkExtent2D extent) {
-	//TODO -> image pool instead of a creation in there.
-	return (createDepthImage(extent) || createOffscreenImage(extent));
-}
-
-bool	Swapchain::createDepthImage(VkExtent2D extent) {
-	auto	depthFormat = selectDepthFormat(
-		{VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
-		VK_IMAGE_TILING_OPTIMAL,
-		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-	);
-
-	Image::Config	config{};
-	config.format = {depthFormat};
-	config.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-	config.width = extent.width;
-	config.height = extent.height;
-	config.aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
-	_depthImage = Image::create(_device, config);
-	return (!_depthImage);
-}
-
-bool	Swapchain::createOffscreenImage(VkExtent2D extent) {
-	Image::Config	config{};
-	config.width = extent.width;
-	config.height = extent.height;
-	config.aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
-	config.format = {VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM};
-	config.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-	_offscreenImage = Image::create(_device, config);
-	return (!_offscreenImage);
-}
-
-VkFormat	Swapchain::selectDepthFormat(const std::vector<VkFormat> &candidates,
-										VkImageTiling tiling,
-										VkFormatFeatureFlags features) {
-	for (VkFormat format: candidates) {
-		VkFormatProperties	properties;
-		vkGetPhysicalDeviceFormatProperties(_device.getPhysical(), format, &properties);
-
-		if (tiling == VK_IMAGE_TILING_LINEAR &&
-			(properties.linearTilingFeatures & features) == features)
-			return (format);
-		else if (tiling == VK_IMAGE_TILING_OPTIMAL &&
-			(properties.optimalTilingFeatures & features) == features)
-			return (format);
-	}
-
-	return (VK_FORMAT_UNDEFINED);
-}
-
 bool	Swapchain::createSyncObjects(void) {
+	size_t	imageCount = _swapImages.size();
+	_imageAvailable.resize(imageCount);
+	_renderFinished.resize(imageCount);
 	VkSemaphoreCreateInfo	semaphoreInfo{};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	for (size_t i = 0; i < imageCount; i++) {
+		if (vkCreateSemaphore(_device.getLogical(), &semaphoreInfo, nullptr, &_imageAvailable[i]) != VK_SUCCESS ||
+			vkCreateSemaphore(_device.getLogical(), &semaphoreInfo, nullptr, &_renderFinished[i]) != VK_SUCCESS)
+			RETURN_SET_UNHEALTHY("Failed to create synchronization object for a swapchain", true);
+	}
 
 	VkFenceCreateInfo	fenceInfo{};
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
 	for (size_t i = 0; i < Swapchain::MAX_FRAMES_IN_FLIGHT; i++) {
-		if (vkCreateSemaphore(_device.getLogical(), &semaphoreInfo, nullptr, &_imageAvailable[i]) != VK_SUCCESS ||
-			vkCreateSemaphore(_device.getLogical(), &semaphoreInfo, nullptr, &_renderFinished[i]) != VK_SUCCESS ||
-			vkCreateFence(_device.getLogical(), &fenceInfo, nullptr, &_inFlightFences[i]) != VK_SUCCESS)
+		if (vkCreateFence(_device.getLogical(), &fenceInfo, nullptr, &_inFlightFences[i]) != VK_SUCCESS)
 			RETURN_SET_UNHEALTHY("Failed to create synchronization object for a swapchain", true);
 	}
 
 	return (false);
 }
 
-Image	*Swapchain::getDepthImage(void) {
-	return (_depthImage.get());
-}
-
 Image	*Swapchain::getSwapImage(uint32_t imageIndex) {
 	return (_swapImages[imageIndex].get());
-}
-
-Image	*Swapchain::getOffImage(void) {
-	return (_offscreenImage.get());
 }
 
 void	Swapchain::waitForFrameFence(uint32_t frameIndex) {
@@ -273,7 +220,7 @@ bool	Swapchain::acquireNextImage(Window &window, uint32_t currentFrame, uint32_t
 	return (false);
 }
 
-bool	Swapchain::submitCommandBuffer(VkCommandBuffer commandBuffer, uint32_t currentFrame) {
+bool	Swapchain::submitCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, uint32_t currentFrame) {
 	VkSubmitInfo	submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -286,7 +233,7 @@ bool	Swapchain::submitCommandBuffer(VkCommandBuffer commandBuffer, uint32_t curr
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffer;
 
-	VkSemaphore	signalSemaphores[] = {_renderFinished[currentFrame]};
+	VkSemaphore	signalSemaphores[] = {_renderFinished[imageIndex]};
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -298,11 +245,11 @@ bool	Swapchain::submitCommandBuffer(VkCommandBuffer commandBuffer, uint32_t curr
 	return (false);
 }
 
-bool	Swapchain::present(Window &window, uint32_t imageIndex, uint32_t currentFrame) {
+bool	Swapchain::present(Window &window, uint32_t imageIndex) {
 	VkPresentInfoKHR	presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = &_renderFinished[currentFrame];
+	presentInfo.pWaitSemaphores = &_renderFinished[imageIndex];
 	VkSwapchainKHR	swapChains[] = {_swapchain};
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapChains;

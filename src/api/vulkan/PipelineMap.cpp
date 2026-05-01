@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 15:07:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/03 16:00:44                                        */
+/*  Last Modified: 2026/04/29 15:34:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -71,9 +71,9 @@ VkPipelineLayout	PipelineMap::getLayout(void) {
 	_initLayout(_device, setLayouts, pushConstants);
 	VkPipelineLayoutCreateInfo	createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	createInfo.setLayoutCount = setLayouts.size();
+	createInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
 	createInfo.pSetLayouts = setLayouts.data();
-	createInfo.pushConstantRangeCount = pushConstants.size();
+	createInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstants.size());
 	createInfo.pPushConstantRanges = pushConstants.data();
 	if (vkCreatePipelineLayout(_device.getLogical(), &createInfo,
 								nullptr, &_layout))
@@ -87,7 +87,7 @@ bool	PipelineMap::getStageInfo(void) {
 	for (auto &path: _shaderPaths) {
 		auto	shader = _assetManager.get<Shader>(path);
 		if (!shader) {
-			std::cerr << "Couldn't find the shader \"" << shader << "\""
+			std::cerr << "Couldn't find the shader \"" << path << "\""
 					<< std::endl;
 			return (false);
 		}
@@ -119,7 +119,7 @@ bool	PipelineMap::bindPipeline(const RenderingConfig &renderingConfig,
 		config.pipelineLayout = _layout;
 
 		config.renderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
-		config.renderingInfo.colorAttachmentCount = renderingConfig.colorFormats.size();
+		config.renderingInfo.colorAttachmentCount = static_cast<uint32_t>(renderingConfig.colorFormats.size());
 		config.renderingInfo.pColorAttachmentFormats = renderingConfig.colorFormats.data();
 		config.renderingInfo.depthAttachmentFormat = renderingConfig.depthFormat;
 		//TODO -> add it's own var in the config.

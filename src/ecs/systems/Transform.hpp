@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/27 20:11:01                                        */
+/*  Last Modified: 2026/04/30 20:50:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -98,7 +98,7 @@ class	Transform : public ISystem {
 								Entity::id>	handles{};
  
 			private:
-				static constexpr float			GIZMO_SENSIBILITY = 0.00025;
+				static constexpr float			GIZMO_SENSIBILITY = 0.00025f;
 
 				uint32_t						_life{1};
 				Transform						*_baseSystem;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/27 22:31:14                                        */
+/*  Last Modified: 2026/04/30 20:44:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -31,15 +31,15 @@
 
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
-#include "ecs/systems/core/Camera.hpp"
-#include "ecs/systems/core/EditorController.hpp"
-#include "ecs/systems/core/HideMouse.hpp"
-#include "ecs/systems/core/Render.hpp"
-#include "ecs/systems/core/Sprite.hpp"
-#include "ecs/systems/core/Selection.hpp"
-#include "ecs/systems/core/Transform.hpp"
-#include "ecs/systems/runtime/BaseController.hpp"
-#include "ecs/systems/runtime/SurfaceAllignement.hpp"
+#include "ecs/systems/Camera.hpp"
+#include "ecs/systems/EditorController.hpp"
+#include "ecs/systems/HideMouse.hpp"
+#include "ecs/systems/Render.hpp"
+#include "ecs/systems/Sprite.hpp"
+#include "ecs/systems/Selection.hpp"
+#include "ecs/systems/Transform.hpp"
+#include "ecs/systems/BaseController.hpp"
+#include "ecs/systems/SurfaceAllignement.hpp"
 
 #include <iostream>
 
@@ -241,8 +241,8 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 
 	vkEndCommandBuffer(ctx.commandBuffer);
 
-	swapchain.submitCommandBuffer(ctx.commandBuffer, ctx.frameIndex);
-	swapchain.present(*window, imageIndex, ctx.frameIndex);
+	swapchain.submitCommandBuffer(ctx.commandBuffer, imageIndex, ctx.frameIndex);
+	swapchain.present(*window, imageIndex);
 }
 
 void	Engine::updateGlobalData(FrameContext &ctx) {
@@ -250,7 +250,8 @@ void	Engine::updateGlobalData(FrameContext &ctx) {
 	ctx.globalData.viewProjection = glm::mat4{1.f};
 	if (auto camera = _registry.getComponent<comp::Camera>(handle)) {
 		auto	extent = ctx.request->mainImage->getExtent();
-		float	aspect = (float)extent.width / extent.height;
+		float	aspect = static_cast<float>(extent.width) /
+						static_cast<float>(extent.height);
 		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), aspect, camera->near, camera->far);
 		projection[1][1] *= -1;
 		ctx.projection = projection;

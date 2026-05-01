@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/08 18:21:18                                        */
+/*  Last Modified: 2026/05/01 12:18:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,20 +48,20 @@ bool	Pipeline::createGraphicsPipeline(PipelineConfig &config,
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vertexInputInfo.pVertexAttributeDescriptions = config.attributeDescription.data();
 	vertexInputInfo.pVertexBindingDescriptions = config.bindingDescription.data();
-	vertexInputInfo.vertexAttributeDescriptionCount = config.attributeDescription.size();
-	vertexInputInfo.vertexBindingDescriptionCount = config.bindingDescription.size();
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(config.attributeDescription.size());
+	vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(config.bindingDescription.size());
 
 	VkPipelineColorBlendStateCreateInfo	blendStateInfo{};
 	blendStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	blendStateInfo.logicOpEnable = VK_FALSE;
-	blendStateInfo.attachmentCount = config.colorBlendAttachment.size();
+	blendStateInfo.attachmentCount = static_cast<uint32_t>(config.colorBlendAttachment.size());
 	blendStateInfo.pAttachments = config.colorBlendAttachment.data();
 
 	VkGraphicsPipelineCreateInfo	pipelineInfo;
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineInfo.pNext = &config.renderingInfo;
 	pipelineInfo.flags = 0;
-	pipelineInfo.stageCount = stageInfo.size();
+	pipelineInfo.stageCount = static_cast<uint32_t>(stageInfo.size());
 	pipelineInfo.pStages = stageInfo.data();
 	pipelineInfo.pVertexInputState = &vertexInputInfo;
 	pipelineInfo.pInputAssemblyState = &config.inputAssemblyInfo;

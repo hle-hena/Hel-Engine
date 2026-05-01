@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 18:01:39                                        */
+/*  Last Modified: 2026/04/30 23:11:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -52,7 +52,7 @@ class	Inspector : public Panel<Inspector> {
 
 	private:
 		void	addNewComponentPopup(Entity::id handle);
-		void	removeEntity(Entity::id handle);
+		void	removeEntity(Window *window, Entity::id handle);
 
 		void	setBuiltInDrawFunc(void);
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/27 17:35:40                                        */
+/*  Last Modified: 2026/04/30 20:35:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -103,7 +103,9 @@ class Renderer {
 
 struct	Renderer::Draw {
 	Draw	&addBinding(VkDescriptorSet set);
-	Draw	&addDynamicBinding(VkDescriptorSet set, uint32_t stride, uint32_t *offset);
+	Draw	&addDynamicBinding(VkDescriptorSet set, uint32_t stride,
+							uint32_t *offset, VkBufferUsageFlags setUsage =
+							VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 	template <typename T>
 	Draw	&addPush(VkShaderStageFlags stage, const T &data);
 	template <size_t N>

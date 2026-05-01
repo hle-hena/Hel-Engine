@@ -8,5 +8,5 @@ Hel Engine is a simple rendering engine made by hle-hena.
 
 ## INSTALL
 
-To install in release mode: ```cmake -S . -B build && cmake --build build -- -j```
-To install in debug mode: ```cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build -- -j```
+To install in release mode: ```cmake --preset linux-release && cmake --build build -j```
+To install in debug mode: ```cmake --preset linux-debug && cmake --build build -j```

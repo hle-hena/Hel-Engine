@@ -1,4 +1,9 @@
 .vscode/
 build/
 .cache/
+.clangd
 assets/models/sponza
+vcpkg/installed/
+vcpkg/buildtrees/
+vcpkg/downloads/
+vcpkg/packages/

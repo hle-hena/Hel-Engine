@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/17 14:34:41                                        */
+/*  Last Modified: 2026/04/30 20:17:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -51,7 +51,7 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 
 	RenderQueue::push({_handle, ImGui::GetCursorScreenPos(), image});
 	auto	extent = image->getPhysicalExtent();
-	ImVec2	uv1 = {size.x / extent.width, size.y / extent.height};
+	ImVec2	uv1 = {size.x / static_cast<float>(extent.width), size.y / static_cast<float>(extent.height)};
 
 	ImGui::Image(image->getTexture(VK_FORMAT_B8G8R8A8_UNORM),
 			size, {0.f, 0.f}, uv1);

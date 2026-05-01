@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/27 23:43:20                                        */
+/*  Last Modified: 2026/04/30 23:01:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,8 +25,8 @@ namespace hel {
 
 Application::Application(void)
 	:	_vkContext{*this},
-		_registry{_assetManager},
 		_assetManager{_vkContext.getDevice()},
+		_registry{_assetManager},
 		_engine{_vkContext.getDevice(), _registry} {
 	if (!GLFW::acquire())
 		RETURN_SET_UNHEALTHY("Couldn't init glfw.");
@@ -53,6 +53,7 @@ void	Application::loadPrimaryScene(void) {
 	_registry.addComponent<comp::Controller>(cameraHandle);
 	_registry.addComponent<comp::EditorControllerTag>(cameraHandle);
 	_registry.addComponent<comp::Camera>(cameraHandle);
+	_registry.addComponent<comp::Name>(cameraHandle).modify()->name = "Editor Camera";
 	_appWindow->setEntityReference(cameraHandle);
 
 	Entity::id	sponzaHandle = _registry.createEntity();
@@ -63,6 +64,7 @@ void	Application::loadPrimaryScene(void) {
 		transform->position = {0.f, -80.f, 0.f};
 		transform->scale = glm::vec3(0.05f);
 	}
+	_registry.addComponent<comp::Name>(sponzaHandle).modify()->name = "Sponza";
 
 	Entity::id	planeHandle = _registry.createEntity();
 	if (auto mesh = _registry.addComponent<comp::Model>(planeHandle).modify()) {
@@ -72,6 +74,7 @@ void	Application::loadPrimaryScene(void) {
 		transform->position = glm::vec3(0.f, -86.f, 0.f);
 		transform->scale = glm::vec3(400.f);
 	}
+	_registry.addComponent<comp::Name>(planeHandle).modify()->name = "Plane";
 
 	Entity::id	secondCamera = _registry.createEntity();
 	if (auto transform = _registry.addComponent<comp::Transform>(secondCamera).modify())
@@ -79,6 +82,8 @@ void	Application::loadPrimaryScene(void) {
 	_registry.addComponent<comp::Controller>(secondCamera);
 	_registry.addComponent<comp::EditorControllerTag>(secondCamera);
 	_registry.addComponent<comp::Camera>(secondCamera);
+	_registry.addComponent<comp::Name>(secondCamera).modify()->name = "Second Camera";
+
 }
 
 void	Application::run(void) {
@@ -103,8 +108,9 @@ void	Application::run(void) {
 }
 
 void	Application::addNewWindow(int width, int height, const std::string &windowName) {
-	Window::windowPtr window = Window::createWindow(width, height, windowName, *this,
-												_vkContext.getInstance().getVkInstance());
+	Window::windowPtr window = Window::createWindow(static_cast<uint32_t>(width),
+								static_cast<uint32_t>(height), windowName,
+								*this, _vkContext.getInstance().getVkInstance());
 	if (!window) {
 		std::cerr << "Failed to create a new window." << std::endl;
 		return ;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/21 16:27:40                                        */
+/*  Last Modified: 2026/04/29 18:48:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -89,8 +89,8 @@ void	UiContext::initImGuiStyle(void) {
 
 void	UiContext::initDescriptorPool(Device &device) {
 	_pool = DescriptorPool::Builder(device)
-		.addDescriptor(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 100.f)
-		.setPageSize(Swapchain::MAX_FRAMES_IN_FLIGHT)
+		.addDescriptor(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1.f)
+		.setPageSize(100)
 		.setCreationFlag(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
 		.build();
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/27 20:12:19                                        */
+/*  Last Modified: 2026/04/30 23:35:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,7 +14,7 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/systems/core/Transform.hpp"
+#include "ecs/systems/Transform.hpp"
 #include "api/vulkan/PipelineMap.hpp"
 #include "api/vulkan/Renderer.hpp"
 #include "api/vulkan/Sampler.hpp"
@@ -211,7 +211,7 @@ void	Transform::renderGizmo(const Renderer &renderer, GizmoContext &gizmo) {
 	if (!focusedTransform || !requestTransform)	{ return ; }
 
 	if (focusedTransform->isDirty || requestTransform->isDirty) {
-		float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05;
+		float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05f;
 		for (auto &[name, entity]: gizmo.handles) {
 			if (name.find("Icon") != std::string::npos)
 				continue ;
@@ -297,7 +297,8 @@ void	Transform::renderUI(const Renderer &renderer, GizmoContext &gizmo) {
 
 void	Transform::renderInteraction(const Renderer &renderer) {
 	auto	ctx = renderer.frameContext();
-	if (ctx.window->getEntityFocus() == Entity::NOT_REGISTERED)
+	if (ctx.window->getEntityFocus() == Entity::NOT_REGISTERED
+		|| !_registry->isValidHandle(ctx.request->handle))
 		return	;
 	auto	[it, inserted] = _gizmoContexts.try_emplace(*renderer.frameContext().request,
 								this,
@@ -305,9 +306,10 @@ void	Transform::renderInteraction(const Renderer &renderer) {
 								renderer.frameContext().request->handle);
 	auto	&gizmo = it->second;
 
-	
 	if (!gizmo || ctx.window->focusChanged())
 		gizmo.initAction();
+	if (!gizmo)
+		return ;
 
 	registerClick(ctx, gizmo);
 	registerDrag(ctx, gizmo);
@@ -526,7 +528,7 @@ void	Transform::GizmoContext::dragRotate(const FrameContext &ctx) {
 		rotationCenter = renderOrigin + screenSpaceRotationCenter * renderSize;
 		_startDrag = false;
 	}
-	uint32_t	axisIndex = 0;
+	int	axisIndex = 0;
 	const char	*axisNames = "XYZ";
 	for (auto i = 0; i < 3; i++)
 		if (_dragName->find(axisNames[i]) != std::string::npos)
@@ -552,7 +554,7 @@ void	Transform::GizmoContext::initMove(void) {
 	if (!focusedTransform || !requestTransform)
 		return ;
 	freeHandles();
-	float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05;
+	float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05f;
 
 	EntityFactory(this, requestTransform, dist, "X-Arrow")
 		.setModel("move_arrow").setTint(1.f, 0.f, 0.f)
@@ -587,7 +589,7 @@ void	Transform::GizmoContext::initScale(void) {
 	if (!focusedTransform || !requestTransform)
 		return ;
 	freeHandles();
-	float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05;
+	float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05f;
 
 	EntityFactory(this, requestTransform, dist, "X-Arrow")
 		.setModel("scale_arrow").setTint(1.f, 0.f, 0.f)
@@ -610,7 +612,7 @@ void	Transform::GizmoContext::initRotate(void) {
 	if (!focusedTransform || !requestTransform)
 		return ;
 	freeHandles();
-	float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05;
+	float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05f;
 
 	EntityFactory(this, requestTransform, dist, "X-Torus")
 		.setModel("rotate_torus").setTint(1.f, 0.f, 0.f)
@@ -646,17 +648,17 @@ void	Transform::GizmoContext::initAction(void) {
 			.setModel("icon_space")
 			.setTexture("assets/images/moveGizmoIcon.png")
 			.setTint(col.x, col.y, col.z)
-			.setPos(0.6, -0.9).setScale(0.1, 0.1);
+			.setPos(0.6f, -0.9f).setScale(0.1f, 0.1f);
 		EntityFactory(this, "Scale-Icon")
 			.setModel("icon_space")
 			.setTexture("assets/images/scaleGizmoIcon.png")
 			.setTint(col.x, col.y, col.z)
-			.setPos(0.75, -0.9).setScale(0.1, 0.1);
+			.setPos(0.75f, -0.9f).setScale(0.1f, 0.1f);
 		EntityFactory(this, "Rotate-Icon")
 			.setModel("icon_space")
 			.setTexture("assets/images/rotateGizmoIcon.png")
 			.setTint(col.x, col.y, col.z)
-			.setPos(0.9, -0.9).setScale(0.1, 0.1);
+			.setPos(0.9f, -0.9f).setScale(0.1f, 0.1f);
 	}
 }
 

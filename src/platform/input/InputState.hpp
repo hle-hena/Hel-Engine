@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 15:01:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/17 14:29:24                                        */
+/*  Last Modified: 2026/04/30 21:05:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -52,13 +52,13 @@ class	InputState {
 		void	newFrame(void);
 
 		template <typename T>
-		bool	isDown(int index) const;
+		bool	isDown(size_t index) const;
 		template <typename T>
-		bool	isPressed(int index) const;
+		bool	isPressed(size_t index) const;
 		template <typename T>
-		bool	isReleased(int index) const;
+		bool	isReleased(size_t index) const;
 		template <typename T>
-		bool	hasAnyChanged(std::vector<int> indices) const;
+		bool	hasAnyChanged(std::vector<size_t> indices) const;
 
 		bool	hasMod(int mod);
 		bool	mouseMoved(void) { return (_mouseDelta.has_value()); }
@@ -84,7 +84,7 @@ class	InputState {
 
 	private:
 		template <typename T>
-		void	setState(int index, int action, int mods);
+		void	setState(size_t index, int action, int mods);
 		void	setFocus(Window *window, bool focused);
 		void	setMouseMove(double newX, double newY);
 

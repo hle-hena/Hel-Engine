@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/11 18:43:39                                        */
+/*  Last Modified: 2026/04/30 22:56:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,6 +19,7 @@
 #include "platform/ui/UIHelper.hpp"
 #include "platform/window/Window.hpp"
 
+#include <algorithm>
 #include <ui/ImGui/imgui_stdlib.h>
 
 namespace	hel::sys {
@@ -60,7 +61,7 @@ void	EntityHierarchy::showEntity(Window *window, View<include<comp::Hierarchy>> 
 	ImGuiTreeNodeFlags	nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow;
     if (hierarchy->childrenId.empty()) nodeFlags |= ImGuiTreeNodeFlags_Leaf;
 
-	bool	nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)handle, nodeFlags, "");
+	bool	nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)handle, nodeFlags, "%s", "");
 	ImGui::SameLine();
 	if (ImGui::Selectable(name.c_str(), window->getEntityFocus() == handle))
 		window->setEntityFocus(handle);

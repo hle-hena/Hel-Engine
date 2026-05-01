@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 14:49:12 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:47:42                                        */
+/*  Last Modified: 2026/04/30 22:50:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,8 +30,8 @@ class	Application {
 	public:
 		Application(void);
 		~Application(void);
-		Application(Application &&other) = default;
-		Application	&operator=(Application &&other) = default;
+		Application(Application &&other) = delete;
+		Application	&operator=(Application &&other) = delete;
 
 		void	run(void);
 		void	addNewWindow(int width, int height, const std::string &windowName);
@@ -59,8 +59,8 @@ class	Application {
 		std::string						_reason{""};
 		VulkanContext					_vkContext;
 		Window::windowPtr				_appWindow{nullptr};
-		Registry						_registry;
 		AssetManager					_assetManager;
+		Registry						_registry;
 		Engine							_engine;
 };
 
