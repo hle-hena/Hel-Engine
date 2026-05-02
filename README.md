@@ -9,8 +9,8 @@
 
 -   [About](#about)
 -   [Features](#features)
-	-   [Vulkan wrapper](#vulkan)
-	-   [Render wrapper](rendering)
+	-   [Vulkan wrapper](#vulkan-wrapper)
+	-   [Render wrapper](#render-wrapper)
     -   [Render queue](#render-queue)
     -   [Read queue](#read-queue)
     -   [Entity Component System (ECS)](#entity-component-system-ecs)
@@ -177,7 +177,7 @@ cmake --preset linux-release && cmake --build build -j
 
 The following improvements and features are planned for future development:
 
--   **Validation system refactor** — Replace the current class validation layer with `std::expected` for more expressive, value-based error handling.
--   **Light definition in engine** — Move light source definitions out of shaders and into the engine layer, enabling more flexible and data-driven lighting setups.
--   **Physics system** — Integrate a basic rigid-body physics simulation.
--   **Shadow rendering** — Add support for real-time shadow maps, starting with directional light.
+-  **Validation system refactor** — Replace the current class validation layer with `std::expected` for more expressive, value-based error handling.
+-  **Light definition in engine** — Move light source definitions out of shaders and into the engine layer, enabling more flexible and data-driven lighting setups.
+-  **Physics system** — Integrate a basic rigid-body physics simulation.
+-  **Shadow rendering** — Add support for real-time shadow maps, starting with directional light.
