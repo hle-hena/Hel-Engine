@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/14 11:23:53                                        */
+/*  Last Modified: 2026/05/29 11:40:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,6 +29,7 @@
 #include "api/vulkan/Renderer.hpp"
 
 #include "core/Frame.hpp"
+#include "core/SystemMap.hpp"
 
 namespace hel {
 
@@ -82,9 +83,10 @@ class	Engine {
 		VkCommandPool									_commandPool{VK_NULL_HANDLE};
 		std::unique_ptr<DescriptorPool>					_staticPool;
 		std::unique_ptr<ImagePool>						_imagePool;
-		std::vector<std::unique_ptr<sys::ISystem>>		_systems;
 		Frame											_frame;
 		EngineContext									_engineCtx;
+
+		SystemMap										_systems;
 };
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/28 18:16:17                                        */
+/*  Last Modified: 2026/05/29 11:46:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,8 +28,11 @@
 #include "api/vulkan/Renderer.hpp"
 #include "api/vulkan/Sampler.hpp"
 #include <vulkan/vulkan_core.h>
+#include "core/SystemMap.hpp"
 
 namespace	hel::sys {
+
+SystemRegistrar<Render>	reg_RenderSystem;
 
 void	Render::init(void) {
 	_assetManager = &_registry->getAssetManager();

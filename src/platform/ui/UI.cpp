@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/14 11:28:52                                        */
+/*  Last Modified: 2026/05/29 11:47:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,8 +25,11 @@
 
 #include <ui/ImGui/imgui.h>
 #include <fstream>
+#include "core/SystemMap.hpp"
 
 namespace	hel::sys {
+
+SystemRegistrar<UI>	reg_UISystem;
 
 UI::~UI(void) {
 	saveToFile("currentLayout.json");

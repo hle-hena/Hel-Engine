@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:44:44                                        */
+/*  Last Modified: 2026/05/29 11:48:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -31,15 +31,6 @@
 
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
-#include "ecs/systems/Camera.hpp"
-#include "ecs/systems/EditorController.hpp"
-#include "ecs/systems/HideMouse.hpp"
-#include "ecs/systems/Render.hpp"
-#include "ecs/systems/Sprite.hpp"
-#include "ecs/systems/Selection.hpp"
-#include "ecs/systems/Transform.hpp"
-#include "ecs/systems/BaseController.hpp"
-#include "ecs/systems/SurfaceAllignement.hpp"
 
 #include <iostream>
 
@@ -71,16 +62,6 @@ bool	Engine::init(Window &window) {
 		return (true);
 	}
 	createImagePool();
-	_systems.push_back(std::make_unique<sys::HideMouse>());
-	_systems.push_back(std::make_unique<sys::SurfaceAllignement>());
-	_systems.push_back(std::make_unique<sys::EditorController>());
-	_systems.push_back(std::make_unique<sys::BaseController>());
-	_systems.push_back(std::make_unique<sys::Transform>());
-	_systems.push_back(std::make_unique<sys::Camera>());
-	_systems.push_back(std::make_unique<sys::Render>());
-	_systems.push_back(std::make_unique<sys::Sprite>());
-	_systems.push_back(std::make_unique<sys::UI>());
-	_systems.push_back(std::make_unique<sys::Selection>());
 
 	auto	frameCtx = _frame.getContext(&window, 0, 0);
 	_engineCtx.device = &_device;
@@ -88,8 +69,8 @@ bool	Engine::init(Window &window) {
 	_engineCtx.registry = &_registry;
 
 	for (auto &system: _systems) {
-		system->init(_engineCtx, frameCtx);
-		system->init();
+		system.init(_engineCtx, frameCtx);
+		system.init();
 	}
 	return (false);
 }
@@ -147,10 +128,10 @@ void	Engine::tick(Window *window, uint32_t frameIndex) {
 void	Engine::updateTick(UiContext &ui, FrameContext &frameCtx) {
 	ui.newFrame();
 	for (auto &system: _systems)
-		system->updateInteraction(frameCtx);
+		system.updateInteraction(frameCtx);
 	ui.endFrame();
 	for (auto &system: _systems)
-		system->update(frameCtx);
+		system.update(frameCtx);
 }
 
 void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
@@ -195,7 +176,7 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 						.beginPass(ctx)) {
 			writeGlobalData(renderer);
 			for (auto &system: _systems)
-				system->render(renderer);
+				system.render(renderer);
 		}
 		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
 						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
@@ -206,7 +187,7 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 						.beginPass(ctx)) {
 			writeGlobalData(renderer);
 			for (auto &system: _systems)
-				system->postProcessing(renderer);
+				system.postProcessing(renderer);
 		}
 		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
 						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
@@ -216,7 +197,7 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 						.beginPass(ctx)) {
 			writeGlobalData(renderer);
 			for (auto &system: _systems)
-				system->renderInteraction(renderer);
+				system.renderInteraction(renderer);
 		}
 		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
 						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
