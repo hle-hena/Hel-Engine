@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/05/29 17:00:16                                        */
+/*  Last Modified: 2026/05/29 18:17:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -122,6 +122,7 @@ void	Engine::tick(Window *window, uint32_t frameIndex) {
 	_lastFrameTime = _timer.lap();
 	_imagePool->releaseAll();
 
+	_systems.newFrame();
 	updateTick(ui, frameCtx);
 	_registry.updateBuffers(_device);
 	renderTick(window, ui, frameCtx);

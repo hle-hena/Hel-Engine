@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/14 11:31:42                                        */
+/*  Last Modified: 2026/05/29 18:19:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,6 +36,12 @@ struct	FrameContext;
 }
 
 namespace	hel::sys {
+
+struct	PhaseDependencies {
+	std::vector<std::string>	before{};
+	std::vector<std::string>	after{};
+	std::string					provides;
+};
 
 class	ISystem {
 	public:
