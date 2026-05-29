@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/28 18:16:19                                        */
+/*  Last Modified: 2026/05/29 11:47:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,8 +28,11 @@
 #include "api/vulkan/Renderer.hpp"
 #include "api/vulkan/Sampler.hpp"
 #include <vulkan/vulkan_core.h>
+#include "core/SystemMap.hpp"
 
 namespace	hel::sys {
+
+SystemRegistrar<Sprite>	reg_SpriteSystem;
 
 void	Sprite::init(void) {
 	_assetManager = &_registry->getAssetManager();
