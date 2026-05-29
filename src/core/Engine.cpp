@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/05/29 11:48:06                                        */
+/*  Last Modified: 2026/05/29 15:33:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -46,6 +46,7 @@ Engine::Engine(Device &device, Registry &registry)
 }
 
 Engine::~Engine(void) {
+	SystemMap::clear({});
 	Sampler::deleteAllSamplers(_device);
 	DescriptorFactory::deleteLayoutCache(_device);
 	if (_commandPool != VK_NULL_HANDLE)

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 10:51:42 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/05/29 11:40:09                                        */
+/*  Last Modified: 2026/05/29 15:32:22                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -96,6 +96,11 @@ struct	SystemMap {
 	template <typename SysType>
 	static void	addSystem(uint32_t level) {
 		_data[level].push_back(std::make_unique<SysType>());
+	}
+
+	PASSKEY(EngineKey, Engine)
+	static void	clear(EngineKey) {
+		_data.clear();
 	}
 
 	private:
