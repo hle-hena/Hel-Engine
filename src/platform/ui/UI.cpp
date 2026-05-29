@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/05/29 11:47:18                                        */
+/*  Last Modified: 2026/05/29 17:01:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,7 +25,7 @@
 
 #include <ui/ImGui/imgui.h>
 #include <fstream>
-#include "core/SystemMap.hpp"
+#include "core/SystemManager.hpp"
 
 namespace	hel::sys {
 

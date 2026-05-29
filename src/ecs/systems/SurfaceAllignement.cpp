@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:20:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/05/29 11:43:54                                        */
+/*  Last Modified: 2026/05/29 17:01:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,7 +17,7 @@
 #include "ecs/systems/SurfaceAllignement.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
-#include "core/SystemMap.hpp"
+#include "core/SystemManager.hpp"
 
 namespace	hel::sys {
 

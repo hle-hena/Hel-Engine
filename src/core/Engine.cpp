@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/05/29 15:33:23                                        */
+/*  Last Modified: 2026/05/29 17:00:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -46,7 +46,7 @@ Engine::Engine(Device &device, Registry &registry)
 }
 
 Engine::~Engine(void) {
-	SystemMap::clear({});
+	_systems.clear({});
 	Sampler::deleteAllSamplers(_device);
 	DescriptorFactory::deleteLayoutCache(_device);
 	if (_commandPool != VK_NULL_HANDLE)
@@ -69,10 +69,11 @@ bool	Engine::init(Window &window) {
 	_engineCtx.imagePool = _imagePool.get();
 	_engineCtx.registry = &_registry;
 
-	for (auto &system: _systems) {
-		system.init(_engineCtx, frameCtx);
-		system.init();
+	for (auto &system: _systems.getSystems()) {
+		system->init(_engineCtx, frameCtx);
+		system->init();
 	}
+	_systems.sort({});
 	return (false);
 }
 
@@ -128,11 +129,11 @@ void	Engine::tick(Window *window, uint32_t frameIndex) {
 
 void	Engine::updateTick(UiContext &ui, FrameContext &frameCtx) {
 	ui.newFrame();
-	for (auto &system: _systems)
-		system.updateInteraction(frameCtx);
+	for (auto &system: _systems.getUpdateInteractions())
+		system->updateInteraction(frameCtx);
 	ui.endFrame();
-	for (auto &system: _systems)
-		system.update(frameCtx);
+	for (auto &system: _systems.getUpdates())
+		system->update(frameCtx);
 }
 
 void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
@@ -176,8 +177,8 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 						.addDepthWrite(depthImage, depthImage->getFormat())
 						.beginPass(ctx)) {
 			writeGlobalData(renderer);
-			for (auto &system: _systems)
-				system.render(renderer);
+			for (auto &system: _systems.getRenders())
+				system->render(renderer);
 		}
 		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
 						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
@@ -187,8 +188,8 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 						.addDepthWrite(depthImage, depthImage->getFormat())
 						.beginPass(ctx)) {
 			writeGlobalData(renderer);
-			for (auto &system: _systems)
-				system.postProcessing(renderer);
+			for (auto &system: _systems.getPostProcess())
+				system->postProcessing(renderer);
 		}
 		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
 						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
@@ -197,8 +198,8 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 						.addDepthWrite(depthImage, depthImage->getFormat())
 						.beginPass(ctx)) {
 			writeGlobalData(renderer);
-			for (auto &system: _systems)
-				system.renderInteraction(renderer);
+			for (auto &system: _systems.getRenderInteractions())
+				system->renderInteraction(renderer);
 		}
 		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
 						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
