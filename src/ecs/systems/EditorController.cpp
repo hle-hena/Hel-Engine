@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/03 18:56:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/05/29 17:01:19                                        */
+/*  Last Modified: 2026/06/01 18:02:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,6 +28,10 @@ SystemRegistrar<EditorController>	reg_EditorControllerSystem;
 
 void	EditorController::init(void) {
 	_input = &_registry->getInputState();
+
+	updateDeps.provides = "editor control";
+	updateDeps.require.push_back("allign normal to parent");
+	updateDeps.block.push_back("model matrix calculation");
 }
 
 void	EditorController::handleKeyboardInput(Entity::id handle, float deltaTime) {

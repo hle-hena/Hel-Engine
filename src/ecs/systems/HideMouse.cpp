@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/21 14:13:56 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/05/29 17:01:20                                        */
+/*  Last Modified: 2026/06/01 17:05:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,6 +25,8 @@ SystemRegistrar<HideMouse>	reg_HideMouseSystem;
 
 void	HideMouse::init(void) {
 	_inputState = &_registry->getInputState();
+
+	updateDeps.provides = "hides mouse when right click";
 }
 
 void	HideMouse::update(const FrameContext &) {

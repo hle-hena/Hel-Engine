@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/05/29 18:18:03                                        */
+/*  Last Modified: 2026/06/01 16:40:02                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -49,12 +49,6 @@ struct	SystemManager {
 	template <typename SysType>
 	static void	addSystem() {
 		auto	sys = _data.emplace_back(std::make_unique<SysType>()).get();
-
-		_render[0].push_back(sys);
-		_postProcess[0].push_back(sys);
-		_update.push_back(sys);
-		_rInteraction.push_back(sys);
-		_uInteraction.push_back(sys);
 	}
 
 	PASSKEY(EngineKey, Engine)
@@ -64,11 +58,6 @@ struct	SystemManager {
 	}
 
 	private:
-		template <typename Fn1, typename Fn2>
-		static bool overrides(Fn1 derivedFn, Fn2 baseFn) {
-			return static_cast<void*>(derivedFn) != static_cast<void*>(baseFn);
-		}
-
 		uint32_t										_renderIndex;
 		uint32_t										_postProcessIndex;
 		static std::vector<sys::ISystem*>				_update;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/05/29 17:01:21                                        */
+/*  Last Modified: 2026/06/01 17:51:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,6 +35,8 @@ namespace	hel::sys {
 SystemRegistrar<Render>	reg_RenderSystem;
 
 void	Render::init(void) {
+	renderDeps.provides = "rendering of the 3d objects";
+
 	_assetManager = &_registry->getAssetManager();
 	{
 		PipelineMap::Config	config;

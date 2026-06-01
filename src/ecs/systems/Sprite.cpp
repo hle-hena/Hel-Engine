@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/05/29 17:01:22                                        */
+/*  Last Modified: 2026/06/01 17:51:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,6 +35,8 @@ namespace	hel::sys {
 SystemRegistrar<Sprite>	reg_SpriteSystem;
 
 void	Sprite::init(void) {
+	renderDeps.provides = "render of the sprites";
+
 	_assetManager = &_registry->getAssetManager();
 	{
 		PipelineMap::Config	config;

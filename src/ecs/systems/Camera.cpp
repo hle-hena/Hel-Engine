@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/05/29 17:01:15                                        */
+/*  Last Modified: 2026/06/01 17:50:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,6 +34,11 @@ namespace	hel::sys {
 SystemRegistrar<Camera>	reg_CameraSystem;
 
 void	Camera::init(void) {
+	updateDeps.provides = "view matrix calculation";
+	updateDeps.require.push_back("model matrix calculation");
+
+	renderInterDeps.provides = "render camera frustum";
+
 	_assetManager = &_registry->getAssetManager();
 	{
 		PipelineMap::Config	config;
