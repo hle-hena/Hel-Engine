@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/01 16:40:02                                        */
+/*  Last Modified: 2026/06/01 18:11:45                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,7 +28,7 @@ struct	SystemManager {
 	using SysPtr		= std::unique_ptr<sys::ISystem>;
 	using UnderlyingVec	= std::vector<SysPtr>;
 
-	void	newFrame(void) {
+	void	newRender(void) {
 		_renderIndex = 0;
 		_postProcessIndex = 0;
 	};
