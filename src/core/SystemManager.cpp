@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/01 18:01:53                                        */
+/*  Last Modified: 2026/06/02 15:50:30                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -91,6 +91,31 @@ do {																			\
 	std::cout << "\n\n";														\
 } while (0)
 
+#define splitPasses(listName, depName)											\
+do {																			\
+	auto	allSystems = listName[0];											\
+	listName.clear();															\
+	std::vector<sys::ISystem *>	newList;										\
+	for (auto &system: allSystems) {											\
+		auto it = std::find(system->depName.require.begin(),					\
+						system->depName.require.end(), "newPass");				\
+		if (it != system->depName.require.end() && !newList.empty()) {			\
+			listName.emplace_back(newList);										\
+			newList.clear();													\
+		}																		\
+		newList.push_back(system);												\
+		it = std::find(system->depName.block.begin(),							\
+						system->depName.block.end(), "newPass");				\
+		if (it != system->depName.block.end()) {								\
+			listName.emplace_back(newList);										\
+			newList.clear();													\
+		}																		\
+	}																			\
+	listName.emplace_back(newList);												\
+	if (!newList.empty())														\
+		listName.emplace_back();												\
+} while (0)
+
 void	SystemManager::sort(EngineKey) {
 	sortSystems(updateDeps, _update);
 	sortSystems(updateInterDeps, _uInteraction);
@@ -103,6 +128,9 @@ void	SystemManager::sort(EngineKey) {
 	printSystemOrder("render", _render[0], renderDeps);
 	printSystemOrder("post processing", _postProcess[0], postProcessDeps);
 	printSystemOrder("render interaction", _rInteraction, renderInterDeps);
+
+	splitPasses(_render, renderDeps);
+	splitPasses(_postProcess, postProcessDeps);
 }
 
 }

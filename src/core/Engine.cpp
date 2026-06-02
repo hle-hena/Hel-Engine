@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/01 18:12:09                                        */
+/*  Last Modified: 2026/06/02 15:47:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -170,27 +170,37 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 		updateGlobalData(ctx);
 		VkClearValue	clear{};
 		clear.color.uint32[0] = 0xFFFFFFFF;
-		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
-						.setDepthStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
-						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
-						.setClearValue(clear)
-						.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
-						.addDepthWrite(depthImage, depthImage->getFormat())
-						.beginPass(ctx)) {
-			writeGlobalData(renderer);
-			for (auto &system: _systems.getRenders())
-				system->render(renderer);
+		while (1) {
+			auto	&renders = _systems.getRenders();
+			if (renders.empty())
+				break ;
+			if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
+							.setDepthStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
+							.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
+							.setClearValue(clear)
+							.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
+							.addDepthWrite(depthImage, depthImage->getFormat())
+							.beginPass(ctx)) {
+				writeGlobalData(renderer);
+				for (auto &system: renders)
+					system->render(renderer);
+			}
 		}
-		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
-						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
-						.setDepthLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
-						.setDepthStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
-						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
-						.addDepthWrite(depthImage, depthImage->getFormat())
-						.beginPass(ctx)) {
-			writeGlobalData(renderer);
-			for (auto &system: _systems.getPostProcess())
-				system->postProcessing(renderer);
+		while (1) {
+			auto	&postProcess = _systems.getPostProcess();
+			if (postProcess.empty())
+				break ;
+			if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
+							.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+							.setDepthLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+							.setDepthStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
+							.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
+							.addDepthWrite(depthImage, depthImage->getFormat())
+							.beginPass(ctx)) {
+				writeGlobalData(renderer);
+				for (auto &system: postProcess)
+					system->postProcessing(renderer);
+			}
 		}
 		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
 						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
