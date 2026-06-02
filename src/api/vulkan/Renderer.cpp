@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:37:33                                        */
+/*  Last Modified: 2026/06/02 19:45:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,8 @@
 # include "api/vulkan/Image.hpp"
 # include "api/vulkan/Device.hpp"
 # include "core/Frame.hpp"
+# include "ecs/systems/ISystem.hpp"
+# include "api/vulkan/ImagePool.hpp"
 
 namespace	hel {
 
@@ -29,6 +31,32 @@ RenderPass::RenderPass(Device &device, VkCommandBuffer commandBuffer,
 	:	_device{device},
 		_commandBuffer{commandBuffer},
 		_extent{extent} {
+}
+
+RenderPass::RenderPass(Device &device, FrameContext &ctx, ImagePool *imagePool,
+			const std::vector<sys::ISystem*> &systems,
+			sys::PhaseDependencies sys::ISystem::*depMember)
+	:	_device{device},
+		_commandBuffer{ctx.commandBuffer},
+		_extent{ctx.request->mainImage->getExtent()} {
+	auto	&req = ctx.request;
+	for (auto &system: systems) {
+		for (auto &dep: (system->*depMember).write) {
+			if (req->secondaryImages.find(dep.imageName) != req->secondaryImages.end()) {
+				std::cout << "Image write " << dep.imageName <<
+					" already exists, check that there is no clashing names.\n";
+				continue ;
+			}
+			auto	newImage = imagePool->acquire(dep.imageName, dep.config);
+			req->secondaryImages[dep.imageName] = newImage;
+		}
+		for (auto &dep: (system->*depMember).read) {
+			if (req->secondaryImages.find(dep.imageName) == req->secondaryImages.end()) {
+				std::cout << "Image read doesn't exist and cannot therefore be read.\n" << std::endl;
+				continue ;
+			}
+		}
+	}
 }
 
 RenderPass::RenderPass(RenderPass &&other)

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/01 17:48:17                                        */
+/*  Last Modified: 2026/06/02 19:51:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,10 +37,29 @@ struct	FrameContext;
 
 namespace	hel::sys {
 
+struct	ImageDep {
+	enum	Usage {
+		Color,
+		Depth,
+		Stencil
+	};
+
+	std::string			imageName;
+	Image::Config		config;
+	VkAttachmentLoadOp	load{VK_ATTACHMENT_LOAD_OP_CLEAR};
+	VkAttachmentStoreOp	store{VK_ATTACHMENT_STORE_OP_STORE};
+	VkFormat			format;
+	VkClearValue		clear;
+	Usage				usage;
+};
+
 struct	PhaseDependencies {
 	std::vector<std::string>	require{};
 	std::vector<std::string>	block{};
 	std::optional<std::string>	provides;
+
+	std::vector<ImageDep>		write;
+	std::vector<ImageDep>		read;
 };
 
 class	ISystem {

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/02 15:47:17                                        */
+/*  Last Modified: 2026/06/02 19:35:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -170,6 +170,17 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 		updateGlobalData(ctx);
 		VkClearValue	clear{};
 		clear.color.uint32[0] = 0xFFFFFFFF;
+		while (1 && false) {
+			auto	&renders = _systems.getRenders();
+			if (renders.empty())
+				break ;
+			auto	renderPass = RenderPass(_device, ctx, _imagePool.get(), renders, &sys::ISystem::renderDeps);
+			if (auto renderer = renderPass.beginPass(ctx)) {
+				writeGlobalData(renderer);
+				for (auto &system: renders)
+					system->render(renderer);
+			}
+		}
 		while (1) {
 			auto	&renders = _systems.getRenders();
 			if (renders.empty())

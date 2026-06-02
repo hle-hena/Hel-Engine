@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:35:40                                        */
+/*  Last Modified: 2026/06/02 19:39:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,16 +25,26 @@
 #include "utils/Setters.hpp"
 #include "api/vulkan/PipelineMap.hpp"
 
+namespace	hel::sys {
+
+struct	PhaseDependencies;
+
+}
+
 namespace	hel {
 
 class	Image;
 class	Renderer;
 class	Device;
 struct	FrameContext;
+class	ImagePool;
 
 class	RenderPass {
 	public:
 		RenderPass(Device &device, VkCommandBuffer commandBuffer, VkExtent2D extent);
+		RenderPass(Device &device, FrameContext &context, ImagePool *imagePool,
+			const std::vector<sys::ISystem *> &systems,
+			sys::PhaseDependencies sys::ISystem::*depMember);
 		RenderPass(RenderPass &&other);
 		~RenderPass(void);
 
