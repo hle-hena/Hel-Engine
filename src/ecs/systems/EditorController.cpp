@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/03 18:56:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/05/29 11:44:09                                        */
+/*  Last Modified: 2026/06/01 18:02:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,7 +20,7 @@
 #include "platform/input/InputState.hpp"
 #include "platform/window/Window.hpp"
 #include "core/Frame.hpp"
-#include "core/SystemMap.hpp"
+#include "core/SystemManager.hpp"
 
 namespace	hel::sys {
 
@@ -28,6 +28,10 @@ SystemRegistrar<EditorController>	reg_EditorControllerSystem;
 
 void	EditorController::init(void) {
 	_input = &_registry->getInputState();
+
+	updateDeps.provides = "editor control";
+	updateDeps.require.push_back("allign normal to parent");
+	updateDeps.block.push_back("model matrix calculation");
 }
 
 void	EditorController::handleKeyboardInput(Entity::id handle, float deltaTime) {

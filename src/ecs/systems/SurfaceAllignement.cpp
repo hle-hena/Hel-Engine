@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:20:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/05/29 11:43:54                                        */
+/*  Last Modified: 2026/06/01 17:00:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,13 +17,14 @@
 #include "ecs/systems/SurfaceAllignement.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
-#include "core/SystemMap.hpp"
+#include "core/SystemManager.hpp"
 
 namespace	hel::sys {
 
 SystemRegistrar<SurfaceAllignement>	reg_SurfaceAllignementSystem;
 
 void	SurfaceAllignement::init(void) {
+	updateDeps.provides = "allign normal to parent";
 }
 
 void	SurfaceAllignement::update(const FrameContext &) {

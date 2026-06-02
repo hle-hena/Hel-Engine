@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/05/29 11:45:53                                        */
+/*  Last Modified: 2026/06/01 17:52:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -42,7 +42,7 @@
 #include <glm/geometric.hpp>
 #include <string>
 #include <vulkan/vulkan_core.h>
-#include "core/SystemMap.hpp"
+#include "core/SystemManager.hpp"
 
 namespace	hel::sys {
 
@@ -51,6 +51,13 @@ SystemRegistrar<Transform>	reg_TransformSystem;
 Transform::Action	Transform::GizmoContext::action = Action::Move;
 
 void	Transform::init(void) {
+	updateDeps.provides = "model matrix calculation";
+	updateDeps.block.push_back("view matrix calculation");
+
+	renderInterDeps.provides = "render transform gizmo";
+
+	updateInterDeps.provides = "act on the transform gizmo action";
+
 	_assetManager = &_registry->getAssetManager();
 	_inputState = &_registry->getInputState();
 

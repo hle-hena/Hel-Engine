@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/05/29 11:47:35                                        */
+/*  Last Modified: 2026/06/01 17:51:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,13 +21,19 @@
 #include "ecs/Component.hpp"
 #include "platform/window/Window.hpp"
 #include <cstdint>
-#include "core/SystemMap.hpp"
+#include "core/SystemManager.hpp"
 
 namespace	hel::sys {
 
 SystemRegistrar<Selection>	reg_SelectionSystem;
 
 void	Selection::init(void) {
+	updateDeps.provides = "select entity";
+
+	renderInterDeps.provides = "render stencil on selected entity";
+
+	postProcessDeps.provides = "render color overlay on selected entity";
+
 	_inputState = &_registry->getInputState();
 	_assetManager = &_registry->getAssetManager();
 	{

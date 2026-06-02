@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/14 11:31:42                                        */
+/*  Last Modified: 2026/06/01 17:48:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,6 +37,12 @@ struct	FrameContext;
 
 namespace	hel::sys {
 
+struct	PhaseDependencies {
+	std::vector<std::string>	require{};
+	std::vector<std::string>	block{};
+	std::optional<std::string>	provides;
+};
+
 class	ISystem {
 	public:
 		ISystem(void) = default;
@@ -55,6 +61,12 @@ class	ISystem {
 		virtual void	render(const Renderer &) {}
 		virtual void	postProcessing(const Renderer &) {}
 		virtual void	renderInteraction(const Renderer &) {}
+
+		PhaseDependencies	updateDeps;
+		PhaseDependencies	updateInterDeps;
+		PhaseDependencies	renderDeps;
+		PhaseDependencies	postProcessDeps;
+		PhaseDependencies	renderInterDeps;
 
 	protected:
 		virtual PipelineMap	*createPipeline(const

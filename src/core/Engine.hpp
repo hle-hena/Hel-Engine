@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/05/29 11:40:23                                        */
+/*  Last Modified: 2026/05/29 17:00:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,7 +29,7 @@
 #include "api/vulkan/Renderer.hpp"
 
 #include "core/Frame.hpp"
-#include "core/SystemMap.hpp"
+#include "core/SystemManager.hpp"
 
 namespace hel {
 
@@ -86,7 +86,7 @@ class	Engine {
 		Frame											_frame;
 		EngineContext									_engineCtx;
 
-		SystemMap										_systems;
+		SystemManager									_systems;
 };
 
 }
