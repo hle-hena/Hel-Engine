@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 15:07:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/29 15:34:36                                        */
+/*  Last Modified: 2026/06/03 11:45:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,7 +28,10 @@ size_t	RenderingConfigHasher::operator()(const RenderingConfig &config) const {
 	size_t	seed = 0;
 	for (const auto &colorFormat: config.colorFormats)
 		hel::mathUtils::hashCombine(seed, colorFormat);
-	hel::mathUtils::hashCombine(seed, config.depthFormat);
+	hel::mathUtils::hashCombine(seed,
+		config.depthFormat.value_or(VK_FORMAT_MAX_ENUM));
+	hel::mathUtils::hashCombine(seed,
+		config.stencilFormat.value_or(VK_FORMAT_MAX_ENUM));
 	return (seed);
 }
 
@@ -121,9 +124,12 @@ bool	PipelineMap::bindPipeline(const RenderingConfig &renderingConfig,
 		config.renderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
 		config.renderingInfo.colorAttachmentCount = static_cast<uint32_t>(renderingConfig.colorFormats.size());
 		config.renderingInfo.pColorAttachmentFormats = renderingConfig.colorFormats.data();
-		config.renderingInfo.depthAttachmentFormat = renderingConfig.depthFormat;
-		//TODO -> add it's own var in the config.
-		config.renderingInfo.stencilAttachmentFormat = renderingConfig.depthFormat;
+		if (renderingConfig.depthFormat.has_value())
+			config.renderingInfo.depthAttachmentFormat
+				= renderingConfig.depthFormat.value();
+		if (renderingConfig.stencilFormat.has_value())
+			config.renderingInfo.stencilAttachmentFormat
+				= renderingConfig.stencilFormat.value();
 
 		if (pipeline.createGraphicsPipeline(config, _shaderStageInfos))
 			return (true);

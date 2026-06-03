@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/02 19:35:01                                        */
+/*  Last Modified: 2026/06/03 15:30:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -170,28 +170,29 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 		updateGlobalData(ctx);
 		VkClearValue	clear{};
 		clear.color.uint32[0] = 0xFFFFFFFF;
-		while (1 && false) {
-			auto	&renders = _systems.getRenders();
-			if (renders.empty())
-				break ;
-			auto	renderPass = RenderPass(_device, ctx, _imagePool.get(), renders, &sys::ISystem::renderDeps);
-			if (auto renderer = renderPass.beginPass(ctx)) {
-				writeGlobalData(renderer);
-				for (auto &system: renders)
-					system->render(renderer);
-			}
-		}
+		// while (1 && false) {
+		// 	auto	&renders = _systems.getRenders();
+		// 	if (renders.empty())
+		// 		break ;
+		// 	if (auto renderer = RenderPass(_device, ctx, _imagePool.get(),
+		// 									renders, &sys::ISystem::renderDeps)
+		// 							.beginPass()) {
+		// 		writeGlobalData(renderer);
+		// 		for (auto &system: renders)
+		// 			system->render(renderer);
+		// 	}
+		// }
 		while (1) {
 			auto	&renders = _systems.getRenders();
 			if (renders.empty())
 				break ;
-			if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
+			if (auto renderer = RenderPass(_device, ctx, renderImg->getExtent())
 							.setDepthStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
 							.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
 							.setClearValue(clear)
 							.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
 							.addDepthWrite(depthImage, depthImage->getFormat())
-							.beginPass(ctx)) {
+							.beginPass()) {
 				writeGlobalData(renderer);
 				for (auto &system: renders)
 					system->render(renderer);
@@ -201,34 +202,34 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 			auto	&postProcess = _systems.getPostProcess();
 			if (postProcess.empty())
 				break ;
-			if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
+			if (auto renderer = RenderPass(_device, ctx, renderImg->getExtent())
 							.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
 							.setDepthLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
 							.setDepthStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
 							.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
 							.addDepthWrite(depthImage, depthImage->getFormat())
-							.beginPass(ctx)) {
+							.beginPass()) {
 				writeGlobalData(renderer);
 				for (auto &system: postProcess)
 					system->postProcessing(renderer);
 			}
 		}
-		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
+		if (auto renderer = RenderPass(_device, ctx, renderImg->getExtent())
 						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
 						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
 						.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
 						.addDepthWrite(depthImage, depthImage->getFormat())
-						.beginPass(ctx)) {
+						.beginPass()) {
 			writeGlobalData(renderer);
 			for (auto &system: _systems.getRenderInteractions())
 				system->renderInteraction(renderer);
 		}
-		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
+		if (auto renderer = RenderPass(_device, ctx, renderImg->getExtent())
 						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
 						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
 						.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
 						.addDepthWrite(depthImage, depthImage->getFormat())
-						.beginPass(ctx)) {
+						.beginPass()) {
 			writeGlobalData(renderer);
 			DrawQueue::execute();
 		}
@@ -236,9 +237,9 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	}
 
-	if (auto renderer = RenderPass(_device, ctx.commandBuffer, swapImage->getExtent())
+	if (auto renderer = RenderPass(_device, ctx, swapImage->getExtent())
 					.addColorWrite(swapImage, VK_FORMAT_B8G8R8A8_UNORM)
-					.beginPass(ctx)) {
+					.beginPass()) {
 		ui.renderFrame(ctx.commandBuffer);
 	}
 	swapImage->transitionLayout(ctx.commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);

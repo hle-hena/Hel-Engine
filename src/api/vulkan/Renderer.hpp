@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/02 19:39:36                                        */
+/*  Last Modified: 2026/06/03 11:40:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,6 +28,7 @@
 namespace	hel::sys {
 
 struct	PhaseDependencies;
+struct	ImageDep;
 
 }
 
@@ -37,11 +38,12 @@ class	Image;
 class	Renderer;
 class	Device;
 struct	FrameContext;
+struct	RenderRequest;
 class	ImagePool;
 
 class	RenderPass {
 	public:
-		RenderPass(Device &device, VkCommandBuffer commandBuffer, VkExtent2D extent);
+		RenderPass(Device &device, FrameContext &ctx, VkExtent2D extent);
 		RenderPass(Device &device, FrameContext &context, ImagePool *imagePool,
 			const std::vector<sys::ISystem *> &systems,
 			sys::PhaseDependencies sys::ISystem::*depMember);
@@ -56,15 +58,20 @@ class	RenderPass {
 		RenderPass		&addColorWrite(Image *color, VkFormat format);
 		RenderPass		&addDepthWrite(Image *depth, VkFormat format);
 
-		Renderer		beginPass(FrameContext &context);
+		Renderer		beginPass(void);
 
 		static void	newFrame(void)	{ _passIndex = 0; }
 
 	private:
+		void	addWrite(sys::ImageDep &dep, ImagePool *imagePool);
+		void	addRead(sys::ImageDep &dep);
+
 		void	setViewport(void);
 		void	endPass(void);
 
 		Device				&_device;
+		FrameContext		&_ctx;
+		RenderRequest		*&_req;
 		VkCommandBuffer		_commandBuffer;
 		VkExtent2D			_extent;
 		bool				_isValid{false};
@@ -76,11 +83,13 @@ class	RenderPass {
 		VkAttachmentLoadOp		_depthLoadOp{VK_ATTACHMENT_LOAD_OP_CLEAR};
 		VkAttachmentStoreOp		_depthStoreOp{VK_ATTACHMENT_STORE_OP_DONT_CARE};
 
-		std::vector<Image *>						_colorsWrite{};
-		std::vector<Image *>						_colorsRead{};
+		std::unordered_map<std::string, Image *>	_writes{};
+		std::unordered_map<std::string, Image *>	_reads{};
+
 		Image										*_depthWrite;
 		std::vector<VkRenderingAttachmentInfo>		_colorsInfo{};
 		std::optional<VkRenderingAttachmentInfo>	_depthInfo{};
+		std::optional<VkRenderingAttachmentInfo>	_stencilInfo{};
 		RenderingConfig								_config;
 
 		static uint32_t		_passIndex;

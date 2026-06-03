@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/01 18:11:45                                        */
+/*  Last Modified: 2026/06/03 15:31:12                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,7 +48,7 @@ struct	SystemManager {
 
 	template <typename SysType>
 	static void	addSystem() {
-		auto	sys = _data.emplace_back(std::make_unique<SysType>()).get();
+		_data.emplace_back(std::make_unique<SysType>()).get();
 	}
 
 	PASSKEY(EngineKey, Engine)

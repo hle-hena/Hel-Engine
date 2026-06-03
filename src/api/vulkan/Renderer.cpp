@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/02 19:45:29                                        */
+/*  Last Modified: 2026/06/03 11:54:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,10 +26,12 @@ namespace	hel {
 uint32_t	RenderPass::_passIndex = 0;
 PipelineMap	*Renderer::Draw::_lastPipeline = VK_NULL_HANDLE;
 
-RenderPass::RenderPass(Device &device, VkCommandBuffer commandBuffer,
+RenderPass::RenderPass(Device &device, FrameContext &ctx,
 						VkExtent2D extent)
 	:	_device{device},
-		_commandBuffer{commandBuffer},
+		_ctx{ctx},
+		_req{ctx.request},
+		_commandBuffer{ctx.commandBuffer},
 		_extent{extent} {
 }
 
@@ -37,30 +39,22 @@ RenderPass::RenderPass(Device &device, FrameContext &ctx, ImagePool *imagePool,
 			const std::vector<sys::ISystem*> &systems,
 			sys::PhaseDependencies sys::ISystem::*depMember)
 	:	_device{device},
+		_ctx{ctx},
+		_req{ctx.request},
 		_commandBuffer{ctx.commandBuffer},
 		_extent{ctx.request->mainImage->getExtent()} {
-	auto	&req = ctx.request;
 	for (auto &system: systems) {
-		for (auto &dep: (system->*depMember).write) {
-			if (req->secondaryImages.find(dep.imageName) != req->secondaryImages.end()) {
-				std::cout << "Image write " << dep.imageName <<
-					" already exists, check that there is no clashing names.\n";
-				continue ;
-			}
-			auto	newImage = imagePool->acquire(dep.imageName, dep.config);
-			req->secondaryImages[dep.imageName] = newImage;
-		}
-		for (auto &dep: (system->*depMember).read) {
-			if (req->secondaryImages.find(dep.imageName) == req->secondaryImages.end()) {
-				std::cout << "Image read doesn't exist and cannot therefore be read.\n" << std::endl;
-				continue ;
-			}
-		}
+		for (auto &dep: (system->*depMember).write)
+			addWrite(dep, imagePool);
+		for (auto &dep: (system->*depMember).read)
+			addRead(dep);
 	}
 }
 
 RenderPass::RenderPass(RenderPass &&other)
 	:	_device{other._device},
+		_ctx{other._ctx},
+		_req{other._ctx.request},
 		_commandBuffer{other._commandBuffer},
 		_isValid{other._isValid} {
 	other._commandBuffer = VK_NULL_HANDLE;
@@ -71,9 +65,73 @@ RenderPass::~RenderPass(void) {
 		endPass();
 }
 
-Renderer	RenderPass::beginPass(FrameContext &frameContext) {
-	if (_colorsWrite.empty())
-		return (Renderer(frameContext, std::move(*this)));
+void	RenderPass::addWrite(sys::ImageDep &dep, ImagePool *imagePool) {
+	if (_writes.contains(dep.imageName)) {
+		std::cout << "Image write " << dep.imageName << " is already asked by "
+			<< "another system. Check that there is no name clashing.\n";
+		return ;
+	}
+	if (_reads.contains(dep.imageName)) {
+		std::cerr << "Error for image \"" << dep.imageName
+			<< "\". Can't have an image be both a write and a read.\n";
+		return ;
+	}
+
+	Image	*img = nullptr;
+	if (_req->secondaryImages.contains(dep.imageName))
+		img = _req->secondaryImages[dep.imageName];
+	else {
+		img = imagePool->acquire(dep.imageName, dep.config);
+		_req->secondaryImages[dep.imageName] = img;
+	}
+
+	_writes[dep.imageName] = img;
+	switch (dep.usage) {
+		case sys::ImageDep::Color:
+			img->transitionLayout(_commandBuffer,
+									VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+			_colorsInfo.push_back(img->getRenderingInfo(dep.clear, dep.load,
+														dep.store, dep.format));
+			_config.colorFormats.push_back(dep.format);
+			break;
+		case sys::ImageDep::Usage::Depth:
+			_depthInfo = img->getRenderingInfo(dep.clear, dep.load,
+											dep.store, dep.format);
+			_config.depthFormat = dep.format;
+			break;
+		case sys::ImageDep::Usage::Stencil:
+			_stencilInfo = img->getRenderingInfo(dep.clear, dep.load,
+												dep.store, dep.format);
+			_config.stencilFormat = dep.format;
+			break;
+	}
+}
+
+void	RenderPass::addRead(sys::ImageDep &dep) {
+	if (_reads.contains(dep.imageName)) {
+		std::cout << "Image read " << dep.imageName << " is already asked by "
+			<< "another system. Check that there is no name clashing.\n";
+		return ;
+	}
+	if (_writes.contains(dep.imageName)) {
+		std::cerr << "Error for image \"" << dep.imageName
+			<< "\". Can't have an image be both a write and a read.\n";
+		return ;
+	}
+	if (!_req->secondaryImages.contains(dep.imageName)) {
+		std::cerr << "Error for image \"" << dep.imageName
+			<< "\". The image doesn't exist or wasn't written before read.\n";
+		return ;
+	}
+
+	Image	*img = _req->secondaryImages[dep.imageName];
+	_reads[dep.imageName] = img;
+	img->transitionLayout(_commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+}
+
+Renderer	RenderPass::beginPass(void) {
+	if (_writes.empty())
+		return (Renderer(_ctx, std::move(*this)));
 
 	VkRenderingInfo	renderingInfo{};
 	renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
@@ -81,16 +139,15 @@ Renderer	RenderPass::beginPass(FrameContext &frameContext) {
 	renderingInfo.layerCount = 1;
 	renderingInfo.colorAttachmentCount = static_cast<uint32_t>(_colorsInfo.size());
 	renderingInfo.pColorAttachments = _colorsInfo.data();
-	if (_depthInfo.has_value()) {
-		renderingInfo.pDepthAttachment = &(*_depthInfo);
-		//TODO -> add it's own function to set it.
-		renderingInfo.pStencilAttachment = &(*_depthInfo);
-	}
+	if (_depthInfo.has_value())
+		renderingInfo.pDepthAttachment = &_depthInfo.value();
+	if (_stencilInfo.has_value())
+		renderingInfo.pStencilAttachment = &_stencilInfo.value();
 
 	vkCmdBeginRendering(_commandBuffer, &renderingInfo);
 	setViewport();
 	_isValid = true;
-	return (Renderer(frameContext, std::move(*this)));
+	return (Renderer(_ctx, std::move(*this)));
 }
 
 void	RenderPass::setViewport(void) {
@@ -109,27 +166,7 @@ void	RenderPass::endPass(void) {
 	vkCmdEndRendering(_commandBuffer);
 }
 
-RenderPass	&RenderPass::addColorWrite(Image *color, VkFormat format) {
-	color->transitionLayout(_commandBuffer,
-							VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-	_colorsInfo.push_back(color->getRenderingInfo(_colorClear, _colorsLoadOp,
-												_colorsStoreOp, format));
-	_colorsWrite.push_back(color);
-	_config.colorFormats.push_back(format);
-	return (*this);
-}
-
-RenderPass	&RenderPass::addDepthWrite(Image *depth, VkFormat format) {
-	depth->transitionLayout(_commandBuffer,
-							VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-
-	_depthWrite = depth;
-	_depthInfo = depth->getRenderingInfo(_depthClear, _depthLoadOp,
-										_depthStoreOp, format);
-	_config.depthFormat = format;
-	return (*this);
-}
 
 Renderer::Renderer(FrameContext &frameContext, RenderPass &&pass)
 	:	_device{pass._device},
