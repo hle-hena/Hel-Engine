@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/03 15:31:12                                        */
+/*  Last Modified: 2026/06/03 15:36:53                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,10 +36,10 @@ struct	SystemManager {
 		{ return _update; }
 	const std::vector<sys::ISystem*>	&getUpdateInteractions(void)
 		{ return _uInteraction; }
-	const std::vector<sys::ISystem*>	&getRenders(void)
-		{ return _render[_renderIndex++]; }
-	const std::vector<sys::ISystem*>	&getPostProcess(void)
-		{ return _postProcess[_postProcessIndex++]; }
+	const std::vector<std::vector<sys::ISystem*>>	&getRenders(void)
+		{ return _render; }
+	const std::vector<std::vector<sys::ISystem*>>	&getPostProcess(void)
+		{ return _postProcess; }
 	const std::vector<sys::ISystem*>	&getRenderInteractions(void)
 		{ return _rInteraction; }
 	const std::vector<SysPtr>			&getSystems(void)

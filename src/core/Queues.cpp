@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/21 19:38:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/24 16:29:02                                        */
+/*  Last Modified: 2026/06/03 19:05:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -63,12 +63,12 @@ bool	RenderRequest::operator==(const RenderRequest &other) const {
 							l->getExtent().height == r->getExtent().height);
 		return (sameSize);
 	};
-	bool	sameImages = compImages(this->mainImage, other.mainImage);
-	if (this->secondaryImages.size() == other.secondaryImages.size()) {
+	bool	sameImages = false;
+	if (this->images.size() == other.images.size()) {
 		sameImages &= std::equal(
-			this->secondaryImages.begin(),
-			this->secondaryImages.end(),
-			other.secondaryImages.begin(),
+			this->images.begin(),
+			this->images.end(),
+			other.images.begin(),
 			[&](const auto &l, const auto &r){
 				return (compImages(l.second, r.second));
 			}
@@ -86,9 +86,8 @@ size_t	RenderRequest::Hasher::operator()(const RenderRequest &request) const {
 		auto	extent = img->getExtent();
 		hel::mathUtils::hashCombine(seed, extent.width, extent.height);
 	};
-	hashImage(seed, request.mainImage);
-	for (auto it = request.secondaryImages.begin();
-		it != request.secondaryImages.end(); it++)
+	for (auto it = request.images.begin();
+		it != request.images.end(); it++)
 		hashImage(seed, it->second);
 	return (seed);
 }

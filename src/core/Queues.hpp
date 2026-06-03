@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/13 15:14:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 18:28:44                                        */
+/*  Last Modified: 2026/06/03 19:20:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -108,8 +108,7 @@ class	DrawQueue {
 struct	RenderRequest {
 	Entity::id									handle;
 	ImVec2										origin{0.f, 0.f};
-	Image										*mainImage;
-	std::unordered_map<std::string, Image *>	secondaryImages{};
+	std::unordered_map<std::string, Image *>	images{};
 
 	bool	operator==(const RenderRequest &other) const;
 	struct	Hasher {
@@ -120,7 +119,8 @@ struct	RenderRequest {
 class	RenderQueue {
 	public:
 		static void		push(const RenderRequest &request) {
-			_requests.push_back(request);
+			if (!request.images.empty() && request.images.contains("mainColor"))
+				_requests.push_back(request);
 		}
 		static std::vector<RenderRequest>	flush(void) {
 			return (std::move(_requests));

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/03 15:30:12                                        */
+/*  Last Modified: 2026/06/03 19:13:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -159,81 +159,46 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 		return ;
 	for (auto &renderRequest: RenderQueue::flush()) {
 		_systems.newRender();
-		Image	*entityImg = _imagePool->acquire(Image::Config()
-							.setFormats({VK_FORMAT_R32_UINT})
-							.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-							.setUsage(VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
-							.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
-		auto	renderImg = renderRequest.mainImage;
+
 		ctx.request = &renderRequest;
-		renderRequest.secondaryImages["entityID"] = entityImg;
 		updateGlobalData(ctx);
-		VkClearValue	clear{};
-		clear.color.uint32[0] = 0xFFFFFFFF;
-		// while (1 && false) {
-		// 	auto	&renders = _systems.getRenders();
-		// 	if (renders.empty())
-		// 		break ;
-		// 	if (auto renderer = RenderPass(_device, ctx, _imagePool.get(),
-		// 									renders, &sys::ISystem::renderDeps)
-		// 							.beginPass()) {
-		// 		writeGlobalData(renderer);
-		// 		for (auto &system: renders)
-		// 			system->render(renderer);
-		// 	}
-		// }
-		while (1) {
-			auto	&renders = _systems.getRenders();
-			if (renders.empty())
-				break ;
-			if (auto renderer = RenderPass(_device, ctx, renderImg->getExtent())
-							.setDepthStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
-							.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
-							.setClearValue(clear)
-							.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
-							.addDepthWrite(depthImage, depthImage->getFormat())
-							.beginPass()) {
+
+		for (auto &renderSystems: _systems.getRenders()) {
+			if (auto renderer = RenderPass(_device, ctx, _imagePool.get(),
+									renderSystems, &sys::ISystem::renderDeps)
+								.beginPass()) {
 				writeGlobalData(renderer);
-				for (auto &system: renders)
+				for (auto &system: renderSystems)
 					system->render(renderer);
 			}
 		}
-		while (1) {
-			auto	&postProcess = _systems.getPostProcess();
-			if (postProcess.empty())
-				break ;
-			if (auto renderer = RenderPass(_device, ctx, renderImg->getExtent())
-							.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
-							.setDepthLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
-							.setDepthStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
-							.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
-							.addDepthWrite(depthImage, depthImage->getFormat())
-							.beginPass()) {
+		for (auto &postSystems: _systems.getPostProcess()) {
+			if (auto renderer = RenderPass(_device, ctx, _imagePool.get(),
+									postSystems, &sys::ISystem::postProcessDeps)
+								.beginPass()) {
 				writeGlobalData(renderer);
-				for (auto &system: postProcess)
+				for (auto &system: postSystems)
 					system->postProcessing(renderer);
 			}
 		}
-		if (auto renderer = RenderPass(_device, ctx, renderImg->getExtent())
-						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
-						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
-						.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
-						.addDepthWrite(depthImage, depthImage->getFormat())
-						.beginPass()) {
+		auto	interSystems = _systems.getRenderInteractions();
+		if (auto renderer = RenderPass(_device, ctx, _imagePool.get(),
+									interSystems, &sys::ISystem::renderInterDeps)
+								.beginPass()) {
 			writeGlobalData(renderer);
 			for (auto &system: _systems.getRenderInteractions())
 				system->renderInteraction(renderer);
 		}
-		if (auto renderer = RenderPass(_device, ctx, renderImg->getExtent())
+		if (auto renderer = RenderPass(_device, ctx, renderRequest.images["mainColor"]->getExtent())
 						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
-						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
-						.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
-						.addDepthWrite(depthImage, depthImage->getFormat())
+						.addColorWrite(renderRequest.images["mainColor"], VK_FORMAT_B8G8R8A8_SRGB)
+						.addColorWrite(renderRequest.images["entity layer"], VK_FORMAT_R32_UINT)
+						.addDepthWrite(renderRequest.images["depth layer"], depthImage->getFormat())
 						.beginPass()) {
 			writeGlobalData(renderer);
 			DrawQueue::execute();
 		}
-		renderImg->transitionLayout(ctx.commandBuffer,
+		renderRequest.images["mainColor"]->transitionLayout(ctx.commandBuffer,
 					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	}
 
@@ -255,7 +220,7 @@ void	Engine::updateGlobalData(FrameContext &ctx) {
 	auto	handle = ctx.request->handle;
 	ctx.globalData.viewProjection = glm::mat4{1.f};
 	if (auto camera = _registry.getComponent<comp::Camera>(handle)) {
-		auto	extent = ctx.request->mainImage->getExtent();
+		auto	extent = ctx.request->images["mainColor"]->getExtent();
 		float	aspect = static_cast<float>(extent.width) /
 						static_cast<float>(extent.height);
 		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), aspect, camera->near, camera->far);

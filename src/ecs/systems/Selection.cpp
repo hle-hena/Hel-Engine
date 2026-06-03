@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/01 17:51:40                                        */
+/*  Last Modified: 2026/06/03 19:17:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,6 +33,14 @@ void	Selection::init(void) {
 	renderInterDeps.provides = "render stencil on selected entity";
 
 	postProcessDeps.provides = "render color overlay on selected entity";
+	postProcessDeps.write.push_back(ImageDep()
+		.setImageName("mainColor")
+		.setImageUsage(ImageDep::Usage::Color)
+		.setFormatAsked(VK_FORMAT_B8G8R8A8_SRGB));
+	postProcessDeps.write.push_back(ImageDep()
+		.setImageName("depth layer")
+		.setImageUsage(ImageDep::Usage::DepthStencil)
+		.setFormatAsked(VK_FORMAT_D32_SFLOAT_S8_UINT));
 
 	_inputState = &_registry->getInputState();
 	_assetManager = &_registry->getAssetManager();
@@ -103,14 +111,14 @@ void	Selection::renderInteraction(const Renderer &renderer) {
 	if (!camera || !transform)
 		return ;
 	glm::vec2	viewportOrigin(ctx.request->origin.x, ctx.request->origin.y);
-	VkExtent2D	imgExtent = ctx.request->mainImage->getExtent();
+	VkExtent2D	imgExtent = ctx.request->images["mainColor"]->getExtent();
 	glm::vec2	viewportSize(imgExtent.width, imgExtent.height);
 	auto	pos = glm::vec2(_inputState->getMousePos() - viewportOrigin);
 	glm::vec4	viewport(viewportOrigin, viewportSize);
 	if (pos.x < 0 || pos.y < 0 || pos.x > viewportSize.x || pos.y > viewportSize.y)
 		return ;
 
-	auto	entityImg = ctx.request->secondaryImages["entityID"];
+	auto	entityImg = ctx.request->images["entityID"];
 	if (!entityImg)
 		return ;
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/03 11:54:16                                        */
+/*  Last Modified: 2026/06/03 19:24:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -42,7 +42,7 @@ RenderPass::RenderPass(Device &device, FrameContext &ctx, ImagePool *imagePool,
 		_ctx{ctx},
 		_req{ctx.request},
 		_commandBuffer{ctx.commandBuffer},
-		_extent{ctx.request->mainImage->getExtent()} {
+		_extent{ctx.request->images["mainColor"]->getExtent()} {
 	for (auto &system: systems) {
 		for (auto &dep: (system->*depMember).write)
 			addWrite(dep, imagePool);
@@ -77,33 +77,90 @@ void	RenderPass::addWrite(sys::ImageDep &dep, ImagePool *imagePool) {
 		return ;
 	}
 
+	if (dep.format == VK_FORMAT_MAX_ENUM) {
+		std::cerr << "Error for image \"" << dep.imageName << "\". No format"
+			<< " was asked. Use the setFormatAsked function.\n";
+		return ;
+	}
+	if (dep.usage == sys::ImageDep::Usage::MAX_ENUM && findUsage(dep))
+		return ;
+	if ((dep.load == VK_ATTACHMENT_LOAD_OP_MAX_ENUM) && findLoadOp(dep))//TODO
+		return ;
+	if ((dep.store == VK_ATTACHMENT_STORE_OP_MAX_ENUM) && findStoreOp(dep))//TODO
+		return ;
 	Image	*img = nullptr;
-	if (_req->secondaryImages.contains(dep.imageName))
-		img = _req->secondaryImages[dep.imageName];
-	else {
-		img = imagePool->acquire(dep.imageName, dep.config);
-		_req->secondaryImages[dep.imageName] = img;
+	if (_req->images.contains(dep.imageName))
+		img = _req->images[dep.imageName];
+	else if (dep.config.has_value()) {
+		img = imagePool->acquire(dep.config.value());
+		_req->images[dep.imageName] = img;
+	} else {
+		std::cerr << "Error for image \"" << dep.imageName << "\". Image"
+			<< " doesn't exists, and no config has "
+			<< "been provided in the dependancy.\n";
+		return ;
+	}
+	addWriteImage(img, dep);
+}
+
+bool	RenderPass::findLoadOp(sys::ImageDep &dep) {
+	if (!_req->images.contains(dep.imageName))
+		dep.load = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	else
+	 	dep.load = VK_ATTACHMENT_LOAD_OP_LOAD;
+	return false;
+}
+
+bool	RenderPass::findStoreOp(sys::ImageDep &dep) {
+	dep.store = VK_ATTACHMENT_STORE_OP_STORE;
+	return false;
+}
+
+bool	RenderPass::findUsage(sys::ImageDep &dep) {
+	if (!dep.config.has_value()) {
+		std::cerr << "Couldn't find a valid usage for the image \"" <<
+			dep.imageName << "\". Please use the setImageUsage function.\n";
+		return true;
 	}
 
+	if (dep.config->usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+		dep.usage = sys::ImageDep::Usage::Color;
+	else if (dep.config->usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+		dep.usage = sys::ImageDep::Usage::DepthStencil;
+	else {
+		std::cerr << "Couldn't find a valid usage for the image \"" <<
+			dep.imageName << "\". Please use the setImageUsage function.\n";
+		return true;
+	}
+	return false;
+}
+
+void	RenderPass::addWriteImage(Image *img, sys::ImageDep &dep){
 	_writes[dep.imageName] = img;
-	switch (dep.usage) {
-		case sys::ImageDep::Color:
-			img->transitionLayout(_commandBuffer,
-									VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-			_colorsInfo.push_back(img->getRenderingInfo(dep.clear, dep.load,
-														dep.store, dep.format));
-			_config.colorFormats.push_back(dep.format);
-			break;
-		case sys::ImageDep::Usage::Depth:
-			_depthInfo = img->getRenderingInfo(dep.clear, dep.load,
-											dep.store, dep.format);
-			_config.depthFormat = dep.format;
-			break;
-		case sys::ImageDep::Usage::Stencil:
-			_stencilInfo = img->getRenderingInfo(dep.clear, dep.load,
-												dep.store, dep.format);
-			_config.stencilFormat = dep.format;
-			break;
+
+	if (dep.usage & sys::ImageDep::Color) {
+		img->transitionLayout(_commandBuffer,
+								VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		_colorsInfo.push_back(img->getRenderingInfo(
+			dep.clear.value_or(VkClearValue{.color = {{0.f, 0.f, 0.f, 1.f}}}),
+			dep.load, dep.store, dep.format));
+		_config.colorFormats.push_back(dep.format);
+	}
+	if (dep.usage & sys::ImageDep::Usage::Depth) {
+		img->transitionLayout(_commandBuffer,
+						VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		_depthInfo = img->getRenderingInfo(
+			dep.clear.value_or(VkClearValue{.depthStencil = {1.f, 0}}),
+			dep.load, dep.store, dep.format);
+		_config.depthFormat = dep.format;
+	}
+	if (dep.usage & sys::ImageDep::Usage::Stencil) {
+		img->transitionLayout(_commandBuffer,
+						VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		_stencilInfo = img->getRenderingInfo(
+			dep.clear.value_or(VkClearValue{.depthStencil = {1.f, 0}}),
+			dep.load, dep.store, dep.format);
+		_config.stencilFormat = dep.format;
 	}
 }
 
@@ -118,13 +175,13 @@ void	RenderPass::addRead(sys::ImageDep &dep) {
 			<< "\". Can't have an image be both a write and a read.\n";
 		return ;
 	}
-	if (!_req->secondaryImages.contains(dep.imageName)) {
+	if (!_req->images.contains(dep.imageName)) {
 		std::cerr << "Error for image \"" << dep.imageName
 			<< "\". The image doesn't exist or wasn't written before read.\n";
 		return ;
 	}
 
-	Image	*img = _req->secondaryImages[dep.imageName];
+	Image	*img = _req->images[dep.imageName];
 	_reads[dep.imageName] = img;
 	img->transitionLayout(_commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
@@ -164,6 +221,28 @@ void	RenderPass::setViewport(void) {
 
 void	RenderPass::endPass(void) {
 	vkCmdEndRendering(_commandBuffer);
+}
+
+RenderPass	&RenderPass::addColorWrite(Image *color, VkFormat format) {
+	color->transitionLayout(_commandBuffer,
+							VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+	_colorsInfo.push_back(color->getRenderingInfo(_colorClear, _colorsLoadOp,
+												_colorsStoreOp, format));
+	_writes["OuiOuiHardCode"] = color;
+	_config.colorFormats.push_back(format);
+	return (*this);
+}
+
+RenderPass	&RenderPass::addDepthWrite(Image *depth, VkFormat format) {
+	depth->transitionLayout(_commandBuffer,
+							VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+	_depthWrite = depth;
+	_depthInfo = depth->getRenderingInfo(_depthClear, _depthLoadOp,
+										_depthStoreOp, format);
+	_config.depthFormat = format;
+	return (*this);
 }
 
 

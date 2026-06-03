@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/03 11:40:01                                        */
+/*  Last Modified: 2026/06/03 18:28:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -64,6 +64,11 @@ class	RenderPass {
 
 	private:
 		void	addWrite(sys::ImageDep &dep, ImagePool *imagePool);
+		bool	findUsage(sys::ImageDep &dep);
+		bool	findLoadOp(sys::ImageDep &dep);
+		bool	findStoreOp(sys::ImageDep &dep);
+		void	addWriteImage(Image *img, sys::ImageDep &dep);
+
 		void	addRead(sys::ImageDep &dep);
 
 		void	setViewport(void);
@@ -76,7 +81,7 @@ class	RenderPass {
 		VkExtent2D			_extent;
 		bool				_isValid{false};
 
-		VkClearValue			_colorClear{{{0.f, 0.f, 0.f, 1.0f}}};
+		VkClearValue			_colorClear{ .color = {{0.f, 0.f, 0.f, 1.0f}} };
 		VkClearValue			_depthClear{ .depthStencil = {1.0f, 0} };
 		VkAttachmentLoadOp		_colorsLoadOp{VK_ATTACHMENT_LOAD_OP_CLEAR};
 		VkAttachmentStoreOp		_colorsStoreOp{VK_ATTACHMENT_STORE_OP_STORE};

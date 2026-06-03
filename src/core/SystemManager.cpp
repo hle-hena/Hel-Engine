@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/02 15:50:30                                        */
+/*  Last Modified: 2026/06/03 19:12:45                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -111,9 +111,8 @@ do {																			\
 			newList.clear();													\
 		}																		\
 	}																			\
-	listName.emplace_back(newList);												\
 	if (!newList.empty())														\
-		listName.emplace_back();												\
+		listName.emplace_back(newList);											\
 } while (0)
 
 void	SystemManager::sort(EngineKey) {

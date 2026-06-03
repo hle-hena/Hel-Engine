@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/02 19:51:01                                        */
+/*  Last Modified: 2026/06/03 18:21:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,18 +39,28 @@ namespace	hel::sys {
 
 struct	ImageDep {
 	enum	Usage {
-		Color,
-		Depth,
-		Stencil
+		Color = 1,
+		Depth = 2,
+		Stencil = 4,
+		DepthStencil = Depth | Stencil,
+		MAX_ENUM
 	};
 
-	std::string			imageName;
-	Image::Config		config;
-	VkAttachmentLoadOp	load{VK_ATTACHMENT_LOAD_OP_CLEAR};
-	VkAttachmentStoreOp	store{VK_ATTACHMENT_STORE_OP_STORE};
-	VkFormat			format;
-	VkClearValue		clear;
-	Usage				usage;
+	SETTER(ImageName, std::string, imageName)
+	SETTER(ImageUsage, Usage, usage)
+	SETTER(ImageConfig, Image::Config, config)
+	SETTER(FormatAsked, VkFormat, format)
+	SETTER(LoadOp, VkAttachmentLoadOp, load)
+	SETTER(StoreOp, VkAttachmentStoreOp, store)
+	SETTER(ClearValue, VkClearValue, clear)
+
+	std::string							imageName;
+	VkFormat							format{VK_FORMAT_MAX_ENUM};
+	Usage								usage{MAX_ENUM};
+	std::optional<Image::Config>		config;
+	std::optional<VkClearValue>			clear;
+	VkAttachmentLoadOp					load{VK_ATTACHMENT_LOAD_OP_MAX_ENUM};
+	VkAttachmentStoreOp					store{VK_ATTACHMENT_STORE_OP_MAX_ENUM};
 };
 
 struct	PhaseDependencies {

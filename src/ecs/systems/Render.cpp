@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/01 17:51:05                                        */
+/*  Last Modified: 2026/06/03 19:03:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,6 +36,36 @@ SystemRegistrar<Render>	reg_RenderSystem;
 
 void	Render::init(void) {
 	renderDeps.provides = "rendering of the 3d objects";
+
+	renderDeps.write.push_back(ImageDep()
+		.setImageName("mainColor")
+		.setImageUsage(ImageDep::Usage::Color)
+		.setFormatAsked(VK_FORMAT_B8G8R8A8_SRGB)
+		.setLoadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
+		.setStoreOp(VK_ATTACHMENT_STORE_OP_STORE));
+	renderDeps.write.push_back(ImageDep()
+		.setImageName("depth layer")
+		.setImageUsage(ImageDep::Usage::DepthStencil)
+		.setFormatAsked(VK_FORMAT_D32_SFLOAT_S8_UINT)
+		.setImageConfig(Image::Config()
+			.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
+			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT))
+		.setLoadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
+		.setStoreOp(VK_ATTACHMENT_STORE_OP_STORE));
+	renderDeps.write.push_back(ImageDep()
+		.setImageName("entity layer")
+		.setImageUsage(ImageDep::Usage::Color)
+		.setFormatAsked(VK_FORMAT_R32_UINT)
+		.setImageConfig(Image::Config()
+			.setFormats({VK_FORMAT_R32_UINT})
+			.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+			.setUsage(VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
+			.setAspect(VK_IMAGE_ASPECT_COLOR_BIT))
+		.setClearValue(VkClearValue{.color = {.uint32 = {0xFFFFFFFF}}})
+		.setLoadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
+		.setStoreOp(VK_ATTACHMENT_STORE_OP_STORE));
+
 
 	_assetManager = &_registry->getAssetManager();
 	{
