@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/21 19:38:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/03 19:05:19                                        */
+/*  Last Modified: 2026/06/04 15:20:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "core/Queues.hpp"
+#include "ecs/systems/ISystem.hpp"
 #include "utils/mathUtils.hpp"
 #include <algorithm>
 
@@ -22,8 +23,7 @@ namespace	hel {
 
 std::vector<RenderRequest>	RenderQueue::_requests = {};
 std::vector<Read::Request>	Read::Queue::_requests = {};
-std::vector<std::pair<uint32_t,
-		Renderer::Draw>>	DrawQueue::_requests = {};
+DrawQueue::RequestMap		DrawQueue::_requests = {};
 
 
 
@@ -36,20 +36,21 @@ void	Read::Queue::execute(VkCommandBuffer commandBuffer) {
 
 
 
-void	DrawQueue::requestDraw(uint32_t level, Renderer::Draw &&drawCommand) {
-	_requests.push_back({level, std::move(drawCommand)});
+DrawQueue::RequestVector	*DrawQueue::RequestMap::at(const uint32_t levelAsked, const sys::PhaseDependencies &depAsked) {
+	auto	&data = _data[levelAsked];
+	for (auto &vector: data) {
+		if (vector.dep == depAsked)
+			return &vector;
+	}
+	auto	&newVec = data.emplace_back();
+	newVec.dep = depAsked;
+	return &newVec;
 }
 
-void	DrawQueue::execute(void) {
-	//TODO -> try to keep the order of the request which are on the same level.
-	std::sort(_requests.begin(), _requests.end(), [](const auto &a, const auto &b) {
-		return (a.first < b.first);
-	});
-	for (auto &req: _requests)
-		req.second.submit();
-	_requests.clear();
+void	DrawQueue::requestDraw(uint32_t level, Renderer::Draw &&drawCommand,
+							sys::PhaseDependencies &dep) {
+	_requests.at(level, dep)->draws.emplace_back(std::move(drawCommand));
 }
-
 
 
 

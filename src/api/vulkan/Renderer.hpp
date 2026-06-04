@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/03 18:28:26                                        */
+/*  Last Modified: 2026/06/04 15:44:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -47,6 +47,8 @@ class	RenderPass {
 		RenderPass(Device &device, FrameContext &context, ImagePool *imagePool,
 			const std::vector<sys::ISystem *> &systems,
 			sys::PhaseDependencies sys::ISystem::*depMember);
+		RenderPass(Device &device, FrameContext &context, ImagePool *imagePool,
+			sys::PhaseDependencies dep);
 		RenderPass(RenderPass &&other);
 		~RenderPass(void);
 
@@ -63,13 +65,13 @@ class	RenderPass {
 		static void	newFrame(void)	{ _passIndex = 0; }
 
 	private:
-		void	addWrite(sys::ImageDep &dep, ImagePool *imagePool);
+		bool	addWrite(sys::ImageDep &dep, ImagePool *imagePool);
 		bool	findUsage(sys::ImageDep &dep);
 		bool	findLoadOp(sys::ImageDep &dep);
 		bool	findStoreOp(sys::ImageDep &dep);
 		void	addWriteImage(Image *img, sys::ImageDep &dep);
 
-		void	addRead(sys::ImageDep &dep);
+		bool	addRead(sys::ImageDep &dep);
 
 		void	setViewport(void);
 		void	endPass(void);
@@ -79,7 +81,8 @@ class	RenderPass {
 		RenderRequest		*&_req;
 		VkCommandBuffer		_commandBuffer;
 		VkExtent2D			_extent;
-		bool				_isValid{false};
+		bool				_invalidDep{false};
+		bool				_passStarted{false};
 
 		VkClearValue			_colorClear{ .color = {{0.f, 0.f, 0.f, 1.0f}} };
 		VkClearValue			_depthClear{ .depthStencil = {1.0f, 0} };

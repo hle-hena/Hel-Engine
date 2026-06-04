@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/03 19:17:30                                        */
+/*  Last Modified: 2026/06/04 10:32:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -313,7 +313,7 @@ void	Transform::renderUI(const Renderer &renderer, GizmoContext &gizmo) {
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
 			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer())
 			.setVertexCount(mesh->triangleVertexCount);
-		DrawQueue::requestDraw(0, std::move(draw));
+		DrawQueue::requestDraw(0, std::move(draw), renderInterDeps);
 	}
 }
 

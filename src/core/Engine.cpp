@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/03 19:13:03                                        */
+/*  Last Modified: 2026/06/04 15:47:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -146,10 +146,6 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 	vkResetCommandBuffer(ctx.commandBuffer, 0);
 	ctx.descriptorPool->resetPools();
 
-	auto	depthImage = _imagePool->acquire(Image::Config()
-			.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
-			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT));
 	auto	swapImage = swapchain.getSwapImage(imageIndex);
 
 	VkCommandBufferBeginInfo	beginInfo{};
@@ -189,14 +185,16 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 			for (auto &system: _systems.getRenderInteractions())
 				system->renderInteraction(renderer);
 		}
-		if (auto renderer = RenderPass(_device, ctx, renderRequest.images["mainColor"]->getExtent())
-						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
-						.addColorWrite(renderRequest.images["mainColor"], VK_FORMAT_B8G8R8A8_SRGB)
-						.addColorWrite(renderRequest.images["entity layer"], VK_FORMAT_R32_UINT)
-						.addDepthWrite(renderRequest.images["depth layer"], depthImage->getFormat())
-						.beginPass()) {
-			writeGlobalData(renderer);
-			DrawQueue::execute();
+		for (auto &level: DrawQueue::flush()) {
+			for (auto &pass: level.second) {
+				if (auto renderer = RenderPass(_device, ctx, _imagePool.get(),
+										pass.dep)
+									.beginPass()) {
+					writeGlobalData(renderer);
+					for (auto &drawCommand: pass.draws)
+						drawCommand.submit();
+				}
+			}
 		}
 		renderRequest.images["mainColor"]->transitionLayout(ctx.commandBuffer,
 					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

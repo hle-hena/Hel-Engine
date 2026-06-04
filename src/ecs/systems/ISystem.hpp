@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/03 18:21:00                                        */
+/*  Last Modified: 2026/06/04 15:40:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,7 +19,7 @@
 # include "api/vulkan/PipelineMap.hpp"
 # include "api/vulkan/Renderer.hpp"
 # include "core/Frame.hpp"
-#include "ecs/Entity.hpp"
+# include "ecs/Entity.hpp"
 
 # include <vulkan/vulkan.h>
 # include <vector>
@@ -61,6 +61,12 @@ struct	ImageDep {
 	std::optional<VkClearValue>			clear;
 	VkAttachmentLoadOp					load{VK_ATTACHMENT_LOAD_OP_MAX_ENUM};
 	VkAttachmentStoreOp					store{VK_ATTACHMENT_STORE_OP_MAX_ENUM};
+
+	bool operator==(const ImageDep&) const;
+};
+
+struct	DepHasher {
+	size_t	operator()(const PhaseDependencies &dep) const;
 };
 
 struct	PhaseDependencies {
@@ -70,6 +76,8 @@ struct	PhaseDependencies {
 
 	std::vector<ImageDep>		write;
 	std::vector<ImageDep>		read;
+
+	bool operator==(const PhaseDependencies&) const;
 };
 
 class	ISystem {
@@ -110,7 +118,7 @@ class	ISystem {
 		std::vector<std::unique_ptr<PipelineMap>>	_pipelines;
 
 	private:
-		FrameContext	_frameCtx;
+		const FrameContext	*_frameCtx;
 };
 
 }

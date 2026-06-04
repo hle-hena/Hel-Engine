@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/03 19:24:53                                        */
+/*  Last Modified: 2026/06/04 15:45:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,7 @@
 # include "core/Frame.hpp"
 # include "ecs/systems/ISystem.hpp"
 # include "api/vulkan/ImagePool.hpp"
+# include "core/Queues.hpp"
 
 namespace	hel {
 
@@ -45,10 +46,23 @@ RenderPass::RenderPass(Device &device, FrameContext &ctx, ImagePool *imagePool,
 		_extent{ctx.request->images["mainColor"]->getExtent()} {
 	for (auto &system: systems) {
 		for (auto &dep: (system->*depMember).write)
-			addWrite(dep, imagePool);
+			_invalidDep |= addWrite(dep, imagePool);
 		for (auto &dep: (system->*depMember).read)
-			addRead(dep);
+			_invalidDep |= addRead(dep);
 	}
+}
+
+RenderPass::RenderPass(Device &device, FrameContext &ctx, ImagePool *imagePool,
+	sys::PhaseDependencies dep)
+	:	_device{device},
+		_ctx{ctx},
+		_req{ctx.request},
+		_commandBuffer{ctx.commandBuffer},
+		_extent{ctx.request->images["mainColor"]->getExtent()} {
+	for (auto &dep: dep.write)
+		_invalidDep |= addWrite(dep, imagePool);
+	for (auto &dep: dep.read)
+		_invalidDep |= addRead(dep);
 }
 
 RenderPass::RenderPass(RenderPass &&other)
@@ -56,7 +70,7 @@ RenderPass::RenderPass(RenderPass &&other)
 		_ctx{other._ctx},
 		_req{other._ctx.request},
 		_commandBuffer{other._commandBuffer},
-		_isValid{other._isValid} {
+		_passStarted{other._passStarted} {
 	other._commandBuffer = VK_NULL_HANDLE;
 }
 
@@ -65,29 +79,29 @@ RenderPass::~RenderPass(void) {
 		endPass();
 }
 
-void	RenderPass::addWrite(sys::ImageDep &dep, ImagePool *imagePool) {
+bool	RenderPass::addWrite(sys::ImageDep &dep, ImagePool *imagePool) {
 	if (_writes.contains(dep.imageName)) {
-		std::cout << "Image write " << dep.imageName << " is already asked by "
-			<< "another system. Check that there is no name clashing.\n";
-		return ;
+		// std::cout << "Image write " << dep.imageName << " is already asked by "
+		// 	<< "another system. Check that there is no name clashing.\n";
+		return (false);
 	}
 	if (_reads.contains(dep.imageName)) {
 		std::cerr << "Error for image \"" << dep.imageName
 			<< "\". Can't have an image be both a write and a read.\n";
-		return ;
+		return (true);
 	}
 
 	if (dep.format == VK_FORMAT_MAX_ENUM) {
 		std::cerr << "Error for image \"" << dep.imageName << "\". No format"
 			<< " was asked. Use the setFormatAsked function.\n";
-		return ;
+		return (true);
 	}
 	if (dep.usage == sys::ImageDep::Usage::MAX_ENUM && findUsage(dep))
-		return ;
+		return (true);
 	if ((dep.load == VK_ATTACHMENT_LOAD_OP_MAX_ENUM) && findLoadOp(dep))//TODO
-		return ;
+		return (true);
 	if ((dep.store == VK_ATTACHMENT_STORE_OP_MAX_ENUM) && findStoreOp(dep))//TODO
-		return ;
+		return (true);
 	Image	*img = nullptr;
 	if (_req->images.contains(dep.imageName))
 		img = _req->images[dep.imageName];
@@ -98,9 +112,10 @@ void	RenderPass::addWrite(sys::ImageDep &dep, ImagePool *imagePool) {
 		std::cerr << "Error for image \"" << dep.imageName << "\". Image"
 			<< " doesn't exists, and no config has "
 			<< "been provided in the dependancy.\n";
-		return ;
+		return (true);
 	}
 	addWriteImage(img, dep);
+	return (false);
 }
 
 bool	RenderPass::findLoadOp(sys::ImageDep &dep) {
@@ -164,30 +179,32 @@ void	RenderPass::addWriteImage(Image *img, sys::ImageDep &dep){
 	}
 }
 
-void	RenderPass::addRead(sys::ImageDep &dep) {
+bool	RenderPass::addRead(sys::ImageDep &dep) {
 	if (_reads.contains(dep.imageName)) {
 		std::cout << "Image read " << dep.imageName << " is already asked by "
 			<< "another system. Check that there is no name clashing.\n";
-		return ;
+		return (false);
 	}
 	if (_writes.contains(dep.imageName)) {
 		std::cerr << "Error for image \"" << dep.imageName
 			<< "\". Can't have an image be both a write and a read.\n";
-		return ;
+		return (true);
 	}
 	if (!_req->images.contains(dep.imageName)) {
 		std::cerr << "Error for image \"" << dep.imageName
 			<< "\". The image doesn't exist or wasn't written before read.\n";
-		return ;
+		return (true);
 	}
 
 	Image	*img = _req->images[dep.imageName];
 	_reads[dep.imageName] = img;
-	img->transitionLayout(_commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	img->transitionLayout(_commandBuffer,
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	return (false);
 }
 
 Renderer	RenderPass::beginPass(void) {
-	if (_writes.empty())
+	if (_invalidDep || _writes.empty())
 		return (Renderer(_ctx, std::move(*this)));
 
 	VkRenderingInfo	renderingInfo{};
@@ -203,7 +220,7 @@ Renderer	RenderPass::beginPass(void) {
 
 	vkCmdBeginRendering(_commandBuffer, &renderingInfo);
 	setViewport();
-	_isValid = true;
+	_passStarted = true;
 	return (Renderer(_ctx, std::move(*this)));
 }
 
@@ -253,12 +270,12 @@ Renderer::Renderer(FrameContext &frameContext, RenderPass &&pass)
 		_commandBuffer{pass._commandBuffer},
 		_config{pass._config},
 		_pass{std::move(pass)} {
-	if (_pass._isValid)
+	if (_pass._passStarted)
 		_frameContext.passIndex = RenderPass::newPass();
 }
 
 Renderer::operator	bool(void) const {
-	return (_pass._isValid);
+	return (_pass._passStarted);
 }
 
 FrameContext	&Renderer::frameContext(void) const	{

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 15:22:24                                        */
+/*  Last Modified: 2026/06/04 11:55:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,11 +26,11 @@
 # include "api/vulkan/Buffer.hpp"
 # include "api/vulkan/Descriptors.hpp"
 # include "utils/helExpect.hpp"
-# include "core/Queues.hpp"
 
 namespace	hel {
 
 class	Window;
+struct	RenderRequest;
 
 struct	GlobalUBO {
 	glm::mat4	viewProjection;

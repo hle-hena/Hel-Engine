@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/13 15:14:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/03 19:20:11                                        */
+/*  Last Modified: 2026/06/04 15:41:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,13 +21,21 @@
 #include "api/vulkan/Renderer.hpp"
 #include "ecs/Entity.hpp"
 #include "utils/Setters.hpp"
+#include "ecs/systems/ISystem.hpp"
 #include <cstdint>
 #include <memory>
 #include <ui/ImGui/imgui.h>
 #include <unordered_map>
+#include <map>
 #include <utility>
 #include <vector>
 #include <vulkan/vulkan_core.h>
+
+namespace	hel::sys {
+
+struct	DepHasher;
+
+}
 
 namespace	hel {
 
@@ -91,17 +99,31 @@ class	Read::Queue {
 
 class	DrawQueue {
 	public:
-		static void	requestDraw(uint32_t level, Renderer::Draw &&drawCommand);
-		static void	execute(void);
+		struct	RequestVector {
+			sys::PhaseDependencies		dep;
+			std::vector<Renderer::Draw>	draws;
+		};
+		using InnerMap = std::map<uint32_t, std::vector<RequestVector>>;
+		struct	RequestMap {
+			public:
+				RequestVector	*at(uint32_t levelAsked, const sys::PhaseDependencies &depAsked);
+				void			clear(void);
+			private:
+				InnerMap	_data{};
+			
+			friend class DrawQueue;
+		};
 
-		
+		static void	requestDraw(uint32_t level, Renderer::Draw &&drawCommand,
+								sys::PhaseDependencies &dep);
+		static InnerMap	flush(void) { return std::move(_requests._data); };
+
 	private:
-		static std::vector<std::pair<uint32_t, Renderer::Draw>>	_requests;
+		static RequestMap	_requests;
 
 	template <typename ReadType>
 	friend struct	Builder;
 };
-
 
 
 
