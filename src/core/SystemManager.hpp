@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/03 15:36:53                                        */
+/*  Last Modified: 2026/06/05 14:31:22                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,7 +17,6 @@
 #pragma once
 
 #include <memory>
-#include <cstdint>
 #include <vector>
 
 #include "ecs/systems/ISystem.hpp"
@@ -28,10 +27,6 @@ struct	SystemManager {
 	using SysPtr		= std::unique_ptr<sys::ISystem>;
 	using UnderlyingVec	= std::vector<SysPtr>;
 
-	void	newRender(void) {
-		_renderIndex = 0;
-		_postProcessIndex = 0;
-	};
 	const std::vector<sys::ISystem*>	&getUpdates(void)
 		{ return _update; }
 	const std::vector<sys::ISystem*>	&getUpdateInteractions(void)
@@ -58,8 +53,6 @@ struct	SystemManager {
 	}
 
 	private:
-		uint32_t										_renderIndex;
-		uint32_t										_postProcessIndex;
 		static std::vector<sys::ISystem*>				_update;
 		static std::vector<sys::ISystem*>				_uInteraction;
 		static std::vector<std::vector<sys::ISystem*>>	_render;

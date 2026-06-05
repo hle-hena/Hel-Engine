@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 14:00:14                                        */
+/*  Last Modified: 2026/06/05 16:10:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,6 +29,9 @@ expected<void, std::string>	SceneViewport::onInit(void) {
 }
 
 void	SceneViewport::render(Window *window, const ImVec2 &size) {
+	if (!mainRequest)
+		return ;
+
 	auto	windowEntityHandle = window->getEntityReference();
 	auto	rectMin = ImGui::GetCursorScreenPos() - ImGui::GetStyle().WindowPadding;
 	auto	rectMax = rectMin + ImGui::GetContentRegionAvail()
@@ -52,6 +55,16 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 	RenderQueue::push({"RenderScene", _handle, ImGui::GetCursorScreenPos(), {{"mainColor", image}}});
 	auto	extent = image->getPhysicalExtent();
 	ImVec2	uv1 = {size.x / static_cast<float>(extent.width), size.y / static_cast<float>(extent.height)};
+
+	int i = 0;
+	while (true) {
+		std::string	imageName = "viewport" + std::to_string(i++);
+		if (mainRequest->images.contains(imageName))
+			continue ;
+		mainRequest->images[imageName] = image;
+		mainRequest = nullptr;
+		break ;
+	}
 
 	ImGui::Image(image->getTexture(VK_FORMAT_B8G8R8A8_UNORM),
 			size, {0.f, 0.f}, uv1);

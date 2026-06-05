@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/14 11:28:47                                        */
+/*  Last Modified: 2026/06/05 15:04:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,7 @@
 # include <functional>
 
 # include "ecs/systems/ISystem.hpp"
+#include "core/Queues.hpp"
 
 # include "platform/ui/Dock.hpp"
 
@@ -56,6 +57,9 @@ class	UI : public ISystem {
 					{ return (_panelRegistry); }
 
 		void	updateInteraction(const FrameContext &ctx) override;
+		void	render(const Renderer &renderer) override;
+
+		RENDER_TYPES("RenderUI")
 
 	private:
 		void	addDock(Window *window, const ImVec2 &size);
@@ -64,6 +68,7 @@ class	UI : public ISystem {
 		std::optional<ImVec2>	_lastSize;
 
 		std::vector<std::unique_ptr<IPanel>>	_panels;
+		RenderRequest							_request;
 
 		std::vector<std::pair<
 			std::string, PanelFactory>>			_panelRegistry;

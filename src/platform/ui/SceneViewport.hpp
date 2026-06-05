@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:39 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 18:02:26                                        */
+/*  Last Modified: 2026/06/05 15:01:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,6 +25,7 @@ namespace	hel {
 class	Window;
 class	Device;
 class	ImagePool;
+struct	RenderRequest;
 
 }
 
@@ -39,6 +40,8 @@ class	SceneViewport : public Panel<SceneViewport> {
 		expected<void, std::string>	onInit(void) override;
 
 		void	render(Window *window, const ImVec2 &size) override;
+
+		RenderRequest	*mainRequest{nullptr};
 
 	private:
 		bool		_captured;

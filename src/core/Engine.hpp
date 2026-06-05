@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 12:23:44                                        */
+/*  Last Modified: 2026/06/05 16:13:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -68,7 +68,7 @@ class	Engine {
 		void			createImagePool(void);
 
 		void			updateTick(UiContext &ui, FrameContext &frameCtx);
-		void			renderTick(Window *window, UiContext &ui,
+		void			renderTick(Window *window, UiContext &,
 								FrameContext &frameCtx);
 		void			executePass(FrameContext &ctx, auto &&systems,
 								PhaseDependencies sys::ISystem::*depMember,

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 14:20:03                                        */
+/*  Last Modified: 2026/06/05 16:13:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -122,10 +122,15 @@ void	Engine::tick(Window *window, uint32_t frameIndex) {
 	auto	&ui = window->getUI();
 	_lastFrameTime = _timer.lap();
 	_imagePool->releaseAll();
+	bool	shouldDoRenderTick = true;
+	if (window->getSwapchain().acquireNextImage(*window, frameCtx.frameIndex,
+												&frameCtx.swapIndex))
+		shouldDoRenderTick = false;
 
 	updateTick(ui, frameCtx);
 	_registry.updateBuffers(_device);
-	renderTick(window, ui, frameCtx);
+	if (shouldDoRenderTick)
+		renderTick(window, ui, frameCtx);
 }
 
 void	Engine::updateTick(UiContext &ui, FrameContext &frameCtx) {
@@ -137,17 +142,14 @@ void	Engine::updateTick(UiContext &ui, FrameContext &frameCtx) {
 		system->update(frameCtx);
 }
 
-void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
+void	Engine::renderTick(Window *window, UiContext &, FrameContext &ctx) {
 	Swapchain	&swapchain = window->getSwapchain();
-	uint32_t	imageIndex;
 
 	RenderPass::newFrame();
-	if (swapchain.acquireNextImage(*window, ctx.frameIndex, &imageIndex))
-		return ;
+
+	auto	swapImage = swapchain.getSwapImage(ctx.swapIndex);
 	vkResetCommandBuffer(ctx.commandBuffer, 0);
 	ctx.descriptorPool->resetPools();
-
-	auto	swapImage = swapchain.getSwapImage(imageIndex);
 
 	VkCommandBufferBeginInfo	beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -155,7 +157,6 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 		return ;
 
 	for (auto &renderRequest: RenderQueue::flush()) {
-		_systems.newRender();
 		auto matchingType = [&renderRequest](const sys::ISystem *sys) {
 			auto	types = sys->getRenderTypes();
 			return (std::ranges::find(types, renderRequest.requestType)
@@ -186,22 +187,15 @@ void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
 				}
 			}
 		}
-		renderRequest.images["mainColor"]->transitionLayout(ctx.commandBuffer,
-					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	}
 
-	if (auto renderer = RenderPass(_device, ctx, swapImage->getExtent())
-					.addColorWrite(swapImage, VK_FORMAT_B8G8R8A8_UNORM)
-					.beginPass()) {
-		ui.renderFrame(ctx.commandBuffer);
-	}
 	swapImage->transitionLayout(ctx.commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 	Read::Queue::execute(ctx.commandBuffer);
 
 	vkEndCommandBuffer(ctx.commandBuffer);
 
-	swapchain.submitCommandBuffer(ctx.commandBuffer, imageIndex, ctx.frameIndex);
-	swapchain.present(*window, imageIndex);
+	swapchain.submitCommandBuffer(ctx.commandBuffer, ctx.swapIndex, ctx.frameIndex);
+	swapchain.present(*window, ctx.swapIndex);
 }
 
 void	Engine::executePass(FrameContext &ctx,

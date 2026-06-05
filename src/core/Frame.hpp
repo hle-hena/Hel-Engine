@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/04 11:55:00                                        */
+/*  Last Modified: 2026/06/05 14:34:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -49,6 +49,7 @@ struct	FrameContext {
 	float					deltaTime{0.f};
 	uint32_t				passIndex{0};
 	uint32_t				frameIndex;
+	uint32_t				swapIndex;
 };
 
 

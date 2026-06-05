@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 12:30:03                                        */
+/*  Last Modified: 2026/06/05 16:08:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -65,8 +65,6 @@ RenderPass::~RenderPass(void) {
 
 bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
 	if (_writes.contains(dep.imageName)) {
-		// std::cout << "Image write " << dep.imageName << " is already asked by "
-		// 	<< "another system. Check that there is no name clashing.\n";
 		return (false);
 	}
 	if (_reads.contains(dep.imageName)) {
@@ -164,27 +162,30 @@ void	RenderPass::addWriteImage(Image *img, ImageDep &dep){
 }
 
 bool	RenderPass::addRead(ImageDep &dep) {
-	if (_reads.contains(dep.imageName)) {
-		std::cout << "Image read " << dep.imageName << " is already asked by "
-			<< "another system. Check that there is no name clashing.\n";
-		return (false);
-	}
-	if (_writes.contains(dep.imageName)) {
-		std::cerr << "Error for image \"" << dep.imageName
-			<< "\". Can't have an image be both a write and a read.\n";
-		return (true);
-	}
-	if (!_req->images.contains(dep.imageName)) {
-		std::cerr << "Error for image \"" << dep.imageName
-			<< "\". The image doesn't exist or wasn't written before read.\n";
-		return (true);
-	}
+	auto	matchName = [](const std::string_view& pattern, const std::string_view& name) {
+		if (pattern.ends_with('*'))
+			return name.starts_with(pattern.substr(0, pattern.size() - 1));
+		return pattern == name;
+	};
 
-	Image	*img = _req->images[dep.imageName];
-	_reads[dep.imageName] = img;
-	img->transitionLayout(_commandBuffer,
-		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-	return (false);
+	bool	notFound = true;
+	for (auto &[imageName, image]: _req->images) {
+		if (matchName(dep.imageName, imageName)) {
+			if (_writes.contains(imageName)) {
+				std::cerr << "Trying to read the image \"" << imageName
+					<< "\" which is already registered as a write.\n";
+				continue ;
+			}
+			if (_reads.contains(imageName))
+				continue ;
+
+			_reads[imageName] = image;
+			image->transitionLayout(_commandBuffer,
+				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			notFound = false;
+		}
+	}
+	return (notFound);
 }
 
 Renderer	RenderPass::beginPass(void) {
