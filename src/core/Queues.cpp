@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/21 19:38:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/04 15:20:47                                        */
+/*  Last Modified: 2026/06/05 12:37:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,7 +15,6 @@
 /* *************************************************************************  */
 
 #include "core/Queues.hpp"
-#include "ecs/systems/ISystem.hpp"
 #include "utils/mathUtils.hpp"
 #include <algorithm>
 
@@ -36,7 +35,7 @@ void	Read::Queue::execute(VkCommandBuffer commandBuffer) {
 
 
 
-DrawQueue::RequestVector	*DrawQueue::RequestMap::at(const uint32_t levelAsked, const sys::PhaseDependencies &depAsked) {
+DrawQueue::RequestVector	*DrawQueue::RequestMap::at(const uint32_t levelAsked, const PhaseDependencies &depAsked) {
 	auto	&data = _data[levelAsked];
 	for (auto &vector: data) {
 		if (vector.dep == depAsked)
@@ -48,7 +47,7 @@ DrawQueue::RequestVector	*DrawQueue::RequestMap::at(const uint32_t levelAsked, c
 }
 
 void	DrawQueue::requestDraw(uint32_t level, Renderer::Draw &&drawCommand,
-							sys::PhaseDependencies &dep) {
+							PhaseDependencies &dep) {
 	_requests.at(level, dep)->draws.emplace_back(std::move(drawCommand));
 }
 

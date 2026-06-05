@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/04 15:45:49                                        */
+/*  Last Modified: 2026/06/05 12:30:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,23 +37,7 @@ RenderPass::RenderPass(Device &device, FrameContext &ctx,
 }
 
 RenderPass::RenderPass(Device &device, FrameContext &ctx, ImagePool *imagePool,
-			const std::vector<sys::ISystem*> &systems,
-			sys::PhaseDependencies sys::ISystem::*depMember)
-	:	_device{device},
-		_ctx{ctx},
-		_req{ctx.request},
-		_commandBuffer{ctx.commandBuffer},
-		_extent{ctx.request->images["mainColor"]->getExtent()} {
-	for (auto &system: systems) {
-		for (auto &dep: (system->*depMember).write)
-			_invalidDep |= addWrite(dep, imagePool);
-		for (auto &dep: (system->*depMember).read)
-			_invalidDep |= addRead(dep);
-	}
-}
-
-RenderPass::RenderPass(Device &device, FrameContext &ctx, ImagePool *imagePool,
-	sys::PhaseDependencies dep)
+	PhaseDependencies dep)
 	:	_device{device},
 		_ctx{ctx},
 		_req{ctx.request},
@@ -75,11 +59,11 @@ RenderPass::RenderPass(RenderPass &&other)
 }
 
 RenderPass::~RenderPass(void) {
-	if (_commandBuffer)
+	if (_commandBuffer && _passStarted)
 		endPass();
 }
 
-bool	RenderPass::addWrite(sys::ImageDep &dep, ImagePool *imagePool) {
+bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
 	if (_writes.contains(dep.imageName)) {
 		// std::cout << "Image write " << dep.imageName << " is already asked by "
 		// 	<< "another system. Check that there is no name clashing.\n";
@@ -96,7 +80,7 @@ bool	RenderPass::addWrite(sys::ImageDep &dep, ImagePool *imagePool) {
 			<< " was asked. Use the setFormatAsked function.\n";
 		return (true);
 	}
-	if (dep.usage == sys::ImageDep::Usage::MAX_ENUM && findUsage(dep))
+	if (dep.usage == ImageDep::Usage::MAX_ENUM && findUsage(dep))
 		return (true);
 	if ((dep.load == VK_ATTACHMENT_LOAD_OP_MAX_ENUM) && findLoadOp(dep))//TODO
 		return (true);
@@ -118,7 +102,7 @@ bool	RenderPass::addWrite(sys::ImageDep &dep, ImagePool *imagePool) {
 	return (false);
 }
 
-bool	RenderPass::findLoadOp(sys::ImageDep &dep) {
+bool	RenderPass::findLoadOp(ImageDep &dep) {
 	if (!_req->images.contains(dep.imageName))
 		dep.load = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	else
@@ -126,12 +110,12 @@ bool	RenderPass::findLoadOp(sys::ImageDep &dep) {
 	return false;
 }
 
-bool	RenderPass::findStoreOp(sys::ImageDep &dep) {
+bool	RenderPass::findStoreOp(ImageDep &dep) {
 	dep.store = VK_ATTACHMENT_STORE_OP_STORE;
 	return false;
 }
 
-bool	RenderPass::findUsage(sys::ImageDep &dep) {
+bool	RenderPass::findUsage(ImageDep &dep) {
 	if (!dep.config.has_value()) {
 		std::cerr << "Couldn't find a valid usage for the image \"" <<
 			dep.imageName << "\". Please use the setImageUsage function.\n";
@@ -139,9 +123,9 @@ bool	RenderPass::findUsage(sys::ImageDep &dep) {
 	}
 
 	if (dep.config->usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-		dep.usage = sys::ImageDep::Usage::Color;
+		dep.usage = ImageDep::Usage::Color;
 	else if (dep.config->usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-		dep.usage = sys::ImageDep::Usage::DepthStencil;
+		dep.usage = ImageDep::Usage::DepthStencil;
 	else {
 		std::cerr << "Couldn't find a valid usage for the image \"" <<
 			dep.imageName << "\". Please use the setImageUsage function.\n";
@@ -150,10 +134,10 @@ bool	RenderPass::findUsage(sys::ImageDep &dep) {
 	return false;
 }
 
-void	RenderPass::addWriteImage(Image *img, sys::ImageDep &dep){
+void	RenderPass::addWriteImage(Image *img, ImageDep &dep){
 	_writes[dep.imageName] = img;
 
-	if (dep.usage & sys::ImageDep::Color) {
+	if (dep.usage & ImageDep::Color) {
 		img->transitionLayout(_commandBuffer,
 								VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		_colorsInfo.push_back(img->getRenderingInfo(
@@ -161,7 +145,7 @@ void	RenderPass::addWriteImage(Image *img, sys::ImageDep &dep){
 			dep.load, dep.store, dep.format));
 		_config.colorFormats.push_back(dep.format);
 	}
-	if (dep.usage & sys::ImageDep::Usage::Depth) {
+	if (dep.usage & ImageDep::Usage::Depth) {
 		img->transitionLayout(_commandBuffer,
 						VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 		_depthInfo = img->getRenderingInfo(
@@ -169,7 +153,7 @@ void	RenderPass::addWriteImage(Image *img, sys::ImageDep &dep){
 			dep.load, dep.store, dep.format);
 		_config.depthFormat = dep.format;
 	}
-	if (dep.usage & sys::ImageDep::Usage::Stencil) {
+	if (dep.usage & ImageDep::Usage::Stencil) {
 		img->transitionLayout(_commandBuffer,
 						VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 		_stencilInfo = img->getRenderingInfo(
@@ -179,7 +163,7 @@ void	RenderPass::addWriteImage(Image *img, sys::ImageDep &dep){
 	}
 }
 
-bool	RenderPass::addRead(sys::ImageDep &dep) {
+bool	RenderPass::addRead(ImageDep &dep) {
 	if (_reads.contains(dep.imageName)) {
 		std::cout << "Image read " << dep.imageName << " is already asked by "
 			<< "another system. Check that there is no name clashing.\n";

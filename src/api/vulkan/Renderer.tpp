@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/22 12:19:09 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 16:35:52                                        */
+/*  Last Modified: 2026/06/05 12:39:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,8 +18,26 @@
 #include <cstdint>
 #include <cstring>
 #include <iostream>
+#include "core/Frame.hpp"
+#include "core/Queues.hpp"
 
 namespace	hel {
+
+template <std::ranges::input_range R>
+RenderPass::RenderPass(Device &device, FrameContext &ctx, ImagePool *imagePool,
+			R &systems, PhaseDependencies sys::ISystem::*depMember)
+	:	_device{device},
+		_ctx{ctx},
+		_req{ctx.request},
+		_commandBuffer{ctx.commandBuffer},
+		_extent{ctx.request->images["mainColor"]->getExtent()} {
+	for (auto &system: systems) {
+		for (auto &dep: (system->*depMember).write)
+			_invalidDep |= addWrite(dep, imagePool);
+		for (auto &dep: (system->*depMember).read)
+			_invalidDep |= addRead(dep);
+	}
+}
 
 template <size_t N>
 Renderer::Draw	&Renderer::Draw::addVertexBuffers(const VkBuffer (&buffers)[N],

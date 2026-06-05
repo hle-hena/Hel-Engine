@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/04 15:44:56                                        */
+/*  Last Modified: 2026/06/05 12:39:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,16 +21,11 @@
 #include <optional>
 #include <vector>
 #include <vulkan/vulkan_core.h>
+#include <ranges>
 
 #include "utils/Setters.hpp"
 #include "api/vulkan/PipelineMap.hpp"
-
-namespace	hel::sys {
-
-struct	PhaseDependencies;
-struct	ImageDep;
-
-}
+#include "core/PhaseDependancy.hpp"
 
 namespace	hel {
 
@@ -44,11 +39,11 @@ class	ImagePool;
 class	RenderPass {
 	public:
 		RenderPass(Device &device, FrameContext &ctx, VkExtent2D extent);
+		template <std::ranges::input_range R>
 		RenderPass(Device &device, FrameContext &context, ImagePool *imagePool,
-			const std::vector<sys::ISystem *> &systems,
-			sys::PhaseDependencies sys::ISystem::*depMember);
+			R &systems, PhaseDependencies sys::ISystem::*depMember);
 		RenderPass(Device &device, FrameContext &context, ImagePool *imagePool,
-			sys::PhaseDependencies dep);
+			PhaseDependencies dep);
 		RenderPass(RenderPass &&other);
 		~RenderPass(void);
 
@@ -65,13 +60,13 @@ class	RenderPass {
 		static void	newFrame(void)	{ _passIndex = 0; }
 
 	private:
-		bool	addWrite(sys::ImageDep &dep, ImagePool *imagePool);
-		bool	findUsage(sys::ImageDep &dep);
-		bool	findLoadOp(sys::ImageDep &dep);
-		bool	findStoreOp(sys::ImageDep &dep);
-		void	addWriteImage(Image *img, sys::ImageDep &dep);
+		bool	addWrite(ImageDep &dep, ImagePool *imagePool);
+		bool	findUsage(ImageDep &dep);
+		bool	findLoadOp(ImageDep &dep);
+		bool	findStoreOp(ImageDep &dep);
+		void	addWriteImage(Image *img, ImageDep &dep);
 
-		bool	addRead(sys::ImageDep &dep);
+		bool	addRead(ImageDep &dep);
 
 		void	setViewport(void);
 		void	endPass(void);

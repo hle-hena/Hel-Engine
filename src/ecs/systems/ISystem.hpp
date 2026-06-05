@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/04 15:40:55                                        */
+/*  Last Modified: 2026/06/05 14:17:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,7 @@
 
 # include "api/vulkan/PipelineMap.hpp"
 # include "api/vulkan/Renderer.hpp"
+# include "core/PhaseDependancy.hpp"
 # include "core/Frame.hpp"
 # include "ecs/Entity.hpp"
 
@@ -37,49 +38,6 @@ struct	FrameContext;
 
 namespace	hel::sys {
 
-struct	ImageDep {
-	enum	Usage {
-		Color = 1,
-		Depth = 2,
-		Stencil = 4,
-		DepthStencil = Depth | Stencil,
-		MAX_ENUM
-	};
-
-	SETTER(ImageName, std::string, imageName)
-	SETTER(ImageUsage, Usage, usage)
-	SETTER(ImageConfig, Image::Config, config)
-	SETTER(FormatAsked, VkFormat, format)
-	SETTER(LoadOp, VkAttachmentLoadOp, load)
-	SETTER(StoreOp, VkAttachmentStoreOp, store)
-	SETTER(ClearValue, VkClearValue, clear)
-
-	std::string							imageName;
-	VkFormat							format{VK_FORMAT_MAX_ENUM};
-	Usage								usage{MAX_ENUM};
-	std::optional<Image::Config>		config;
-	std::optional<VkClearValue>			clear;
-	VkAttachmentLoadOp					load{VK_ATTACHMENT_LOAD_OP_MAX_ENUM};
-	VkAttachmentStoreOp					store{VK_ATTACHMENT_STORE_OP_MAX_ENUM};
-
-	bool operator==(const ImageDep&) const;
-};
-
-struct	DepHasher {
-	size_t	operator()(const PhaseDependencies &dep) const;
-};
-
-struct	PhaseDependencies {
-	std::vector<std::string>	require{};
-	std::vector<std::string>	block{};
-	std::optional<std::string>	provides;
-
-	std::vector<ImageDep>		write;
-	std::vector<ImageDep>		read;
-
-	bool operator==(const PhaseDependencies&) const;
-};
-
 class	ISystem {
 	public:
 		ISystem(void) = default;
@@ -98,6 +56,19 @@ class	ISystem {
 		virtual void	render(const Renderer &) {}
 		virtual void	postProcessing(const Renderer &) {}
 		virtual void	renderInteraction(const Renderer &) {}
+		
+		virtual std::span<const std::string_view>	getRenderTypes(void) const {
+			static constexpr std::array<std::string_view, 0>	types{};
+			return types;
+		}
+		#define RENDER_TYPES(...)												\
+		std::span<const std::string_view>	getRenderTypes() const override {	\
+			static constexpr std::array<										\
+				std::string_view,												\
+				std::initializer_list<std::string_view>{__VA_ARGS__}.size()>	\
+								types {__VA_ARGS__};							\
+			return types;														\
+		}
 
 		PhaseDependencies	updateDeps;
 		PhaseDependencies	updateInterDeps;
