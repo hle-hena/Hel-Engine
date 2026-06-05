@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 17:58:04                                        */
+/*  Last Modified: 2026/06/05 17:27:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -72,8 +72,9 @@ class Image {
 
 		VkImage						getImage(void) const
 			{ return (_image); }
-		VkImageView					getView(VkFormat format) const
-			{ return (_views.at(format)); }
+		VkImageView					getView(VkFormat format,
+				VkImageAspectFlags aspect =
+				VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM) const;
 		VkExtent2D					getExtent(void) const
 			{ return (_extent); }
 		VkExtent2D					getPhysicalExtent(void) const
@@ -81,11 +82,15 @@ class Image {
 		VkFormat					getFormat(void) const
 			{ return (_config.format[0]); }
 		VkDescriptorSet				getTexture(VkFormat format);
-		VkDescriptorImageInfo		getDescriptorInfo(VkFormat format) const;
+		VkDescriptorImageInfo		getDescriptorInfo(VkFormat format,
+				VkImageAspectFlags aspect =
+				VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM) const;
 		VkRenderingAttachmentInfo	getRenderingInfo(VkClearValue clearValue,
-													VkAttachmentLoadOp loadOp,
-													VkAttachmentStoreOp storeOp,
-													VkFormat format) const;
+				VkAttachmentLoadOp loadOp,
+				VkAttachmentStoreOp storeOp,
+				VkFormat format,
+				VkImageAspectFlags aspect =
+				VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM) const;
 
 	private:
 		Image(Device &device, const Config &config);
@@ -101,7 +106,8 @@ class Image {
 		VkExtent2D						_extent;
 		VkImage							_image{VK_NULL_HANDLE};
 		std::unordered_map<VkFormat,
-				VkImageView,
+				std::unordered_map<VkImageAspectFlags,
+					VkImageView>,
 				mathUtils::EnumHash>	_views;
 		std::unordered_map<VkFormat,
 				VkDescriptorSet,
