@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:07:28                                        */
+/*  Last Modified: 2026/06/05 17:21:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -85,7 +85,7 @@ Image::Image(Device &device, VkImage img, VkFormat format, VkExtent2D extent)
 Image::~Image(void) {
 	for (auto it: _textures)
 		UiContext::unregisterTexture(it.second);
-	for (auto it: _views)
+	for (auto &aspects: _views) for (auto &it: aspects.second)
 		vkDestroyImageView(_device.getLogical(), it.second, nullptr);
 	if (_owned && _image)
 		vmaDestroyImage(_device.getAllocator(), _image, _allocation);
@@ -127,23 +127,30 @@ void	Image::createViews(void) {
 }
 
 void	Image::createView(VkFormat format) {
-	VkImageViewCreateInfo	viewCreateInfo{};
-	viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	viewCreateInfo.image = _image;
-	viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	viewCreateInfo.format = format;
-	viewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-	viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-	viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-	viewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-	viewCreateInfo.subresourceRange.aspectMask = _config.aspectFlags;
-	viewCreateInfo.subresourceRange.baseMipLevel = 0;
-	viewCreateInfo.subresourceRange.levelCount = 1; //TODO -> support mipmaps
-	viewCreateInfo.subresourceRange.baseArrayLayer = 0;
-	viewCreateInfo.subresourceRange.layerCount = 1; //TODO -> support mipmaps
-	if (vkCreateImageView(_device.getLogical(), &viewCreateInfo,
-						nullptr, &_views[format]))
-		throw std::runtime_error("Failed to create an image view");
+	VkImageAspectFlags	aspectCombined = _config.aspectFlags;
+
+	while (aspectCombined != 0) {
+		VkImageAspectFlags	lowestFlag = aspectCombined & (-aspectCombined);
+
+		VkImageViewCreateInfo	viewCreateInfo{};
+		viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		viewCreateInfo.image = _image;
+		viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		viewCreateInfo.format = format;
+		viewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+		viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+		viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+		viewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+		viewCreateInfo.subresourceRange.aspectMask = lowestFlag;
+		viewCreateInfo.subresourceRange.baseMipLevel = 0;
+		viewCreateInfo.subresourceRange.levelCount = 1; //TODO -> support mipmaps
+		viewCreateInfo.subresourceRange.baseArrayLayer = 0;
+		viewCreateInfo.subresourceRange.layerCount = 1; //TODO -> support mipmaps
+		if (vkCreateImageView(_device.getLogical(), &viewCreateInfo,
+							nullptr, &_views[format][lowestFlag]))
+			throw std::runtime_error("Failed to create an image view");
+		aspectCombined &= ~lowestFlag;
+	}
 }
 
 void	Image::transitionLayout(VkCommandBuffer commandBuffer,
@@ -267,17 +274,26 @@ VkDescriptorSet	Image::getTexture(VkFormat format) {
 	return (_textures[format]);
 }
 
-VkDescriptorImageInfo	Image::getDescriptorInfo(VkFormat format) const {
-	return {nullptr, _views.at(format), _currentLayout};
+VkImageView	Image::getView(VkFormat format,
+		VkImageAspectFlags aspect) const {
+	if (aspect == VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM)
+		return _views.at(format).begin()->second;
+	return _views.at(format).at(aspect);
+}
+
+VkDescriptorImageInfo	Image::getDescriptorInfo(VkFormat format,
+											VkImageAspectFlags aspect) const {
+	return {nullptr, getView(format, aspect), _currentLayout};
 }
 
 VkRenderingAttachmentInfo	Image::getRenderingInfo(VkClearValue clearValue,
-													VkAttachmentLoadOp loadOp,
-													VkAttachmentStoreOp storeOp,
-													VkFormat format) const {
+											VkAttachmentLoadOp loadOp,
+											VkAttachmentStoreOp storeOp,
+											VkFormat format,
+											VkImageAspectFlags aspect) const {
 	VkRenderingAttachmentInfo	info{};
 	info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-	info.imageView = _views.at(format);
+	info.imageView = getView(format, aspect);
 	info.imageLayout = _currentLayout;
 	info.clearValue = clearValue;
 	info.loadOp = loadOp;
