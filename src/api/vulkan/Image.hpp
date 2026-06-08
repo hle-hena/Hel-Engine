@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 17:27:03                                        */
+/*  Last Modified: 2026/06/05 17:33:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -81,7 +81,8 @@ class Image {
 			{ return {_config.width, _config.height}; }
 		VkFormat					getFormat(void) const
 			{ return (_config.format[0]); }
-		VkDescriptorSet				getTexture(VkFormat format);
+		VkDescriptorSet				getTexture(VkFormat format,
+				VkImageAspectFlags aspect);
 		VkDescriptorImageInfo		getDescriptorInfo(VkFormat format,
 				VkImageAspectFlags aspect =
 				VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM) const;
@@ -110,7 +111,8 @@ class Image {
 					VkImageView>,
 				mathUtils::EnumHash>	_views;
 		std::unordered_map<VkFormat,
-				VkDescriptorSet,
+				std::unordered_map<VkImageAspectFlags,
+					VkDescriptorSet>,
 				mathUtils::EnumHash>	_textures;
 		VmaAllocation					_allocation{VK_NULL_HANDLE};
 		VkImageLayout					_currentLayout{VK_IMAGE_LAYOUT_UNDEFINED};

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 17:21:52                                        */
+/*  Last Modified: 2026/06/05 17:36:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -83,7 +83,7 @@ Image::Image(Device &device, VkImage img, VkFormat format, VkExtent2D extent)
 }
 
 Image::~Image(void) {
-	for (auto it: _textures)
+	for (auto &aspects: _textures) for (auto &it: aspects.second)
 		UiContext::unregisterTexture(it.second);
 	for (auto &aspects: _views) for (auto &it: aspects.second)
 		vkDestroyImageView(_device.getLogical(), it.second, nullptr);
@@ -265,13 +265,13 @@ void	Image::copyTo(VkCommandBuffer commandBuffer, Buffer *dst,
 	vkCmdCopyImageToBuffer2(commandBuffer, &copyInfo);
 }
 
-VkDescriptorSet	Image::getTexture(VkFormat format) {
+VkDescriptorSet	Image::getTexture(VkFormat format, VkImageAspectFlags aspect) {
 	if (_textures.find(format) != _textures.end())
-		return	 (_textures.at(format));
+		return	 (_textures.at(format).at(aspect));
 	//TODO -> The image itself probably shouldn't own that ?
 	//      Or just allocate the set
-	_textures[format] = UiContext::registerTexture(_device, this, format);
-	return (_textures[format]);
+	_textures[format][aspect] = UiContext::registerTexture(_device, this, format, aspect);
+	return (_textures[format][aspect]);
 }
 
 VkImageView	Image::getView(VkFormat format,

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/29 18:48:06                                        */
+/*  Last Modified: 2026/06/05 17:35:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -96,9 +96,10 @@ void	UiContext::initDescriptorPool(Device &device) {
 }
 
 VkDescriptorSet	UiContext::registerTexture(Device &device, Image *image,
-										VkFormat format) {
-	VkDescriptorSet	id = ImGui_ImplVulkan_AddTexture(Sampler::getSampler(device, {}),
-			image->getView(format), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+								VkFormat format, VkImageAspectFlags aspect) {
+	VkDescriptorSet	id = ImGui_ImplVulkan_AddTexture(
+			Sampler::getSampler(device, {}), image->getView(format, aspect),
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	return (id);
 }
 

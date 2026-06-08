@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 16:11:48                                        */
+/*  Last Modified: 2026/06/05 16:25:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -47,6 +47,10 @@ void	UI::init(void) {
 		.setStoreOp(VK_ATTACHMENT_STORE_OP_STORE));
 	renderDeps.read.push_back(ImageDep()
 		.setImageName("viewport*"));
+	renderDeps.read.push_back(ImageDep()
+		.setImageName("depth*"));
+	renderDeps.read.push_back(ImageDep()
+		.setImageName("entity*"));
 
 	addNewPanelRegistry(EntityHierarchy::label, PanelFactoryMacro(EntityHierarchy));
 	addNewPanelRegistry(StyleEditor::label, PanelFactoryMacro(StyleEditor));
