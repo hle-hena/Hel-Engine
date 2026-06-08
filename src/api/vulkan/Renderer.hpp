@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 12:39:52                                        */
+/*  Last Modified: 2026/06/08 17:25:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,7 @@
 #include <vulkan/vulkan.h>
 #include <optional>
 #include <vector>
+#include <map>
 #include <vulkan/vulkan_core.h>
 #include <ranges>
 
@@ -47,14 +48,6 @@ class	RenderPass {
 		RenderPass(RenderPass &&other);
 		~RenderPass(void);
 
-		SETTER(ColorLoadOp, VkAttachmentLoadOp, _colorsLoadOp)
-		SETTER(ColorStoreOp, VkAttachmentStoreOp, _colorsStoreOp)
-		SETTER(DepthLoadOp, VkAttachmentLoadOp, _depthLoadOp)
-		SETTER(DepthStoreOp, VkAttachmentStoreOp, _depthStoreOp)
-		SETTER(ClearValue, VkClearValue, _colorClear)
-		RenderPass		&addColorWrite(Image *color, VkFormat format);
-		RenderPass		&addDepthWrite(Image *depth, VkFormat format);
-
 		Renderer		beginPass(void);
 
 		static void	newFrame(void)	{ _passIndex = 0; }
@@ -79,18 +72,16 @@ class	RenderPass {
 		bool				_invalidDep{false};
 		bool				_passStarted{false};
 
-		VkClearValue			_colorClear{ .color = {{0.f, 0.f, 0.f, 1.0f}} };
-		VkClearValue			_depthClear{ .depthStencil = {1.0f, 0} };
-		VkAttachmentLoadOp		_colorsLoadOp{VK_ATTACHMENT_LOAD_OP_CLEAR};
-		VkAttachmentStoreOp		_colorsStoreOp{VK_ATTACHMENT_STORE_OP_STORE};
-		VkAttachmentLoadOp		_depthLoadOp{VK_ATTACHMENT_LOAD_OP_CLEAR};
-		VkAttachmentStoreOp		_depthStoreOp{VK_ATTACHMENT_STORE_OP_DONT_CARE};
-
 		std::unordered_map<std::string, Image *>	_writes{};
 		std::unordered_map<std::string, Image *>	_reads{};
 
+		struct	ColorWrite {
+			std::string					name;
+			VkFormat					format;
+			VkRenderingAttachmentInfo	info;
+		};
 		Image										*_depthWrite;
-		std::vector<VkRenderingAttachmentInfo>		_colorsInfo{};
+		std::map<int, ColorWrite>					_colorInfos{};
 		std::optional<VkRenderingAttachmentInfo>	_depthInfo{};
 		std::optional<VkRenderingAttachmentInfo>	_stencilInfo{};
 		RenderingConfig								_config;

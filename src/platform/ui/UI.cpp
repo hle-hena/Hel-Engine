@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 16:25:30                                        */
+/*  Last Modified: 2026/06/08 16:20:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -44,7 +44,8 @@ void	UI::init(void) {
 		.setImageUsage(ImageDep::Usage::Color)
 		.setFormatAsked(VK_FORMAT_B8G8R8A8_UNORM)
 		.setLoadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
-		.setStoreOp(VK_ATTACHMENT_STORE_OP_STORE));
+		.setStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
+		.setWriteBindingIndex(0));
 	renderDeps.read.push_back(ImageDep()
 		.setImageName("viewport*"));
 	renderDeps.read.push_back(ImageDep()

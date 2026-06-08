@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/04 10:32:25                                        */
+/*  Last Modified: 2026/06/08 16:10:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -55,18 +55,6 @@ void	Transform::init(void) {
 	updateDeps.block.push_back("view matrix calculation");
 
 	renderInterDeps.provides = "render transform gizmo";
-	renderInterDeps.write.push_back(ImageDep()
-		.setImageName("mainColor")
-		.setImageUsage(ImageDep::Usage::Color)
-		.setFormatAsked(VK_FORMAT_B8G8R8A8_SRGB));
-	renderInterDeps.write.push_back(ImageDep()
-		.setImageName("depth layer")
-		.setImageUsage(ImageDep::Usage::DepthStencil)
-		.setFormatAsked(VK_FORMAT_D32_SFLOAT_S8_UINT));
-	renderInterDeps.write.push_back(ImageDep()
-		.setImageName("entity layer")
-		.setImageUsage(ImageDep::Usage::Color)
-		.setFormatAsked(VK_FORMAT_R32_UINT));
 
 	updateInterDeps.provides = "act on the transform gizmo action";
 

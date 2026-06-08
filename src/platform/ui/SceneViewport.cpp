@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 17:40:11                                        */
+/*  Last Modified: 2026/06/08 16:33:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,11 +48,15 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 			.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
 			.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
 	auto	depth = _imagePool->acquire(Image::Config()
+			.setWidth(static_cast<uint32_t>(std::max(size.x, 1.f)))
+			.setHeight(static_cast<uint32_t>(std::max(size.y, 1.f)))
 			.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
 			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
 			.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
 			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT));
 	auto	entityImg = _imagePool->acquire(Image::Config()
+			.setWidth(static_cast<uint32_t>(std::max(size.x, 1.f)))
+			.setHeight(static_cast<uint32_t>(std::max(size.y, 1.f)))
 			.setFormats({VK_FORMAT_R32_UINT})
 			.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
 			.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
@@ -74,8 +78,7 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 		}
 	};
 
-	viewportRequest.requestType = "RenderScene";
-	RenderQueue::push({"RenderScene", _handle, ImGui::GetCursorScreenPos(), {{"mainColor", image}}});
+	RenderQueue::push(viewportRequest);
 	auto	extent = image->getPhysicalExtent();
 	ImVec2	uv1 = {size.x / static_cast<float>(extent.width), size.y / static_cast<float>(extent.height)};
 
@@ -96,8 +99,8 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 	mainRequest = nullptr;
 
 	// ImGui::Image(entityImg->getTexture(VK_FORMAT_R32_UINT, VK_IMAGE_ASPECT_COLOR_BIT),
-	ImGui::Image(depth->getTexture(VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT),
-	// ImGui::Image(image->getTexture(VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT),
+	// ImGui::Image(depth->getTexture(VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_ASPECT_DEPTH_BIT),
+	ImGui::Image(image->getTexture(VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT),
 			size, {0.f, 0.f}, uv1);
 	if (windowEntityHandle == _handle && (
 		glfwGetInputMode(window->getWindow(), GLFW_CURSOR) ==

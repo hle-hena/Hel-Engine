@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 17:36:36                                        */
+/*  Last Modified: 2026/06/08 16:21:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -169,6 +169,7 @@ void	Image::transitionLayout(VkCommandBuffer commandBuffer,
 	barrier.image = _image;
 	barrier.subresourceRange = {_config.aspectFlags, 0, 1, 0, 1};
 
+	//TODO -> rework this.
 	if (_currentLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
 		newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
 		barrier.srcStageMask = VK_PIPELINE_STAGE_2_NONE;

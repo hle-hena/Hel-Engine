@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 16:08:26                                        */
+/*  Last Modified: 2026/06/08 17:27:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -84,6 +84,20 @@ bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
 		return (true);
 	if ((dep.store == VK_ATTACHMENT_STORE_OP_MAX_ENUM) && findStoreOp(dep))//TODO
 		return (true);
+	if (dep.usage == ImageDep::Usage::Color && !dep.bindingIndex.has_value()) {
+		std::cerr << "Error for image \"" << dep.imageName <<
+			"\". No binding index for the image write has been given.\n";
+		return (true);
+	}
+	if (dep.usage == ImageDep::Usage::Color
+		&& _colorInfos.contains(dep.bindingIndex.value())
+		&& _colorInfos[dep.bindingIndex.value()].name != dep.imageName)
+	{
+		std::cerr << "Error for image \"" << dep.imageName <<
+			"\". The binding " << std::to_string(dep.bindingIndex.value())
+			<< " is already taken.\n";
+		return (true);
+	}
 	Image	*img = nullptr;
 	if (_req->images.contains(dep.imageName))
 		img = _req->images[dep.imageName];
@@ -138,10 +152,13 @@ void	RenderPass::addWriteImage(Image *img, ImageDep &dep){
 	if (dep.usage & ImageDep::Color) {
 		img->transitionLayout(_commandBuffer,
 								VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-		_colorsInfo.push_back(img->getRenderingInfo(
+		ColorWrite	write;
+		write.name = dep.imageName;
+		write.format = dep.format;
+		write.info = img->getRenderingInfo(
 			dep.clear.value_or(VkClearValue{.color = {{0.f, 0.f, 0.f, 1.f}}}),
-			dep.load, dep.store, dep.format));
-		_config.colorFormats.push_back(dep.format);
+			dep.load, dep.store, dep.format);
+		_colorInfos[dep.bindingIndex.value()] = write;
 	}
 	if (dep.usage & ImageDep::Usage::Depth) {
 		img->transitionLayout(_commandBuffer,
@@ -189,15 +206,27 @@ bool	RenderPass::addRead(ImageDep &dep) {
 }
 
 Renderer	RenderPass::beginPass(void) {
-	if (_invalidDep || _writes.empty())
+	if (_invalidDep || _colorInfos.empty())
 		return (Renderer(_ctx, std::move(*this)));
 
 	VkRenderingInfo	renderingInfo{};
 	renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
 	renderingInfo.renderArea = {{0, 0}, _extent};
 	renderingInfo.layerCount = 1;
-	renderingInfo.colorAttachmentCount = static_cast<uint32_t>(_colorsInfo.size());
-	renderingInfo.pColorAttachments = _colorsInfo.data();
+
+	std::vector<VkRenderingAttachmentInfo>	colors;
+	int										lastIndex = -1;
+	for (auto &[index, write]: _colorInfos) {
+		if (index != lastIndex + 1) {
+			std::cerr << "There is a gap in the binding of images";
+			return (Renderer(_ctx, std::move(*this)));
+		}
+		colors.push_back(write.info);
+		_config.colorFormats.push_back(write.format);
+		lastIndex = index;
+	}
+	renderingInfo.colorAttachmentCount = static_cast<uint32_t>(colors.size());
+	renderingInfo.pColorAttachments = colors.data();
 	if (_depthInfo.has_value())
 		renderingInfo.pDepthAttachment = &_depthInfo.value();
 	if (_stencilInfo.has_value())
@@ -223,28 +252,6 @@ void	RenderPass::setViewport(void) {
 
 void	RenderPass::endPass(void) {
 	vkCmdEndRendering(_commandBuffer);
-}
-
-RenderPass	&RenderPass::addColorWrite(Image *color, VkFormat format) {
-	color->transitionLayout(_commandBuffer,
-							VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-
-	_colorsInfo.push_back(color->getRenderingInfo(_colorClear, _colorsLoadOp,
-												_colorsStoreOp, format));
-	_writes["OuiOuiHardCode"] = color;
-	_config.colorFormats.push_back(format);
-	return (*this);
-}
-
-RenderPass	&RenderPass::addDepthWrite(Image *depth, VkFormat format) {
-	depth->transitionLayout(_commandBuffer,
-							VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-
-	_depthWrite = depth;
-	_depthInfo = depth->getRenderingInfo(_depthClear, _depthLoadOp,
-										_depthStoreOp, format);
-	_config.depthFormat = format;
-	return (*this);
 }
 
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/04 15:42:21                                        */
+/*  Last Modified: 2026/06/08 16:06:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,6 +39,26 @@ void	Camera::init(void) {
 	updateDeps.require.push_back("model matrix calculation");
 
 	renderInterDeps.provides = "render camera frustum";
+	renderInterDeps.write.push_back(ImageDep()
+		.setImageName("mainColor")
+		.setImageUsage(ImageDep::Usage::Color)
+		.setFormatAsked(VK_FORMAT_B8G8R8A8_SRGB)
+		.setLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+		.setStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
+		.setWriteBindingIndex(0));
+	renderInterDeps.write.push_back(ImageDep()
+		.setImageName("entity layer")
+		.setImageUsage(ImageDep::Usage::Color)
+		.setFormatAsked(VK_FORMAT_R32_UINT)
+		.setLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+		.setStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
+		.setWriteBindingIndex(1));
+	renderInterDeps.write.push_back(ImageDep()
+		.setImageName("depth layer")
+		.setImageUsage(ImageDep::Usage::DepthStencil)
+		.setFormatAsked(VK_FORMAT_D32_SFLOAT_S8_UINT)
+		.setLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+		.setStoreOp(VK_ATTACHMENT_STORE_OP_STORE));
 
 	_assetManager = &_registry->getAssetManager();
 	{
