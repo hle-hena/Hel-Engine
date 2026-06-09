@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 15:04:06                                        */
+/*  Last Modified: 2026/06/09 18:10:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,8 +20,6 @@
 # include <functional>
 
 # include "ecs/systems/ISystem.hpp"
-#include "core/Queues.hpp"
-
 # include "platform/ui/Dock.hpp"
 
 # define PanelFactoryMacro(panelType)							\
