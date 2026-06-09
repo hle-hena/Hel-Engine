@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 14:48:41                                        */
+/*  Last Modified: 2026/06/09 16:02:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,11 +36,18 @@ struct	ViewConfig {
 			ComponentMapping(ViewConfig &parentStruct)
 				:	_parent(parentStruct)	{}
 
-			auto	&componentIdentity(void) {
+			auto	&identity(void) {
 				_parent._components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 				_parent._components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 				_parent._components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
 				_parent._components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+				return _parent;
+			}
+			auto	&RRR1(void) {
+				_parent._components.r = VK_COMPONENT_SWIZZLE_R;
+				_parent._components.g = VK_COMPONENT_SWIZZLE_R;
+				_parent._components.b = VK_COMPONENT_SWIZZLE_R;
+				_parent._components.a = VK_COMPONENT_SWIZZLE_ONE;
 				return _parent;
 			}
 
@@ -69,7 +76,7 @@ struct	ViewConfig {
 		auto	&defaultTextureView(void) {
 			_format = VK_FORMAT_R8G8B8A8_SRGB;
 			_aspect = VK_IMAGE_ASPECT_COLOR_BIT;
-			ComponentMapping(*this).componentIdentity();
+			ComponentMapping(*this).identity();
 			return *this;
 		}
 
@@ -118,9 +125,14 @@ class Image {
 		void	copyTo(VkCommandBuffer commandBuffer, Buffer *dst,
 					VkOffset3D startPos, VkExtent3D extent);
 
-		PASSKEY(ExtentKey, ImagePool)
-		void	setExtent(const VkExtent2D &extent, ExtentKey)
+		PASSKEY(PoolKey, ImagePool)
+		void	setExtent(const VkExtent2D &extent, PoolKey)
 			{ _extent = extent; }
+
+		PASSKEY(RenderPassKey, RenderPass)
+		void	setWrittenState(RenderPassKey)	{ _written = true; }
+		void	resetWrittenState(PoolKey)	{ _written = false; }
+		bool	wasWritten(void) const	{ return _written; }
 
 		VkImage						getImage(void) const
 			{ return (_image); }
@@ -146,7 +158,10 @@ class Image {
 		void		createImage(void);
 		VkImageView	createView(const ViewConfig &conf);
 
+		void	setWrittenState(void)	{ _written = true; }
+
 		bool							_owned{true};
+		bool							_written{false};
 		Device							&_device;
 		Config							_config;
 		VkExtent2D						_extent;

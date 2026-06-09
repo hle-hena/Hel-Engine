@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:35 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/30 16:49:16                                        */
+/*  Last Modified: 2026/06/09 15:48:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -69,7 +69,8 @@ FrameContext	Frame::getContext(Window *window, uint32_t frameIndex,
 		.globalLayout = _descriptorSets->setLayout,
 		.descriptorPool = _dynamicPools[frameIndex].get(),
 		.deltaTime = deltaTime,
-		.frameIndex = frameIndex
+		.frameIndex = frameIndex,
+		.swapIndex = 0
 	};
 }
 

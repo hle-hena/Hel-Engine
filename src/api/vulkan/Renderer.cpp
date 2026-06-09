@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 14:49:57                                        */
+/*  Last Modified: 2026/06/09 16:02:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -80,10 +80,6 @@ bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
 	}
 	if (dep.usage == ImageDep::Usage::MAX_ENUM && findUsage(dep))
 		return (true);
-	if ((dep.load == VK_ATTACHMENT_LOAD_OP_MAX_ENUM) && findLoadOp(dep))//TODO
-		return (true);
-	if ((dep.store == VK_ATTACHMENT_STORE_OP_MAX_ENUM) && findStoreOp(dep))//TODO
-		return (true);
 	if (dep.usage == ImageDep::Usage::Color && !dep.bindingIndex.has_value()) {
 		std::cerr << "Error for image \"" << dep.imageName <<
 			"\". No binding index for the image write has been given.\n";
@@ -110,21 +106,33 @@ bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
 			<< "been provided in the dependancy.\n";
 		return (true);
 	}
+	if (dep.load == VK_ATTACHMENT_LOAD_OP_MAX_ENUM ||
+		dep.store == VK_ATTACHMENT_STORE_OP_MAX_ENUM)
+		findOps(img, dep);
 	addWriteImage(img, dep);
 	return (false);
 }
 
-bool	RenderPass::findLoadOp(ImageDep &dep) {
-	if (!_req->images.contains(dep.imageName))
-		dep.load = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	else
-	 	dep.load = VK_ATTACHMENT_LOAD_OP_LOAD;
-	return false;
+void	RenderPass::findOps(Image *img, ImageDep &dep) {
+	if (dep.load == VK_ATTACHMENT_LOAD_OP_MAX_ENUM) {
+		if (img->wasWritten())
+			dep.load = VK_ATTACHMENT_LOAD_OP_LOAD;
+		else
+			dep.load = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	}
+	if (dep.store == VK_ATTACHMENT_STORE_OP_MAX_ENUM)
+		dep.store = VK_ATTACHMENT_STORE_OP_STORE;
 }
 
-bool	RenderPass::findStoreOp(ImageDep &dep) {
+void	RenderPass::findLoadOp(Image *img, ImageDep &dep) {
+	if (img->wasWritten())
+		dep.load = VK_ATTACHMENT_LOAD_OP_LOAD;
+	else
+	 	dep.load = VK_ATTACHMENT_LOAD_OP_CLEAR;
+}
+
+void	RenderPass::findStoreOp(ImageDep &dep) {
 	dep.store = VK_ATTACHMENT_STORE_OP_STORE;
-	return false;
 }
 
 bool	RenderPass::findUsage(ImageDep &dep) {
@@ -159,7 +167,7 @@ void	RenderPass::addWriteImage(Image *img, ImageDep &dep){
 			dep.clear.value_or(VkClearValue{.color = {{0.f, 0.f, 0.f, 1.f}}}),
 			dep.load, dep.store, img->getView(ViewConfig()
 				.format(dep.format).aspect(VK_IMAGE_ASPECT_COLOR_BIT)
-				.components().componentIdentity()));
+				.components().identity()));
 		_colorInfos[dep.bindingIndex.value()] = write;
 	}
 	if (dep.usage & ImageDep::Usage::Depth) {
@@ -172,7 +180,7 @@ void	RenderPass::addWriteImage(Image *img, ImageDep &dep){
 			dep.clear.value_or(VkClearValue{.depthStencil = {1.f, 0}}),
 			dep.load, dep.store, img->getView(ViewConfig()
 				.format(dep.format).aspect(aspect)
-				.components().componentIdentity()));
+				.components().identity()));
 		_config.depthFormat = dep.format;
 	}
 	if (dep.usage & ImageDep::Usage::Stencil) {
@@ -185,13 +193,15 @@ void	RenderPass::addWriteImage(Image *img, ImageDep &dep){
 			dep.clear.value_or(VkClearValue{.depthStencil = {1.f, 0}}),
 			dep.load, dep.store, img->getView(ViewConfig()
 				.format(dep.format).aspect(aspect)
-				.components().componentIdentity()));
+				.components().identity()));
 		_config.stencilFormat = dep.format;
 	}
 }
 
-bool	RenderPass::addRead(ImageDep &dep) {
-	auto	matchName = [](const std::string_view& pattern, const std::string_view& name) {
+bool	RenderPass::addRead(const std::string_view &readName) {
+	auto	matchName = [](const std::string_view &pattern,
+						const std::string_view &name)
+	{
 		if (pattern.ends_with('*'))
 			return name.starts_with(pattern.substr(0, pattern.size() - 1));
 		return pattern == name;
@@ -199,14 +209,19 @@ bool	RenderPass::addRead(ImageDep &dep) {
 
 	bool	notFound = true;
 	for (auto &[imageName, image]: _req->images) {
-		if (matchName(dep.imageName, imageName)) {
+		if (matchName(readName, imageName)) {
 			if (_writes.contains(imageName)) {
 				std::cerr << "Trying to read the image \"" << imageName
 					<< "\" which is already registered as a write.\n";
-				continue ;
+				return (true);
 			}
 			if (_reads.contains(imageName))
 				continue ;
+			if (!image->wasWritten()) {
+				std::cerr << "Trying to read the image \"" << imageName
+					<< "\" which was never written.\n";
+				return (true);
+			}
 
 			_reads[imageName] = image;
 			image->transitionLayout(_commandBuffer,
@@ -244,6 +259,9 @@ Renderer	RenderPass::beginPass(void) {
 		renderingInfo.pDepthAttachment = &_depthInfo.value();
 	if (_stencilInfo.has_value())
 		renderingInfo.pStencilAttachment = &_stencilInfo.value();
+
+	for (auto &[imgName, img]: _writes)
+		img->setWrittenState({});
 
 	vkCmdBeginRendering(_commandBuffer, &renderingInfo);
 	setViewport();

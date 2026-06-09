@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/08 16:20:28                                        */
+/*  Last Modified: 2026/06/09 15:51:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,19 +39,13 @@ void	UI::init(void) {
 	updateInterDeps.provides = "update ui";
 
 	renderDeps.provides = "render ui";
-	renderDeps.write.push_back(ImageDep()
-		.setImageName("mainColor")
-		.setImageUsage(ImageDep::Usage::Color)
-		.setFormatAsked(VK_FORMAT_B8G8R8A8_UNORM)
-		.setLoadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
-		.setStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
-		.setWriteBindingIndex(0));
-	renderDeps.read.push_back(ImageDep()
-		.setImageName("viewport*"));
-	renderDeps.read.push_back(ImageDep()
-		.setImageName("depth*"));
-	renderDeps.read.push_back(ImageDep()
-		.setImageName("entity*"));
+	renderDeps.write.push_back(
+		ImageDep("mainColor", VK_FORMAT_B8G8R8A8_UNORM)
+			.setImageUsage(ImageDep::Usage::Color)
+			.setWriteBindingIndex(0));
+	renderDeps.read.push_back("viewport*");
+	renderDeps.read.push_back("depth*");
+	renderDeps.read.push_back("entity*");
 
 	addNewPanelRegistry(EntityHierarchy::label, PanelFactoryMacro(EntityHierarchy));
 	addNewPanelRegistry(StyleEditor::label, PanelFactoryMacro(StyleEditor));

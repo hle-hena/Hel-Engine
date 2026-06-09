@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 14:47:27                                        */
+/*  Last Modified: 2026/06/09 15:29:04                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -248,6 +248,7 @@ void	Image::copyTo(VkCommandBuffer commandBuffer, Image *dst) {
 	blitInfo.pRegions = &region;
 	blitInfo.filter = VK_FILTER_LINEAR;
 	vkCmdBlitImage2(commandBuffer, &blitInfo);
+	setWrittenState();
 }
 
 void	Image::copyTo(VkCommandBuffer commandBuffer, Buffer *dst,

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/05 12:15:03 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/08 15:47:43                                        */
+/*  Last Modified: 2026/06/09 15:52:14                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,17 +33,15 @@ struct	ImageDep {
 		MAX_ENUM
 	};
 
-	SETTER(ImageName, std::string, imageName)
 	SETTER(ImageUsage, Usage, usage)
 	SETTER(ImageConfig, Image::Config, config)
-	SETTER(FormatAsked, VkFormat, format)
 	SETTER(LoadOp, VkAttachmentLoadOp, load)
 	SETTER(StoreOp, VkAttachmentStoreOp, store)
 	SETTER(ClearValue, VkClearValue, clear)
 	SETTER(WriteBindingIndex, int, bindingIndex)
 
 	std::string							imageName;
-	VkFormat							format{VK_FORMAT_MAX_ENUM};
+	VkFormat							format;
 	Usage								usage{MAX_ENUM};
 	std::optional<Image::Config>		config;
 	std::optional<VkClearValue>			clear;
@@ -51,6 +49,8 @@ struct	ImageDep {
 	VkAttachmentStoreOp					store{VK_ATTACHMENT_STORE_OP_MAX_ENUM};
 	std::optional<int>					bindingIndex;
 
+	ImageDep(const std::string &imgName, VkFormat fmt)
+		:	imageName(imgName), format(fmt)	{}
 	bool operator==(const ImageDep&) const;
 };
 
@@ -59,8 +59,8 @@ struct	PhaseDependencies {
 	std::vector<std::string>	block{};
 	std::optional<std::string>	provides;
 
-	std::vector<ImageDep>		write;
-	std::vector<ImageDep>		read;
+	std::vector<ImageDep>			write;
+	std::vector<std::string_view>	read;
 
 	bool operator==(const PhaseDependencies&) const;
 };

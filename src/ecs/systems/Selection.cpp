@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/08 16:10:52                                        */
+/*  Last Modified: 2026/06/09 15:47:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,26 +33,17 @@ void	Selection::init(void) {
 	renderInterDeps.provides = "render stencil on selected entity";
 
 	postProcessDeps.provides = "render color overlay on selected entity";
-	postProcessDeps.write.push_back(ImageDep()
-		.setImageName("mainColor")
-		.setImageUsage(ImageDep::Usage::Color)
-		.setFormatAsked(VK_FORMAT_B8G8R8A8_SRGB)
-		.setLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
-		.setStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
-		.setWriteBindingIndex(0));
-	postProcessDeps.write.push_back(ImageDep()
-		.setImageName("entity layer")
-		.setImageUsage(ImageDep::Usage::Color)
-		.setFormatAsked(VK_FORMAT_R32_UINT)
-		.setLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
-		.setStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
-		.setWriteBindingIndex(1));
-	postProcessDeps.write.push_back(ImageDep()
-		.setImageName("depth layer")
-		.setImageUsage(ImageDep::Usage::DepthStencil)
-		.setFormatAsked(VK_FORMAT_D32_SFLOAT_S8_UINT)
-		.setLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
-		.setStoreOp(VK_ATTACHMENT_STORE_OP_STORE));
+	postProcessDeps.write.push_back(
+		ImageDep("mainColor", VK_FORMAT_B8G8R8A8_SRGB)
+			.setImageUsage(ImageDep::Usage::Color)
+			.setWriteBindingIndex(0));
+	postProcessDeps.write.push_back(
+		ImageDep("entity layer", VK_FORMAT_R32_UINT)
+			.setImageUsage(ImageDep::Usage::Color)
+			.setWriteBindingIndex(1));
+	postProcessDeps.write.push_back(
+		ImageDep("depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
+			.setImageUsage(ImageDep::Usage::DepthStencil));
 
 	_inputState = &_registry->getInputState();
 	_assetManager = &_registry->getAssetManager();

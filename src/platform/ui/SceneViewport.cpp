@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 14:42:04                                        */
+/*  Last Modified: 2026/06/09 16:03:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,7 +28,7 @@ expected<void, std::string>	SceneViewport::onInit(void) {
 	return {};
 }
 
-void	SceneViewport::render(Window *window, const ImVec2 &size) {
+void	SceneViewport::render(Window *window, const ImVec2 &) {
 	if (!mainRequest)
 		return ;
 
@@ -51,6 +51,8 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 	ImGui::SameLine();
 	if (ImGui::Button("Entity Image"))
 		_showImage = "Entity Image";
+
+	ImVec2	size = ImGui::GetContentRegionAvail();
 
 	auto	mainImg = _imagePool->acquire(Image::Config()
 			.setWidth(static_cast<uint32_t>(std::max(size.x, 1.f)))
@@ -108,23 +110,17 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 		img = mainImg;
 		viewConfig.format(VK_FORMAT_B8G8R8A8_UNORM)
 				.aspect(VK_IMAGE_ASPECT_COLOR_BIT)
-				.components().componentIdentity();
+				.components().identity();
 	} else if (_showImage == "Depth Image") {
 		img = depthImg;
 		viewConfig.format(VK_FORMAT_D32_SFLOAT_S8_UINT)
 				.aspect(VK_IMAGE_ASPECT_DEPTH_BIT)
-				.components().r(VK_COMPONENT_SWIZZLE_R)
-				.components().g(VK_COMPONENT_SWIZZLE_R)
-				.components().b(VK_COMPONENT_SWIZZLE_R)
-				.components().a(VK_COMPONENT_SWIZZLE_ONE);
+				.components().RRR1();
 	} else if (_showImage == "Entity Image") {
 		img = entityImg;
 		viewConfig.format(VK_FORMAT_R32_SFLOAT)
 				.aspect(VK_IMAGE_ASPECT_COLOR_BIT)
-				.components().r(VK_COMPONENT_SWIZZLE_R)
-				.components().g(VK_COMPONENT_SWIZZLE_R)
-				.components().b(VK_COMPONENT_SWIZZLE_R)
-				.components().a(VK_COMPONENT_SWIZZLE_ONE);
+				.components().RRR1();
 	}
 
 	auto	extent = img->getPhysicalExtent();
