@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/03 10:54:21                                        */
+/*  Last Modified: 2026/06/09 17:37:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -153,6 +153,7 @@ Image	*ImagePool::get(const std::string &referenceID) {
 }
 
 void	ImagePool::removeIfNamed(Image *image) {
+	image->resetWrittenState({});
 	auto	it = findNamed(image);
 	if (it != _namedImages.end()) {
 		*it = _namedImages.back();
