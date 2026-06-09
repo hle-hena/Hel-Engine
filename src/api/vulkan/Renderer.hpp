@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 15:52:57                                        */
+/*  Last Modified: 2026/06/09 17:52:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,7 +39,6 @@ class	ImagePool;
 
 class	RenderPass {
 	public:
-		RenderPass(Device &device, FrameContext &ctx, VkExtent2D extent);
 		template <std::ranges::input_range R>
 		RenderPass(Device &device, FrameContext &context, ImagePool *imagePool,
 			R &systems, PhaseDependencies sys::ISystem::*depMember);

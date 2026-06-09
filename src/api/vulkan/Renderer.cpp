@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 16:02:45                                        */
+/*  Last Modified: 2026/06/09 17:52:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,15 +26,6 @@ namespace	hel {
 
 uint32_t	RenderPass::_passIndex = 0;
 PipelineMap	*Renderer::Draw::_lastPipeline = VK_NULL_HANDLE;
-
-RenderPass::RenderPass(Device &device, FrameContext &ctx,
-						VkExtent2D extent)
-	:	_device{device},
-		_ctx{ctx},
-		_req{ctx.request},
-		_commandBuffer{ctx.commandBuffer},
-		_extent{extent} {
-}
 
 RenderPass::RenderPass(Device &device, FrameContext &ctx, ImagePool *imagePool,
 	PhaseDependencies dep)
