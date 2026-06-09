@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:21:36                                        */
+/*  Last Modified: 2026/06/09 10:18:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -184,14 +184,15 @@ DescriptorFactory	&DescriptorFactory::addBinding(uint32_t binding,
 												VkShaderStageFlags stages,
 												VkSampler sampler,
 												uint32_t descriptorCount) {
-	_bindings._samplers.push_back(sampler);
-
 	VkDescriptorSetLayoutBinding	layoutBinding{};
 	layoutBinding.binding = binding;
 	layoutBinding.stageFlags = stages;
 	layoutBinding.descriptorCount = descriptorCount;
 	layoutBinding.descriptorType = type;
-	layoutBinding.pImmutableSamplers = &_bindings._samplers.back();
+	if (sampler != VK_NULL_HANDLE) {
+		_bindings._samplers.push_back(sampler);
+		layoutBinding.pImmutableSamplers = &_bindings._samplers.back();
+	}
 
 	_bindings._bindings.push_back(layoutBinding);
 	return (*this);
@@ -260,11 +261,14 @@ DescriptorWriter	&DescriptorWriter::writeBuffer(uint32_t setIndex,
 DescriptorWriter	&DescriptorWriter::writeImage(uint32_t setIndex,
 												uint32_t binding,
 												VkDescriptorType type,
-												Image &image,
-												VkFormat format,
-												VkSampler sampler) {
-	VkDescriptorImageInfo	imageInfo = image.getDescriptorInfo(format);
+												VkImageView view,
+												VkImageLayout layout,
+												VkSampler sampler)
+{
+	VkDescriptorImageInfo	imageInfo{};
+	imageInfo.imageView = view;
 	imageInfo.sampler = sampler;
+	imageInfo.imageLayout = layout;
 	_imagesInfo.push_back(imageInfo);
 
 	VkWriteDescriptorSet	write{};

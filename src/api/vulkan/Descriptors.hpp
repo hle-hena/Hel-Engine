@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:41:48                                        */
+/*  Last Modified: 2026/06/09 10:12:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -93,7 +93,7 @@ struct	DescriptorPool::Builder {
 
 struct	DescriptorBindings {
 	std::vector<VkDescriptorSetLayoutBinding>	_bindings{};
-	std::vector<VkSampler>						_samplers{};
+	std::deque<VkSampler>						_samplers{};
 
 	bool	operator==(const DescriptorBindings &other) const;
 };
@@ -132,8 +132,8 @@ class	DescriptorWriter {
 		DescriptorWriter	&writeBuffer(uint32_t setIndex, uint32_t binding,
 										VkDescriptorType type, Buffer &buffer);
 		DescriptorWriter	&writeImage(uint32_t setIndex, uint32_t binding,
-										VkDescriptorType type, Image &image,
-										VkFormat format, VkSampler sampler);
+									VkDescriptorType type, VkImageView view,
+									VkImageLayout layout, VkSampler sampler);
 		void				update(void);
 
 	private:

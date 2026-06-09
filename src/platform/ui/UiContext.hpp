@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:09 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 17:34:27                                        */
+/*  Last Modified: 2026/06/08 19:38:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,8 +36,9 @@ class	UiContext {
 		UiContext(const UiContext &other) = delete;
 		UiContext	&operator=(const UiContext &other) = delete;
 
-		static VkDescriptorSet	registerTexture(Device &device, Image *image,
-									VkFormat format, VkImageAspectFlags aspect);
+		static VkDescriptorSet	registerTexture(Device &device,
+										VkSampler sampler,
+										VkImageView view);
 		static void				unregisterTexture(VkDescriptorSet texture);
 
 		void	newFrame();
@@ -56,11 +57,14 @@ class	UiContext {
 		void	initImGui(Device &device);
 		void	initImGuiStyle(void);
 
-		bool							_fullyInitialised{false};
-		std::unique_ptr<DescriptorPool>	_pool;
-		ImGuiContext					*_context;
-		Window							*_window;
-		Device							&_device;
+		bool									_fullyInitialised{false};
+		static std::unique_ptr<DescriptorPool>	_pool;
+		static std::unordered_map<
+					VkDescriptorSet,
+					DescriptorSet::ptr>			_textures;
+		ImGuiContext							*_context;
+		Window									*_window;
+		Device									&_device;
 
 	friend class Window;
 };

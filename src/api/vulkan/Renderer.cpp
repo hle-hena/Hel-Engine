@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/08 17:27:07                                        */
+/*  Last Modified: 2026/06/09 14:49:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -157,23 +157,35 @@ void	RenderPass::addWriteImage(Image *img, ImageDep &dep){
 		write.format = dep.format;
 		write.info = img->getRenderingInfo(
 			dep.clear.value_or(VkClearValue{.color = {{0.f, 0.f, 0.f, 1.f}}}),
-			dep.load, dep.store, dep.format);
+			dep.load, dep.store, img->getView(ViewConfig()
+				.format(dep.format).aspect(VK_IMAGE_ASPECT_COLOR_BIT)
+				.components().componentIdentity()));
 		_colorInfos[dep.bindingIndex.value()] = write;
 	}
 	if (dep.usage & ImageDep::Usage::Depth) {
 		img->transitionLayout(_commandBuffer,
 						VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		VkImageAspectFlags	aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
+		if (dep.usage & ImageDep::Usage::Stencil)
+			aspect |= VK_IMAGE_ASPECT_STENCIL_BIT;
 		_depthInfo = img->getRenderingInfo(
 			dep.clear.value_or(VkClearValue{.depthStencil = {1.f, 0}}),
-			dep.load, dep.store, dep.format);
+			dep.load, dep.store, img->getView(ViewConfig()
+				.format(dep.format).aspect(aspect)
+				.components().componentIdentity()));
 		_config.depthFormat = dep.format;
 	}
 	if (dep.usage & ImageDep::Usage::Stencil) {
 		img->transitionLayout(_commandBuffer,
 						VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		VkImageAspectFlags	aspect = VK_IMAGE_ASPECT_STENCIL_BIT;
+		if (dep.usage & ImageDep::Usage::Depth)
+			aspect |= VK_IMAGE_ASPECT_DEPTH_BIT;
 		_stencilInfo = img->getRenderingInfo(
 			dep.clear.value_or(VkClearValue{.depthStencil = {1.f, 0}}),
-			dep.load, dep.store, dep.format);
+			dep.load, dep.store, img->getView(ViewConfig()
+				.format(dep.format).aspect(aspect)
+				.components().componentIdentity()));
 		_config.stencilFormat = dep.format;
 	}
 }
@@ -211,6 +223,7 @@ Renderer	RenderPass::beginPass(void) {
 
 	VkRenderingInfo	renderingInfo{};
 	renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+	renderingInfo.pNext = nullptr;
 	renderingInfo.renderArea = {{0, 0}, _extent};
 	renderingInfo.layerCount = 1;
 

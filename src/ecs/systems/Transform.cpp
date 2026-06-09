@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/08 16:10:29                                        */
+/*  Last Modified: 2026/06/09 09:44:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -291,7 +291,8 @@ void	Transform::renderUI(const Renderer &renderer, GizmoContext &gizmo) {
 							.build(*ctx.descriptorPool);
 		DescriptorWriter(*_device, texture_d.get())
 			.writeImage(0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-						*texture->image.get(), texture->image->getFormat(), sampler)
+					texture->image->getView(ViewConfig().defaultTextureView()),
+					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, sampler)
 			.update();
 
 		auto	draw = drawCommand(renderer, _NDCPipeline)

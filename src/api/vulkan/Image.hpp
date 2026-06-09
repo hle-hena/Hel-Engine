@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 17:33:41                                        */
+/*  Last Modified: 2026/06/09 14:48:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,7 +19,7 @@
 # include <memory>
 # include <unordered_map>
 # include <vulkan/vulkan.h>
-# include "utils/mathUtils.hpp"
+# include <vector>
 # include "utils/Setters.hpp"
 # include <vma/vk_mem_alloc.h>
 
@@ -27,6 +27,58 @@ namespace	hel {
 
 class	Device;
 class	Buffer;
+
+struct	ViewConfig {
+	bool	operator==(const ViewConfig &other) const;
+
+	private:
+		struct	ComponentMapping {
+			ComponentMapping(ViewConfig &parentStruct)
+				:	_parent(parentStruct)	{}
+
+			auto	&componentIdentity(void) {
+				_parent._components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+				_parent._components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+				_parent._components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+				_parent._components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+				return _parent;
+			}
+
+			PROXY_SETTER(r, VkComponentSwizzle, _parent._components.r, _parent)
+			PROXY_SETTER(g, VkComponentSwizzle, _parent._components.g, _parent)
+			PROXY_SETTER(b, VkComponentSwizzle, _parent._components.b, _parent)
+			PROXY_SETTER(a, VkComponentSwizzle, _parent._components.a, _parent)
+
+			private:
+				ViewConfig	&_parent;
+		};
+
+		VkFormat			_format{VK_FORMAT_MAX_ENUM};
+		VkImageAspectFlags	_aspect{VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM};
+		VkComponentMapping	_components{
+								.r = VK_COMPONENT_SWIZZLE_MAX_ENUM,
+								.g = VK_COMPONENT_SWIZZLE_MAX_ENUM,
+								.b = VK_COMPONENT_SWIZZLE_MAX_ENUM,
+								.a = VK_COMPONENT_SWIZZLE_MAX_ENUM};
+
+	public:
+		ComponentMapping	components(void)	{ return {*this}; }
+		SETTER_VERBOSE(format, VkFormat, _format)
+		SETTER_VERBOSE(aspect, VkImageAspectFlags, _aspect)
+
+		auto	&defaultTextureView(void) {
+			_format = VK_FORMAT_R8G8B8A8_SRGB;
+			_aspect = VK_IMAGE_ASPECT_COLOR_BIT;
+			ComponentMapping(*this).componentIdentity();
+			return *this;
+		}
+
+	friend struct	ViewConfigHasher;
+	friend class	Image;
+};
+struct	ViewConfigHasher {
+	size_t	operator()(const ViewConfig &conf) const;
+};
 
 class Image {
 	public:
@@ -72,48 +124,38 @@ class Image {
 
 		VkImage						getImage(void) const
 			{ return (_image); }
-		VkImageView					getView(VkFormat format,
-				VkImageAspectFlags aspect =
-				VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM) const;
 		VkExtent2D					getExtent(void) const
 			{ return (_extent); }
 		VkExtent2D					getPhysicalExtent(void) const
 			{ return {_config.width, _config.height}; }
 		VkFormat					getFormat(void) const
 			{ return (_config.format[0]); }
-		VkDescriptorSet				getTexture(VkFormat format,
-				VkImageAspectFlags aspect);
-		VkDescriptorImageInfo		getDescriptorInfo(VkFormat format,
-				VkImageAspectFlags aspect =
-				VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM) const;
+
+		VkImageView					getView(const ViewConfig &conf);
+		VkDescriptorSet				getTexture(VkImageView view);
+		VkDescriptorImageInfo		getDescriptorInfo(VkImageView view) const;
 		VkRenderingAttachmentInfo	getRenderingInfo(VkClearValue clearValue,
 				VkAttachmentLoadOp loadOp,
 				VkAttachmentStoreOp storeOp,
-				VkFormat format,
-				VkImageAspectFlags aspect =
-				VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM) const;
+				VkImageView view) const;
 
 	private:
 		Image(Device &device, const Config &config);
 		Image(Device &device, VkImage img, VkFormat format, VkExtent2D extent);
 
-		void	createImage(void);
-		void	createViews(void);
-		void	createView(VkFormat format);
+		void		createImage(void);
+		VkImageView	createView(const ViewConfig &conf);
 
 		bool							_owned{true};
 		Device							&_device;
 		Config							_config;
 		VkExtent2D						_extent;
 		VkImage							_image{VK_NULL_HANDLE};
-		std::unordered_map<VkFormat,
-				std::unordered_map<VkImageAspectFlags,
-					VkImageView>,
-				mathUtils::EnumHash>	_views;
-		std::unordered_map<VkFormat,
-				std::unordered_map<VkImageAspectFlags,
-					VkDescriptorSet>,
-				mathUtils::EnumHash>	_textures;
+		std::unordered_map<ViewConfig,
+					VkImageView,
+					ViewConfigHasher>	_views;
+		std::unordered_map<VkImageView,
+					VkDescriptorSet>	_textures;
 		VmaAllocation					_allocation{VK_NULL_HANDLE};
 		VkImageLayout					_currentLayout{VK_IMAGE_LAYOUT_UNDEFINED};
 };

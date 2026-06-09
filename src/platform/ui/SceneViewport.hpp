@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:39 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 15:01:57                                        */
+/*  Last Modified: 2026/06/09 14:42:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -46,6 +46,7 @@ class	SceneViewport : public Panel<SceneViewport> {
 	private:
 		bool		_captured;
 		Entity::id	_handle{Entity::NOT_REGISTERED};
+		std::string	_showImage{"Color Image"};
 };
 
 }

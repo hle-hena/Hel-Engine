@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:40:09                                        */
+/*  Last Modified: 2026/06/08 18:32:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -114,8 +114,11 @@ bool	Swapchain::initiateSwapChain(Window &window) {
 	std::vector<VkImage>	images(imageCount);
 	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, images.data());
 
-	return (createSwapchainImageViews(images, format.format, extent) ||
-		createSyncObjects());
+	for (auto image: images)
+		_swapImages.emplace_back(Image::wrapSwapchainImages(_device, image,
+													format.format, extent));
+
+	return (createSyncObjects());
 }
 
 bool	Swapchain::recreateSwapChain(Window &window) {
@@ -158,16 +161,6 @@ VkExtent2D	Swapchain::selectSwapExtent(const VkSurfaceCapabilitiesKHR &capabilit
 	extent.height = std::clamp(extent.height, capabilities.minImageExtent.height,
 							capabilities.maxImageExtent.height);
 	return (extent);
-}
-
-bool	Swapchain::createSwapchainImageViews(std::vector<VkImage> &images,
-									VkFormat format, VkExtent2D extent) {
-	for (auto image: images) {
-		_swapImages.emplace_back(Image::wrapSwapchainImages(_device, image, format, extent));
-		if (!_swapImages.back())
-			RETURN_SET_UNHEALTHY("Couldn't create an image view", true);
-	}
-	return (false);
 }
 
 bool	Swapchain::createSyncObjects(void) {

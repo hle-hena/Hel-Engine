@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/08 16:33:45                                        */
+/*  Last Modified: 2026/06/09 14:42:04                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,35 +34,43 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 
 	auto	windowEntityHandle = window->getEntityReference();
 	auto	rectMin = ImGui::GetCursorScreenPos() - ImGui::GetStyle().WindowPadding;
+	rectMin.y += 1.1f;
 	auto	rectMax = rectMin + ImGui::GetContentRegionAvail()
-						+ ImGui::GetStyle().WindowPadding * 2;
+						+ ImGui::GetStyle().WindowPadding * 2.f;
 	auto	col = ImGui::GetStyleColorVec4(ImGuiCol_HeaderActive);
 	col.w = (windowEntityHandle == _handle ? 0.75f : 0.f);
-	// ImGui::GetWindowDrawList()->AddRectFilled(rectMin, rectMax,
-	// 		ImGui::ColorConvertFloat4ToU32(col));
-	auto	image = _imagePool->acquire(Image::Config()
+	ImGui::GetWindowDrawList()->AddRectFilled(rectMin, rectMax,
+			ImGui::ColorConvertFloat4ToU32(col));
+
+	ImGui::SetCursorScreenPos(rectMin);
+	if (ImGui::Button("Color Image"))
+		_showImage = "Color Image";
+	ImGui::SameLine();
+	if (ImGui::Button("Depth Image"))
+		_showImage = "Depth Image";
+	ImGui::SameLine();
+	if (ImGui::Button("Entity Image"))
+		_showImage = "Entity Image";
+
+	auto	mainImg = _imagePool->acquire(Image::Config()
 			.setWidth(static_cast<uint32_t>(std::max(size.x, 1.f)))
 			.setHeight(static_cast<uint32_t>(std::max(size.y, 1.f)))
 			.setFormats({VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM})
 			.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
 			.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
 			.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
-	auto	depth = _imagePool->acquire(Image::Config()
-			.setWidth(static_cast<uint32_t>(std::max(size.x, 1.f)))
-			.setHeight(static_cast<uint32_t>(std::max(size.y, 1.f)))
+	auto	depthImg = _imagePool->acquire(Image::Config()
 			.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
 			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
 			.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
 			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT));
 	auto	entityImg = _imagePool->acquire(Image::Config()
-			.setWidth(static_cast<uint32_t>(std::max(size.x, 1.f)))
-			.setHeight(static_cast<uint32_t>(std::max(size.y, 1.f)))
-			.setFormats({VK_FORMAT_R32_UINT})
+			.setFormats({VK_FORMAT_R32_UINT, VK_FORMAT_R32_SFLOAT})
 			.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
 			.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
 			.setUsage(VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
 			.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
-	if (!image || !depth || !entityImg)
+	if (!mainImg || !depthImg || !entityImg)
 		return ;
 	if (_handle == Entity::NOT_REGISTERED)
 		_handle = window->getEntityReference();
@@ -72,16 +80,12 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 		.handle = _handle,
 		.origin = ImGui::GetCursorScreenPos(),
 		.images = {
-			{"mainColor", image},
-			{"depth layer", depth},
+			{"mainColor", mainImg},
+			{"depth layer", depthImg},
 			{"entity layer", entityImg}
 		}
 	};
-
 	RenderQueue::push(viewportRequest);
-	auto	extent = image->getPhysicalExtent();
-	ImVec2	uv1 = {size.x / static_cast<float>(extent.width), size.y / static_cast<float>(extent.height)};
-
 	auto	addImage = [&](const std::string &name, Image *img) {
 		
 		int i = 0;
@@ -93,14 +97,40 @@ void	SceneViewport::render(Window *window, const ImVec2 &size) {
 			break ;
 		}
 	};
-	addImage("viewport", image);
-	addImage("depth", depth);
+	addImage("viewport", mainImg);
+	addImage("depth", depthImg);
 	addImage("entity", entityImg);
 	mainRequest = nullptr;
 
-	// ImGui::Image(entityImg->getTexture(VK_FORMAT_R32_UINT, VK_IMAGE_ASPECT_COLOR_BIT),
-	// ImGui::Image(depth->getTexture(VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_ASPECT_DEPTH_BIT),
-	ImGui::Image(image->getTexture(VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT),
+	Image		*img = nullptr;
+	ViewConfig	viewConfig;
+	if (_showImage == "Color Image") {
+		img = mainImg;
+		viewConfig.format(VK_FORMAT_B8G8R8A8_UNORM)
+				.aspect(VK_IMAGE_ASPECT_COLOR_BIT)
+				.components().componentIdentity();
+	} else if (_showImage == "Depth Image") {
+		img = depthImg;
+		viewConfig.format(VK_FORMAT_D32_SFLOAT_S8_UINT)
+				.aspect(VK_IMAGE_ASPECT_DEPTH_BIT)
+				.components().r(VK_COMPONENT_SWIZZLE_R)
+				.components().g(VK_COMPONENT_SWIZZLE_R)
+				.components().b(VK_COMPONENT_SWIZZLE_R)
+				.components().a(VK_COMPONENT_SWIZZLE_ONE);
+	} else if (_showImage == "Entity Image") {
+		img = entityImg;
+		viewConfig.format(VK_FORMAT_R32_SFLOAT)
+				.aspect(VK_IMAGE_ASPECT_COLOR_BIT)
+				.components().r(VK_COMPONENT_SWIZZLE_R)
+				.components().g(VK_COMPONENT_SWIZZLE_R)
+				.components().b(VK_COMPONENT_SWIZZLE_R)
+				.components().a(VK_COMPONENT_SWIZZLE_ONE);
+	}
+
+	auto	extent = img->getPhysicalExtent();
+	ImVec2	uv1 = {size.x / static_cast<float>(extent.width),
+				size.y / static_cast<float>(extent.height)};
+	ImGui::Image(img->getTexture(img->getView(viewConfig)),
 			size, {0.f, 0.f}, uv1);
 	if (windowEntityHandle == _handle && (
 		glfwGetInputMode(window->getWindow(), GLFW_CURSOR) ==

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 17:35:03                                        */
+/*  Last Modified: 2026/06/09 10:30:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,12 +24,18 @@
 
 namespace	hel {
 
+std::unique_ptr<DescriptorPool>	UiContext::_pool{};
+std::unordered_map<
+	VkDescriptorSet,
+	DescriptorSet::ptr>			UiContext::_textures{};
+
 UiContext::UiContext(Window *window)
 	:	_window{window},
 		_device{window->_app.getVkContext().getDevice()} {
 }
 
 UiContext::~UiContext(void) {
+	_pool = nullptr;
 }
 
 void	UiContext::destroy(void) {
@@ -95,16 +101,25 @@ void	UiContext::initDescriptorPool(Device &device) {
 		.build();
 }
 
-VkDescriptorSet	UiContext::registerTexture(Device &device, Image *image,
-								VkFormat format, VkImageAspectFlags aspect) {
-	VkDescriptorSet	id = ImGui_ImplVulkan_AddTexture(
-			Sampler::getSampler(device, {}), image->getView(format, aspect),
-			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-	return (id);
+VkDescriptorSet	UiContext::registerTexture(Device &device, VkSampler sampler,
+										VkImageView view) {
+	auto	set = DescriptorFactory(device)
+					.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+						VK_SHADER_STAGE_FRAGMENT_BIT)
+					.setSetCount(1)
+					.build(*_pool);
+
+	DescriptorWriter(device, set.get())
+		.writeImage(0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, view,
+				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, sampler)
+		.update();
+	auto	ret = set->sets[0];
+	_textures[ret] = std::move(set);
+	return (ret);
 }
 
 void	UiContext::unregisterTexture(VkDescriptorSet texture) {
-	ImGui_ImplVulkan_RemoveTexture(texture);
+	_textures.erase(texture);
 }
 
 void	UiContext::newFrame() {

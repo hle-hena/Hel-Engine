@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/08 16:06:07                                        */
+/*  Last Modified: 2026/06/09 09:36:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -171,7 +171,8 @@ void	Camera::renderInteraction(const Renderer &renderer) {
 	auto	texture = _assetManager->get<Texture>("assets/images/cameraSprite.png");
 	DescriptorWriter(*_device, texture_d.get())
 		.writeImage(0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-					*texture->image.get(), texture->image->getFormat(), sampler)
+				texture->image->getView(ViewConfig().defaultTextureView()),
+				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, sampler)
 		.update();
 	auto	SSBO_d = _registry->buildComponentSet<comp::Transform>(*_device, ctx.descriptorPool);
 	if (!SSBO_d)

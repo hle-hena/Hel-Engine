@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/08 17:29:53                                        */
+/*  Last Modified: 2026/06/09 09:44:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -159,7 +159,9 @@ void	Render::render(const Renderer &renderer) {
 									.build(*ctx.descriptorPool);
 				DescriptorWriter(*_device, texture_d.get())
 					.writeImage(0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-								*texture->image.get(), texture->image->getFormat(), sampler)
+							texture->image->getView(ViewConfig().
+								defaultTextureView()),
+							VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, sampler)
 					.update();
 
 				drawCommand(renderer, pipeline)
