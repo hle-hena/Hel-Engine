@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 15:45:33                                        */
+/*  Last Modified: 2026/06/10 15:05:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,10 +37,13 @@ SystemRegistrar<Render>	reg_RenderSystem;
 void	Render::init(void) {
 	renderDeps.provides = "rendering of the 3d objects";
 
+	VkClearValue	clear{};
+	clear.color.uint32[0] = 0xFFFFFFFF;
 	renderDeps.write.push_back(
 		ImageDep("entity layer", VK_FORMAT_R32_UINT)
 			.setImageUsage(ImageDep::Usage::Color)
-			.setWriteBindingIndex(1));
+			.setWriteBindingIndex(1)
+			.setClearValue(clear));
 	renderDeps.write.push_back(
 		ImageDep("mainColor", VK_FORMAT_B8G8R8A8_SRGB)
 			.setImageUsage(ImageDep::Usage::Color)

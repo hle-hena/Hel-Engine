@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 09:44:19                                        */
+/*  Last Modified: 2026/06/10 16:28:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -329,7 +329,7 @@ void	Transform::renderInteraction(const Renderer &renderer) {
 }
 
 void	Transform::registerClick(const FrameContext &ctx, GizmoContext &gizmo) {
-	auto	entityImg = ctx.request->images["entityID"];
+	auto	entityImg = ctx.request->images["entity layer"];
 	auto	camera = _registry->getComponent<comp::Camera>(ctx.request->handle);
 	auto	transform = _registry->getComponent<comp::Transform>(ctx.request->handle);
 	if (!_inputState->isPressed<input::Mouse>(0) || !entityImg || !camera || !transform)
@@ -684,8 +684,8 @@ Transform::GizmoContext::EntityFactory::EntityFactory(
 	_handle = _baseGizmo->_registry->createEntity();
 	_addedComp = _baseGizmo->_registry->addComponents<comp::Model,
 						comp::Texture, comp::Transform, comp::OffsetTransform,
-						comp::HideEntityTag, comp::HideEntityInHierarchyTag,
-						comp::NonSelectableTag, comp::Tint>(_handle);
+						comp::Tint, comp::HideEntityTag, comp::NonSelectableTag,
+						comp::HideEntityInHierarchyTag>(_handle);
 	auto	transform = std::get<2>(_addedComp).modify();
 	transform->scale = glm::vec3(scale);
 	transform->rotation = parentTransform->rotation;
@@ -699,8 +699,8 @@ Transform::GizmoContext::EntityFactory::EntityFactory(Transform::GizmoContext *b
 	_handle = _baseGizmo->_registry->createEntity();
 	_addedComp = _baseGizmo->_registry->addComponents<comp::Model,
 						comp::Texture, comp::Transform, comp::OffsetTransform,
-						comp::HideEntityTag, comp::HideEntityInHierarchyTag,
-						comp::NonSelectableTag, comp::Tint>(_handle);
+						comp::Tint, comp::HideEntityTag, comp::NonSelectableTag,
+						comp::HideEntityInHierarchyTag>(_handle);
 	_baseGizmo->handles[entityName] = _handle;
 }
 
@@ -710,7 +710,7 @@ Transform::GizmoContext::EntityFactory::~EntityFactory(void) {
 
 Transform::GizmoContext::EntityFactory	&
 Transform::GizmoContext::EntityFactory::setTint(float r, float g, float b) {
-	std::get<7>(_addedComp).modify()->tint = {r, g, b};
+	std::get<4>(_addedComp).modify()->tint = {r, g, b};
 	return (*this);
 }
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 14:14:28                                        */
+/*  Last Modified: 2026/06/10 16:28:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -162,10 +162,10 @@ struct	Transform::GizmoContext::EntityFactory {
 			ComponentHandle<comp::Texture>,
 			ComponentHandle<comp::Transform>,
 			ComponentHandle<comp::OffsetTransform>,
+			ComponentHandle<comp::Tint>,
 			ComponentHandle<comp::HideEntityTag>,
-			ComponentHandle<comp::HideEntityInHierarchyTag>,
 			ComponentHandle<comp::NonSelectableTag>,
-			ComponentHandle<comp::Tint>>			_addedComp;
+			ComponentHandle<comp::HideEntityInHierarchyTag>>	_addedComp;
 };
 
 }
