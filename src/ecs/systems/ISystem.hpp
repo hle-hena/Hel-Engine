@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/01 17:48:17                                        */
+/*  Last Modified: 2026/06/05 14:17:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,8 +18,9 @@
 
 # include "api/vulkan/PipelineMap.hpp"
 # include "api/vulkan/Renderer.hpp"
+# include "core/PhaseDependancy.hpp"
 # include "core/Frame.hpp"
-#include "ecs/Entity.hpp"
+# include "ecs/Entity.hpp"
 
 # include <vulkan/vulkan.h>
 # include <vector>
@@ -36,12 +37,6 @@ struct	FrameContext;
 }
 
 namespace	hel::sys {
-
-struct	PhaseDependencies {
-	std::vector<std::string>	require{};
-	std::vector<std::string>	block{};
-	std::optional<std::string>	provides;
-};
 
 class	ISystem {
 	public:
@@ -61,6 +56,19 @@ class	ISystem {
 		virtual void	render(const Renderer &) {}
 		virtual void	postProcessing(const Renderer &) {}
 		virtual void	renderInteraction(const Renderer &) {}
+		
+		virtual std::span<const std::string_view>	getRenderTypes(void) const {
+			static constexpr std::array<std::string_view, 0>	types{};
+			return types;
+		}
+		#define RENDER_TYPES(...)												\
+		std::span<const std::string_view>	getRenderTypes() const override {	\
+			static constexpr std::array<										\
+				std::string_view,												\
+				std::initializer_list<std::string_view>{__VA_ARGS__}.size()>	\
+								types {__VA_ARGS__};							\
+			return types;														\
+		}
 
 		PhaseDependencies	updateDeps;
 		PhaseDependencies	updateInterDeps;
@@ -81,7 +89,7 @@ class	ISystem {
 		std::vector<std::unique_ptr<PipelineMap>>	_pipelines;
 
 	private:
-		FrameContext	_frameCtx;
+		const FrameContext	*_frameCtx;
 };
 
 }

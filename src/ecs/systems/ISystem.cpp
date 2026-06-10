@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/26 18:12:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/24 15:48:05                                        */
+/*  Last Modified: 2026/06/05 12:17:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,12 +26,12 @@ void	ISystem::init(const EngineContext &engineCtx,
 	_registry = engineCtx.registry;
 	_imagePool = engineCtx.imagePool;
 
-	_frameCtx = frameCtx;
+	_frameCtx = &frameCtx;
 }
 
 PipelineMap	*ISystem::createPipeline(const PipelineMap::Config &config) {
 	auto	pipeline = std::unique_ptr<PipelineMap>(new PipelineMap(config));
-	pipeline->initDefaultSets({_frameCtx.globalLayout});
+	pipeline->initDefaultSets({_frameCtx->globalLayout});
 	auto	pipelinePtr = pipeline.get();
 	_pipelines.push_back(std::move(pipeline));
 	return (pipelinePtr);

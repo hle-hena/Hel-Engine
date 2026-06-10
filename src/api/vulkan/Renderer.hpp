@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:35:40                                        */
+/*  Last Modified: 2026/06/10 11:03:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,10 +20,13 @@
 #include <vulkan/vulkan.h>
 #include <optional>
 #include <vector>
+#include <map>
 #include <vulkan/vulkan_core.h>
+#include <ranges>
 
 #include "utils/Setters.hpp"
 #include "api/vulkan/PipelineMap.hpp"
+#include "core/PhaseDependancy.hpp"
 
 namespace	hel {
 
@@ -31,46 +34,54 @@ class	Image;
 class	Renderer;
 class	Device;
 struct	FrameContext;
+struct	RenderRequest;
+class	ImagePool;
 
 class	RenderPass {
 	public:
-		RenderPass(Device &device, VkCommandBuffer commandBuffer, VkExtent2D extent);
+		template <std::ranges::input_range R>
+		RenderPass(Device &device, FrameContext &context, ImagePool *imagePool,
+			R &systems, PhaseDependencies sys::ISystem::*depMember);
+		RenderPass(Device &device, FrameContext &context, ImagePool *imagePool,
+			PhaseDependencies dep);
 		RenderPass(RenderPass &&other);
 		~RenderPass(void);
 
-		SETTER(ColorLoadOp, VkAttachmentLoadOp, _colorsLoadOp)
-		SETTER(ColorStoreOp, VkAttachmentStoreOp, _colorsStoreOp)
-		SETTER(DepthLoadOp, VkAttachmentLoadOp, _depthLoadOp)
-		SETTER(DepthStoreOp, VkAttachmentStoreOp, _depthStoreOp)
-		SETTER(ClearValue, VkClearValue, _colorClear)
-		RenderPass		&addColorWrite(Image *color, VkFormat format);
-		RenderPass		&addDepthWrite(Image *depth, VkFormat format);
-
-		Renderer		beginPass(FrameContext &context);
+		Renderer		beginPass(void);
 
 		static void	newFrame(void)	{ _passIndex = 0; }
 
 	private:
+		bool	addWrite(ImageDep &dep, ImagePool *imagePool);
+		bool	validateWrite(ImageDep &dep);
+		bool	resolveUsage(ImageDep &dep);
+		void	resolveOps(Image *img, ImageDep &dep);
+		void	addWriteImage(Image *img, ImageDep &dep);
+
+		bool	addRead(const std::string_view &readName);
+
 		void	setViewport(void);
 		void	endPass(void);
 
 		Device				&_device;
+		FrameContext		&_ctx;
+		RenderRequest		*_req;
 		VkCommandBuffer		_commandBuffer;
 		VkExtent2D			_extent;
-		bool				_isValid{false};
+		bool				_invalidDep{false};
+		bool				_passStarted{false};
 
-		VkClearValue			_colorClear{{{0.f, 0.f, 0.f, 1.0f}}};
-		VkClearValue			_depthClear{ .depthStencil = {1.0f, 0} };
-		VkAttachmentLoadOp		_colorsLoadOp{VK_ATTACHMENT_LOAD_OP_CLEAR};
-		VkAttachmentStoreOp		_colorsStoreOp{VK_ATTACHMENT_STORE_OP_STORE};
-		VkAttachmentLoadOp		_depthLoadOp{VK_ATTACHMENT_LOAD_OP_CLEAR};
-		VkAttachmentStoreOp		_depthStoreOp{VK_ATTACHMENT_STORE_OP_DONT_CARE};
+		std::unordered_map<std::string, Image *>	_writes{};
+		std::unordered_map<std::string, Image *>	_reads{};
 
-		std::vector<Image *>						_colorsWrite{};
-		std::vector<Image *>						_colorsRead{};
-		Image										*_depthWrite;
-		std::vector<VkRenderingAttachmentInfo>		_colorsInfo{};
+		struct	ColorWrite {
+			std::string					name;
+			VkFormat					format;
+			VkRenderingAttachmentInfo	info;
+		};
+		std::map<int, ColorWrite>					_colorInfos{};
 		std::optional<VkRenderingAttachmentInfo>	_depthInfo{};
+		std::optional<VkRenderingAttachmentInfo>	_stencilInfo{};
 		RenderingConfig								_config;
 
 		static uint32_t		_passIndex;

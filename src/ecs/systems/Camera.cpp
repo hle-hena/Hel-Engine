@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/01 17:50:02                                        */
+/*  Last Modified: 2026/06/09 15:44:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,6 +28,7 @@
 #include "api/vulkan/Sampler.hpp"
 #include <vulkan/vulkan_core.h>
 #include "core/SystemManager.hpp"
+#include "core/Queues.hpp"
 
 namespace	hel::sys {
 
@@ -38,6 +39,17 @@ void	Camera::init(void) {
 	updateDeps.require.push_back("model matrix calculation");
 
 	renderInterDeps.provides = "render camera frustum";
+	renderInterDeps.write.push_back(
+		ImageDep("mainColor", VK_FORMAT_B8G8R8A8_SRGB)
+			.setImageUsage(ImageDep::Usage::Color)
+			.setWriteBindingIndex(0));
+	renderInterDeps.write.push_back(
+		ImageDep("entity layer", VK_FORMAT_R32_UINT)
+			.setImageUsage(ImageDep::Usage::Color)
+			.setWriteBindingIndex(1));
+	renderInterDeps.write.push_back(
+		ImageDep("depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
+			.setImageUsage(ImageDep::Usage::DepthStencil));
 
 	_assetManager = &_registry->getAssetManager();
 	{
@@ -150,7 +162,8 @@ void	Camera::renderInteraction(const Renderer &renderer) {
 	auto	texture = _assetManager->get<Texture>("assets/images/cameraSprite.png");
 	DescriptorWriter(*_device, texture_d.get())
 		.writeImage(0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-					*texture->image.get(), texture->image->getFormat(), sampler)
+				texture->image->getView(ViewConfig().defaultTextureView()),
+				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, sampler)
 		.update();
 	auto	SSBO_d = _registry->buildComponentSet<comp::Transform>(*_device, ctx.descriptorPool);
 	if (!SSBO_d)

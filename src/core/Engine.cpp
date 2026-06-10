@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/02 15:47:17                                        */
+/*  Last Modified: 2026/06/05 16:13:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,6 +33,7 @@
 #include "ecs/Component.hpp"
 
 #include <iostream>
+#include <ranges>
 
 #include "utils/VFS.hpp"
 
@@ -121,10 +122,15 @@ void	Engine::tick(Window *window, uint32_t frameIndex) {
 	auto	&ui = window->getUI();
 	_lastFrameTime = _timer.lap();
 	_imagePool->releaseAll();
+	bool	shouldDoRenderTick = true;
+	if (window->getSwapchain().acquireNextImage(*window, frameCtx.frameIndex,
+												&frameCtx.swapIndex))
+		shouldDoRenderTick = false;
 
 	updateTick(ui, frameCtx);
 	_registry.updateBuffers(_device);
-	renderTick(window, ui, frameCtx);
+	if (shouldDoRenderTick)
+		renderTick(window, ui, frameCtx);
 }
 
 void	Engine::updateTick(UiContext &ui, FrameContext &frameCtx) {
@@ -136,114 +142,80 @@ void	Engine::updateTick(UiContext &ui, FrameContext &frameCtx) {
 		system->update(frameCtx);
 }
 
-void	Engine::renderTick(Window *window, UiContext &ui, FrameContext &ctx) {
+void	Engine::renderTick(Window *window, UiContext &, FrameContext &ctx) {
 	Swapchain	&swapchain = window->getSwapchain();
-	uint32_t	imageIndex;
 
 	RenderPass::newFrame();
-	if (swapchain.acquireNextImage(*window, ctx.frameIndex, &imageIndex))
-		return ;
+
+	auto	swapImage = swapchain.getSwapImage(ctx.swapIndex);
 	vkResetCommandBuffer(ctx.commandBuffer, 0);
 	ctx.descriptorPool->resetPools();
 
-	auto	depthImage = _imagePool->acquire(Image::Config()
-			.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
-			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT));
-	auto	swapImage = swapchain.getSwapImage(imageIndex);
-
 	VkCommandBufferBeginInfo	beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
 	if (vkBeginCommandBuffer(ctx.commandBuffer, &beginInfo))
 		return ;
+
 	for (auto &renderRequest: RenderQueue::flush()) {
-		_systems.newRender();
-		Image	*entityImg = _imagePool->acquire(Image::Config()
-							.setFormats({VK_FORMAT_R32_UINT})
-							.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-							.setUsage(VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
-							.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
-		auto	renderImg = renderRequest.mainImage;
+		auto matchingType = [&renderRequest](const sys::ISystem *sys) {
+			auto	types = sys->getRenderTypes();
+			return (std::ranges::find(types, renderRequest.requestType)
+					!= types.end());
+		};
+
 		ctx.request = &renderRequest;
-		renderRequest.secondaryImages["entityID"] = entityImg;
 		updateGlobalData(ctx);
-		VkClearValue	clear{};
-		clear.color.uint32[0] = 0xFFFFFFFF;
-		while (1) {
-			auto	&renders = _systems.getRenders();
-			if (renders.empty())
-				break ;
-			if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
-							.setDepthStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
-							.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
-							.setClearValue(clear)
-							.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
-							.addDepthWrite(depthImage, depthImage->getFormat())
-							.beginPass(ctx)) {
-				writeGlobalData(renderer);
-				for (auto &system: renders)
-					system->render(renderer);
+
+		for (auto &renderSystems: _systems.getRenders())
+			executePass(ctx, renderSystems | std::views::filter(matchingType),
+						&sys::ISystem::renderDeps, &sys::ISystem::render);
+		for (auto &postSystems: _systems.getPostProcess())
+			executePass(ctx, postSystems | std::views::filter(matchingType),
+						&sys::ISystem::postProcessDeps,
+						&sys::ISystem::postProcessing);
+		executePass(ctx,
+			_systems.getRenderInteractions() | std::views::filter(matchingType),
+			&sys::ISystem::renderInterDeps, &sys::ISystem::renderInteraction);
+		for (auto &level: DrawQueue::flush()) {
+			for (auto &pass: level.second) {
+				if (auto renderer = RenderPass(_device, ctx, _imagePool.get(),
+										pass.dep)
+									.beginPass()) {
+					writeGlobalData(renderer);
+					for (auto &drawCommand: pass.draws)
+						drawCommand.submit();
+				}
 			}
 		}
-		while (1) {
-			auto	&postProcess = _systems.getPostProcess();
-			if (postProcess.empty())
-				break ;
-			if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
-							.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
-							.setDepthLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
-							.setDepthStoreOp(VK_ATTACHMENT_STORE_OP_STORE)
-							.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
-							.addDepthWrite(depthImage, depthImage->getFormat())
-							.beginPass(ctx)) {
-				writeGlobalData(renderer);
-				for (auto &system: postProcess)
-					system->postProcessing(renderer);
-			}
-		}
-		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
-						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
-						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
-						.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
-						.addDepthWrite(depthImage, depthImage->getFormat())
-						.beginPass(ctx)) {
-			writeGlobalData(renderer);
-			for (auto &system: _systems.getRenderInteractions())
-				system->renderInteraction(renderer);
-		}
-		if (auto renderer = RenderPass(_device, ctx.commandBuffer, renderImg->getExtent())
-						.setColorLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
-						.addColorWrite(renderImg, VK_FORMAT_B8G8R8A8_SRGB)
-						.addColorWrite(entityImg, VK_FORMAT_R32_UINT)
-						.addDepthWrite(depthImage, depthImage->getFormat())
-						.beginPass(ctx)) {
-			writeGlobalData(renderer);
-			DrawQueue::execute();
-		}
-		renderImg->transitionLayout(ctx.commandBuffer,
-					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	}
 
-	if (auto renderer = RenderPass(_device, ctx.commandBuffer, swapImage->getExtent())
-					.addColorWrite(swapImage, VK_FORMAT_B8G8R8A8_UNORM)
-					.beginPass(ctx)) {
-		ui.renderFrame(ctx.commandBuffer);
-	}
 	swapImage->transitionLayout(ctx.commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 	Read::Queue::execute(ctx.commandBuffer);
 
 	vkEndCommandBuffer(ctx.commandBuffer);
 
-	swapchain.submitCommandBuffer(ctx.commandBuffer, imageIndex, ctx.frameIndex);
-	swapchain.present(*window, imageIndex);
+	swapchain.submitCommandBuffer(ctx.commandBuffer, ctx.swapIndex, ctx.frameIndex);
+	swapchain.present(*window, ctx.swapIndex);
+}
+
+void	Engine::executePass(FrameContext &ctx,
+						auto &&systems,
+						PhaseDependencies sys::ISystem::*depMember,
+						void (sys::ISystem::*method)(const Renderer&)) {
+	if (auto renderer = RenderPass(_device, ctx, _imagePool.get(),
+							systems, depMember)
+						.beginPass()) {
+		writeGlobalData(renderer);
+		for (auto &system: systems)
+			(system->*method)(renderer);
+	}
 }
 
 void	Engine::updateGlobalData(FrameContext &ctx) {
 	auto	handle = ctx.request->handle;
 	ctx.globalData.viewProjection = glm::mat4{1.f};
 	if (auto camera = _registry.getComponent<comp::Camera>(handle)) {
-		auto	extent = ctx.request->mainImage->getExtent();
+		auto	extent = ctx.request->images["mainColor"]->getExtent();
 		float	aspect = static_cast<float>(extent.width) /
 						static_cast<float>(extent.height);
 		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), aspect, camera->near, camera->far);

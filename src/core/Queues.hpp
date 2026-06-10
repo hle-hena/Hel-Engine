@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/13 15:14:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/21 18:28:44                                        */
+/*  Last Modified: 2026/06/10 09:23:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,18 +18,52 @@
 
 #include "api/vulkan/Buffer.hpp"
 #include "api/vulkan/Image.hpp"
-#include "api/vulkan/Renderer.hpp"
 #include "ecs/Entity.hpp"
 #include "utils/Setters.hpp"
+#include "core/PhaseDependancy.hpp"
 #include <cstdint>
 #include <memory>
 #include <ui/ImGui/imgui.h>
 #include <unordered_map>
+#include <map>
 #include <utility>
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
 namespace	hel {
+
+struct	RenderRequest {
+	std::string									requestType;
+	Entity::id									handle;
+	ImVec2										origin{0.f, 0.f};
+	std::unordered_map<std::string, Image *>	images{};
+
+	bool	operator==(const RenderRequest &other) const;
+	struct	Hasher {
+		size_t	operator()(const RenderRequest &request) const;
+	};
+};
+
+}
+
+//TODO this is not beautifull. The ideal would be to split the files I think.
+#include "api/vulkan/Renderer.hpp"
+
+namespace	hel {
+
+class	RenderQueue {
+	public:
+		static void		push(const RenderRequest &request) {
+			if (!request.images.empty() && request.images.contains("mainColor"))
+				_requests.push_back(request);
+		}
+		static std::vector<RenderRequest>	flush(void) {
+			return (std::move(_requests));
+		}
+
+	private:
+		static std::vector<RenderRequest>	_requests;
+};
 
 class	Read {
 	private:
@@ -91,43 +125,30 @@ class	Read::Queue {
 
 class	DrawQueue {
 	public:
-		static void	requestDraw(uint32_t level, Renderer::Draw &&drawCommand);
-		static void	execute(void);
+		struct	RequestVector {
+			PhaseDependencies		dep;
+			std::vector<Renderer::Draw>	draws;
+		};
+		using InnerMap = std::map<uint32_t, std::vector<RequestVector>>;
+		struct	RequestMap {
+			public:
+				RequestVector	*at(uint32_t levelAsked, const PhaseDependencies &depAsked);
+				void			clear(void);
+			private:
+				InnerMap	_data{};
+			
+			friend class DrawQueue;
+		};
 
-		
+		static void	requestDraw(uint32_t level, Renderer::Draw &&drawCommand,
+								PhaseDependencies &dep);
+		static InnerMap	flush(void) { return std::move(_requests._data); };
+
 	private:
-		static std::vector<std::pair<uint32_t, Renderer::Draw>>	_requests;
+		static RequestMap	_requests;
 
 	template <typename ReadType>
 	friend struct	Builder;
-};
-
-
-
-
-struct	RenderRequest {
-	Entity::id									handle;
-	ImVec2										origin{0.f, 0.f};
-	Image										*mainImage;
-	std::unordered_map<std::string, Image *>	secondaryImages{};
-
-	bool	operator==(const RenderRequest &other) const;
-	struct	Hasher {
-		size_t	operator()(const RenderRequest &request) const;
-	};
-};
-
-class	RenderQueue {
-	public:
-		static void		push(const RenderRequest &request) {
-			_requests.push_back(request);
-		}
-		static std::vector<RenderRequest>	flush(void) {
-			return (std::move(_requests));
-		}
-
-	private:
-		static std::vector<RenderRequest>	_requests;
 };
 
 }

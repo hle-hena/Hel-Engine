@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:27:39                                        */
+/*  Last Modified: 2026/06/10 09:40:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -130,6 +130,7 @@ Image	*ImagePool::acquire(const Image::Config &requested, uint32_t life) {
 	}
 	bestSlot->life = life;
 	bestSlot->image->setExtent({std::max(requested.width, 1u), std::max(requested.height, 1u)}, {});
+	bestSlot->image->resetWrittenState({});
 	return (bestSlot->image.get());
 }
 
@@ -161,6 +162,7 @@ void	ImagePool::removeIfNamed(Image *image) {
 }
 
 void	ImagePool::release(Image *image) {
+	//TODO -> optimise this function.
 	for (auto &pool: _pools) {
 		for (auto &slot: pool.second) {
 			if (slot.image.get() == image) {
@@ -175,9 +177,11 @@ void	ImagePool::release(Image *image) {
 void	ImagePool::releaseAll(void) {
 	for (auto &pool: _pools) {
 		for (auto &slot: pool.second)
-			if (slot.life > 0)	{ --slot.life; }
+			if (slot.life > 0)	{
+				if (--slot.life == 0)
+					removeIfNamed(slot.image.get());
+			}
 	}
-	_namedImages.clear();
 }
 
 }

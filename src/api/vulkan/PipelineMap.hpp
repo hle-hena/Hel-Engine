@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 14:54:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/03 15:06:28                                        */
+/*  Last Modified: 2026/06/03 11:43:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,6 +19,7 @@
 # include <vulkan/vulkan.h>
 # include <unordered_map>
 # include <functional>
+# include <optional>
 
 # include "api/vulkan/Pipeline.hpp"
 
@@ -30,7 +31,8 @@ class	AssetManager;
 
 struct	RenderingConfig {
 	std::vector<VkFormat>	colorFormats;
-	VkFormat				depthFormat;
+	std::optional<VkFormat>	depthFormat;
+	std::optional<VkFormat>	stencilFormat;
 
 	bool	operator==(const RenderingConfig &other) const;
 };

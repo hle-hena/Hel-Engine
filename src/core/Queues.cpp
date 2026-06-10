@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/21 19:38:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/24 16:29:02                                        */
+/*  Last Modified: 2026/06/05 12:37:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,8 +22,7 @@ namespace	hel {
 
 std::vector<RenderRequest>	RenderQueue::_requests = {};
 std::vector<Read::Request>	Read::Queue::_requests = {};
-std::vector<std::pair<uint32_t,
-		Renderer::Draw>>	DrawQueue::_requests = {};
+DrawQueue::RequestMap		DrawQueue::_requests = {};
 
 
 
@@ -36,20 +35,21 @@ void	Read::Queue::execute(VkCommandBuffer commandBuffer) {
 
 
 
-void	DrawQueue::requestDraw(uint32_t level, Renderer::Draw &&drawCommand) {
-	_requests.push_back({level, std::move(drawCommand)});
+DrawQueue::RequestVector	*DrawQueue::RequestMap::at(const uint32_t levelAsked, const PhaseDependencies &depAsked) {
+	auto	&data = _data[levelAsked];
+	for (auto &vector: data) {
+		if (vector.dep == depAsked)
+			return &vector;
+	}
+	auto	&newVec = data.emplace_back();
+	newVec.dep = depAsked;
+	return &newVec;
 }
 
-void	DrawQueue::execute(void) {
-	//TODO -> try to keep the order of the request which are on the same level.
-	std::sort(_requests.begin(), _requests.end(), [](const auto &a, const auto &b) {
-		return (a.first < b.first);
-	});
-	for (auto &req: _requests)
-		req.second.submit();
-	_requests.clear();
+void	DrawQueue::requestDraw(uint32_t level, Renderer::Draw &&drawCommand,
+							PhaseDependencies &dep) {
+	_requests.at(level, dep)->draws.emplace_back(std::move(drawCommand));
 }
-
 
 
 
@@ -63,12 +63,12 @@ bool	RenderRequest::operator==(const RenderRequest &other) const {
 							l->getExtent().height == r->getExtent().height);
 		return (sameSize);
 	};
-	bool	sameImages = compImages(this->mainImage, other.mainImage);
-	if (this->secondaryImages.size() == other.secondaryImages.size()) {
+	bool	sameImages = false;
+	if (this->images.size() == other.images.size()) {
 		sameImages &= std::equal(
-			this->secondaryImages.begin(),
-			this->secondaryImages.end(),
-			other.secondaryImages.begin(),
+			this->images.begin(),
+			this->images.end(),
+			other.images.begin(),
 			[&](const auto &l, const auto &r){
 				return (compImages(l.second, r.second));
 			}
@@ -86,9 +86,8 @@ size_t	RenderRequest::Hasher::operator()(const RenderRequest &request) const {
 		auto	extent = img->getExtent();
 		hel::mathUtils::hashCombine(seed, extent.width, extent.height);
 	};
-	hashImage(seed, request.mainImage);
-	for (auto it = request.secondaryImages.begin();
-		it != request.secondaryImages.end(); it++)
+	for (auto it = request.images.begin();
+		it != request.images.end(); it++)
 		hashImage(seed, it->second);
 	return (seed);
 }

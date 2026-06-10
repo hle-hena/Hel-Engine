@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/01 17:52:34                                        */
+/*  Last Modified: 2026/06/09 15:51:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,6 +37,15 @@ UI::~UI(void) {
 
 void	UI::init(void) {
 	updateInterDeps.provides = "update ui";
+
+	renderDeps.provides = "render ui";
+	renderDeps.write.push_back(
+		ImageDep("mainColor", VK_FORMAT_B8G8R8A8_UNORM)
+			.setImageUsage(ImageDep::Usage::Color)
+			.setWriteBindingIndex(0));
+	renderDeps.read.push_back("viewport*");
+	renderDeps.read.push_back("depth*");
+	renderDeps.read.push_back("entity*");
 
 	addNewPanelRegistry(EntityHierarchy::label, PanelFactoryMacro(EntityHierarchy));
 	addNewPanelRegistry(StyleEditor::label, PanelFactoryMacro(StyleEditor));
@@ -101,11 +110,11 @@ void	UI::addDock(Window *window, const ImVec2 &size) {
 		_lastSize = size;
 	if (size.x > 0.f && size.y > 0.f &&
 			((*_lastSize).x != size.x || (*_lastSize).y != size.y)) {
-		_dock->render(window, size, {size.x / (*_lastSize).x, size.y / (*_lastSize).y});
+		_dock->render(&_request, window, size, {size.x / (*_lastSize).x, size.y / (*_lastSize).y});
 		_lastSize = size;
 	}
 	else
-		_dock->render(window, size);
+		_dock->render(&_request, window, size);
 	ImGui::End();
 
 	ImGui::PopStyleVar(2);
@@ -116,7 +125,18 @@ void	UI::updateInteraction(const FrameContext &ctx) {
 	float	windowWidth = static_cast<float>(windowExtent.width);
 	float	windowHeight = static_cast<float>(windowExtent.height);
 
+	_request.requestType = "RenderUI";
+	_request.handle = Entity::NOT_REGISTERED;
+	_request.origin = {0, 0};
+	_request.images = {{"mainColor", ctx.window->getSwapchain()
+									.getSwapImage(ctx.swapIndex)}};
 	addDock(ctx.window, {windowWidth, windowHeight});
+	RenderQueue::push(_request);
+}
+
+void	UI::render(const Renderer &renderer) {
+	auto	ctx = renderer.frameContext();
+	ctx.window->getUI().renderFrame(ctx.commandBuffer);
 }
 
 }

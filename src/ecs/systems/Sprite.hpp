@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/24 15:13:13                                        */
+/*  Last Modified: 2026/06/05 14:14:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,6 +39,8 @@ class	Sprite : public ISystem {
 		void	init(void) override;
 
 		void	render(const Renderer &renderer) override;
+
+		RENDER_TYPES("RenderScene")
 
 	private:
 		struct	EntityData {

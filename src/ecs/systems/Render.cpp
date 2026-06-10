@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/01 17:51:05                                        */
+/*  Last Modified: 2026/06/09 15:45:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,6 +36,19 @@ SystemRegistrar<Render>	reg_RenderSystem;
 
 void	Render::init(void) {
 	renderDeps.provides = "rendering of the 3d objects";
+
+	renderDeps.write.push_back(
+		ImageDep("entity layer", VK_FORMAT_R32_UINT)
+			.setImageUsage(ImageDep::Usage::Color)
+			.setWriteBindingIndex(1));
+	renderDeps.write.push_back(
+		ImageDep("mainColor", VK_FORMAT_B8G8R8A8_SRGB)
+			.setImageUsage(ImageDep::Usage::Color)
+			.setWriteBindingIndex(0));
+	renderDeps.write.push_back(
+		ImageDep("depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
+			.setImageUsage(ImageDep::Usage::DepthStencil));
+
 
 	_assetManager = &_registry->getAssetManager();
 	{
@@ -137,7 +150,9 @@ void	Render::render(const Renderer &renderer) {
 									.build(*ctx.descriptorPool);
 				DescriptorWriter(*_device, texture_d.get())
 					.writeImage(0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-								*texture->image.get(), texture->image->getFormat(), sampler)
+							texture->image->getView(ViewConfig().
+								defaultTextureView()),
+							VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, sampler)
 					.update();
 
 				drawCommand(renderer, pipeline)

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/01 17:51:21                                        */
+/*  Last Modified: 2026/06/09 09:44:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,6 +29,7 @@
 #include "api/vulkan/Sampler.hpp"
 #include <vulkan/vulkan_core.h>
 #include "core/SystemManager.hpp"
+#include "core/Queues.hpp"
 
 namespace	hel::sys {
 
@@ -114,7 +115,8 @@ void	Sprite::render(const Renderer &renderer) {
 							.build(*ctx.descriptorPool);
 		DescriptorWriter(*_device, texture_d.get())
 			.writeImage(0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-						*texture->image.get(), texture->image->getFormat(), sampler)
+					texture->image->getView(ViewConfig().defaultTextureView()),
+					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, sampler)
 			.update();
 
 		drawCommand(renderer, _pipeline)

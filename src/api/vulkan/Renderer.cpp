@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:37:33                                        */
+/*  Last Modified: 2026/06/10 11:01:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,51 +18,240 @@
 # include "api/vulkan/Image.hpp"
 # include "api/vulkan/Device.hpp"
 # include "core/Frame.hpp"
+# include "ecs/systems/ISystem.hpp"
+# include "api/vulkan/ImagePool.hpp"
+# include "core/Queues.hpp"
 
 namespace	hel {
 
 uint32_t	RenderPass::_passIndex = 0;
 PipelineMap	*Renderer::Draw::_lastPipeline = VK_NULL_HANDLE;
 
-RenderPass::RenderPass(Device &device, VkCommandBuffer commandBuffer,
-						VkExtent2D extent)
+RenderPass::RenderPass(Device &device, FrameContext &ctx, ImagePool *imagePool,
+	PhaseDependencies dep)
 	:	_device{device},
-		_commandBuffer{commandBuffer},
-		_extent{extent} {
+		_ctx{ctx},
+		_req{ctx.request},
+		_commandBuffer{ctx.commandBuffer},
+		_extent{ctx.request->images["mainColor"]->getExtent()} {
+	for (auto &dep: dep.write)
+		_invalidDep |= addWrite(dep, imagePool);
+	for (auto &dep: dep.read)
+		_invalidDep |= addRead(dep);
 }
 
 RenderPass::RenderPass(RenderPass &&other)
 	:	_device{other._device},
+		_ctx{other._ctx},
+		_req{other._ctx.request},
 		_commandBuffer{other._commandBuffer},
-		_isValid{other._isValid} {
+		_passStarted{other._passStarted} {
 	other._commandBuffer = VK_NULL_HANDLE;
 }
 
 RenderPass::~RenderPass(void) {
-	if (_commandBuffer)
+	if (_commandBuffer && _passStarted)
 		endPass();
 }
 
-Renderer	RenderPass::beginPass(FrameContext &frameContext) {
-	if (_colorsWrite.empty())
-		return (Renderer(frameContext, std::move(*this)));
+#define	RETURN_ERROR(error)	\
+do {						\
+	std::cerr << error;		\
+	return true;			\
+} while (0)
+
+
+bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
+	if (resolveUsage(dep) || validateWrite(dep))
+		return true;
+	if (_writes.contains(dep.imageName))
+		return false;
+
+	Image	*img = nullptr;
+	if (_req->images.contains(dep.imageName))
+		img = _req->images[dep.imageName];
+	else if (dep.config.has_value()) {
+		img = imagePool->acquire(dep.config.value());
+		_req->images[dep.imageName] = img;
+	} else
+		RETURN_ERROR("Error for image \"" << dep.imageName << "\". Image"
+			<< " doesn't exists, and no config has "
+			<< "been provided in the dependancy.\n");
+	if (dep.load == VK_ATTACHMENT_LOAD_OP_MAX_ENUM ||
+		dep.store == VK_ATTACHMENT_STORE_OP_MAX_ENUM)
+		resolveOps(img, dep);
+	addWriteImage(img, dep);
+	return (false);
+}
+
+bool	RenderPass::resolveUsage(ImageDep &dep) {
+	if (dep.usage != ImageDep::Usage::MAX_ENUM)
+		return false;
+
+	if (!dep.config.has_value())
+		RETURN_ERROR("Couldn't find a valid usage for the image \"" <<
+			dep.imageName << "\". Please use the setImageUsage function.\n");
+
+	if (dep.config->usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+		dep.usage = ImageDep::Usage::Color;
+	else if (dep.config->usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+		dep.usage = ImageDep::Usage::DepthStencil;
+	else 
+		RETURN_ERROR("Couldn't find a valid usage for the image \"" <<
+			dep.imageName << "\". Please use the setImageUsage function.\n");
+	return false;
+}
+
+bool	RenderPass::validateWrite(ImageDep &dep) {
+	bool	colorUsage = dep.usage & ImageDep::Color;
+	bool	depthUsage = dep.usage & ImageDep::DepthStencil;
+
+	if (colorUsage && depthUsage)
+		RETURN_ERROR("Error for image \"" << dep.imageName
+				<< "\". Too many aspects.");
+	if (_writes.contains(dep.imageName)) {
+		auto	contains = [&](){
+			auto	it = std::find_if(_colorInfos.begin(), _colorInfos.end(),
+						[&](auto &it){return it.second.name == dep.imageName;});
+			return it != _colorInfos.end();
+		};
+
+		if ((colorUsage && !contains()) || (!colorUsage && contains()))
+			RETURN_ERROR("Error for image \"" << dep.imageName
+				<< "\". Trying to use it as both depth/stencil and color.");
+	} if (_reads.contains(dep.imageName))
+		RETURN_ERROR("Error for image \"" << dep.imageName
+			<< "\". Can't have an image be both a write and a read.\n");
+	if (dep.format == VK_FORMAT_MAX_ENUM)
+		RETURN_ERROR("Error for image \"" << dep.imageName <<
+			"\". Please ask for a valid format.\n");
+	if (colorUsage) {
+		if (!dep.bindingIndex.has_value())
+			RETURN_ERROR("Error for image \"" << dep.imageName <<
+				"\". No binding index for the color write has been given.\n");
+		auto	idx = dep.bindingIndex.value();
+		if (_colorInfos.contains(idx) &&
+			_colorInfos[idx].name != dep.imageName)
+			RETURN_ERROR("Error for image \"" << dep.imageName
+				<< "\". The binding " << std::to_string(idx)
+				<< " is already taken by image \""
+				<< _colorInfos[idx].name << "\".\n");
+	}
+	return false;
+}
+
+void	RenderPass::resolveOps(Image *img, ImageDep &dep) {
+	if (dep.load == VK_ATTACHMENT_LOAD_OP_MAX_ENUM) {
+		if (img->wasWritten())
+			dep.load = VK_ATTACHMENT_LOAD_OP_LOAD;
+		else
+			dep.load = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	}
+	if (dep.store == VK_ATTACHMENT_STORE_OP_MAX_ENUM)
+		dep.store = VK_ATTACHMENT_STORE_OP_STORE;
+}
+
+void	RenderPass::addWriteImage(Image *img, ImageDep &dep){
+	_writes[dep.imageName] = img;
+
+	if (dep.usage & ImageDep::Color) {
+		img->transitionLayout(_commandBuffer,
+								VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		ColorWrite	write{.name = dep.imageName, .format = dep.format,
+			.info = img->getRenderingInfo(
+				dep.clear.value_or(VkClearValue{{{0.f, 0.f, 0.f, 1.f}}}),
+				dep.load, dep.store, img->getView(ViewConfig()
+					.format(dep.format).aspect(VK_IMAGE_ASPECT_COLOR_BIT)
+					.components().identity()))};
+		_colorInfos[dep.bindingIndex.value()] = write;
+		return ;
+	}
+
+	bool				hasDepth = dep.usage & ImageDep::Depth;
+	bool				hasStenc = dep.usage & ImageDep::Stencil;
+	img->transitionLayout(_commandBuffer,
+								VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+	VkImageAspectFlags	aspect = 0;
+	if (hasDepth)		aspect |= VK_IMAGE_ASPECT_DEPTH_BIT;
+	if (hasStenc)		aspect |= VK_IMAGE_ASPECT_STENCIL_BIT;
+	auto	info = img->getRenderingInfo(
+					dep.clear.value_or(VkClearValue{.depthStencil = {1.f, 0}}),
+					dep.load, dep.store, img->getView(ViewConfig()
+						.format(dep.format).aspect(aspect)
+						.components().identity()));
+	if (hasDepth)	{ _depthInfo = info; _config.depthFormat = dep.format; }
+	if (hasStenc)	{ _stencilInfo = info; _config.stencilFormat = dep.format; }
+}
+
+bool	RenderPass::addRead(const std::string_view &readName) {
+	auto	matchName = [](const std::string_view &pattern,
+						const std::string_view &name)
+	{
+		if (pattern.ends_with('*'))
+			return name.starts_with(pattern.substr(0, pattern.size() - 1));
+		return pattern == name;
+	};
+
+	bool	notFound = true;
+	for (auto &[imageName, image]: _req->images) {
+		if (matchName(readName, imageName)) {
+			if (_writes.contains(imageName)) {
+				std::cerr << "Trying to read the image \"" << imageName
+					<< "\" which is already registered as a write.\n";
+				return (true);
+			}
+			if (_reads.contains(imageName))
+				continue ;
+			if (!image->wasWritten()) {
+				std::cerr << "Trying to read the image \"" << imageName
+					<< "\" which was never written.\n";
+				return (true);
+			}
+
+			_reads[imageName] = image;
+			image->transitionLayout(_commandBuffer,
+				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			notFound = false;
+		}
+	}
+	return (notFound);
+}
+
+Renderer	RenderPass::beginPass(void) {
+	if (_invalidDep || _colorInfos.empty())
+		return (Renderer(_ctx, std::move(*this)));
 
 	VkRenderingInfo	renderingInfo{};
 	renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+	renderingInfo.pNext = nullptr;
 	renderingInfo.renderArea = {{0, 0}, _extent};
 	renderingInfo.layerCount = 1;
-	renderingInfo.colorAttachmentCount = static_cast<uint32_t>(_colorsInfo.size());
-	renderingInfo.pColorAttachments = _colorsInfo.data();
-	if (_depthInfo.has_value()) {
-		renderingInfo.pDepthAttachment = &(*_depthInfo);
-		//TODO -> add it's own function to set it.
-		renderingInfo.pStencilAttachment = &(*_depthInfo);
+
+	std::vector<VkRenderingAttachmentInfo>	colors;
+	int										lastIndex = -1;
+	for (auto &[index, write]: _colorInfos) {
+		if (index != lastIndex + 1) {
+			std::cerr << "There is a gap in the binding of images";
+			return (Renderer(_ctx, std::move(*this)));
+		}
+		colors.push_back(write.info);
+		_config.colorFormats.push_back(write.format);
+		lastIndex = index;
 	}
+	renderingInfo.colorAttachmentCount = static_cast<uint32_t>(colors.size());
+	renderingInfo.pColorAttachments = colors.data();
+	if (_depthInfo.has_value())
+		renderingInfo.pDepthAttachment = &_depthInfo.value();
+	if (_stencilInfo.has_value())
+		renderingInfo.pStencilAttachment = &_stencilInfo.value();
+
+	for (auto &[imgName, img]: _writes)
+		img->setWrittenState({});
 
 	vkCmdBeginRendering(_commandBuffer, &renderingInfo);
 	setViewport();
-	_isValid = true;
-	return (Renderer(frameContext, std::move(*this)));
+	_passStarted = true;
+	return (Renderer(_ctx, std::move(*this)));
 }
 
 void	RenderPass::setViewport(void) {
@@ -81,27 +270,7 @@ void	RenderPass::endPass(void) {
 	vkCmdEndRendering(_commandBuffer);
 }
 
-RenderPass	&RenderPass::addColorWrite(Image *color, VkFormat format) {
-	color->transitionLayout(_commandBuffer,
-							VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-	_colorsInfo.push_back(color->getRenderingInfo(_colorClear, _colorsLoadOp,
-												_colorsStoreOp, format));
-	_colorsWrite.push_back(color);
-	_config.colorFormats.push_back(format);
-	return (*this);
-}
-
-RenderPass	&RenderPass::addDepthWrite(Image *depth, VkFormat format) {
-	depth->transitionLayout(_commandBuffer,
-							VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-
-	_depthWrite = depth;
-	_depthInfo = depth->getRenderingInfo(_depthClear, _depthLoadOp,
-										_depthStoreOp, format);
-	_config.depthFormat = format;
-	return (*this);
-}
 
 Renderer::Renderer(FrameContext &frameContext, RenderPass &&pass)
 	:	_device{pass._device},
@@ -109,12 +278,12 @@ Renderer::Renderer(FrameContext &frameContext, RenderPass &&pass)
 		_commandBuffer{pass._commandBuffer},
 		_config{pass._config},
 		_pass{std::move(pass)} {
-	if (_pass._isValid)
+	if (_pass._passStarted)
 		_frameContext.passIndex = RenderPass::newPass();
 }
 
 Renderer::operator	bool(void) const {
-	return (_pass._isValid);
+	return (_pass._passStarted);
 }
 
 FrameContext	&Renderer::frameContext(void) const	{
