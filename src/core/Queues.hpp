@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/13 15:14:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 12:44:08                                        */
+/*  Last Modified: 2026/06/10 09:23:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,12 +29,6 @@
 #include <utility>
 #include <vector>
 #include <vulkan/vulkan_core.h>
-
-namespace	hel::sys {
-
-struct	DepHasher;
-
-}
 
 namespace	hel {
 
