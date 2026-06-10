@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/10 10:25:57                                        */
+/*  Last Modified: 2026/06/10 11:01:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -103,6 +103,12 @@ bool	RenderPass::resolveUsage(ImageDep &dep) {
 }
 
 bool	RenderPass::validateWrite(ImageDep &dep) {
+	bool	colorUsage = dep.usage & ImageDep::Color;
+	bool	depthUsage = dep.usage & ImageDep::DepthStencil;
+
+	if (colorUsage && depthUsage)
+		RETURN_ERROR("Error for image \"" << dep.imageName
+				<< "\". Too many aspects.");
 	if (_writes.contains(dep.imageName)) {
 		auto	contains = [&](){
 			auto	it = std::find_if(_colorInfos.begin(), _colorInfos.end(),
@@ -110,21 +116,16 @@ bool	RenderPass::validateWrite(ImageDep &dep) {
 			return it != _colorInfos.end();
 		};
 
-		if ((dep.usage == ImageDep::Color && !contains())
-			|| (dep.usage != ImageDep::Color && contains()))
+		if ((colorUsage && !contains()) || (!colorUsage && contains()))
 			RETURN_ERROR("Error for image \"" << dep.imageName
 				<< "\". Trying to use it as both depth/stencil and color.");
-	}
-
-	if (_reads.contains(dep.imageName))
+	} if (_reads.contains(dep.imageName))
 		RETURN_ERROR("Error for image \"" << dep.imageName
 			<< "\". Can't have an image be both a write and a read.\n");
-
 	if (dep.format == VK_FORMAT_MAX_ENUM)
 		RETURN_ERROR("Error for image \"" << dep.imageName <<
 			"\". Please ask for a valid format.\n");
-
-	if (dep.usage == ImageDep::Usage::Color) {
+	if (colorUsage) {
 		if (!dep.bindingIndex.has_value())
 			RETURN_ERROR("Error for image \"" << dep.imageName <<
 				"\". No binding index for the color write has been given.\n");
@@ -156,42 +157,30 @@ void	RenderPass::addWriteImage(Image *img, ImageDep &dep){
 	if (dep.usage & ImageDep::Color) {
 		img->transitionLayout(_commandBuffer,
 								VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-		ColorWrite	write;
-		write.name = dep.imageName;
-		write.format = dep.format;
-		write.info = img->getRenderingInfo(
-			dep.clear.value_or(VkClearValue{.color = {{0.f, 0.f, 0.f, 1.f}}}),
-			dep.load, dep.store, img->getView(ViewConfig()
-				.format(dep.format).aspect(VK_IMAGE_ASPECT_COLOR_BIT)
-				.components().identity()));
+		ColorWrite	write{.name = dep.imageName, .format = dep.format,
+			.info = img->getRenderingInfo(
+				dep.clear.value_or(VkClearValue{{{0.f, 0.f, 0.f, 1.f}}}),
+				dep.load, dep.store, img->getView(ViewConfig()
+					.format(dep.format).aspect(VK_IMAGE_ASPECT_COLOR_BIT)
+					.components().identity()))};
 		_colorInfos[dep.bindingIndex.value()] = write;
+		return ;
 	}
-	if (dep.usage & ImageDep::Usage::Depth) {
-		img->transitionLayout(_commandBuffer,
-						VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-		VkImageAspectFlags	aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
-		if (dep.usage & ImageDep::Usage::Stencil)
-			aspect |= VK_IMAGE_ASPECT_STENCIL_BIT;
-		_depthInfo = img->getRenderingInfo(
-			dep.clear.value_or(VkClearValue{.depthStencil = {1.f, 0}}),
-			dep.load, dep.store, img->getView(ViewConfig()
-				.format(dep.format).aspect(aspect)
-				.components().identity()));
-		_config.depthFormat = dep.format;
-	}
-	if (dep.usage & ImageDep::Usage::Stencil) {
-		img->transitionLayout(_commandBuffer,
-						VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-		VkImageAspectFlags	aspect = VK_IMAGE_ASPECT_STENCIL_BIT;
-		if (dep.usage & ImageDep::Usage::Depth)
-			aspect |= VK_IMAGE_ASPECT_DEPTH_BIT;
-		_stencilInfo = img->getRenderingInfo(
-			dep.clear.value_or(VkClearValue{.depthStencil = {1.f, 0}}),
-			dep.load, dep.store, img->getView(ViewConfig()
-				.format(dep.format).aspect(aspect)
-				.components().identity()));
-		_config.stencilFormat = dep.format;
-	}
+
+	bool				hasDepth = dep.usage & ImageDep::Depth;
+	bool				hasStenc = dep.usage & ImageDep::Stencil;
+	img->transitionLayout(_commandBuffer,
+								VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+	VkImageAspectFlags	aspect = 0;
+	if (hasDepth)		aspect |= VK_IMAGE_ASPECT_DEPTH_BIT;
+	if (hasStenc)		aspect |= VK_IMAGE_ASPECT_STENCIL_BIT;
+	auto	info = img->getRenderingInfo(
+					dep.clear.value_or(VkClearValue{.depthStencil = {1.f, 0}}),
+					dep.load, dep.store, img->getView(ViewConfig()
+						.format(dep.format).aspect(aspect)
+						.components().identity()));
+	if (hasDepth)	{ _depthInfo = info; _config.depthFormat = dep.format; }
+	if (hasStenc)	{ _stencilInfo = info; _config.stencilFormat = dep.format; }
 }
 
 bool	RenderPass::addRead(const std::string_view &readName) {
