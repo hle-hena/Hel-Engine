@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 17:52:31                                        */
+/*  Last Modified: 2026/06/10 09:48:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -66,7 +66,7 @@ class	RenderPass {
 
 		Device				&_device;
 		FrameContext		&_ctx;
-		RenderRequest		*&_req;
+		RenderRequest		*_req;
 		VkCommandBuffer		_commandBuffer;
 		VkExtent2D			_extent;
 		bool				_invalidDep{false};
