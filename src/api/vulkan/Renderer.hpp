@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/10 09:48:39                                        */
+/*  Last Modified: 2026/06/10 10:25:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -53,10 +53,9 @@ class	RenderPass {
 
 	private:
 		bool	addWrite(ImageDep &dep, ImagePool *imagePool);
-		bool	findUsage(ImageDep &dep);
-		void	findOps(Image *img, ImageDep &dep);
-		void	findLoadOp(Image *img, ImageDep &dep);
-		void	findStoreOp(ImageDep &dep);
+		bool	validateWrite(ImageDep &dep);
+		bool	resolveUsage(ImageDep &dep);
+		void	resolveOps(Image *img, ImageDep &dep);
 		void	addWriteImage(Image *img, ImageDep &dep);
 
 		bool	addRead(const std::string_view &readName);

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 17:52:37                                        */
+/*  Last Modified: 2026/06/10 10:25:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -54,57 +54,92 @@ RenderPass::~RenderPass(void) {
 		endPass();
 }
 
-bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
-	if (_writes.contains(dep.imageName)) {
-		return (false);
-	}
-	if (_reads.contains(dep.imageName)) {
-		std::cerr << "Error for image \"" << dep.imageName
-			<< "\". Can't have an image be both a write and a read.\n";
-		return (true);
-	}
+#define	RETURN_ERROR(error)	\
+do {						\
+	std::cerr << error;		\
+	return true;			\
+} while (0)
 
-	if (dep.format == VK_FORMAT_MAX_ENUM) {
-		std::cerr << "Error for image \"" << dep.imageName << "\". No format"
-			<< " was asked. Use the setFormatAsked function.\n";
-		return (true);
-	}
-	if (dep.usage == ImageDep::Usage::MAX_ENUM && findUsage(dep))
-		return (true);
-	if (dep.usage == ImageDep::Usage::Color && !dep.bindingIndex.has_value()) {
-		std::cerr << "Error for image \"" << dep.imageName <<
-			"\". No binding index for the image write has been given.\n";
-		return (true);
-	}
-	if (dep.usage == ImageDep::Usage::Color
-		&& _colorInfos.contains(dep.bindingIndex.value())
-		&& _colorInfos[dep.bindingIndex.value()].name != dep.imageName)
-	{
-		std::cerr << "Error for image \"" << dep.imageName <<
-			"\". The binding " << std::to_string(dep.bindingIndex.value())
-			<< " is already taken.\n";
-		return (true);
-	}
+
+bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
+	if (resolveUsage(dep) || validateWrite(dep))
+		return true;
+	if (_writes.contains(dep.imageName))
+		return false;
+
 	Image	*img = nullptr;
 	if (_req->images.contains(dep.imageName))
 		img = _req->images[dep.imageName];
 	else if (dep.config.has_value()) {
 		img = imagePool->acquire(dep.config.value());
 		_req->images[dep.imageName] = img;
-	} else {
-		std::cerr << "Error for image \"" << dep.imageName << "\". Image"
+	} else
+		RETURN_ERROR("Error for image \"" << dep.imageName << "\". Image"
 			<< " doesn't exists, and no config has "
-			<< "been provided in the dependancy.\n";
-		return (true);
-	}
+			<< "been provided in the dependancy.\n");
 	if (dep.load == VK_ATTACHMENT_LOAD_OP_MAX_ENUM ||
 		dep.store == VK_ATTACHMENT_STORE_OP_MAX_ENUM)
-		findOps(img, dep);
+		resolveOps(img, dep);
 	addWriteImage(img, dep);
 	return (false);
 }
 
-void	RenderPass::findOps(Image *img, ImageDep &dep) {
+bool	RenderPass::resolveUsage(ImageDep &dep) {
+	if (dep.usage != ImageDep::Usage::MAX_ENUM)
+		return false;
+
+	if (!dep.config.has_value())
+		RETURN_ERROR("Couldn't find a valid usage for the image \"" <<
+			dep.imageName << "\". Please use the setImageUsage function.\n");
+
+	if (dep.config->usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+		dep.usage = ImageDep::Usage::Color;
+	else if (dep.config->usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+		dep.usage = ImageDep::Usage::DepthStencil;
+	else 
+		RETURN_ERROR("Couldn't find a valid usage for the image \"" <<
+			dep.imageName << "\". Please use the setImageUsage function.\n");
+	return false;
+}
+
+bool	RenderPass::validateWrite(ImageDep &dep) {
+	if (_writes.contains(dep.imageName)) {
+		auto	contains = [&](){
+			auto	it = std::find_if(_colorInfos.begin(), _colorInfos.end(),
+						[&](auto &it){return it.second.name == dep.imageName;});
+			return it != _colorInfos.end();
+		};
+
+		if ((dep.usage == ImageDep::Color && !contains())
+			|| (dep.usage != ImageDep::Color && contains()))
+			RETURN_ERROR("Error for image \"" << dep.imageName
+				<< "\". Trying to use it as both depth/stencil and color.");
+	}
+
+	if (_reads.contains(dep.imageName))
+		RETURN_ERROR("Error for image \"" << dep.imageName
+			<< "\". Can't have an image be both a write and a read.\n");
+
+	if (dep.format == VK_FORMAT_MAX_ENUM)
+		RETURN_ERROR("Error for image \"" << dep.imageName <<
+			"\". Please ask for a valid format.\n");
+
+	if (dep.usage == ImageDep::Usage::Color) {
+		if (!dep.bindingIndex.has_value())
+			RETURN_ERROR("Error for image \"" << dep.imageName <<
+				"\". No binding index for the color write has been given.\n");
+		auto	idx = dep.bindingIndex.value();
+		if (_colorInfos.contains(idx) &&
+			_colorInfos[idx].name != dep.imageName)
+			RETURN_ERROR("Error for image \"" << dep.imageName
+				<< "\". The binding " << std::to_string(idx)
+				<< " is already taken by image \""
+				<< _colorInfos[idx].name << "\".\n");
+	}
+	return false;
+}
+
+void	RenderPass::resolveOps(Image *img, ImageDep &dep) {
 	if (dep.load == VK_ATTACHMENT_LOAD_OP_MAX_ENUM) {
 		if (img->wasWritten())
 			dep.load = VK_ATTACHMENT_LOAD_OP_LOAD;
@@ -113,36 +148,6 @@ void	RenderPass::findOps(Image *img, ImageDep &dep) {
 	}
 	if (dep.store == VK_ATTACHMENT_STORE_OP_MAX_ENUM)
 		dep.store = VK_ATTACHMENT_STORE_OP_STORE;
-}
-
-void	RenderPass::findLoadOp(Image *img, ImageDep &dep) {
-	if (img->wasWritten())
-		dep.load = VK_ATTACHMENT_LOAD_OP_LOAD;
-	else
-	 	dep.load = VK_ATTACHMENT_LOAD_OP_CLEAR;
-}
-
-void	RenderPass::findStoreOp(ImageDep &dep) {
-	dep.store = VK_ATTACHMENT_STORE_OP_STORE;
-}
-
-bool	RenderPass::findUsage(ImageDep &dep) {
-	if (!dep.config.has_value()) {
-		std::cerr << "Couldn't find a valid usage for the image \"" <<
-			dep.imageName << "\". Please use the setImageUsage function.\n";
-		return true;
-	}
-
-	if (dep.config->usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-		dep.usage = ImageDep::Usage::Color;
-	else if (dep.config->usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-		dep.usage = ImageDep::Usage::DepthStencil;
-	else {
-		std::cerr << "Couldn't find a valid usage for the image \"" <<
-			dep.imageName << "\". Please use the setImageUsage function.\n";
-		return true;
-	}
-	return false;
 }
 
 void	RenderPass::addWriteImage(Image *img, ImageDep &dep){
