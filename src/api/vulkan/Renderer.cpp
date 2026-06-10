@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/10 11:01:43                                        */
+/*  Last Modified: 2026/06/10 17:37:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -283,6 +283,8 @@ Renderer::Renderer(FrameContext &frameContext, RenderPass &&pass)
 }
 
 Renderer::operator	bool(void) const {
+	if (!_pass._passStarted)
+		std::cout << "A pass didn't start.\n";
 	return (_pass._passStarted);
 }
 

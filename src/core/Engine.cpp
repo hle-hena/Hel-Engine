@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 16:13:12                                        */
+/*  Last Modified: 2026/06/10 17:45:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -202,6 +202,8 @@ void	Engine::executePass(FrameContext &ctx,
 						auto &&systems,
 						PhaseDependencies sys::ISystem::*depMember,
 						void (sys::ISystem::*method)(const Renderer&)) {
+	if (systems.empty())
+		return ;
 	if (auto renderer = RenderPass(_device, ctx, _imagePool.get(),
 							systems, depMember)
 						.beginPass()) {

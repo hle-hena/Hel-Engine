@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 15:47:12                                        */
+/*  Last Modified: 2026/06/10 16:29:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -121,7 +121,7 @@ void	Selection::renderInteraction(const Renderer &renderer) {
 	if (pos.x < 0 || pos.y < 0 || pos.x > viewportSize.x || pos.y > viewportSize.y)
 		return ;
 
-	auto	entityImg = ctx.request->images["entityID"];
+	auto	entityImg = ctx.request->images["entity layer"];
 	if (!entityImg)
 		return ;
 

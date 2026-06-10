@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 15:44:20                                        */
+/*  Last Modified: 2026/06/10 11:20:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,8 +48,13 @@ void	Camera::init(void) {
 			.setImageUsage(ImageDep::Usage::Color)
 			.setWriteBindingIndex(1));
 	renderInterDeps.write.push_back(
-		ImageDep("depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
-			.setImageUsage(ImageDep::Usage::DepthStencil));
+		ImageDep("gizmo depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
+			.setImageUsage(ImageDep::Usage::DepthStencil)
+			.setImageConfig(Image::Config()
+				.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
+				.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+				.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
+				.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT)));
 
 	_assetManager = &_registry->getAssetManager();
 	{

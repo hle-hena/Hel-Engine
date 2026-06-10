@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/21 19:38:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 12:37:47                                        */
+/*  Last Modified: 2026/06/10 17:21:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -65,7 +65,7 @@ bool	RenderRequest::operator==(const RenderRequest &other) const {
 	};
 	bool	sameImages = false;
 	if (this->images.size() == other.images.size()) {
-		sameImages &= std::equal(
+		sameImages = std::equal(
 			this->images.begin(),
 			this->images.end(),
 			other.images.begin(),
