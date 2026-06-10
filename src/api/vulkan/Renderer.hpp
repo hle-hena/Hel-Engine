@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/10 10:25:41                                        */
+/*  Last Modified: 2026/06/10 11:03:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -79,7 +79,6 @@ class	RenderPass {
 			VkFormat					format;
 			VkRenderingAttachmentInfo	info;
 		};
-		Image										*_depthWrite;
 		std::map<int, ColorWrite>					_colorInfos{};
 		std::optional<VkRenderingAttachmentInfo>	_depthInfo{};
 		std::optional<VkRenderingAttachmentInfo>	_stencilInfo{};
