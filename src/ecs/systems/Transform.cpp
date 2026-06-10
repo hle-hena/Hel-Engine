@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/10 16:28:59                                        */
+/*  Last Modified: 2026/06/10 17:30:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -55,6 +55,14 @@ void	Transform::init(void) {
 	updateDeps.block.push_back("view matrix calculation");
 
 	renderInterDeps.provides = "render transform gizmo";
+	renderInterDeps.write.push_back(
+		ImageDep("mainColor", VK_FORMAT_B8G8R8A8_SRGB)
+			.setImageUsage(ImageDep::Usage::Color)
+			.setWriteBindingIndex(0));
+	renderInterDeps.write.push_back(
+		ImageDep("entity layer", VK_FORMAT_R32_UINT)
+			.setImageUsage(ImageDep::Usage::Color)
+			.setWriteBindingIndex(1));
 
 	updateInterDeps.provides = "act on the transform gizmo action";
 
