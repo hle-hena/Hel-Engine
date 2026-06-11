@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 14:17:24                                        */
+/*  Last Modified: 2026/06/11 17:30:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -50,6 +50,15 @@ class	ISystem {
 							const FrameContext &frameCtx) final;
 		virtual void	init(void) = 0;
 
+		using RenderFn = void (ISystem::*)(const Renderer &);
+		using RenderPass = std::pair<PhaseDependencies, RenderFn>;
+		using RenderMap = std::unordered_map<std::string, RenderPass>;
+		using UpdateFn = void (ISystem::*)(const FrameContext &);
+		using UpdatePass = std::pair<PhaseDependencies, RenderFn>;
+		using UpdateMap = std::unordered_map<std::string, RenderPass>;
+		//Create a struct that encapsulate an it, so that you can do:
+		//	if (auto fn = system.update("Lorem Ipsum"))
+		
 		virtual void	updateInteraction(const FrameContext &) {}
 		virtual void	update(const FrameContext &) {}
 
