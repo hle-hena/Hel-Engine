@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/10 17:30:52                                        */
+/*  Last Modified: 2026/06/12 14:23:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -51,8 +51,14 @@ SystemRegistrar<Transform>	reg_TransformSystem;
 Transform::Action	Transform::GizmoContext::action = Action::Move;
 
 void	Transform::init(void) {
-	updateDeps.provides = "model matrix calculation";
-	updateDeps.block.push_back("view matrix calculation");
+	addUpdateDep("transform gizmo action", &Transform::gizmoAction)
+		->getDep()
+			->addBlock("align normal to parent")
+			->addBlock("model matrix calculation");
+	addUpdateDep("model matrix calculation", &Transform::update)
+		->getDep()
+			->addRequire("align normal to parent")
+			->addBlock("view matrix calculation");
 
 	renderInterDeps.provides = "render transform gizmo";
 	renderInterDeps.write.push_back(
@@ -63,8 +69,6 @@ void	Transform::init(void) {
 		ImageDep("entity layer", VK_FORMAT_R32_UINT)
 			.setImageUsage(ImageDep::Usage::Color)
 			.setWriteBindingIndex(1));
-
-	updateInterDeps.provides = "act on the transform gizmo action";
 
 	_assetManager = &_registry->getAssetManager();
 	_inputState = &_registry->getInputState();
@@ -173,7 +177,7 @@ void	Transform::update(const FrameContext &) {
 	}
 }
 
-void	Transform::updateInteraction(const FrameContext &ctx) {
+void	Transform::gizmoAction(const FrameContext &ctx) {
 	std::erase_if(_gizmoContexts, [&](auto &gizmoIt){
 		auto	&[key, gizmo] = gizmoIt;
 		if (--gizmo._life == 0)

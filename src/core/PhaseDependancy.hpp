@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/05 12:15:03 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 15:52:14                                        */
+/*  Last Modified: 2026/06/12 12:50:39                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -55,12 +55,21 @@ struct	ImageDep {
 };
 
 struct	PhaseDependencies {
-	std::vector<std::string>	require{};
-	std::vector<std::string>	block{};
+	std::vector<std::string_view>	require{};
+	std::vector<std::string_view>	block{};
 	std::optional<std::string>	provides;
 
 	std::vector<ImageDep>			write;
 	std::vector<std::string_view>	read;
+
+	auto	*addBlock(std::string_view newOne) {
+		block.push_back(newOne);
+		return this;
+	}
+	auto	*addRequire(std::string_view newOne) {
+		require.push_back(newOne);
+		return this;
+	}
 
 	bool operator==(const PhaseDependencies&) const;
 };

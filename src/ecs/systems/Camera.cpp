@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/10 11:20:14                                        */
+/*  Last Modified: 2026/06/12 14:23:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,8 +35,8 @@ namespace	hel::sys {
 SystemRegistrar<Camera>	reg_CameraSystem;
 
 void	Camera::init(void) {
-	updateDeps.provides = "view matrix calculation";
-	updateDeps.require.push_back("model matrix calculation");
+	addUpdateDep("view matrix calculation", &Camera::update)
+		->getDep()->addRequire("model matrix calculation");
 
 	renderInterDeps.provides = "render camera frustum";
 	renderInterDeps.write.push_back(

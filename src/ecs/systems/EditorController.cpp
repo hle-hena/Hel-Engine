@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/03 18:56:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/01 18:02:52                                        */
+/*  Last Modified: 2026/06/12 14:39:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,9 +29,10 @@ SystemRegistrar<EditorController>	reg_EditorControllerSystem;
 void	EditorController::init(void) {
 	_input = &_registry->getInputState();
 
-	updateDeps.provides = "editor control";
-	updateDeps.require.push_back("allign normal to parent");
-	updateDeps.block.push_back("model matrix calculation");
+	addUpdateDep("editor control", &EditorController::handleInput)
+		->getDep()
+			->addBlock("model matrix calculation")
+			->addRequire("align normal to parent");
 }
 
 void	EditorController::handleKeyboardInput(Entity::id handle, float deltaTime) {
@@ -92,7 +93,7 @@ void	EditorController::handleMouseMove(Entity::id handle) {
 	transform->rotation = glm::normalize(qYaw * qPitch * transform->rotation);
 }
 
-void	EditorController::update(const FrameContext &ctx) {
+void	EditorController::handleInput(const FrameContext &ctx) {
 	auto	window = _input->getFocused();
 	if (!window)	{ return ; }
 

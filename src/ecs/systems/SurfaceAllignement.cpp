@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:20:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/01 17:00:49                                        */
+/*  Last Modified: 2026/06/12 14:24:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,10 +24,13 @@ namespace	hel::sys {
 SystemRegistrar<SurfaceAllignement>	reg_SurfaceAllignementSystem;
 
 void	SurfaceAllignement::init(void) {
-	updateDeps.provides = "allign normal to parent";
+	addUpdateDep("align normal to parent", &SurfaceAllignement::align)
+		->getDep()
+			->addRequire("transform gizmo action")
+			->addBlock("model matrix calculation");
 }
 
-void	SurfaceAllignement::update(const FrameContext &) {
+void	SurfaceAllignement::align(const FrameContext &) {
 	auto	entities = _registry->view<include<comp::Transform, comp::SurfaceAllignement>>();
 
 	for (auto entity: entities) {

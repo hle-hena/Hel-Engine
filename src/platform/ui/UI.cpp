@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 15:51:23                                        */
+/*  Last Modified: 2026/06/12 14:23:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,7 +36,10 @@ UI::~UI(void) {
 }
 
 void	UI::init(void) {
-	updateInterDeps.provides = "update ui";
+	addUpdateDep("update ui", &UI::updateUI)
+		->getDep()
+			->addRequire("view matrix calculation")
+			->addRequire("model matrix calculation");
 
 	renderDeps.provides = "render ui";
 	renderDeps.write.push_back(
@@ -120,7 +123,7 @@ void	UI::addDock(Window *window, const ImVec2 &size) {
 	ImGui::PopStyleVar(2);
 }
 
-void	UI::updateInteraction(const FrameContext &ctx) {
+void	UI::updateUI(const FrameContext &ctx) {
 	auto	windowExtent = ctx.window->getExtent();
 	float	windowWidth = static_cast<float>(windowExtent.width);
 	float	windowHeight = static_cast<float>(windowExtent.height);

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/03 19:12:45                                        */
+/*  Last Modified: 2026/06/12 15:24:33                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,9 +19,11 @@
 
 namespace	hel {
 
-SystemManager::UnderlyingVec				SystemManager::_data{};
-std::vector<sys::ISystem*>				SystemManager::_update{};
-std::vector<sys::ISystem*>				SystemManager::_uInteraction{};
+std::vector<sys::ISystem::Func*>		SystemManager::_updateCycle{};
+std::vector<std::vector<
+			sys::ISystem::Func*>>		SystemManager::_renderCycle{};
+
+SystemManager::UnderlyingVec			SystemManager::_data{};
 std::vector<std::vector<sys::ISystem*>>	SystemManager::_render{{}};
 std::vector<std::vector<sys::ISystem*>>	SystemManager::_postProcess{{}};
 std::vector<sys::ISystem*>				SystemManager::_rInteraction{};
@@ -36,7 +38,7 @@ do {														\
 
 #define sortSystems(cycleDeps, cycleName)										\
 do {																			\
-	std::unordered_map<std::string, sys::ISystem *>					byName;		\
+	std::unordered_map<std::string_view, sys::ISystem *>			byName;		\
 	std::unordered_map<sys::ISystem *, std::vector<sys::ISystem *>>	adj;		\
 	std::unordered_map<sys::ISystem *, uint32_t>					inDegree;	\
 																				\
@@ -115,15 +117,67 @@ do {																			\
 		listName.emplace_back(newList);											\
 } while (0)
 
+static inline void	kahnSort(const std::vector<SystemManager::SysPtr> &data,
+			std::vector<sys::ISystem::Func*> &target) {
+	using strView = std::string_view;
+	std::unordered_map<strView, sys::ISystem::Func*>		byName;
+	std::unordered_map<strView, std::vector<strView>>		adj;
+	std::unordered_map<strView, uint32_t>					inDegree;
+
+	for (auto &sys: data) {
+		for (auto &[provide, func]: sys->updateCycleDep) {
+			if (byName.contains(provide)) {
+				std::cerr << "Duplicated provide \"" << provide << "\".\n";
+				return ;
+			}
+			byName[provide] = &func;
+			inDegree[provide] = 0;
+		}
+	}
+	for (auto &[provide, systemFunc]: byName) {
+		for (auto &require: systemFunc->getDep()->require) {
+			if (!byName.contains(require))
+				depNotFound(require, "require", provide);
+			inDegree[provide]++;
+			adj[require].push_back(provide);
+		}
+		for (auto &block: systemFunc->getDep()->block) {
+			if (!byName.contains(block))
+				depNotFound(block, "block", provide);
+			inDegree[block]++;
+			adj[provide].push_back(block);
+		}
+	}
+
+	std::queue<strView>	queue;
+	for (auto &[provide, degree]: inDegree)
+		if (degree == 0)	queue.push(provide);
+	while (!queue.empty()) {
+		auto	current = queue.front();	queue.pop();
+		target.push_back(byName[current]);
+		for (auto &neighbor: adj[current]) {
+			if (--inDegree[neighbor] == 0)
+				queue.push(neighbor);
+		}
+	}
+	if (target.size() != byName.size()) {
+		std::cerr << "Loop detected in the cycle\n";
+		target.clear();
+	}
+}
+
 void	SystemManager::sort(EngineKey) {
-	sortSystems(updateDeps, _update);
-	sortSystems(updateInterDeps, _uInteraction);
+	_updateCycle.clear();
+	kahnSort(_data, _updateCycle);
+	// _renderCycle.clear();
+	// _renderCycle.push_back({});
+	// kahnSort(_data, _renderCycle[0]);
+
+
 	sortSystems(renderDeps, _render[0]);
 	sortSystems(postProcessDeps, _postProcess[0]);
 	sortSystems(renderInterDeps, _rInteraction);
 
-	printSystemOrder("update", _update, updateDeps);
-	printSystemOrder("update interaction", _uInteraction, updateInterDeps);
 	printSystemOrder("render", _render[0], renderDeps);
 	printSystemOrder("post processing", _postProcess[0], postProcessDeps);
 	printSystemOrder("render interaction", _rInteraction, renderInterDeps);

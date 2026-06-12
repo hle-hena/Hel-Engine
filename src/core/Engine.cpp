@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/10 17:45:18                                        */
+/*  Last Modified: 2026/06/12 14:39:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -135,11 +135,9 @@ void	Engine::tick(Window *window, uint32_t frameIndex) {
 
 void	Engine::updateTick(UiContext &ui, FrameContext &frameCtx) {
 	ui.newFrame();
-	for (auto &system: _systems.getUpdateInteractions())
-		system->updateInteraction(frameCtx);
+	for (auto &func: _systems.getUpdates())
+		func->execute(frameCtx);
 	ui.endFrame();
-	for (auto &system: _systems.getUpdates())
-		system->update(frameCtx);
 }
 
 void	Engine::renderTick(Window *window, UiContext &, FrameContext &ctx) {

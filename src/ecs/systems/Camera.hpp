@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 14:13:50                                        */
+/*  Last Modified: 2026/06/12 14:18:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,7 +37,7 @@ class	Camera : public ISystem {
 
 		void	init(void) override;
 
-		void	update(const FrameContext &ctx) override;
+		void	update(const FrameContext &ctx);
 		void	renderInteraction(const Renderer &renderer) override;
 
 		RENDER_TYPES("RenderScene")

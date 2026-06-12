@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 18:10:18                                        */
+/*  Last Modified: 2026/06/12 14:20:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -54,7 +54,7 @@ class	UI : public ISystem {
 		const auto	&getPanelRegistry(void) const
 					{ return (_panelRegistry); }
 
-		void	updateInteraction(const FrameContext &ctx) override;
+		void	updateUI(const FrameContext &ctx);
 		void	render(const Renderer &renderer) override;
 
 		RENDER_TYPES("RenderUI")

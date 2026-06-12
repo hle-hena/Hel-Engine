@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 14:31:22                                        */
+/*  Last Modified: 2026/06/12 15:25:42                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,10 +27,8 @@ struct	SystemManager {
 	using SysPtr		= std::unique_ptr<sys::ISystem>;
 	using UnderlyingVec	= std::vector<SysPtr>;
 
-	const std::vector<sys::ISystem*>	&getUpdates(void)
-		{ return _update; }
-	const std::vector<sys::ISystem*>	&getUpdateInteractions(void)
-		{ return _uInteraction; }
+	const std::vector<sys::ISystem::Func*>	&getUpdates(void)
+		{ return _updateCycle; }
 	const std::vector<std::vector<sys::ISystem*>>	&getRenders(void)
 		{ return _render; }
 	const std::vector<std::vector<sys::ISystem*>>	&getPostProcess(void)
@@ -53,8 +51,10 @@ struct	SystemManager {
 	}
 
 	private:
-		static std::vector<sys::ISystem*>				_update;
-		static std::vector<sys::ISystem*>				_uInteraction;
+		static std::vector<sys::ISystem::Func*>			_updateCycle;
+		static std::vector<std::vector<
+							sys::ISystem::Func*>>		_renderCycle;
+
 		static std::vector<std::vector<sys::ISystem*>>	_render;
 		static std::vector<std::vector<sys::ISystem*>>	_postProcess;
 		static std::vector<sys::ISystem*>				_rInteraction;
