@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/12 15:24:33                                        */
+/*  Last Modified: 2026/06/17 13:53:44                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,17 +16,16 @@
 
 #include "core/SystemManager.hpp"
 #include <queue>
+#include <iostream>
 
 namespace	hel {
 
 std::vector<sys::ISystem::Func*>		SystemManager::_updateCycle{};
-std::vector<std::vector<
-			sys::ISystem::Func*>>		SystemManager::_renderCycle{};
+std::unordered_map<std::string_view,
+	std::vector<std::vector<
+			sys::ISystem::Func*>>>		SystemManager::_renderCycle{};
 
-SystemManager::UnderlyingVec			SystemManager::_data{};
-std::vector<std::vector<sys::ISystem*>>	SystemManager::_render{{}};
-std::vector<std::vector<sys::ISystem*>>	SystemManager::_postProcess{{}};
-std::vector<sys::ISystem*>				SystemManager::_rInteraction{};
+std::vector<SystemManager::SysPtr>		SystemManager::_data{};
 
 #define depNotFound(depName, depStatus, parentProvide)		\
 do {														\
@@ -36,61 +35,54 @@ do {														\
 		<< "\"\n";											\
 } while (0)
 
-#define sortSystems(cycleDeps, cycleName)										\
+#define kahnSort(data, target, depName)											\
 do {																			\
-	std::unordered_map<std::string_view, sys::ISystem *>			byName;		\
-	std::unordered_map<sys::ISystem *, std::vector<sys::ISystem *>>	adj;		\
-	std::unordered_map<sys::ISystem *, uint32_t>					inDegree;	\
+	using strView = std::string_view;											\
+	std::unordered_map<strView, sys::ISystem::Func*>		byName;				\
+	std::unordered_map<strView, std::vector<strView>>		adj;				\
+	std::unordered_map<strView, uint32_t>					inDegree;			\
 																				\
-	for (auto &system: _data) {													\
-		if (system->cycleDeps.provides.has_value())	{							\
-			byName[system->cycleDeps.provides.value()] = system.get();			\
-			inDegree[system.get()] = 0;											\
+	for (auto &sys: data) {														\
+		for (auto &[provide, func]: sys->depName) {								\
+			if (byName.contains(provide)) {										\
+				std::cerr << "Duplicated provide \"" << provide << "\".\n";		\
+				return ;														\
+			}																	\
+			byName[provide] = &func;											\
+			inDegree[provide] = 0;												\
+		}																		\
+	}																			\
+	for (auto &[provide, systemFunc]: byName) {									\
+		for (auto &require: systemFunc->getDep()->require) {					\
+			if (!byName.contains(require))										\
+				depNotFound(require, "require", provide);						\
+			inDegree[provide]++;												\
+			adj[require].push_back(provide);									\
+		}																		\
+		for (auto &block: systemFunc->getDep()->block) {						\
+			if (!byName.contains(block))										\
+				depNotFound(block, "block", provide);							\
+			inDegree[block]++;													\
+			adj[provide].push_back(block);										\
 		}																		\
 	}																			\
 																				\
-	for (auto &[name, system]: byName) {										\
-		for (auto &dep: system->cycleDeps.block) {								\
-			auto it = byName.find(dep);											\
-			if (it == byName.end()) {											\
-				depNotFound(dep, "block", name); continue ;						\
-			}																	\
-			adj[system].push_back(it->second);									\
-			inDegree[it->second]++;												\
-		}																		\
-		for (auto &dep: system->cycleDeps.require) {							\
-			auto it = byName.find(dep);											\
-			if (it == byName.end()) {											\
-				depNotFound(dep, "require", name); continue ;					\
-			}																	\
-			adj[it->second].push_back(system);									\
-			inDegree[system]++;													\
-		}																		\
-	}																			\
-	std::queue<sys::ISystem *>	queue;											\
-	for (auto &[system, degree]: inDegree)										\
-		if (degree == 0)														\
-			queue.push(system);													\
+	std::queue<strView>	queue;													\
+	for (auto &[provide, degree]: inDegree)										\
+		if (degree == 0)	queue.push(provide);								\
 	while (!queue.empty()) {													\
 		auto	current = queue.front();	queue.pop();						\
-		cycleName.push_back(current);											\
-																				\
+		target.push_back(byName[current]);										\
+		std::cout << " -[" << current << "]-";									\
 		for (auto &neighbor: adj[current]) {									\
 			if (--inDegree[neighbor] == 0)										\
 				queue.push(neighbor);											\
 		}																		\
 	}																			\
-																				\
-	if (cycleName.size() != byName.size())										\
+	if (target.size() != byName.size()) {										\
 		std::cerr << "Loop detected in the cycle\n";							\
-} while (0)
-
-#define printSystemOrder(listName, listSystems, depName)						\
-do {																			\
-	std::cout << "Order for " << listName << " : --";							\
-	for (auto &system: listSystems)												\
-		std::cout << "[" << system->depName.provides.value() << "]--";			\
-	std::cout << "\n\n";														\
+		target.clear();															\
+	}																			\
 } while (0)
 
 #define splitPasses(listName, depName)											\
@@ -117,73 +109,39 @@ do {																			\
 		listName.emplace_back(newList);											\
 } while (0)
 
-static inline void	kahnSort(const std::vector<SystemManager::SysPtr> &data,
-			std::vector<sys::ISystem::Func*> &target) {
-	using strView = std::string_view;
-	std::unordered_map<strView, sys::ISystem::Func*>		byName;
-	std::unordered_map<strView, std::vector<strView>>		adj;
-	std::unordered_map<strView, uint32_t>					inDegree;
-
-	for (auto &sys: data) {
-		for (auto &[provide, func]: sys->updateCycleDep) {
-			if (byName.contains(provide)) {
-				std::cerr << "Duplicated provide \"" << provide << "\".\n";
-				return ;
-			}
-			byName[provide] = &func;
-			inDegree[provide] = 0;
-		}
-	}
-	for (auto &[provide, systemFunc]: byName) {
-		for (auto &require: systemFunc->getDep()->require) {
-			if (!byName.contains(require))
-				depNotFound(require, "require", provide);
-			inDegree[provide]++;
-			adj[require].push_back(provide);
-		}
-		for (auto &block: systemFunc->getDep()->block) {
-			if (!byName.contains(block))
-				depNotFound(block, "block", provide);
-			inDegree[block]++;
-			adj[provide].push_back(block);
-		}
-	}
-
-	std::queue<strView>	queue;
-	for (auto &[provide, degree]: inDegree)
-		if (degree == 0)	queue.push(provide);
-	while (!queue.empty()) {
-		auto	current = queue.front();	queue.pop();
-		target.push_back(byName[current]);
-		for (auto &neighbor: adj[current]) {
-			if (--inDegree[neighbor] == 0)
-				queue.push(neighbor);
-		}
-	}
-	if (target.size() != byName.size()) {
-		std::cerr << "Loop detected in the cycle\n";
-		target.clear();
-	}
-}
-
 void	SystemManager::sort(EngineKey) {
 	_updateCycle.clear();
-	kahnSort(_data, _updateCycle);
-	// _renderCycle.clear();
-	// _renderCycle.push_back({});
-	// kahnSort(_data, _renderCycle[0]);
+	kahnSort(_data, _updateCycle, updateCycleDep); std::cout << std::endl;
+	_renderCycle.clear();
+	FuncVec	sortedFuncs{};
+	kahnSort(_data, sortedFuncs, renderCycleDep); std::cout << std::endl;
 
-
-	sortSystems(renderDeps, _render[0]);
-	sortSystems(postProcessDeps, _postProcess[0]);
-	sortSystems(renderInterDeps, _rInteraction);
-
-	printSystemOrder("render", _render[0], renderDeps);
-	printSystemOrder("post processing", _postProcess[0], postProcessDeps);
-	printSystemOrder("render interaction", _rInteraction, renderInterDeps);
-
-	splitPasses(_render, renderDeps);
-	splitPasses(_postProcess, postProcessDeps);
+	_renderCycle.clear();
+	std::unordered_map<std::string_view,
+		FuncVec>	newList;
+	auto	addList = [&](){
+		for (auto &[layer, vec]: newList)
+			_renderCycle[layer].emplace_back(vec);
+	};
+	for (auto func: sortedFuncs) {
+		auto	dep = func->getDep();
+		if (std::find(dep->require.begin(), dep->require.end(), "newPass")
+				!= dep->require.end())
+		{
+			addList();
+			newList.clear();
+		}
+		for (auto &layer: dep->layers)
+			newList[layer].push_back(func);
+		if (std::find(dep->block.begin(), dep->block.end(), "newPass")
+				!= dep->block.end())
+		{
+			addList();
+			newList.clear();
+		}
+	}
+	if (!newList.empty())
+		addList();
 }
 
 }

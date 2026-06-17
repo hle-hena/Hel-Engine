@@ -47,11 +47,11 @@ Pipeline construction is split across `Pipeline`, which owns a single `VkPipelin
 
 ---
 ### Render wrapper
-The render wrapper is built around two cooperating types, `RenderPass` and `Renderer`, with draw calls expressed through a nested `Draw` builder.
+The render wrapper is built around two cooperating types, `RenderPass` and `Renderer`, with draw calls expressed through a `DrawCall` builder.
 
 `RenderPass` configures a dynamic rendering pass before it begins. Color and depth attachments are registered via `addColorWrite` and `addDepthWrite`, each of which transitions the image to the appropriate layout and records the format into a `RenderingConfig`. Load and store operations are configurable per attachment type. Calling `beginPass` commits the `VkRenderingInfo`, sets the viewport and scissor dynamically, and moves the pass into a `Renderer` — after which the `RenderPass` is no longer usable directly; its destructor calls `vkCmdEndRendering` on whatever command buffer it still holds.
 
-`Renderer` is the live drawing context. Systems obtain a `Draw` builder through `drawCommand`, which already pre-binds the global UBO as a dynamic descriptor. The builder accumulates vertex buffers, an optional index buffer, descriptor sets — static or dynamic — and an optional push constant, all through a fluent interface. `submit` then issues the actual Vulkan commands: pipeline binding is skipped if the same `PipelineMap` was already bound for the previous draw call, and the final command is either `vkCmdDraw` or `vkCmdDrawIndexed` depending on whether an index buffer was registered.
+`Renderer` is the live drawing context. Systems obtain a `DrawCall` builder through `drawCommand`, which already pre-binds the global UBO as a dynamic descriptor. The builder accumulates vertex buffers, an optional index buffer, descriptor sets — static or dynamic — and an optional push constant, all through a fluent interface. `submit` then issues the actual Vulkan commands: pipeline binding is skipped if the same `PipelineMap` was already bound for the previous draw call, and the final command is either `vkCmdDraw` or `vkCmdDrawIndexed` depending on whether an index buffer was registered.
 
 ---
 ### Render queue

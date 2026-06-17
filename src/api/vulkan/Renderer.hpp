@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/10 11:03:58                                        */
+/*  Last Modified: 2026/06/17 14:25:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,15 +18,16 @@
 
 #include <cstdint>
 #include <vulkan/vulkan.h>
-#include <optional>
-#include <vector>
-#include <map>
-#include <vulkan/vulkan_core.h>
-#include <ranges>
 
 #include "utils/Setters.hpp"
 #include "api/vulkan/PipelineMap.hpp"
-#include "core/PhaseDependancy.hpp"
+#include "api/vulkan/RenderPass.hpp"
+
+namespace hel::sys {
+
+class	ISystem;
+
+}
 
 namespace	hel {
 
@@ -37,58 +38,7 @@ struct	FrameContext;
 struct	RenderRequest;
 class	ImagePool;
 
-class	RenderPass {
-	public:
-		template <std::ranges::input_range R>
-		RenderPass(Device &device, FrameContext &context, ImagePool *imagePool,
-			R &systems, PhaseDependencies sys::ISystem::*depMember);
-		RenderPass(Device &device, FrameContext &context, ImagePool *imagePool,
-			PhaseDependencies dep);
-		RenderPass(RenderPass &&other);
-		~RenderPass(void);
-
-		Renderer		beginPass(void);
-
-		static void	newFrame(void)	{ _passIndex = 0; }
-
-	private:
-		bool	addWrite(ImageDep &dep, ImagePool *imagePool);
-		bool	validateWrite(ImageDep &dep);
-		bool	resolveUsage(ImageDep &dep);
-		void	resolveOps(Image *img, ImageDep &dep);
-		void	addWriteImage(Image *img, ImageDep &dep);
-
-		bool	addRead(const std::string_view &readName);
-
-		void	setViewport(void);
-		void	endPass(void);
-
-		Device				&_device;
-		FrameContext		&_ctx;
-		RenderRequest		*_req;
-		VkCommandBuffer		_commandBuffer;
-		VkExtent2D			_extent;
-		bool				_invalidDep{false};
-		bool				_passStarted{false};
-
-		std::unordered_map<std::string, Image *>	_writes{};
-		std::unordered_map<std::string, Image *>	_reads{};
-
-		struct	ColorWrite {
-			std::string					name;
-			VkFormat					format;
-			VkRenderingAttachmentInfo	info;
-		};
-		std::map<int, ColorWrite>					_colorInfos{};
-		std::optional<VkRenderingAttachmentInfo>	_depthInfo{};
-		std::optional<VkRenderingAttachmentInfo>	_stencilInfo{};
-		RenderingConfig								_config;
-
-		static uint32_t		_passIndex;
-		static uint32_t		newPass(void)	{ return (_passIndex++); }
-
-	friend class	Renderer;
-};
+struct	DrawCall;
 
 class Renderer {
 	public:
@@ -99,8 +49,7 @@ class Renderer {
 		uint32_t			passIndex(void) const;
 
 		PASSKEY(ISystemKey, sys::ISystem)
-		struct	Draw;
-		Draw	drawCommand(PipelineMap *pipeline, ISystemKey) const;
+		DrawCall	drawCommand(PipelineMap *pipeline, ISystemKey) const;
 
 	private:
 		Device				&_device;
@@ -109,27 +58,27 @@ class Renderer {
 		RenderingConfig		_config;
 
 		RenderPass			_pass;
-	friend struct	Draw;
+	friend struct	DrawCall;
 };
 
-struct	Renderer::Draw {
-	Draw	&addBinding(VkDescriptorSet set);
-	Draw	&addDynamicBinding(VkDescriptorSet set, uint32_t stride,
+struct	DrawCall {
+	DrawCall	&addBinding(VkDescriptorSet set);
+	DrawCall	&addDynamicBinding(VkDescriptorSet set, uint32_t stride,
 							uint32_t *offset, VkBufferUsageFlags setUsage =
 							VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 	template <typename T>
-	Draw	&addPush(VkShaderStageFlags stage, const T &data);
+	DrawCall	&addPush(VkShaderStageFlags stage, const T &data);
 	template <size_t N>
-	Draw	&addVertexBuffers(const VkBuffer (&buffers)[N],
+	DrawCall	&addVertexBuffers(const VkBuffer (&buffers)[N],
 							const VkDeviceSize (&offsets)[N]);
-	Draw	&addIndexBuffer(VkBuffer buffer, uint32_t firstIndex = 0,
+	DrawCall	&addIndexBuffer(VkBuffer buffer, uint32_t firstIndex = 0,
 							VkIndexType indexType = VK_INDEX_TYPE_UINT32,
 							VkDeviceSize offset = 0);
 	SETTER(VertexCount, uint32_t, _count)
 	void	submit(void);
 
 	private:
-		Draw(const Renderer *renderer, PipelineMap *pipeline);
+		DrawCall(const Renderer *renderer, PipelineMap *pipeline);
 
 		struct	PushInfos {
 			VkShaderStageFlags	stage;

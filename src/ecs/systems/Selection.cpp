@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/12 14:26:31                                        */
+/*  Last Modified: 2026/06/17 13:55:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,20 +30,34 @@ SystemRegistrar<Selection>	reg_SelectionSystem;
 void	Selection::init(void) {
 	addUpdateDep("select entity", &Selection::update);
 
-	renderInterDeps.provides = "render stencil on selected entity";
+	addRenderDep("render stencil on selected entity", &Selection::renderInteraction)
+		->getDep()
+			->addActiveLayer("RenderScene")
+			->startWrite("mainColor", VK_FORMAT_B8G8R8A8_SRGB)
+				.usage(ImageDep::Color).bindingIndex(0).addDep()
+			->startWrite("entity layer", VK_FORMAT_R32_UINT)
+				.usage(ImageDep::Color).bindingIndex(1).addDep()
+			->startWrite("gizmo depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
+				.usage(ImageDep::DepthStencil).config(Image::Config()
+					.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
+					.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+					.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT
+							| VK_IMAGE_ASPECT_STENCIL_BIT))
+				.addDep();
 
-	postProcessDeps.provides = "render color overlay on selected entity";
-	postProcessDeps.write.push_back(
-		ImageDep("mainColor", VK_FORMAT_B8G8R8A8_SRGB)
-			.setImageUsage(ImageDep::Usage::Color)
-			.setWriteBindingIndex(0));
-	postProcessDeps.write.push_back(
-		ImageDep("entity layer", VK_FORMAT_R32_UINT)
-			.setImageUsage(ImageDep::Usage::Color)
-			.setWriteBindingIndex(1));
-	postProcessDeps.write.push_back(
-		ImageDep("depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
-			.setImageUsage(ImageDep::Usage::DepthStencil));
+	addRenderDep("render color overlay on selected entity", &Selection::postProcessing)
+		->getDep()
+			->addRequire("rendering of the 3d objects")
+			->addRequire("rendering of the sprites")
+			->addBlock("render camera frustum")
+			->addBlock("render transform gizmo")
+			->addActiveLayer("RenderScene")
+			->startWrite("mainColor", VK_FORMAT_B8G8R8A8_SRGB)
+				.usage(ImageDep::Color).bindingIndex(0).addDep()
+			->startWrite("entity layer", VK_FORMAT_R32_UINT)
+				.usage(ImageDep::Color).bindingIndex(1).addDep()
+			->startWrite("depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
+				.usage(ImageDep::DepthStencil).addDep();
 
 	_inputState = &_registry->getInputState();
 	_assetManager = &_registry->getAssetManager();

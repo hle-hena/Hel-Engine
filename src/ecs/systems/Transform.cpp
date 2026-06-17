@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/12 14:23:40                                        */
+/*  Last Modified: 2026/06/17 13:49:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -60,15 +60,21 @@ void	Transform::init(void) {
 			->addRequire("align normal to parent")
 			->addBlock("view matrix calculation");
 
-	renderInterDeps.provides = "render transform gizmo";
-	renderInterDeps.write.push_back(
-		ImageDep("mainColor", VK_FORMAT_B8G8R8A8_SRGB)
-			.setImageUsage(ImageDep::Usage::Color)
-			.setWriteBindingIndex(0));
-	renderInterDeps.write.push_back(
-		ImageDep("entity layer", VK_FORMAT_R32_UINT)
-			.setImageUsage(ImageDep::Usage::Color)
-			.setWriteBindingIndex(1));
+	addRenderDep("render transform gizmo", &Transform::renderInteraction)
+		->getDep()
+			->addBlock("render stencil on selected entity")
+			->addActiveLayer("RenderScene")
+			->startWrite("mainColor", VK_FORMAT_B8G8R8A8_SRGB)
+				.usage(ImageDep::Color).bindingIndex(0).addDep()
+			->startWrite("entity layer", VK_FORMAT_R32_UINT)
+				.usage(ImageDep::Color).bindingIndex(1).addDep()
+			->startWrite("gizmo depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
+				.usage(ImageDep::DepthStencil).config(Image::Config()
+					.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
+					.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+					.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT
+							| VK_IMAGE_ASPECT_STENCIL_BIT))
+				.addDep();
 
 	_assetManager = &_registry->getAssetManager();
 	_inputState = &_registry->getInputState();
@@ -307,14 +313,15 @@ void	Transform::renderUI(const Renderer &renderer, GizmoContext &gizmo) {
 					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, sampler)
 			.update();
 
-		auto	draw = drawCommand(renderer, _NDCPipeline)
+		/* auto	draw =  */drawCommand(renderer, _NDCPipeline)
 			.addPush(VK_SHADER_STAGE_ALL_GRAPHICS, EntityData{entity, transform.getDenseIndex(), tint.getDenseIndex()})
 			.addBinding(SSBO_d->sets[0])
 			.addBinding(texture_d->sets[0])
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
 			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer())
-			.setVertexCount(mesh->triangleVertexCount);
-		DrawQueue::requestDraw(0, std::move(draw), renderInterDeps);
+			.setVertexCount(mesh->triangleVertexCount)/* ; */
+			.submit();
+		// DrawQueue::requestDraw(0, std::move(draw), *(renderCycleDep.at("render transform gizmo").getDep()));
 	}
 }
 

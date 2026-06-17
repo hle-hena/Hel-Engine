@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 14:14:15                                        */
+/*  Last Modified: 2026/06/17 11:43:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,7 +20,7 @@
 # include <glm/glm.hpp>
 
 #include "api/vulkan/Descriptors.hpp"
-# include "ecs/systems/ISystem.hpp"
+# include "ecs/systems/HelSystem.hpp"
 # include "api/vulkan/PipelineMap.hpp"
 
 namespace	hel {
@@ -39,8 +39,6 @@ class	Sprite : public ISystem {
 		void	init(void) override;
 
 		void	render(const Renderer &renderer) override;
-
-		RENDER_TYPES("RenderScene")
 
 	private:
 		struct	EntityData {

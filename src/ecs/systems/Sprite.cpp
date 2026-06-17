@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 09:44:57                                        */
+/*  Last Modified: 2026/06/17 13:47:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,7 +36,18 @@ namespace	hel::sys {
 SystemRegistrar<Sprite>	reg_SpriteSystem;
 
 void	Sprite::init(void) {
-	renderDeps.provides = "render of the sprites";
+	VkClearValue	clear{};
+	clear.color.uint32[0] = 0xFFFFFFFF;
+	addRenderDep("rendering of the sprites", &Sprite::render)
+	->getDep()
+		->addBlock("render camera frustum")
+		->addActiveLayer("RenderScene")
+		->startWrite("mainColor", VK_FORMAT_B8G8R8A8_SRGB)
+			.usage(ImageDep::Color).bindingIndex(0).addDep()
+		->startWrite("entity layer", VK_FORMAT_R32_UINT)
+			.usage(ImageDep::Color).bindingIndex(1).clearValue(clear).addDep()
+		->startWrite("depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
+			.usage(ImageDep::DepthStencil).addDep();
 
 	_assetManager = &_registry->getAssetManager();
 	{

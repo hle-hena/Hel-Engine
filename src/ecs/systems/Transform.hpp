@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/12 14:13:26                                        */
+/*  Last Modified: 2026/06/17 11:43:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,7 +21,7 @@
 #include "core/Queues.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
-#include "ecs/systems/ISystem.hpp"
+#include "ecs/systems/HelSystem.hpp"
 #include <cstdint>
 # define GLM_FORCE_RADIANS
 #include <glm/fwd.hpp>
@@ -57,8 +57,6 @@ class	Transform : public ISystem {
 		void	gizmoAction(const FrameContext &ctx);
 
 		void	renderInteraction(const Renderer &renderer) override;
-
-		RENDER_TYPES("RenderScene")
 
 	private:
 		struct	EntityData {

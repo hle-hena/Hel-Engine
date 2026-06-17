@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/13 15:14:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/10 09:23:54                                        */
+/*  Last Modified: 2026/06/15 17:49:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -127,7 +127,7 @@ class	DrawQueue {
 	public:
 		struct	RequestVector {
 			PhaseDependencies		dep;
-			std::vector<Renderer::Draw>	draws;
+			std::vector<DrawCall>	draws;
 		};
 		using InnerMap = std::map<uint32_t, std::vector<RequestVector>>;
 		struct	RequestMap {
@@ -140,7 +140,7 @@ class	DrawQueue {
 			friend class DrawQueue;
 		};
 
-		static void	requestDraw(uint32_t level, Renderer::Draw &&drawCommand,
+		static void	requestDraw(uint32_t level, DrawCall &&drawCommand,
 								PhaseDependencies &dep);
 		static InnerMap	flush(void) { return std::move(_requests._data); };
 

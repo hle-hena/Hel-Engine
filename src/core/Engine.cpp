@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/12 14:39:17                                        */
+/*  Last Modified: 2026/06/17 11:47:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -155,25 +155,12 @@ void	Engine::renderTick(Window *window, UiContext &, FrameContext &ctx) {
 		return ;
 
 	for (auto &renderRequest: RenderQueue::flush()) {
-		auto matchingType = [&renderRequest](const sys::ISystem *sys) {
-			auto	types = sys->getRenderTypes();
-			return (std::ranges::find(types, renderRequest.requestType)
-					!= types.end());
-		};
-
 		ctx.request = &renderRequest;
 		updateGlobalData(ctx);
 
-		for (auto &renderSystems: _systems.getRenders())
-			executePass(ctx, renderSystems | std::views::filter(matchingType),
-						&sys::ISystem::renderDeps, &sys::ISystem::render);
-		for (auto &postSystems: _systems.getPostProcess())
-			executePass(ctx, postSystems | std::views::filter(matchingType),
-						&sys::ISystem::postProcessDeps,
-						&sys::ISystem::postProcessing);
-		executePass(ctx,
-			_systems.getRenderInteractions() | std::views::filter(matchingType),
-			&sys::ISystem::renderInterDeps, &sys::ISystem::renderInteraction);
+		for (auto &funcList: _systems.getRenders(renderRequest.requestType))
+			executePass(ctx, funcList);
+
 		for (auto &level: DrawQueue::flush()) {
 			for (auto &pass: level.second) {
 				if (auto renderer = RenderPass(_device, ctx, _imagePool.get(),
@@ -196,20 +183,17 @@ void	Engine::renderTick(Window *window, UiContext &, FrameContext &ctx) {
 	swapchain.present(*window, ctx.swapIndex);
 }
 
-void	Engine::executePass(FrameContext &ctx,
-						auto &&systems,
-						PhaseDependencies sys::ISystem::*depMember,
-						void (sys::ISystem::*method)(const Renderer&)) {
-	if (systems.empty())
+void	Engine::executePass(FrameContext &ctx, const SystemManager::FuncVec &funcs) {
+	if (funcs.empty())
 		return ;
-	if (auto renderer = RenderPass(_device, ctx, _imagePool.get(),
-							systems, depMember)
+	if (auto renderer = RenderPass(_device, ctx, _imagePool.get(), funcs)
 						.beginPass()) {
 		writeGlobalData(renderer);
-		for (auto &system: systems)
-			(system->*method)(renderer);
+		for (auto &func: funcs)
+			func->execute(renderer);
 	}
 }
+
 
 void	Engine::updateGlobalData(FrameContext &ctx) {
 	auto	handle = ctx.request->handle;

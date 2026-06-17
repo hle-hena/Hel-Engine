@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/12 14:23:58                                        */
+/*  Last Modified: 2026/06/17 13:58:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -38,23 +38,21 @@ void	Camera::init(void) {
 	addUpdateDep("view matrix calculation", &Camera::update)
 		->getDep()->addRequire("model matrix calculation");
 
-	renderInterDeps.provides = "render camera frustum";
-	renderInterDeps.write.push_back(
-		ImageDep("mainColor", VK_FORMAT_B8G8R8A8_SRGB)
-			.setImageUsage(ImageDep::Usage::Color)
-			.setWriteBindingIndex(0));
-	renderInterDeps.write.push_back(
-		ImageDep("entity layer", VK_FORMAT_R32_UINT)
-			.setImageUsage(ImageDep::Usage::Color)
-			.setWriteBindingIndex(1));
-	renderInterDeps.write.push_back(
-		ImageDep("gizmo depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
-			.setImageUsage(ImageDep::Usage::DepthStencil)
-			.setImageConfig(Image::Config()
-				.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
-				.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-				.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
-				.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT)));
+	addRenderDep("render camera frustum", &Camera::renderInteraction)
+		->getDep()
+			->addBlock("render transform gizmo")
+			->addActiveLayer("RenderScene")
+			->startWrite("mainColor", VK_FORMAT_B8G8R8A8_SRGB)
+				.usage(ImageDep::Color).bindingIndex(0).addDep()
+			->startWrite("entity layer", VK_FORMAT_R32_UINT)
+				.usage(ImageDep::Color).bindingIndex(1).addDep()
+			->startWrite("gizmo depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
+				.usage(ImageDep::DepthStencil).config(Image::Config()
+					.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
+					.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+					.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT
+							| VK_IMAGE_ASPECT_STENCIL_BIT))
+				.addDep();
 
 	_assetManager = &_registry->getAssetManager();
 	{
