@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/17 13:58:39                                        */
+/*  Last Modified: 2026/06/18 11:06:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,7 +17,6 @@
 #include "ecs/systems/Camera.hpp"
 #include "api/vulkan/Device.hpp"
 #include "ecs/AssetManager.hpp"
-#include "ecs/Entity.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
 #include "ecs/assets/Geometry.hpp"
@@ -36,23 +35,23 @@ SystemRegistrar<Camera>	reg_CameraSystem;
 
 void	Camera::init(void) {
 	addUpdateDep("view matrix calculation", &Camera::update)
-		->getDep()->addRequire("model matrix calculation");
+	->getDep()->addRequire("model matrix calculation");
 
 	addRenderDep("render camera frustum", &Camera::renderInteraction)
-		->getDep()
-			->addBlock("render transform gizmo")
-			->addActiveLayer("RenderScene")
-			->startWrite("mainColor", VK_FORMAT_B8G8R8A8_SRGB)
-				.usage(ImageDep::Color).bindingIndex(0).addDep()
-			->startWrite("entity layer", VK_FORMAT_R32_UINT)
-				.usage(ImageDep::Color).bindingIndex(1).addDep()
-			->startWrite("gizmo depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
-				.usage(ImageDep::DepthStencil).config(Image::Config()
-					.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
-					.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-					.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT
-							| VK_IMAGE_ASPECT_STENCIL_BIT))
-				.addDep();
+	->getDep()
+		->addBlock("render transform gizmo")
+		->addActiveLayer("RenderScene")
+		->startWrite<Color>("mainColor", VK_FORMAT_B8G8R8A8_SRGB, 0)
+			.addDep()
+		->startWrite<Color>("entity layer", VK_FORMAT_R32_UINT, 1)
+			.addDep()
+		->startWrite<DepthStencil>("gizmo depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
+			.config(Image::Config()
+				.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
+				.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+				.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT
+						| VK_IMAGE_ASPECT_STENCIL_BIT))
+			.addDep();
 
 	_assetManager = &_registry->getAssetManager();
 	{

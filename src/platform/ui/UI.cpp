@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/17 12:54:16                                        */
+/*  Last Modified: 2026/06/18 11:10:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -44,8 +44,8 @@ void	UI::init(void) {
 	addRenderDep("render ui", &UI::render)
 	->getDep()
 		->addActiveLayer("RenderUI")
-		->startWrite("mainColor", VK_FORMAT_B8G8R8A8_UNORM)
-			.usage(ImageDep::Color).bindingIndex(0).addDep()
+		->startWrite<Color>("mainColor", VK_FORMAT_B8G8R8A8_UNORM, 0)
+			.addDep()
 		->addRead("viewport*")
 		->addRead("depth*")
 		->addRead("entity*");

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/17 13:47:29                                        */
+/*  Last Modified: 2026/06/18 11:06:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -41,12 +41,12 @@ void	Render::init(void) {
 	->getDep()
 		->addBlock("render camera frustum")
 		->addActiveLayer("RenderScene")
-		->startWrite("mainColor", VK_FORMAT_B8G8R8A8_SRGB)
-			.usage(ImageDep::Color).bindingIndex(0).addDep()
-		->startWrite("entity layer", VK_FORMAT_R32_UINT)
-			.usage(ImageDep::Color).bindingIndex(1).clearValue(clear).addDep()
-		->startWrite("depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
-			.usage(ImageDep::DepthStencil).addDep();
+		->startWrite<Color>("mainColor", VK_FORMAT_B8G8R8A8_SRGB, 0)
+			.addDep()
+		->startWrite<Color>("entity layer", VK_FORMAT_R32_UINT, 1)
+			.clearValue(clear).addDep()
+		->startWrite<DepthStencil>("depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
+			.addDep();
 
 
 	_assetManager = &_registry->getAssetManager();
