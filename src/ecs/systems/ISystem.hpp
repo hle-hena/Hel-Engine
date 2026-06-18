@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/17 11:43:27                                        */
+/*  Last Modified: 2026/06/18 10:10:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -81,10 +81,6 @@ class	ISystem {
 		};
 		std::unordered_map<std::string_view, Func>	updateCycleDep;
 		std::unordered_map<std::string_view, Func>	renderCycleDep;
-
-		virtual void	render(const Renderer &) {}
-		virtual void	postProcessing(const Renderer &) {}
-		virtual void	renderInteraction(const Renderer &) {}
 
 	protected:
 		template <typename T>

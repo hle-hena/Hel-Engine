@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/17 11:43:48                                        */
+/*  Last Modified: 2026/06/18 10:11:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -56,7 +56,7 @@ class	Transform : public ISystem {
 		void	update(const FrameContext &ctx);
 		void	gizmoAction(const FrameContext &ctx);
 
-		void	renderInteraction(const Renderer &renderer) override;
+		void	renderInteraction(const Renderer &renderer);
 
 	private:
 		struct	EntityData {

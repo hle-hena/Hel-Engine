@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/17 11:43:41                                        */
+/*  Last Modified: 2026/06/18 10:11:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -42,8 +42,8 @@ class	Selection : public ISystem {
 		void	init(void) override;
 
 		void	update(const FrameContext &ctx);
-		void	postProcessing(const Renderer &renderer) override;
-		void	renderInteraction(const Renderer &renderer) override;
+		void	postProcessing(const Renderer &renderer);
+		void	renderInteraction(const Renderer &renderer);
 
 	private:
 		struct	EntityData {

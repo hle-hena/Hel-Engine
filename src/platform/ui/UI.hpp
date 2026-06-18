@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/17 11:43:50                                        */
+/*  Last Modified: 2026/06/18 10:11:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -55,7 +55,7 @@ class	UI : public ISystem {
 					{ return (_panelRegistry); }
 
 		void	updateUI(const FrameContext &ctx);
-		void	render(const Renderer &renderer) override;
+		void	render(const Renderer &renderer);
 
 	private:
 		void	addDock(Window *window, const ImVec2 &size);
