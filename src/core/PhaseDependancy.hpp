@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/05 12:15:03 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 12:15:24                                        */
+/*  Last Modified: 2026/06/18 13:55:20                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -32,7 +32,6 @@ struct	ImageDep {
 		Depth = 2,
 		Stencil = 4,
 		DepthStencil = Depth | Stencil,
-		MAX_ENUM
 	};
 
 
@@ -59,7 +58,7 @@ struct	ImageDep {
 
 		std::string							_imageName;
 		VkFormat							_format;
-		Usage								_usage{MAX_ENUM};
+		Usage								_usage;
 		std::optional<Image::Config>		_config;
 		std::optional<VkClearValue>			_clearValue;
 		VkAttachmentLoadOp					_load{VK_ATTACHMENT_LOAD_OP_MAX_ENUM};
@@ -69,6 +68,7 @@ struct	ImageDep {
 	friend struct PhaseDependencies;
 	friend struct DepHasher;
 	friend class RenderPass;
+	friend struct SystemManager;
 	friend struct LayerState;
 };
 
@@ -105,7 +105,7 @@ struct	PhaseDependencies {
 	template <ImageDep::Usage U>
 	requires (U == ImageDep::Color)
 	auto	startWrite(const std::string &imageName, VkFormat format,
-					int bindingIndex) {
+					uint32_t bindingIndex) {
 		return ImageDep(this, imageName, format, U, bindingIndex);
 	}
 	auto	*addRead(const std::string_view &imageName) {

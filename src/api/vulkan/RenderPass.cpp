@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:48 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 12:15:41                                        */
+/*  Last Modified: 2026/06/18 15:03:31                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -74,8 +74,6 @@ do {						\
 
 
 bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
-	if (validateWrite(dep))
-		return true;
 	if (_writes.contains(dep._imageName))
 		return false;
 
@@ -94,48 +92,6 @@ bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
 		resolveOps(img, dep);
 	addWriteImage(img, dep);
 	return (false);
-}
-
-bool	RenderPass::validateWrite(ImageDep &dep) {
-	bool	colorUsage = dep._usage & ImageDep::Color;
-	bool	depthUsage = dep._usage & ImageDep::DepthStencil;
-
-	if (colorUsage && depthUsage)
-		RETURN_ERROR("Error for image \"" << dep._imageName
-				<< "\". Too many aspects.");
-	if (_writes.contains(dep._imageName)) {
-		auto	contains = [&](){
-			auto	it = std::find_if(_colorInfos.begin(), _colorInfos.end(),
-						[&](auto &it){return it.second.name == dep._imageName;});
-			return it != _colorInfos.end();
-		};
-
-		if ((colorUsage && !contains()) || (!colorUsage && contains()))
-			RETURN_ERROR("Error for image \"" << dep._imageName
-				<< "\". Trying to use it as both depth/stencil and color.");
-	} if (_reads.contains(dep._imageName))
-		RETURN_ERROR("Error for image \"" << dep._imageName
-			<< "\". Can't have an image be both a write and a read.\n");
-	if (dep._format == VK_FORMAT_MAX_ENUM)
-		RETURN_ERROR("Error for image \"" << dep._imageName <<
-			"\". Please ask for a valid format.\n");
-	if (colorUsage) {
-		auto	idx = dep._bindingIndex;
-		if (_colorInfos.contains(idx) &&
-			_colorInfos[idx].name != dep._imageName)
-			RETURN_ERROR("Error for image \"" << dep._imageName
-				<< "\". The binding " << std::to_string(idx)
-				<< " is already taken by image \""
-				<< _colorInfos[idx].name << "\".\n");
-	} else if (_depthInfo.has_value() && dep._usage & ImageDep::Depth
-			&& dep._imageName != _depthInfo->name)
-		RETURN_ERROR("Error for image \"" << dep._imageName <<
-			"\". Pass already has a depth image.\n");
-	else if (_stencilInfo.has_value() && dep._usage & ImageDep::Stencil
-			&& dep._imageName != _stencilInfo->name)
-		RETURN_ERROR("Error for image \"" << dep._imageName <<
-			"\". Pass already has a stencil image.\n");
-	return false;
 }
 
 void	RenderPass::resolveOps(Image *img, ImageDep &dep) {
@@ -193,11 +149,6 @@ bool	RenderPass::addRead(const std::string_view &readName) {
 	bool	notFound = true;
 	for (auto &[imageName, image]: _req->images) {
 		if (matchName(readName, imageName)) {
-			if (_writes.contains(imageName)) {
-				std::cerr << "Trying to read the image \"" << imageName
-					<< "\" which is already registered as a write.\n";
-				return (true);
-			}
 			if (_reads.contains(imageName))
 				continue ;
 			if (!image->wasWritten()) {

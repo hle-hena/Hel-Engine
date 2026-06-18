@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:27 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 11:38:07                                        */
+/*  Last Modified: 2026/06/18 14:49:44                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -44,7 +44,6 @@ class	RenderPass {
 
 	private:
 		bool	addWrite(ImageDep &dep, ImagePool *imagePool);
-		bool	validateWrite(ImageDep &dep);
 		void	resolveOps(Image *img, ImageDep &dep);
 		void	addWriteImage(Image *img, ImageDep &dep);
 
