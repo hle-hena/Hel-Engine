@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/05 12:15:03 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 11:15:24                                        */
+/*  Last Modified: 2026/06/18 12:15:24                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -64,11 +64,12 @@ struct	ImageDep {
 		std::optional<VkClearValue>			_clearValue;
 		VkAttachmentLoadOp					_load{VK_ATTACHMENT_LOAD_OP_MAX_ENUM};
 		VkAttachmentStoreOp					_store{VK_ATTACHMENT_STORE_OP_MAX_ENUM};
-		std::optional<uint32_t>				_bindingIndex;
+		uint32_t							_bindingIndex;
 
 	friend struct PhaseDependencies;
 	friend struct DepHasher;
 	friend class RenderPass;
+	friend struct LayerState;
 };
 
 struct	PhaseDependencies {

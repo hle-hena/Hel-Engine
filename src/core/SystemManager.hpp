@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/15 17:58:25                                        */
+/*  Last Modified: 2026/06/18 11:45:27                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -47,6 +47,8 @@ struct	SystemManager {
 	}
 
 	private:
+		static void	splitPasses(const FuncVec &sortedFuncs);
+
 		static FuncVec									_updateCycle;
 		static std::unordered_map<
 					std::string_view,

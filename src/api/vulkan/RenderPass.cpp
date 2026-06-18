@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:48 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 11:41:45                                        */
+/*  Last Modified: 2026/06/18 12:15:41                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -120,7 +120,7 @@ bool	RenderPass::validateWrite(ImageDep &dep) {
 		RETURN_ERROR("Error for image \"" << dep._imageName <<
 			"\". Please ask for a valid format.\n");
 	if (colorUsage) {
-		auto	idx = dep._bindingIndex.value();
+		auto	idx = dep._bindingIndex;
 		if (_colorInfos.contains(idx) &&
 			_colorInfos[idx].name != dep._imageName)
 			RETURN_ERROR("Error for image \"" << dep._imageName
@@ -161,7 +161,7 @@ void	RenderPass::addWriteImage(Image *img, ImageDep &dep){
 				dep._load, dep._store, img->getView(ViewConfig()
 					.format(dep._format).aspect(VK_IMAGE_ASPECT_COLOR_BIT)
 					.components().identity()))};
-		_colorInfos[dep._bindingIndex.value()] = write;
+		_colorInfos[dep._bindingIndex] = write;
 		return ;
 	}
 

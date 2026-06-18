@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/17 13:53:44                                        */
+/*  Last Modified: 2026/06/18 12:40:27                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -85,60 +85,99 @@ do {																			\
 	}																			\
 } while (0)
 
-#define splitPasses(listName, depName)											\
-do {																			\
-	auto	allSystems = listName[0];											\
-	listName.clear();															\
-	std::vector<sys::ISystem *>	newList;										\
-	for (auto &system: allSystems) {											\
-		auto it = std::find(system->depName.require.begin(),					\
-						system->depName.require.end(), "newPass");				\
-		if (it != system->depName.require.end() && !newList.empty()) {			\
-			listName.emplace_back(newList);										\
-			newList.clear();													\
-		}																		\
-		newList.push_back(system);												\
-		it = std::find(system->depName.block.begin(),							\
-						system->depName.block.end(), "newPass");				\
-		if (it != system->depName.block.end()) {								\
-			listName.emplace_back(newList);										\
-			newList.clear();													\
-		}																		\
-	}																			\
-	if (!newList.empty())														\
-		listName.emplace_back(newList);											\
-} while (0)
-
 void	SystemManager::sort(EngineKey) {
 	_updateCycle.clear();
 	kahnSort(_data, _updateCycle, updateCycleDep); std::cout << std::endl;
 	_renderCycle.clear();
 	FuncVec	sortedFuncs{};
 	kahnSort(_data, sortedFuncs, renderCycleDep); std::cout << std::endl;
+	splitPasses(sortedFuncs);
+}
 
-	_renderCycle.clear();
-	std::unordered_map<std::string_view,
-		FuncVec>	newList;
-	auto	addList = [&](){
+struct	LayerState {
+	std::unordered_map<uint32_t, std::string_view>	colors;
+	std::optional<std::string_view>					depth;
+	std::optional<std::string_view>					stencil;
+	std::vector<std::string_view>					reads;
+
+	bool	check(const ImageDep &write) {
+		if (std::any_of(reads.begin(), reads.end(),
+			[&](const auto &value){return write._imageName == value;}))
+			return true;
+		if (write._usage & ImageDep::Color
+				&& colors.contains(write._bindingIndex)
+				&& colors[write._bindingIndex] != write._imageName)
+			return true;
+		if (write._usage & ImageDep::Depth
+				&& depth.has_value()
+				&& depth.value() != write._imageName)
+			return true;
+		if (write._usage & ImageDep::Stencil
+				&& stencil.has_value()
+				&& stencil.value() != write._imageName)
+			return true;
+		return false;
+	}
+	bool	check(std::string_view read) {
+		if (depth.has_value() && depth == read)
+			return true;
+		if (stencil.has_value() && stencil == read)
+			return true;
+		if (std::any_of(colors.begin(), colors.end(),
+			[&](const auto &pair){return pair.second == read;}))
+			return true;
+		return false;
+	}
+
+	void	track(const ImageDep &write) {
+		if (write._usage & ImageDep::Color)
+			colors[write._bindingIndex] = write._imageName;
+		if (write._usage & ImageDep::Depth)
+			depth = write._imageName;
+		if (write._usage & ImageDep::Stencil)
+			stencil = write._imageName;
+	}
+	void	track(const std::string_view &read) {
+		reads.push_back(read);
+	}
+};
+
+void	SystemManager::splitPasses(const FuncVec &sortedFuncs) {
+	std::unordered_map<std::string_view, FuncVec>		newList;
+	std::unordered_map<std::string_view, LayerState>	states;
+	auto	addList = [&]() {
 		for (auto &[layer, vec]: newList)
 			_renderCycle[layer].emplace_back(vec);
+		newList.clear(); states.clear();
 	};
+	auto	flushLayer = [&](std::string_view layer) {
+		_renderCycle[layer].emplace_back(newList[layer]);
+		newList.erase(layer); states.erase(layer);
+	};
+
 	for (auto func: sortedFuncs) {
 		auto	dep = func->getDep();
 		if (std::find(dep->require.begin(), dep->require.end(), "newPass")
 				!= dep->require.end())
-		{
 			addList();
-			newList.clear();
-		}
-		for (auto &layer: dep->layers)
+
+		for (auto &layer: dep->layers) {
+			bool	conflict = std::any_of(dep->write.begin(), dep->write.end(),
+						[&](const ImageDep &w){return states[layer].check(w);});
+			conflict |= std::any_of(dep->read.begin(), dep->read.end(),
+						[&](const auto &r){return states[layer].check(r);});
+			if (conflict)
+				flushLayer(layer);
+			for (auto &write: dep->write)
+				states[layer].track(write);
+			for (auto &read: dep->read)
+				states[layer].track(read);
 			newList[layer].push_back(func);
+		}
+
 		if (std::find(dep->block.begin(), dep->block.end(), "newPass")
 				!= dep->block.end())
-		{
 			addList();
-			newList.clear();
-		}
 	}
 	if (!newList.empty())
 		addList();
