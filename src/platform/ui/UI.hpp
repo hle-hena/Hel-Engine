@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 18:10:18                                        */
+/*  Last Modified: 2026/06/18 10:11:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,7 +19,7 @@
 # include <memory>
 # include <functional>
 
-# include "ecs/systems/ISystem.hpp"
+# include "ecs/systems/HelSystem.hpp"
 # include "platform/ui/Dock.hpp"
 
 # define PanelFactoryMacro(panelType)							\
@@ -54,10 +54,8 @@ class	UI : public ISystem {
 		const auto	&getPanelRegistry(void) const
 					{ return (_panelRegistry); }
 
-		void	updateInteraction(const FrameContext &ctx) override;
-		void	render(const Renderer &renderer) override;
-
-		RENDER_TYPES("RenderUI")
+		void	updateUI(const FrameContext &ctx);
+		void	render(const Renderer &renderer);
 
 	private:
 		void	addDock(Window *window, const ImVec2 &size);

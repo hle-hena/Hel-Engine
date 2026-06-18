@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 14:18:07                                        */
+/*  Last Modified: 2026/06/18 10:11:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,7 +19,7 @@
 # include <vulkan/vulkan.h>
 # include <glm/glm.hpp>
 
-# include "ecs/systems/ISystem.hpp"
+# include "ecs/systems/HelSystem.hpp"
 # include "api/vulkan/PipelineMap.hpp"
 
 namespace	hel {
@@ -38,9 +38,7 @@ class	Render : public ISystem {
 
 		void	init(void) override;
 
-		void	render(const Renderer &conf) override;
-
-		RENDER_TYPES("RenderScene")
+		void	render(const Renderer &conf);
 
 	private:
 		struct	EntityData {

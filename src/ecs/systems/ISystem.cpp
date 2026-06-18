@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/26 18:12:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 12:17:37                                        */
+/*  Last Modified: 2026/06/15 17:50:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,7 +37,7 @@ PipelineMap	*ISystem::createPipeline(const PipelineMap::Config &config) {
 	return (pipelinePtr);
 }
 
-Renderer::Draw	ISystem::drawCommand(const Renderer &renderer,
+DrawCall	ISystem::drawCommand(const Renderer &renderer,
 									PipelineMap *pipeline) const {
 	return (renderer.drawCommand(pipeline, {}));
 }

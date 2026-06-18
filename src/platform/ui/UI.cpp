@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 15:51:23                                        */
+/*  Last Modified: 2026/06/18 11:10:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,16 +36,19 @@ UI::~UI(void) {
 }
 
 void	UI::init(void) {
-	updateInterDeps.provides = "update ui";
+	addUpdateDep("update ui", &UI::updateUI)
+		->getDep()
+			->addRequire("view matrix calculation")
+			->addRequire("model matrix calculation");
 
-	renderDeps.provides = "render ui";
-	renderDeps.write.push_back(
-		ImageDep("mainColor", VK_FORMAT_B8G8R8A8_UNORM)
-			.setImageUsage(ImageDep::Usage::Color)
-			.setWriteBindingIndex(0));
-	renderDeps.read.push_back("viewport*");
-	renderDeps.read.push_back("depth*");
-	renderDeps.read.push_back("entity*");
+	addRenderDep("render ui", &UI::render)
+	->getDep()
+		->addActiveLayer("RenderUI")
+		->startWrite<Color>("mainColor", VK_FORMAT_B8G8R8A8_UNORM, 0)
+			.addDep()
+		->addRead("viewport*")
+		->addRead("depth*")
+		->addRead("entity*");
 
 	addNewPanelRegistry(EntityHierarchy::label, PanelFactoryMacro(EntityHierarchy));
 	addNewPanelRegistry(StyleEditor::label, PanelFactoryMacro(StyleEditor));
@@ -120,7 +123,7 @@ void	UI::addDock(Window *window, const ImVec2 &size) {
 	ImGui::PopStyleVar(2);
 }
 
-void	UI::updateInteraction(const FrameContext &ctx) {
+void	UI::updateUI(const FrameContext &ctx) {
 	auto	windowExtent = ctx.window->getExtent();
 	float	windowWidth = static_cast<float>(windowExtent.width);
 	float	windowHeight = static_cast<float>(windowExtent.height);

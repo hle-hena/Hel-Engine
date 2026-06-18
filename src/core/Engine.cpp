@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/10 17:45:18                                        */
+/*  Last Modified: 2026/06/17 14:48:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,7 +33,6 @@
 #include "ecs/Component.hpp"
 
 #include <iostream>
-#include <ranges>
 
 #include "utils/VFS.hpp"
 
@@ -135,11 +134,9 @@ void	Engine::tick(Window *window, uint32_t frameIndex) {
 
 void	Engine::updateTick(UiContext &ui, FrameContext &frameCtx) {
 	ui.newFrame();
-	for (auto &system: _systems.getUpdateInteractions())
-		system->updateInteraction(frameCtx);
+	for (auto &func: _systems.getUpdates())
+		func->execute(frameCtx);
 	ui.endFrame();
-	for (auto &system: _systems.getUpdates())
-		system->update(frameCtx);
 }
 
 void	Engine::renderTick(Window *window, UiContext &, FrameContext &ctx) {
@@ -157,25 +154,12 @@ void	Engine::renderTick(Window *window, UiContext &, FrameContext &ctx) {
 		return ;
 
 	for (auto &renderRequest: RenderQueue::flush()) {
-		auto matchingType = [&renderRequest](const sys::ISystem *sys) {
-			auto	types = sys->getRenderTypes();
-			return (std::ranges::find(types, renderRequest.requestType)
-					!= types.end());
-		};
-
 		ctx.request = &renderRequest;
 		updateGlobalData(ctx);
 
-		for (auto &renderSystems: _systems.getRenders())
-			executePass(ctx, renderSystems | std::views::filter(matchingType),
-						&sys::ISystem::renderDeps, &sys::ISystem::render);
-		for (auto &postSystems: _systems.getPostProcess())
-			executePass(ctx, postSystems | std::views::filter(matchingType),
-						&sys::ISystem::postProcessDeps,
-						&sys::ISystem::postProcessing);
-		executePass(ctx,
-			_systems.getRenderInteractions() | std::views::filter(matchingType),
-			&sys::ISystem::renderInterDeps, &sys::ISystem::renderInteraction);
+		for (auto &funcList: _systems.getRenders(renderRequest.requestType))
+			executePass(ctx, funcList);
+
 		for (auto &level: DrawQueue::flush()) {
 			for (auto &pass: level.second) {
 				if (auto renderer = RenderPass(_device, ctx, _imagePool.get(),
@@ -198,20 +182,17 @@ void	Engine::renderTick(Window *window, UiContext &, FrameContext &ctx) {
 	swapchain.present(*window, ctx.swapIndex);
 }
 
-void	Engine::executePass(FrameContext &ctx,
-						auto &&systems,
-						PhaseDependencies sys::ISystem::*depMember,
-						void (sys::ISystem::*method)(const Renderer&)) {
-	if (systems.empty())
+void	Engine::executePass(FrameContext &ctx, const SystemManager::FuncVec &funcs) {
+	if (funcs.empty())
 		return ;
-	if (auto renderer = RenderPass(_device, ctx, _imagePool.get(),
-							systems, depMember)
+	if (auto renderer = RenderPass(_device, ctx, _imagePool.get(), funcs)
 						.beginPass()) {
 		writeGlobalData(renderer);
-		for (auto &system: systems)
-			(system->*method)(renderer);
+		for (auto &func: funcs)
+			func->execute(renderer);
 	}
 }
+
 
 void	Engine::updateGlobalData(FrameContext &ctx) {
 	auto	handle = ctx.request->handle;

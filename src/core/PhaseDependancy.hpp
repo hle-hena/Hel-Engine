@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/05 12:15:03 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 15:52:14                                        */
+/*  Last Modified: 2026/06/18 18:16:10                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,43 +24,104 @@
 
 namespace	hel {
 
+struct	PhaseDependencies;
+
 struct	ImageDep {
 	enum	Usage {
 		Color = 1,
 		Depth = 2,
 		Stencil = 4,
 		DepthStencil = Depth | Stencil,
-		MAX_ENUM
 	};
 
-	SETTER(ImageUsage, Usage, usage)
-	SETTER(ImageConfig, Image::Config, config)
-	SETTER(LoadOp, VkAttachmentLoadOp, load)
-	SETTER(StoreOp, VkAttachmentStoreOp, store)
-	SETTER(ClearValue, VkClearValue, clear)
-	SETTER(WriteBindingIndex, int, bindingIndex)
 
-	std::string							imageName;
-	VkFormat							format;
-	Usage								usage{MAX_ENUM};
-	std::optional<Image::Config>		config;
-	std::optional<VkClearValue>			clear;
-	VkAttachmentLoadOp					load{VK_ATTACHMENT_LOAD_OP_MAX_ENUM};
-	VkAttachmentStoreOp					store{VK_ATTACHMENT_STORE_OP_MAX_ENUM};
-	std::optional<int>					bindingIndex;
+	SETTER_VERBOSE(config, Image::Config)
+	SETTER_VERBOSE(load, VkAttachmentLoadOp)
+	SETTER_VERBOSE(store, VkAttachmentStoreOp)
+	SETTER_VERBOSE(clearValue, VkClearValue)
 
-	ImageDep(const std::string &imgName, VkFormat fmt)
-		:	imageName(imgName), format(fmt)	{}
+	PhaseDependencies	*addDep(void);
+
 	bool operator==(const ImageDep&) const;
+
+	private:
+		ImageDep(PhaseDependencies *parent, const std::string &imgName,
+				VkFormat fmt, Usage usage, uint32_t bindingIndex)
+			:	_parent(parent), _imageName(imgName), _format(fmt),
+				_usage(usage), _bindingIndex(bindingIndex)	{}
+		ImageDep(PhaseDependencies *parent, const std::string &imgName,
+				VkFormat fmt, Usage usage)
+			:	_parent(parent), _imageName(imgName), _format(fmt),
+				_usage(usage)	{}
+
+		PhaseDependencies					*_parent;
+
+		std::string							_imageName;
+		VkFormat							_format;
+		Usage								_usage;
+		std::optional<Image::Config>		_config;
+		std::optional<VkClearValue>			_clearValue;
+		VkAttachmentLoadOp					_load{VK_ATTACHMENT_LOAD_OP_MAX_ENUM};
+		VkAttachmentStoreOp					_store{VK_ATTACHMENT_STORE_OP_MAX_ENUM};
+		uint32_t							_bindingIndex;
+
+	friend struct PhaseDependencies;
+	friend struct DepHasher;
+	friend class RenderPass;
+	friend struct SystemManager;
+	friend struct LayerState;
 };
 
 struct	PhaseDependencies {
-	std::vector<std::string>	require{};
-	std::vector<std::string>	block{};
-	std::optional<std::string>	provides;
+	std::vector<std::string_view>	require{};
+	std::vector<std::string_view>	block{};
+	std::vector<std::string_view>	layers{};
 
 	std::vector<ImageDep>			write;
 	std::vector<std::string_view>	read;
+
+	auto	*addBlock(std::initializer_list<std::string_view> list) {
+		for (auto &elem: list)
+			block.push_back(elem);
+		return this;
+	}
+	auto	*addBlock(std::string_view newOne) {
+		block.push_back(newOne);
+		return this;
+	}
+	auto	*addRequire(std::initializer_list<std::string_view> list) {
+		for (auto &elem: list)
+			require.push_back(elem);
+		return this;
+	}
+	auto	*addRequire(std::string_view newOne) {
+		require.push_back(newOne);
+		return this;
+	}
+	auto	*addActiveLayer(std::initializer_list<std::string_view> list) {
+		for (auto &elem: list)
+			layers.push_back(elem);
+		return this;
+	}
+	auto	*addActiveLayer(std::string_view layer) {
+		layers.push_back(layer);
+		return this;
+	}
+	template <ImageDep::Usage U>
+	requires (U != ImageDep::Color)
+	auto	startWrite(const std::string &imageName, VkFormat format) {
+		return ImageDep(this, imageName, format, U);
+	}
+	template <ImageDep::Usage U>
+	requires (U == ImageDep::Color)
+	auto	startWrite(const std::string &imageName, VkFormat format,
+					uint32_t bindingIndex) {
+		return ImageDep(this, imageName, format, U, bindingIndex);
+	}
+	auto	*addRead(const std::string_view &imageName) {
+		read.push_back(imageName);
+		return this;
+	}
 
 	bool operator==(const PhaseDependencies&) const;
 };

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 14:13:50                                        */
+/*  Last Modified: 2026/06/18 10:11:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,7 +19,7 @@
 #include <cstdint>
 # include <glm/glm.hpp>
 
-# include "ecs/systems/ISystem.hpp"
+# include "ecs/systems/HelSystem.hpp"
 # include "api/vulkan/PipelineMap.hpp"
 
 namespace	hel {
@@ -37,10 +37,8 @@ class	Camera : public ISystem {
 
 		void	init(void) override;
 
-		void	update(const FrameContext &ctx) override;
-		void	renderInteraction(const Renderer &renderer) override;
-
-		RENDER_TYPES("RenderScene")
+		void	update(const FrameContext &ctx);
+		void	renderInteraction(const Renderer &renderer);
 
 	private:
 		struct	FrustumPush {

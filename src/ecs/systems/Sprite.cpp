@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 09:44:57                                        */
+/*  Last Modified: 2026/06/18 11:09:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,7 +18,6 @@
 #include "api/vulkan/Device.hpp"
 #include "core/Frame.hpp"
 #include "ecs/AssetManager.hpp"
-#include "ecs/Entity.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
 #include "ecs/assets/Geometry.hpp"
@@ -36,7 +35,18 @@ namespace	hel::sys {
 SystemRegistrar<Sprite>	reg_SpriteSystem;
 
 void	Sprite::init(void) {
-	renderDeps.provides = "render of the sprites";
+	VkClearValue	clear{};
+	clear.color.uint32[0] = 0xFFFFFFFF;
+	addRenderDep("rendering of the sprites", &Sprite::render)
+	->getDep()
+		->addBlock("render camera frustum")
+		->addActiveLayer("RenderScene")
+		->startWrite<Color>("mainColor", VK_FORMAT_B8G8R8A8_SRGB, 0)
+			.addDep()
+		->startWrite<Color>("entity layer", VK_FORMAT_R32_UINT, 1)
+			.clearValue(clear).addDep()
+		->startWrite<DepthStencil>("depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
+			.addDep();
 
 	_assetManager = &_registry->getAssetManager();
 	{

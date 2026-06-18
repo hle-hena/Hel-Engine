@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:14:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/01 17:48:30                                        */
+/*  Last Modified: 2026/06/12 14:24:04                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,9 +29,10 @@ SystemRegistrar<BaseController>	reg_BaseControllerSystem;
 void	BaseController::init(void) {
 	_input = &_registry->getInputState();
 
-	updateDeps.provides = "game control";
-	updateDeps.require.push_back("allign normal to parent");
-	updateDeps.block.push_back("model matrix calculation");
+	addUpdateDep("game control", &BaseController::handleInput)
+		->getDep()
+			->addBlock("model matrix calculation")
+			->addRequire("align normal to parent");
 }
 
 void	BaseController::handleKeyboardInput(Entity::id handle, float deltaTime) {
@@ -96,7 +97,7 @@ void	BaseController::handleMouseMove(Entity::id handle) {
 	transform->rotation = glm::normalize(qYaw * qPitch * transform->rotation);
 }
 
-void	BaseController::update(const FrameContext &ctx) {
+void	BaseController::handleInput(const FrameContext &ctx) {
 	auto	window = _input->getFocused();
 	if (!window)	{ return ; }
 

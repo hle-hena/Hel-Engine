@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/10 17:30:52                                        */
+/*  Last Modified: 2026/06/18 15:10:04                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -51,20 +51,30 @@ SystemRegistrar<Transform>	reg_TransformSystem;
 Transform::Action	Transform::GizmoContext::action = Action::Move;
 
 void	Transform::init(void) {
-	updateDeps.provides = "model matrix calculation";
-	updateDeps.block.push_back("view matrix calculation");
+	addUpdateDep("transform gizmo action", &Transform::gizmoAction)
+		->getDep()
+			->addBlock("align normal to parent")
+			->addBlock("model matrix calculation");
+	addUpdateDep("model matrix calculation", &Transform::update)
+		->getDep()
+			->addRequire("align normal to parent")
+			->addBlock("view matrix calculation");
 
-	renderInterDeps.provides = "render transform gizmo";
-	renderInterDeps.write.push_back(
-		ImageDep("mainColor", VK_FORMAT_B8G8R8A8_SRGB)
-			.setImageUsage(ImageDep::Usage::Color)
-			.setWriteBindingIndex(0));
-	renderInterDeps.write.push_back(
-		ImageDep("entity layer", VK_FORMAT_R32_UINT)
-			.setImageUsage(ImageDep::Usage::Color)
-			.setWriteBindingIndex(1));
-
-	updateInterDeps.provides = "act on the transform gizmo action";
+	addRenderDep("render transform gizmo", &Transform::renderInteraction)
+		->getDep()
+			->addBlock("render stencil on selected entity")
+			->addActiveLayer("RenderScene")
+			->startWrite<Color>("mainColor", VK_FORMAT_B8G8R8A8_SRGB, 0)
+				.addDep()
+			->startWrite<Color>("entity layer", VK_FORMAT_R32_UINT, 1)
+				.addDep()
+			->startWrite<DepthStencil>("gizmo depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
+				.config(Image::Config()
+					.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
+					.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+					.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT
+							| VK_IMAGE_ASPECT_STENCIL_BIT))
+				.addDep();
 
 	_assetManager = &_registry->getAssetManager();
 	_inputState = &_registry->getInputState();
@@ -173,7 +183,7 @@ void	Transform::update(const FrameContext &) {
 	}
 }
 
-void	Transform::updateInteraction(const FrameContext &ctx) {
+void	Transform::gizmoAction(const FrameContext &ctx) {
 	std::erase_if(_gizmoContexts, [&](auto &gizmoIt){
 		auto	&[key, gizmo] = gizmoIt;
 		if (--gizmo._life == 0)
@@ -310,7 +320,7 @@ void	Transform::renderUI(const Renderer &renderer, GizmoContext &gizmo) {
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
 			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer())
 			.setVertexCount(mesh->triangleVertexCount);
-		DrawQueue::requestDraw(0, std::move(draw), renderInterDeps);
+		DrawQueue::requestDraw(0, std::move(draw), *(renderCycleDep.at("render transform gizmo").getDep()));
 	}
 }
 

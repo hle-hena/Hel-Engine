@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 16:02:31                                        */
+/*  Last Modified: 2026/06/17 10:53:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -70,8 +70,8 @@ struct	ViewConfig {
 
 	public:
 		ComponentMapping	components(void)	{ return {*this}; }
-		SETTER_VERBOSE(format, VkFormat, _format)
-		SETTER_VERBOSE(aspect, VkImageAspectFlags, _aspect)
+		SETTER_VERBOSE(format, VkFormat)
+		SETTER_VERBOSE(aspect, VkImageAspectFlags)
 
 		auto	&defaultTextureView(void) {
 			_format = VK_FORMAT_R8G8B8A8_SRGB;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/10 15:05:55                                        */
+/*  Last Modified: 2026/06/18 11:06:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,22 +35,18 @@ namespace	hel::sys {
 SystemRegistrar<Render>	reg_RenderSystem;
 
 void	Render::init(void) {
-	renderDeps.provides = "rendering of the 3d objects";
-
 	VkClearValue	clear{};
 	clear.color.uint32[0] = 0xFFFFFFFF;
-	renderDeps.write.push_back(
-		ImageDep("entity layer", VK_FORMAT_R32_UINT)
-			.setImageUsage(ImageDep::Usage::Color)
-			.setWriteBindingIndex(1)
-			.setClearValue(clear));
-	renderDeps.write.push_back(
-		ImageDep("mainColor", VK_FORMAT_B8G8R8A8_SRGB)
-			.setImageUsage(ImageDep::Usage::Color)
-			.setWriteBindingIndex(0));
-	renderDeps.write.push_back(
-		ImageDep("depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
-			.setImageUsage(ImageDep::Usage::DepthStencil));
+	addRenderDep("rendering of the 3d objects", &Render::render)
+	->getDep()
+		->addBlock("render camera frustum")
+		->addActiveLayer("RenderScene")
+		->startWrite<Color>("mainColor", VK_FORMAT_B8G8R8A8_SRGB, 0)
+			.addDep()
+		->startWrite<Color>("entity layer", VK_FORMAT_R32_UINT, 1)
+			.clearValue(clear).addDep()
+		->startWrite<DepthStencil>("depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
+			.addDep();
 
 
 	_assetManager = &_registry->getAssetManager();

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/21 19:38:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/10 17:21:05                                        */
+/*  Last Modified: 2026/06/15 17:49:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -46,7 +46,7 @@ DrawQueue::RequestVector	*DrawQueue::RequestMap::at(const uint32_t levelAsked, c
 	return &newVec;
 }
 
-void	DrawQueue::requestDraw(uint32_t level, Renderer::Draw &&drawCommand,
+void	DrawQueue::requestDraw(uint32_t level, DrawCall &&drawCommand,
 							PhaseDependencies &dep) {
 	_requests.at(level, dep)->draws.emplace_back(std::move(drawCommand));
 }

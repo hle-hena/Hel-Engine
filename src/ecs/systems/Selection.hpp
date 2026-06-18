@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 14:13:59                                        */
+/*  Last Modified: 2026/06/18 10:11:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,7 +21,7 @@
 #include <glm/glm.hpp>
 
 #include "core/Queues.hpp"
-#include "ecs/systems/ISystem.hpp"
+#include "ecs/systems/HelSystem.hpp"
 #include "api/vulkan/PipelineMap.hpp"
 
 namespace	hel {
@@ -41,11 +41,9 @@ class	Selection : public ISystem {
 
 		void	init(void) override;
 
-		void	update(const FrameContext &ctx) override;
-		void	postProcessing(const Renderer &renderer) override;
-		void	renderInteraction(const Renderer &renderer) override;
-
-		RENDER_TYPES("RenderScene")
+		void	update(const FrameContext &ctx);
+		void	postProcessing(const Renderer &renderer);
+		void	renderInteraction(const Renderer &renderer);
 
 	private:
 		struct	EntityData {

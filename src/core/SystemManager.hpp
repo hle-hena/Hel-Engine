@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 14:31:22                                        */
+/*  Last Modified: 2026/06/18 11:45:27                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,20 +24,14 @@
 namespace hel {
 
 struct	SystemManager {
-	using SysPtr		= std::unique_ptr<sys::ISystem>;
-	using UnderlyingVec	= std::vector<SysPtr>;
+	using SysPtr = std::unique_ptr<sys::ISystem>;
+	using FuncVec = std::vector<sys::ISystem::Func*>;
 
-	const std::vector<sys::ISystem*>	&getUpdates(void)
-		{ return _update; }
-	const std::vector<sys::ISystem*>	&getUpdateInteractions(void)
-		{ return _uInteraction; }
-	const std::vector<std::vector<sys::ISystem*>>	&getRenders(void)
-		{ return _render; }
-	const std::vector<std::vector<sys::ISystem*>>	&getPostProcess(void)
-		{ return _postProcess; }
-	const std::vector<sys::ISystem*>	&getRenderInteractions(void)
-		{ return _rInteraction; }
-	const std::vector<SysPtr>			&getSystems(void)
+	const FuncVec				&getUpdates(void)
+		{ return _updateCycle; }
+	const std::vector<FuncVec>	&getRenders(std::string_view layer)
+		{ return _renderCycle[layer]; }
+	const std::vector<SysPtr>	&getSystems(void)
 		{ return _data; }
 
 
@@ -53,12 +47,14 @@ struct	SystemManager {
 	}
 
 	private:
-		static std::vector<sys::ISystem*>				_update;
-		static std::vector<sys::ISystem*>				_uInteraction;
-		static std::vector<std::vector<sys::ISystem*>>	_render;
-		static std::vector<std::vector<sys::ISystem*>>	_postProcess;
-		static std::vector<sys::ISystem*>				_rInteraction;
-		static UnderlyingVec							_data;
+		static void	splitPasses(const FuncVec &sortedFuncs);
+
+		static FuncVec									_updateCycle;
+		static std::unordered_map<
+					std::string_view,
+					std::vector<FuncVec>>				_renderCycle;
+
+		static std::vector<SysPtr>						_data;
 };
 
 template <typename SysType>
