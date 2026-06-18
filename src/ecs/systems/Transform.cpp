@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 11:10:02                                        */
+/*  Last Modified: 2026/06/18 15:10:04                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -313,15 +313,14 @@ void	Transform::renderUI(const Renderer &renderer, GizmoContext &gizmo) {
 					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, sampler)
 			.update();
 
-		/* auto	draw =  */drawCommand(renderer, _NDCPipeline)
+		auto	draw = drawCommand(renderer, _NDCPipeline)
 			.addPush(VK_SHADER_STAGE_ALL_GRAPHICS, EntityData{entity, transform.getDenseIndex(), tint.getDenseIndex()})
 			.addBinding(SSBO_d->sets[0])
 			.addBinding(texture_d->sets[0])
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
 			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer())
-			.setVertexCount(mesh->triangleVertexCount)/* ; */
-			.submit();
-		// DrawQueue::requestDraw(0, std::move(draw), *(renderCycleDep.at("render transform gizmo").getDep()));
+			.setVertexCount(mesh->triangleVertexCount);
+		DrawQueue::requestDraw(0, std::move(draw), *(renderCycleDep.at("render transform gizmo").getDep()));
 	}
 }
 
