@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/05 12:15:03 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 13:55:20                                        */
+/*  Last Modified: 2026/06/18 18:16:10                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -80,8 +80,18 @@ struct	PhaseDependencies {
 	std::vector<ImageDep>			write;
 	std::vector<std::string_view>	read;
 
+	auto	*addBlock(std::initializer_list<std::string_view> list) {
+		for (auto &elem: list)
+			block.push_back(elem);
+		return this;
+	}
 	auto	*addBlock(std::string_view newOne) {
 		block.push_back(newOne);
+		return this;
+	}
+	auto	*addRequire(std::initializer_list<std::string_view> list) {
+		for (auto &elem: list)
+			require.push_back(elem);
 		return this;
 	}
 	auto	*addRequire(std::string_view newOne) {

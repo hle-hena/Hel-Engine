@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:48 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 15:03:31                                        */
+/*  Last Modified: 2026/06/18 18:15:04                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -180,7 +180,7 @@ Renderer	RenderPass::beginPass(void) {
 	uint32_t	lastIndex = static_cast<uint32_t>(-1);
 	for (auto &[index, write]: _colorInfos) {
 		if (index != lastIndex + 1u) {
-			std::cerr << "There is a gap in the binding of images";
+			std::cerr << "There is a gap in the binding of images.\n";
 			return (Renderer(_ctx, std::move(*this)));
 		}
 		colors.push_back(write.info);

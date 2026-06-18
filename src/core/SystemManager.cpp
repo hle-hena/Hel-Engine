@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 15:02:48                                        */
+/*  Last Modified: 2026/06/18 18:14:28                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,6 +26,14 @@ std::unordered_map<std::string_view,
 			sys::ISystem::Func*>>>		SystemManager::_renderCycle{};
 
 std::vector<SystemManager::SysPtr>		SystemManager::_data{};
+
+bool	matchName(const std::string_view &pattern,
+				const std::string_view &name)
+{
+	if (pattern.ends_with('*'))
+		return name.starts_with(pattern.substr(0, pattern.size() - 1));
+	return pattern == name;
+};
 
 #define	RETURN_ERROR(functionProvide, imageName, error)	\
 do {													\
@@ -56,7 +64,7 @@ struct	LayerState {
 
 	bool	check(const ImageDep &write) {
 		if (std::any_of(reads.begin(), reads.end(),
-			[&](const auto &value){return write._imageName == value;}))
+			[&](const auto &value){return matchName(value, write._imageName);}))
 			return true;
 		if (write._usage & ImageDep::Color
 				&& colors.contains(write._bindingIndex)
@@ -82,12 +90,12 @@ struct	LayerState {
 		return false;
 	}
 	bool	check(std::string_view read) {
-		if (depth.has_value() && depth == read)
+		if (depth.has_value() && matchName(read, depth.value()))
 			return true;
-		if (stencil.has_value() && stencil == read)
+		if (stencil.has_value() && matchName(read, stencil.value()))
 			return true;
 		if (std::any_of(colors.begin(), colors.end(),
-			[&](const auto &pair){return pair.second == read;}))
+			[&](const auto &pair){return matchName(read, pair.second);}))
 			return true;
 		track(read);
 		return false;
