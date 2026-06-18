@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/05 12:15:03 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 11:07:51                                        */
+/*  Last Modified: 2026/06/18 11:15:24                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -47,13 +47,13 @@ struct	ImageDep {
 
 	private:
 		ImageDep(PhaseDependencies *parent, const std::string &imgName,
-				VkFormat fmt, Usage usage, int bindingIndex = -1)
+				VkFormat fmt, Usage usage, uint32_t bindingIndex)
 			:	_parent(parent), _imageName(imgName), _format(fmt),
-				_usage(usage)
-			{
-				if (bindingIndex != -1)
-					_bindingIndex = bindingIndex;
-			}
+				_usage(usage), _bindingIndex(bindingIndex)	{}
+		ImageDep(PhaseDependencies *parent, const std::string &imgName,
+				VkFormat fmt, Usage usage)
+			:	_parent(parent), _imageName(imgName), _format(fmt),
+				_usage(usage)	{}
 
 		PhaseDependencies					*_parent;
 
@@ -64,7 +64,7 @@ struct	ImageDep {
 		std::optional<VkClearValue>			_clearValue;
 		VkAttachmentLoadOp					_load{VK_ATTACHMENT_LOAD_OP_MAX_ENUM};
 		VkAttachmentStoreOp					_store{VK_ATTACHMENT_STORE_OP_MAX_ENUM};
-		std::optional<int>					_bindingIndex;
+		std::optional<uint32_t>				_bindingIndex;
 
 	friend struct PhaseDependencies;
 	friend struct DepHasher;
@@ -99,7 +99,7 @@ struct	PhaseDependencies {
 	template <ImageDep::Usage U>
 	requires (U != ImageDep::Color)
 	auto	startWrite(const std::string &imageName, VkFormat format) {
-		return ImageDep(this, imageName, format, U, -1);
+		return ImageDep(this, imageName, format, U);
 	}
 	template <ImageDep::Usage U>
 	requires (U == ImageDep::Color)

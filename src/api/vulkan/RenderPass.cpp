@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:48 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/17 11:17:05                                        */
+/*  Last Modified: 2026/06/18 11:41:45                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -74,7 +74,7 @@ do {						\
 
 
 bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
-	if (resolveUsage(dep) || validateWrite(dep))
+	if (validateWrite(dep))
 		return true;
 	if (_writes.contains(dep._imageName))
 		return false;
@@ -94,24 +94,6 @@ bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
 		resolveOps(img, dep);
 	addWriteImage(img, dep);
 	return (false);
-}
-
-bool	RenderPass::resolveUsage(ImageDep &dep) {
-	if (dep._usage != ImageDep::Usage::MAX_ENUM)
-		return false;
-
-	if (!dep._config.has_value())
-		RETURN_ERROR("Couldn't find a valid usage for the image \"" <<
-			dep._imageName << "\". Please use the setImageUsage function.\n");
-
-	if (dep._config->usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-		dep._usage = ImageDep::Usage::Color;
-	else if (dep._config->usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-		dep._usage = ImageDep::Usage::DepthStencil;
-	else 
-		RETURN_ERROR("Couldn't find a valid usage for the image \"" <<
-			dep._imageName << "\". Please use the setImageUsage function.\n");
-	return false;
 }
 
 bool	RenderPass::validateWrite(ImageDep &dep) {
@@ -138,9 +120,6 @@ bool	RenderPass::validateWrite(ImageDep &dep) {
 		RETURN_ERROR("Error for image \"" << dep._imageName <<
 			"\". Please ask for a valid format.\n");
 	if (colorUsage) {
-		if (!dep._bindingIndex.has_value())
-			RETURN_ERROR("Error for image \"" << dep._imageName <<
-				"\". No binding index for the color write has been given.\n");
 		auto	idx = dep._bindingIndex.value();
 		if (_colorInfos.contains(idx) &&
 			_colorInfos[idx].name != dep._imageName)
@@ -148,7 +127,14 @@ bool	RenderPass::validateWrite(ImageDep &dep) {
 				<< "\". The binding " << std::to_string(idx)
 				<< " is already taken by image \""
 				<< _colorInfos[idx].name << "\".\n");
-	}
+	} else if (_depthInfo.has_value() && dep._usage & ImageDep::Depth
+			&& dep._imageName != _depthInfo->name)
+		RETURN_ERROR("Error for image \"" << dep._imageName <<
+			"\". Pass already has a depth image.\n");
+	else if (_stencilInfo.has_value() && dep._usage & ImageDep::Stencil
+			&& dep._imageName != _stencilInfo->name)
+		RETURN_ERROR("Error for image \"" << dep._imageName <<
+			"\". Pass already has a stencil image.\n");
 	return false;
 }
 
@@ -169,7 +155,7 @@ void	RenderPass::addWriteImage(Image *img, ImageDep &dep){
 	if (dep._usage & ImageDep::Color) {
 		img->transitionLayout(_commandBuffer,
 								VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-		ColorWrite	write{.name = dep._imageName, .format = dep._format,
+		Write	write{.name = dep._imageName, .format = dep._format,
 			.info = img->getRenderingInfo(
 				dep._clearValue.value_or(VkClearValue{{{0.f, 0.f, 0.f, 1.f}}}),
 				dep._load, dep._store, img->getView(ViewConfig()
@@ -191,8 +177,8 @@ void	RenderPass::addWriteImage(Image *img, ImageDep &dep){
 					dep._load, dep._store, img->getView(ViewConfig()
 						.format(dep._format).aspect(aspect)
 						.components().identity()));
-	if (hasDepth)	{ _depthInfo = info; _config.depthFormat = dep._format; }
-	if (hasStenc)	{ _stencilInfo = info; _config.stencilFormat = dep._format; }
+	if (hasDepth)	{ _depthInfo = Write{dep._imageName, dep._format, info}; }
+	if (hasDepth)	{ _stencilInfo = Write{dep._imageName, dep._format, info}; }
 }
 
 bool	RenderPass::addRead(const std::string_view &readName) {
@@ -240,9 +226,9 @@ Renderer	RenderPass::beginPass(void) {
 	renderingInfo.layerCount = 1;
 
 	std::vector<VkRenderingAttachmentInfo>	colors;
-	int										lastIndex = -1;
+	uint32_t	lastIndex = static_cast<uint32_t>(-1);
 	for (auto &[index, write]: _colorInfos) {
-		if (index != lastIndex + 1) {
+		if (index != lastIndex + 1u) {
 			std::cerr << "There is a gap in the binding of images";
 			return (Renderer(_ctx, std::move(*this)));
 		}
@@ -252,10 +238,13 @@ Renderer	RenderPass::beginPass(void) {
 	}
 	renderingInfo.colorAttachmentCount = static_cast<uint32_t>(colors.size());
 	renderingInfo.pColorAttachments = colors.data();
-	if (_depthInfo.has_value())
-		renderingInfo.pDepthAttachment = &_depthInfo.value();
-	if (_stencilInfo.has_value())
-		renderingInfo.pStencilAttachment = &_stencilInfo.value();
+	if (_depthInfo.has_value()) {
+		renderingInfo.pDepthAttachment = &_depthInfo->info;
+		_config.depthFormat = _depthInfo->format;
+	} if (_stencilInfo.has_value()) {
+		renderingInfo.pStencilAttachment = &_stencilInfo->info;
+		_config.stencilFormat = _stencilInfo->format;
+	}
 
 	for (auto &[imgName, img]: _writes)
 		img->setWrittenState({});

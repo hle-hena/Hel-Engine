@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:27 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/15 18:00:07                                        */
+/*  Last Modified: 2026/06/18 11:38:07                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,7 +45,6 @@ class	RenderPass {
 	private:
 		bool	addWrite(ImageDep &dep, ImagePool *imagePool);
 		bool	validateWrite(ImageDep &dep);
-		bool	resolveUsage(ImageDep &dep);
 		void	resolveOps(Image *img, ImageDep &dep);
 		void	addWriteImage(Image *img, ImageDep &dep);
 
@@ -65,15 +64,15 @@ class	RenderPass {
 		std::unordered_map<std::string, Image *>	_writes{};
 		std::unordered_map<std::string, Image *>	_reads{};
 
-		struct	ColorWrite {
+		struct	Write {
 			std::string					name;
 			VkFormat					format;
 			VkRenderingAttachmentInfo	info;
 		};
-		std::map<int, ColorWrite>					_colorInfos{};
-		std::optional<VkRenderingAttachmentInfo>	_depthInfo{};
-		std::optional<VkRenderingAttachmentInfo>	_stencilInfo{};
-		RenderingConfig								_config;
+		std::map<uint32_t, Write>	_colorInfos{};
+		std::optional<Write>		_depthInfo{};
+		std::optional<Write>		_stencilInfo{};
+		RenderingConfig				_config;
 
 		static uint32_t		_passIndex;
 		static uint32_t		newPass(void)	{ return (_passIndex++); }
