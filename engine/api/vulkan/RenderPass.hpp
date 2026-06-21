@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:27 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 14:49:44                                        */
+/*  Last Modified: 2026/06/21 12:22:07                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,7 +19,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <map>
-#include "ecs/systems/ISystem.hpp"
+#include "ecs/ISystem.hpp"
 
 namespace	hel {
 

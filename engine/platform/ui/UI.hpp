@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 10:11:20                                        */
+/*  Last Modified: 2026/06/21 12:23:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,7 +19,7 @@
 # include <memory>
 # include <functional>
 
-# include "ecs/systems/HelSystem.hpp"
+# include "HelSystem.hpp"
 # include "platform/ui/Dock.hpp"
 
 # define PanelFactoryMacro(panelType)							\

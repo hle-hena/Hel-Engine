@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:03:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 21:00:23                                        */
+/*  Last Modified: 2026/06/21 12:27:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,7 +14,7 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/assets/Geometry.hpp"
+#include "assetType/Geometry.hpp"
 #include "api/vulkan/Buffer.hpp"
 #include "utils/mathUtils.hpp"
 

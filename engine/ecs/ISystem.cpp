@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/26 18:12:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/15 17:50:01                                        */
+/*  Last Modified: 2026/06/21 12:22:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,7 +14,7 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/systems/ISystem.hpp"
+#include "ecs/ISystem.hpp"
 #include "core/Engine.hpp"
 #include "api/vulkan/Renderer.hpp"
 

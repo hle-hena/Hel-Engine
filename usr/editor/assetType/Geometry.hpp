@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:01:55 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/27 20:52:12                                        */
+/*  Last Modified: 2026/06/21 12:29:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -91,4 +91,4 @@ struct	FullGeometry : public Geometry {
 
 }
 
-#include "ecs/assets/Geometry.tpp"
+#include "assetType/Geometry.tpp"

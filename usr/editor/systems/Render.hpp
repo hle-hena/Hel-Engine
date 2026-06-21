@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 10:11:44                                        */
+/*  Last Modified: 2026/06/21 12:23:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,7 +19,7 @@
 # include <vulkan/vulkan.h>
 # include <glm/glm.hpp>
 
-# include "ecs/systems/HelSystem.hpp"
+# include "HelSystem.hpp"
 # include "api/vulkan/PipelineMap.hpp"
 
 namespace	hel {

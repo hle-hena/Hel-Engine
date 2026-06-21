@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 11:45:27                                        */
+/*  Last Modified: 2026/06/21 12:22:09                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,7 +19,7 @@
 #include <memory>
 #include <vector>
 
-#include "ecs/systems/ISystem.hpp"
+#include "ecs/ISystem.hpp"
 
 namespace hel {
 

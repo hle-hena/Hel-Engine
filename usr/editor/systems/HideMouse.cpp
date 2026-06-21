@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/21 14:13:56 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/12 14:23:32                                        */
+/*  Last Modified: 2026/06/21 12:24:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,7 +14,7 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/systems/HideMouse.hpp"
+#include "systems/HideMouse.hpp"
 #include "ecs/Registry.hpp"
 #include "platform/window/Window.hpp"
 #include "core/SystemManager.hpp"

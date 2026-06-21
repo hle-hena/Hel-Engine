@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:14:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/15 19:06:22                                        */
+/*  Last Modified: 2026/06/21 12:23:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,7 +16,7 @@
 
 #pragma once
 
-# include "ecs/systems/HelSystem.hpp"
+# include "HelSystem.hpp"
 # include "ecs/Entity.hpp"
 
 namespace	hel {
