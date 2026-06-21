@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:29:28                                        */
+/*  Last Modified: 2026/06/21 12:45:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -54,8 +54,8 @@ void	Sprite::init(void) {
 		config.device = _device;
 		config.assetManager = _assetManager;
 		config.shaderPaths = {
-			"assets/shaders/sprite.vert.spv",
-			"assets/shaders/sprite.frag.spv"
+			"shaders/sprite.vert.spv",
+			"shaders/sprite.frag.spv"
 		};
 		config.initPipelineLayout = initLayout;
 		config.configurePipeline = configurePipeline;

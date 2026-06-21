@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:24:40                                        */
+/*  Last Modified: 2026/06/21 12:45:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -66,8 +66,8 @@ void	Selection::init(void) {
 		config.device = _device;
 		config.assetManager = _assetManager;
 		config.shaderPaths = {
-			"assets/shaders/tint.vert.spv",
-			"assets/shaders/tint.frag.spv"
+			"shaders/tint.vert.spv",
+			"shaders/tint.frag.spv"
 		};
 		config.configurePipeline = configurePipeline;
 		_tintPipeline = createPipeline(config);

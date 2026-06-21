@@ -117,7 +117,7 @@ file(GLOB_RECURSE SHADERS CONFIGURE_DEPENDS
 	"${HEL_TARGET_DIR}/shaders/*.vert"
 	"${HEL_TARGET_DIR}/shaders/*.frag"
 )
-set(SPV_OUTPUT_DIR "${CMAKE_BINARY_DIR}/assets/shaders")
+set(SPV_OUTPUT_DIR "${CMAKE_BINARY_DIR}/shaders")
 file(MAKE_DIRECTORY ${SPV_OUTPUT_DIR})
 set(SPV_FILES "")
 
@@ -158,30 +158,21 @@ else()
 endif()
 
 # ── Assets ────────────────────────────────────────────────────────────────────
-set(MODELS_SOURCE_DIR "${HEL_TARGET_DIR}/assets/models")
-set(MODELS_DEST_DIR "${CMAKE_BINARY_DIR}/assets/models")
-add_custom_target(copy_models ALL
-	COMMAND ${CMAKE_COMMAND} -E make_directory ${MODELS_DEST_DIR}
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${MODELS_SOURCE_DIR} ${MODELS_DEST_DIR}
-	COMMENT "Copying models to assets/models"
+set(ASSETS_SOURCE_DIR "${HEL_TARGET_DIR}/assets")
+set(ASSETS_DEST_DIR "${CMAKE_BINARY_DIR}/assets")
+add_custom_target(copy_assets ALL
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${ASSETS_DEST_DIR}
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${ASSETS_SOURCE_DIR} ${ASSETS_DEST_DIR}
+	COMMENT "Copying assets for ${HEL_TARGET}"
 )
-add_dependencies(hel copy_models)
-
-set(IMAGES_SOURCE_DIR "${HEL_TARGET_DIR}/assets/images")
-set(IMAGES_DEST_DIR "${CMAKE_BINARY_DIR}/assets/images")
-add_custom_target(copy_images ALL
-	COMMAND ${CMAKE_COMMAND} -E make_directory ${IMAGES_DEST_DIR}
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${IMAGES_SOURCE_DIR} ${IMAGES_DEST_DIR}
-	COMMENT "Copying images to assets/images"
-)
-add_dependencies(hel copy_images)
+add_dependencies(hel copy_assets)
 
 # ── Install ───────────────────────────────────────────────────────────────────
 install(TARGETS hel RUNTIME DESTINATION .)
 install(DIRECTORY ${SPV_OUTPUT_DIR}/
-	DESTINATION assets/shaders
+	DESTINATION shaders
 	FILES_MATCHING PATTERN "*.spv"
 )
-install(DIRECTORY ${MODELS_DEST_DIR}/
-	DESTINATION assets/models
+install(DIRECTORY ${ASSETS_DEST_DIR}/
+	DESTINATION assets
 )

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:29:29                                        */
+/*  Last Modified: 2026/06/21 12:45:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -84,8 +84,8 @@ void	Transform::init(void) {
 		conf.device = _device;
 		conf.assetManager = _assetManager;
 		conf.shaderPaths = {
-				"assets/shaders/gizmo.vert.spv",
-				"assets/shaders/gizmo.frag.spv"
+				"shaders/gizmo.vert.spv",
+				"shaders/gizmo.frag.spv"
 		};
 		conf.initPipelineLayout = initSimpleLayout;
 		conf.configurePipeline = configureSimplePipeline;
@@ -96,8 +96,8 @@ void	Transform::init(void) {
 		conf.device = _device;
 		conf.assetManager = _assetManager;
 		conf.shaderPaths = {
-				"assets/shaders/NDC.vert.spv",
-				"assets/shaders/NDC.frag.spv"
+				"shaders/NDC.vert.spv",
+				"shaders/NDC.frag.spv"
 		};
 		conf.initPipelineLayout = initNDCLayout;
 		conf.configurePipeline = configureNDCPipeline;

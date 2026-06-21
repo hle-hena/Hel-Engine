@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:29:28                                        */
+/*  Last Modified: 2026/06/21 12:45:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -55,8 +55,8 @@ void	Render::init(void) {
 		config.device = _device;
 		config.assetManager = &_registry->getAssetManager();
 		config.shaderPaths = {
-			"assets/shaders/basic.vert.spv",
-			"assets/shaders/basic.frag.spv"
+			"shaders/basic.vert.spv",
+			"shaders/basic.frag.spv"
 		};
 		config.initPipelineLayout = initLayout;
 		config.configurePipeline = configureSelectedPipeline;
@@ -67,8 +67,8 @@ void	Render::init(void) {
 		config.device = _device;
 		config.assetManager = &_registry->getAssetManager();
 		config.shaderPaths = {
-			"assets/shaders/basic.vert.spv",
-			"assets/shaders/basic.frag.spv"
+			"shaders/basic.vert.spv",
+			"shaders/basic.frag.spv"
 		};
 		config.initPipelineLayout = initLayout;
 		config.configurePipeline = configureNormalPipeline;
