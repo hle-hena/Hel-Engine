@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 16:36:01                                        */
+/*  Last Modified: 2026/06/21 16:50:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -50,6 +50,7 @@ void	UiContext::destroy(void) {
 void	UiContext::init() {
 	initDescriptorPool(_device);
 	initImGui(_device);
+	_fullyInitialised = true;
 }
 
 void	UiContext::initImGui(Device &device) {
@@ -119,18 +120,10 @@ void	UiContext::unregisterTexture(VkDescriptorSet texture) {
 }
 
 void	UiContext::newFrame() {
-	if (_fullyInitialised) {
-		ImGui::SetCurrentContext(_context);
-		ImGui_ImplVulkan_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-		return ;
-	}
-	init();
+	ImGui::SetCurrentContext(_context);
 	ImGui_ImplVulkan_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
-	_fullyInitialised = true;
 }
 
 void	UiContext::endFrame(void) {

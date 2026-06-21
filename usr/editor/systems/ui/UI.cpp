@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 16:41:05                                        */
+/*  Last Modified: 2026/06/21 16:48:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -64,6 +64,9 @@ void	UI::init(void) {
 		addNewPanel<SceneViewport>(leftChild.second);
 		addNewPanel<Inspector>(dockChild.second);
 	}
+
+	sys::StyleEditor::loadFromFile("currentStyle.json");
+	sys::StyleEditor::applyPalette();
 }
 
 void	UI::removePanel(IPanel *panel) {
@@ -124,11 +127,6 @@ void	UI::addDock(Window *window, const ImVec2 &size) {
 }
 
 void	UI::updateUI(const FrameContext &ctx) {
-	static bool	firstTime = true;
-	if (firstTime) {
-		sys::StyleEditor::loadFromFile("currentStyle.json");
-		sys::StyleEditor::applyPalette();
-	}
 	auto	windowExtent = ctx.window->getExtent();
 	float	windowWidth = static_cast<float>(windowExtent.width);
 	float	windowHeight = static_cast<float>(windowExtent.height);

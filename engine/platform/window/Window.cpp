@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 21:20:17                                        */
+/*  Last Modified: 2026/06/21 16:45:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,6 +36,7 @@ Window::windowPtr	Window::createWindow(uint32_t width, uint32_t height,
 		if (window->_swapchain.initiateSwapChain(*window)) {
 			return (nullptr);
 		}
+		window->_uiContext.init();
 		return (window);
 	} catch (...) {
 		GLFW::release();
