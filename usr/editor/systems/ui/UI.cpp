@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 11:10:45                                        */
+/*  Last Modified: 2026/06/21 16:41:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,13 +15,13 @@
 /* *************************************************************************  */
 
 
-#include "platform/ui/UI.hpp"
-#include "platform/ui/UIHelper.hpp"
+#include "systems/ui/UI.hpp"
+#include "systems/ui/UIHelper.hpp"
 #include "core/Engine.hpp"
-#include "platform/ui/EntityHierarchy.hpp"
-#include "platform/ui/StyleEditor.hpp"
-#include "platform/ui/SceneViewport.hpp"
-#include "platform/ui/Inspector.hpp"
+#include "systems/ui/EntityHierarchy.hpp"
+#include "systems/ui/StyleEditor.hpp"
+#include "systems/ui/SceneViewport.hpp"
+#include "systems/ui/Inspector.hpp"
 
 #include <ui/ImGui/imgui.h>
 #include <fstream>
@@ -124,6 +124,11 @@ void	UI::addDock(Window *window, const ImVec2 &size) {
 }
 
 void	UI::updateUI(const FrameContext &ctx) {
+	static bool	firstTime = true;
+	if (firstTime) {
+		sys::StyleEditor::loadFromFile("currentStyle.json");
+		sys::StyleEditor::applyPalette();
+	}
 	auto	windowExtent = ctx.window->getExtent();
 	float	windowWidth = static_cast<float>(windowExtent.width);
 	float	windowHeight = static_cast<float>(windowExtent.height);

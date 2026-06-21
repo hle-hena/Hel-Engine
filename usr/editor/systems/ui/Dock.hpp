@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:30:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 15:02:51                                        */
+/*  Last Modified: 2026/06/21 13:04:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,8 +16,8 @@
 
 #pragma once
 
-# include "platform/ui/Panel.hpp"
-# include "platform/ui/UIHelper.hpp"
+# include "systems/ui/Panel.hpp"
+# include "systems/ui/UIHelper.hpp"
 
 # include <utils/json.hpp>
 # include <ui/ImGui/imgui.h>

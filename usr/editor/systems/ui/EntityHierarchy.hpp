@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 21:06:26                                        */
+/*  Last Modified: 2026/06/21 13:04:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,7 +21,7 @@
 # include "ecs/View.hpp"
 # include "ecs/Component.hpp"
 # include "ecs/Entity.hpp"
-# include "platform/ui/Panel.hpp"
+# include "systems/ui/Panel.hpp"
 
 namespace	hel::sys {
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/05 15:03:24                                        */
+/*  Last Modified: 2026/06/21 13:04:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,10 +14,10 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "platform/ui/Dock.hpp"
-#include "platform/ui/UI.hpp"
+#include "systems/ui/Dock.hpp"
+#include "systems/ui/UI.hpp"
 #include "utils/mathUtils.hpp"
-#include "platform/ui/SceneViewport.hpp"
+#include "systems/ui/SceneViewport.hpp"
 
 #include <ui/ImGui/imgui.h>
 #include <ui/ImGui/imgui_internal.h>

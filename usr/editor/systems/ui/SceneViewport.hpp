@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Inspector.hpp                                                       */
+/*  File: SceneViewport.hpp                                                   */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
+/*  Created: 2026/03/09 11:38:39 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 23:11:09                                        */
+/*  Last Modified: 2026/06/21 13:04:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,50 +16,37 @@
 
 #pragma once
 
-# include <unordered_map>
-# include <typeindex>
-# include <functional>
 # include <ui/ImGui/imgui.h>
-
+# include "systems/ui/Panel.hpp"
 # include "ecs/Entity.hpp"
-# include "platform/ui/Panel.hpp"
 
 namespace	hel {
 
-class	Registry;
 class	Window;
+class	Device;
+class	ImagePool;
+struct	RenderRequest;
 
 }
 
 namespace	hel::sys {
 
-class	Inspector : public Panel<Inspector> {
+class	SceneViewport : public Panel<SceneViewport> {
 	public:
-		static constexpr const char	*label = "Inspector";
-		using UIDrawFunc = std::function<void(Window *, void *)>;
-
-		Inspector(void) = default;
-		~Inspector(void) = default;
+		static constexpr const char	*label = "Viewport";
+		SceneViewport(void) = default;
+		~SceneViewport(void) = default;
 
 		expected<void, std::string>	onInit(void) override;
 
-		template <typename Component>
-		void	setDrawFunc(UIDrawFunc func) {
-			_drawFuncs[typeid(Component)] = func;
-		}
+		void	render(Window *window, const ImVec2 &size) override;
 
-		void	render(Window *window, const ImVec2 &) override;
+		RenderRequest	*mainRequest{nullptr};
 
 	private:
-		void	addNewComponentPopup(Entity::id handle);
-		void	removeEntity(Window *window, Entity::id handle);
-
-		void	setBuiltInDrawFunc(void);
-
-		bool		_addNewComp{false};
-		int			_newCompTypeIndex{0};
-
-		std::unordered_map<std::type_index, UIDrawFunc>	_drawFuncs;
+		bool		_captured;
+		Entity::id	_handle{Entity::NOT_REGISTERED};
+		std::string	_showImage{"Color Image"};
 };
 
 }
