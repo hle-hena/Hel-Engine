@@ -31,30 +31,55 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# ── Target project ────────────────────────────────────────────────────────────
+set(HEL_TARGET "editor" CACHE STRING "Project to build from usr/")
+set(HEL_TARGET_DIR "${CMAKE_SOURCE_DIR}/usr/${HEL_TARGET}")
+
+if(NOT EXISTS "${HEL_TARGET_DIR}")
+	message(FATAL_ERROR "Target project not found: ${HEL_TARGET_DIR}")
+endif()
+message(STATUS "Building target: ${HEL_TARGET}")
+
+# ── Build type ────────────────────────────────────────────────────────────────
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
+# ── Sources ───────────────────────────────────────────────────────────────────
 file(GLOB_RECURSE HEL_SOURCES CONFIGURE_DEPENDS
-	"${CMAKE_SOURCE_DIR}/src/*.cpp"
+	"${CMAKE_SOURCE_DIR}/engine/*.cpp"
 )
 file(GLOB_RECURSE EXTERNAL_SOURCES CONFIGURE_DEPENDS
 	"${CMAKE_SOURCE_DIR}/external/*.cpp"
 )
-list(APPEND HEL_SOURCES ${EXTERNAL_SOURCES} "${GENERATED_COMPONENT_CPP}")
+file(GLOB_RECURSE USR_SOURCES CONFIGURE_DEPENDS
+	"${HEL_TARGET_DIR}/systems/*.cpp"
+	"${HEL_TARGET_DIR}/assetType/*.cpp"
+	"${HEL_TARGET_DIR}/main.cpp"
+)
+
+list(APPEND HEL_SOURCES ${EXTERNAL_SOURCES} ${USR_SOURCES})
 list(REMOVE_DUPLICATES HEL_SOURCES)
 
+# ── Executable ────────────────────────────────────────────────────────────────
 add_executable(hel ${HEL_SOURCES})
 
-target_include_directories(hel PRIVATE ${CMAKE_SOURCE_DIR}/src)
-target_include_directories(hel SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/external)
+target_include_directories(hel PRIVATE
+	${CMAKE_SOURCE_DIR}/engine
+	${HEL_TARGET_DIR}
+)
+target_include_directories(hel SYSTEM PRIVATE
+	${CMAKE_SOURCE_DIR}/external
+)
 
+# ── Compile definitions ───────────────────────────────────────────────────────
 target_compile_definitions(hel PRIVATE
 	IMGUI_DEFINE_MATH_OPERATORS
 	$<$<CONFIG:Debug>:VALIDATION_LAYERS>
 )
 
+# ── Compile options ───────────────────────────────────────────────────────────
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU|AppleClang")
 	target_compile_options(hel PRIVATE
 		$<$<CONFIG:Debug>:-Wall -Wextra -g -O0>
@@ -68,8 +93,9 @@ elseif(MSVC)
 	)
 endif()
 
+# ── Vulkan ────────────────────────────────────────────────────────────────────
 if(WIN32)
-    set(Vulkan_ROOT $ENV{VULKAN_SDK})
+	set(Vulkan_ROOT $ENV{VULKAN_SDK})
 endif()
 find_package(Vulkan REQUIRED)
 
@@ -79,6 +105,7 @@ target_link_libraries(hel PRIVATE
 	glfw
 )
 
+# ── Shaders ───────────────────────────────────────────────────────────────────
 find_program(GLSLC_EXECUTABLE glslangValidator REQUIRED)
 if(NOT GLSLC_EXECUTABLE)
 	message(FATAL_ERROR "glslangValidator not found. Run: sudo apt install glslang-tools")
@@ -87,15 +114,15 @@ else()
 endif()
 
 file(GLOB_RECURSE SHADERS CONFIGURE_DEPENDS
-	"${CMAKE_SOURCE_DIR}/assets/shaders/*.vert"
-	"${CMAKE_SOURCE_DIR}/assets/shaders/*.frag"
+	"${HEL_TARGET_DIR}/shaders/*.vert"
+	"${HEL_TARGET_DIR}/shaders/*.frag"
 )
-set(SPV_OUTPUT_DIR "${CMAKE_BINARY_DIR}/assets/shaders")
+set(SPV_OUTPUT_DIR "${CMAKE_BINARY_DIR}/shaders")
 file(MAKE_DIRECTORY ${SPV_OUTPUT_DIR})
 set(SPV_FILES "")
 
 foreach(shader ${SHADERS})
-	file(RELATIVE_PATH REL_PATH "${CMAKE_SOURCE_DIR}/assets/shaders" "${shader}")
+	file(RELATIVE_PATH REL_PATH "${HEL_TARGET_DIR}/shaders" "${shader}")
 	set(SPV_FILE "${SPV_OUTPUT_DIR}/${REL_PATH}.spv")
 	get_filename_component(SPV_DIR "${SPV_FILE}" DIRECTORY)
 	file(MAKE_DIRECTORY ${SPV_DIR})
@@ -110,8 +137,9 @@ endforeach()
 add_custom_target(compile_shaders ALL DEPENDS ${SPV_FILES})
 add_dependencies(hel compile_shaders)
 
+# ── Sponza ────────────────────────────────────────────────────────────────────
 find_package(Git REQUIRED)
-set(SPONZA_EXTRACT_DIR "${CMAKE_SOURCE_DIR}/assets/models/sponza")
+set(SPONZA_EXTRACT_DIR "${HEL_TARGET_DIR}/assets/models/sponza")
 if(NOT EXISTS "${SPONZA_EXTRACT_DIR}/sponza.obj")
 	message(STATUS "Sponza not found. Cloning from GitHub...")
 	execute_process(
@@ -129,29 +157,22 @@ else()
 	message(STATUS "Sponza assets already present, skipping clone.")
 endif()
 
-set(MODELS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/assets/models")
-set(MODELS_DEST_DIR "${CMAKE_BINARY_DIR}/assets/models")
-add_custom_target(copy_models ALL
-	COMMAND ${CMAKE_COMMAND} -E make_directory ${MODELS_DEST_DIR}
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${MODELS_SOURCE_DIR} ${MODELS_DEST_DIR}
-	COMMENT "Copying models to assets/models"
+# ── Assets ────────────────────────────────────────────────────────────────────
+set(ASSETS_SOURCE_DIR "${HEL_TARGET_DIR}/assets")
+set(ASSETS_DEST_DIR "${CMAKE_BINARY_DIR}/assets")
+add_custom_target(copy_assets ALL
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${ASSETS_DEST_DIR}
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${ASSETS_SOURCE_DIR} ${ASSETS_DEST_DIR}
+	COMMENT "Copying assets for ${HEL_TARGET}"
 )
-add_dependencies(hel copy_models)
+add_dependencies(hel copy_assets)
 
-set(MODELS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/assets/images")
-set(MODELS_DEST_DIR "${CMAKE_BINARY_DIR}/assets/images")
-add_custom_target(copy_images ALL
-	COMMAND ${CMAKE_COMMAND} -E make_directory ${MODELS_DEST_DIR}
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${MODELS_SOURCE_DIR} ${MODELS_DEST_DIR}
-	COMMENT "Copying images to assets/images"
-)
-add_dependencies(hel copy_images)
-
+# ── Install ───────────────────────────────────────────────────────────────────
 install(TARGETS hel RUNTIME DESTINATION .)
 install(DIRECTORY ${SPV_OUTPUT_DIR}/
-	DESTINATION assets/shaders
+	DESTINATION shaders
 	FILES_MATCHING PATTERN "*.spv"
 )
-install(DIRECTORY ${MODELS_DEST_DIR}/
-	DESTINATION assets/models
+install(DIRECTORY ${ASSETS_DEST_DIR}/
+	DESTINATION assets
 )
