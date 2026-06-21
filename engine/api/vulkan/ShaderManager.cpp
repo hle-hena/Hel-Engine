@@ -1,22 +1,22 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Shader.cpp                                                          */
+/*  File: ShaderManager.cpp                                                   */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/10 15:54:54 by hle-hena                                  */
+/*  Created: 2026/06/21 16:58:44 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/02/10 16:01:19                                        */
-/*             By: hle-hena                                                   */
+/*  Last Modified: 2026/06/21 17:17:11                                        */
+/*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
 /*                                                                            */
-/*  Copyright (c) 2026 hle-hena                                               */
+/*  Copyright (c) 2026 pop-os                                                 */
 /*                                                                            */
 /* *************************************************************************  */
 
 #include <vector>
 
-#include "ecs/assets/Shader.hpp"
+#include "api/vulkan/ShaderManager.hpp"
 #include "api/vulkan/Device.hpp"
 #include "ecs/AssetManager.hpp"
 
@@ -60,5 +60,14 @@ std::shared_ptr<Shader>	Shader::load(Device &device, const std::string &path) {
 	));
 }
 
+std::shared_ptr<Shader>	ShaderManager::get(std::string_view shaderName) {
+	auto	it = _shaders.find(shaderName);
+	if (it != _shaders.end())
+		return (it->second);
+	std::string	shaderPath = "shaders/" + std::string(shaderName) + ".spv";
+	auto	newShader = _shaders.emplace(shaderName,
+							Shader::load(_device, shaderPath));
+	return (newShader.first->second);
 }
 
+}
