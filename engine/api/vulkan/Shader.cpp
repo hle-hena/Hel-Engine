@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: ShaderManager.cpp                                                   */
+/*  File: Shader.cpp                                                          */
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/21 16:58:44 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 17:17:11                                        */
+/*  Last Modified: 2026/06/21 17:29:56                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,11 +14,11 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include <vector>
-
-#include "api/vulkan/ShaderManager.hpp"
+#include "api/vulkan/Shader.hpp"
 #include "api/vulkan/Device.hpp"
 #include "ecs/AssetManager.hpp"
+
+#include <vector>
 
 namespace	hel {
 
@@ -31,7 +31,8 @@ VkPipelineShaderStageCreateInfo		Shader::getStageInfo(void) const {
 	return (info);
 }
 
-std::shared_ptr<Shader>	Shader::load(Device &device, const std::string &path) {
+std::shared_ptr<Shader>	Shader::load(Device &device, const std::string &shaderName) {
+	std::string	path = "shaders/" + shaderName + ".spv";
 	std::vector<char>	code = AssetManager::readFile(path);
 	if (code.size() == 0)
 		return (nullptr);//TODO -> give a fallback asset.
@@ -58,16 +59,6 @@ std::shared_ptr<Shader>	Shader::load(Device &device, const std::string &path) {
 			delete s;
 		}
 	));
-}
-
-std::shared_ptr<Shader>	ShaderManager::get(std::string_view shaderName) {
-	auto	it = _shaders.find(shaderName);
-	if (it != _shaders.end())
-		return (it->second);
-	std::string	shaderPath = "shaders/" + std::string(shaderName) + ".spv";
-	auto	newShader = _shaders.emplace(shaderName,
-							Shader::load(_device, shaderPath));
-	return (newShader.first->second);
 }
 
 }

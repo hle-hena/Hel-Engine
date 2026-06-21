@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 17:18:34                                        */
+/*  Last Modified: 2026/06/21 17:31:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,7 +16,7 @@
 
 #include "systems/Camera.hpp"
 #include "api/vulkan/Device.hpp"
-#include "api/vulkan/ShaderManager.hpp"
+#include "api/vulkan/Shader.hpp"
 #include "ecs/AssetManager.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"
@@ -59,8 +59,8 @@ void	Camera::init(void) {
 		config.device = _device;
 		config.assetManager = _assetManager;
 		config.shaderPaths = {
-			"shaders/cameraFrustum.vert.spv",
-			"shaders/cameraFrustum.frag.spv"
+			"cameraFrustum.vert",
+			"cameraFrustum.frag"
 		};
 		config.initPipelineLayout = initFrustumLayout;
 		config.configurePipeline = configureFrustumPipeline;
@@ -71,8 +71,8 @@ void	Camera::init(void) {
 		config.device = _device;
 		config.assetManager = _assetManager;
 		config.shaderPaths = {
-			"shaders/billboard.vert.spv",
-			"shaders/billboard.frag.spv"
+			"billboard.vert",
+			"billboard.frag"
 		};
 		config.initPipelineLayout = initSpriteLayout;
 		config.configurePipeline = configureSpritePipeline;

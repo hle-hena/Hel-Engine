@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: ShaderManager.hpp                                                   */
+/*  File: Shader.hpp                                                          */
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/21 16:58:34 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 17:12:51                                        */
+/*  Last Modified: 2026/06/21 17:29:31                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,7 +19,6 @@
 #include <string>
 #include <vulkan/vulkan.h>
 #include <memory>
-#include <unordered_map>
 
 namespace	hel {
 
@@ -33,19 +32,7 @@ struct	Shader {
 	VkPipelineShaderStageCreateInfo	getStageInfo(void) const;
 
 	static std::shared_ptr<Shader>	load(Device &device,
-										const std::string &path);
-};
-
-class	ShaderManager {
-	ShaderManager(Device &device)	: _device(device) {}
-
-	std::shared_ptr<Shader>	get(std::string_view shaderName);
-
-	private:
-		Device							&_device;
-		std::unordered_map<
-			std::string_view,
-			std::shared_ptr<Shader>>	_shaders{};
+										const std::string &shaderName);
 };
 
 }
