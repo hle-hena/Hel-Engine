@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:45:10                                        */
+/*  Last Modified: 2026/06/21 17:31:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,12 +18,12 @@
 #include "api/vulkan/PipelineMap.hpp"
 #include "api/vulkan/Device.hpp"
 #include "api/vulkan/Buffer.hpp"
+#include "api/vulkan/Shader.hpp"
 #include "ecs/Registry.hpp"
 #include "ecs/AssetManager.hpp"
 #include "ecs/Component.hpp"
 #include "assetType/Geometry.hpp"
 #include "assetType/Texture.hpp"
-#include "ecs/assets/Shader.hpp"
 #include "core/Engine.hpp"
 #include "api/vulkan/Renderer.hpp"
 #include "api/vulkan/Sampler.hpp"
@@ -55,8 +55,8 @@ void	Render::init(void) {
 		config.device = _device;
 		config.assetManager = &_registry->getAssetManager();
 		config.shaderPaths = {
-			"shaders/basic.vert.spv",
-			"shaders/basic.frag.spv"
+			"basic.vert",
+			"basic.frag"
 		};
 		config.initPipelineLayout = initLayout;
 		config.configurePipeline = configureSelectedPipeline;
@@ -67,8 +67,8 @@ void	Render::init(void) {
 		config.device = _device;
 		config.assetManager = &_registry->getAssetManager();
 		config.shaderPaths = {
-			"shaders/basic.vert.spv",
-			"shaders/basic.frag.spv"
+			"basic.vert",
+			"basic.frag"
 		};
 		config.initPipelineLayout = initLayout;
 		config.configurePipeline = configureNormalPipeline;

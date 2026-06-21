@@ -3,22 +3,22 @@
 /*                                                                            */
 /*  File: Shader.cpp                                                          */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/10 15:54:54 by hle-hena                                  */
+/*  Created: 2026/06/21 16:58:44 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/02/10 16:01:19                                        */
-/*             By: hle-hena                                                   */
+/*  Last Modified: 2026/06/21 17:29:56                                        */
+/*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
 /*                                                                            */
-/*  Copyright (c) 2026 hle-hena                                               */
+/*  Copyright (c) 2026 pop-os                                                 */
 /*                                                                            */
 /* *************************************************************************  */
 
-#include <vector>
-
-#include "ecs/assets/Shader.hpp"
+#include "api/vulkan/Shader.hpp"
 #include "api/vulkan/Device.hpp"
 #include "ecs/AssetManager.hpp"
+
+#include <vector>
 
 namespace	hel {
 
@@ -31,7 +31,8 @@ VkPipelineShaderStageCreateInfo		Shader::getStageInfo(void) const {
 	return (info);
 }
 
-std::shared_ptr<Shader>	Shader::load(Device &device, const std::string &path) {
+std::shared_ptr<Shader>	Shader::load(Device &device, const std::string &shaderName) {
+	std::string	path = "shaders/" + shaderName + ".spv";
 	std::vector<char>	code = AssetManager::readFile(path);
 	if (code.size() == 0)
 		return (nullptr);//TODO -> give a fallback asset.
@@ -61,4 +62,3 @@ std::shared_ptr<Shader>	Shader::load(Device &device, const std::string &path) {
 }
 
 }
-
