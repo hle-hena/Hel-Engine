@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/17 16:32:44 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 18:03:20                                        */
+/*  Last Modified: 2026/06/21 13:04:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,7 +16,7 @@
 
 #pragma once
 
-# include "platform/ui/Panel.hpp"
+# include "systems/ui/Panel.hpp"
 
 
 # include <map>

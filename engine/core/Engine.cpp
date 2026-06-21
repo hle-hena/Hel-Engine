@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/17 14:48:33                                        */
+/*  Last Modified: 2026/06/21 16:38:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,7 +27,6 @@
 
 #include "platform/window/Window.hpp"
 #include "platform/window/GLFW.hpp"
-#include "platform/ui/UI.hpp"
 
 #include "ecs/Registry.hpp"
 #include "ecs/Component.hpp"

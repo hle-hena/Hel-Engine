@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 10:30:51                                        */
+/*  Last Modified: 2026/06/21 16:50:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,7 +20,6 @@
 #include "api/vulkan/Device.hpp"
 #include "api/vulkan/Sampler.hpp"
 #include "core/Application.hpp"
-#include "platform/ui/StyleEditor.hpp"
 
 namespace	hel {
 
@@ -51,6 +50,7 @@ void	UiContext::destroy(void) {
 void	UiContext::init() {
 	initDescriptorPool(_device);
 	initImGui(_device);
+	_fullyInitialised = true;
 }
 
 void	UiContext::initImGui(Device &device) {
@@ -88,9 +88,6 @@ void	UiContext::initImGuiStyle(void) {
 
 	style.TreeLinesFlags = ImGuiTreeNodeFlags_DrawLinesToNodes;
 	style.TreeLinesRounding = 3.f;
-
-	sys::StyleEditor::loadFromFile("currentStyle.json");
-	sys::StyleEditor::applyPalette();
 }
 
 void	UiContext::initDescriptorPool(Device &device) {
@@ -123,18 +120,10 @@ void	UiContext::unregisterTexture(VkDescriptorSet texture) {
 }
 
 void	UiContext::newFrame() {
-	if (_fullyInitialised) {
-		ImGui::SetCurrentContext(_context);
-		ImGui_ImplVulkan_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-		return ;
-	}
-	init();
+	ImGui::SetCurrentContext(_context);
 	ImGui_ImplVulkan_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
-	_fullyInitialised = true;
 }
 
 void	UiContext::endFrame(void) {

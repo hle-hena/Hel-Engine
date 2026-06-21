@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/18 11:20:37 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 21:18:01                                        */
+/*  Last Modified: 2026/06/21 13:04:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,8 +14,8 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "platform/ui/StyleEditor.hpp"
-#include "platform/ui/UIHelper.hpp"
+#include "systems/ui/StyleEditor.hpp"
+#include "systems/ui/UIHelper.hpp"
 
 #include <cmath>
 #include <fstream>

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 12:54:54 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:11:08                                        */
+/*  Last Modified: 2026/06/21 13:04:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,8 +14,8 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "platform/ui/Panel.hpp"
-#include "platform/ui/Dock.hpp"
+#include "systems/ui/Panel.hpp"
+#include "systems/ui/Dock.hpp"
 
 #include <algorithm>
 
