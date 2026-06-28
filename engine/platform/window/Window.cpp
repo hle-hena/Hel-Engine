@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 16:45:01                                        */
+/*  Last Modified: 2026/06/26 11:11:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,28 +15,30 @@
 /* *************************************************************************  */
 
 #include "platform/window/Window.hpp"
-#include "ecs/Component.hpp"
 #include "platform/window/GLFW.hpp"
-#include "core/Application.hpp"
+#include "api/vulkan/VulkanContext.hpp"
+#include "platform/input/InputState.hpp"
 #include <GLFW/glfw3.h>
 
 namespace	hel {
 
 Window::windowPtr	Window::createWindow(uint32_t width, uint32_t height,
 										const std::string &windowName,
-										Application &app, VkInstance &instance) noexcept {
+										VulkanContext *ctx,
+										InputState *inputState) noexcept {
 	if (!GLFW::acquire())
 		return (nullptr);
 	try {
 		Window::windowPtr	window = Window::windowPtr(new Window(width, height,
-																windowName, app, instance));
-		if (glfwCreateWindowSurface(instance, window->getWindow(),
+																windowName, ctx,
+																inputState));
+		if (glfwCreateWindowSurface(ctx->getInstance(), window->getWindow(),
 									nullptr, &window->_surface) != VK_SUCCESS)
 			return (nullptr);
 		if (window->_swapchain.initiateSwapChain(*window)) {
 			return (nullptr);
 		}
-		window->_uiContext.init();
+		UiContext::init(window.get(), ctx->getDevice());
 		return (window);
 	} catch (...) {
 		GLFW::release();
@@ -46,13 +48,13 @@ Window::windowPtr	Window::createWindow(uint32_t width, uint32_t height,
 
 Window::windowPtr	Window::createBootstrap(uint32_t width, uint32_t height,
 										const std::string &windowName,
-										Application &app, VkInstance &instance) noexcept {
+										VulkanContext *ctx) noexcept {
 	if (!GLFW::acquire())
 		return (nullptr);
 	try {
 		Window::windowPtr	window = Window::windowPtr(new Window(width, height,
-																windowName, app, instance));
-		if (glfwCreateWindowSurface(instance, window->getWindow(),
+																windowName, ctx));
+		if (glfwCreateWindowSurface(ctx->getInstance(), window->getWindow(),
 									nullptr, &window->_surface) != VK_SUCCESS)
 			return (nullptr);
 		return (window);
@@ -63,15 +65,14 @@ Window::windowPtr	Window::createBootstrap(uint32_t width, uint32_t height,
 }
 
 Window::Window(uint32_t width, uint32_t height, const std::string &windowName,
-			Application &app, VkInstance &instance)
-	:	_app{app},
-		_instance{instance},
+			VulkanContext *ctx, InputState *inputState)
+	:	_vkCtx(ctx),
+		_inputState(inputState),
 		_width(width),
 		_height(height),
 		_windowName(windowName),
 		_windowPtr(nullptr),
-		_uiContext{this},
-		_swapchain{app.getVkContext().getDevice()} {
+		_swapchain{*ctx->getDevice()} {
 	initWindow();
 }
 
@@ -95,9 +96,9 @@ Window::~Window(void) {
 
 void	Window::deleteWindow(void) {
 	_swapchain.deleteSwapChain();
-	_uiContext.destroy();
+	UiContext::destroy(_vkCtx->getDevice());
 	if (_surface != VK_NULL_HANDLE)
-		vkDestroySurfaceKHR(_instance, _surface, nullptr);
+		vkDestroySurfaceKHR(_vkCtx->getInstance(), _surface, nullptr);
 	glfwDestroyWindow(_windowPtr);
 	GLFW::release();
 }
@@ -109,19 +110,18 @@ void	Window::pollEvents(void) {
 }
 
 bool	Window::shouldClose(void) {
-	auto	&inputState = _app.getRegistry().getInputState();
-
-	if (inputState.isReleased<input::Key>(GLFW_KEY_ESCAPE) &&
-		inputState.getFocused() == this) {
+	//TODO -> this should be on the user side. Only default should be the button.
+	if (_inputState->isReleased<input::Key>(GLFW_KEY_ESCAPE) &&
+		_inputState->getFocused() == this) {
 		glfwSetWindowShouldClose(_windowPtr, true);
-		inputState.setFocus(this, false);
+		_inputState->setFocus(this, false);
 		return (true);
 	}
-	if (inputState.isDown<input::Key>(GLFW_KEY_ESCAPE) &&
-		inputState.hasMod(GLFW_MOD_CONTROL) &&
-		inputState.getFocused() == this) {
+	if (_inputState->isDown<input::Key>(GLFW_KEY_ESCAPE) &&
+		_inputState->hasMod(GLFW_MOD_CONTROL) &&
+		_inputState->getFocused() == this) {
 		glfwSetWindowShouldClose(_windowPtr, true);
-		inputState.setFocus(this, false);
+		_inputState->setFocus(this, false);
 		return (true);
 	}
 	return (glfwWindowShouldClose(_windowPtr));
@@ -132,11 +132,12 @@ void	Window::setEntityReference(Entity::id handle) {
 }
 
 void	Window::setEntityFocus(Entity::id handle) {
-	if (_focusHandle.has_value())
-		_app.getRegistry().removeComponent<comp::SelectedTag>(*_focusHandle);
+	//TODO -> it should be up to the engine to set that. The user shouldn't directly interact with the window.
+	// if (_focusHandle.has_value())
+	// 	_app.getRegistry().removeComponent<comp::SelectedTag>(*_focusHandle);
 	_focusHandle = handle;
 	_focusChanged = 2;
-	_app.getRegistry().addComponent<comp::SelectedTag>(*_focusHandle);
+	// _app.getRegistry().addComponent<comp::SelectedTag>(*_focusHandle);
 }
 
 void	Window::frameBufferResizedCallback(GLFWwindow *window,
@@ -151,39 +152,39 @@ void	Window::frameBufferResizedCallback(GLFWwindow *window,
 void	Window::focusCallback(GLFWwindow *window, int focused) {
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
-	appWindow->getApp().getRegistry().getInputState().setFocus(appWindow, focused);
+	appWindow->_inputState->setFocus(appWindow, focused);
 }
 
 void	Window::keyCallback(GLFWwindow *window, int key, int,
 							int action, int mods) {
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
-	if (action != GLFW_RELEASE && appWindow->_uiContext.capturesKeyboard())
+	if (action != GLFW_RELEASE && UiContext::capturesKeyboard())
 		return ;
-	appWindow->getApp().getRegistry().getInputState()
-		.setState<input::Key>(static_cast<size_t>(key), action, mods);
+	appWindow->_inputState
+		->setState<input::Key>(static_cast<size_t>(key), action, mods);
 }
 
 void	Window::mouseButtonCallback(GLFWwindow *window, int button,
 							int action, int mods) {
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
-	if (action != GLFW_RELEASE && appWindow->_uiContext.capturesMouse())
+	if (action != GLFW_RELEASE && UiContext::capturesMouse())
 		return ;
-	appWindow->getApp().getRegistry().getInputState()
-		.setState<input::Mouse>(static_cast<size_t>(button), action, mods);
+	appWindow->_inputState
+		->setState<input::Mouse>(static_cast<size_t>(button), action, mods);
 }
 
 void	Window::cursorEnterCallback(GLFWwindow *window, int entered) {
 	auto	appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
-	appWindow->getApp().getRegistry().getInputState().setFocus(appWindow, entered);
+	appWindow->_inputState->setFocus(appWindow, entered);
 }
 
 void	Window::cursorPositionCallback(GLFWwindow *window, double x, double y) {
 	auto		appWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
-	appWindow->getApp().getRegistry().getInputState().setMouseMove(x, y);
+	appWindow->_inputState->setMouseMove(x, y);
 }
 
 }

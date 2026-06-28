@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/21 16:58:44 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 17:29:56                                        */
+/*  Last Modified: 2026/06/27 16:44:13                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -31,7 +31,7 @@ VkPipelineShaderStageCreateInfo		Shader::getStageInfo(void) const {
 	return (info);
 }
 
-std::shared_ptr<Shader>	Shader::load(Device &device, const std::string &shaderName) {
+std::shared_ptr<Shader>	Shader::load(Device *device, const std::string &shaderName) {
 	std::string	path = "shaders/" + shaderName + ".spv";
 	std::vector<char>	code = AssetManager::readFile(path);
 	if (code.size() == 0)
@@ -48,9 +48,9 @@ std::shared_ptr<Shader>	Shader::load(Device &device, const std::string &shaderNa
 	createInfo.flags = 0;
 	createInfo.codeSize = code.size();
 	createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
-	if (vkCreateShaderModule(device.getLogical(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+	if (vkCreateShaderModule(device->getLogical(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
 		return (nullptr);//TODO -> give a fallback asset.
-	VkDevice	logicalDevice = device.getLogical();
+	VkDevice	logicalDevice = device->getLogical();
 	return (std::shared_ptr<Shader>(
 		new Shader{path, shaderModule, stage},
 		[logicalDevice](Shader *s){

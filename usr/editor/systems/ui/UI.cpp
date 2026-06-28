@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 16:48:12                                        */
+/*  Last Modified: 2026/06/27 17:56:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -77,8 +77,10 @@ void	UI::removePanel(IPanel *panel) {
 }
 
 void	UI::saveToFile(const std::string &path) {
-	std::ofstream	file(path);
-	file << _dock->serialize(*_lastSize).dump(2);
+	if (_dock) {
+		std::ofstream	file(path);
+		file << _dock->serialize(*_lastSize).dump(2);
+	}
 }
 
 bool	UI::loadFromFile(const std::string &path) {
@@ -142,7 +144,7 @@ void	UI::updateUI(const FrameContext &ctx) {
 
 void	UI::render(const Renderer &renderer) {
 	auto	ctx = renderer.frameContext();
-	ctx.window->getUI().renderFrame(ctx.commandBuffer);
+	UiContext::renderFrame(ctx.commandBuffer);
 }
 
 }

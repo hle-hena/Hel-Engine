@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:33:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:41:26                                        */
+/*  Last Modified: 2026/06/26 14:58:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,14 +16,14 @@
 
 #pragma once
 
-# define GLFW_INCLUDE_VULKAN
-# include <GLFW/glfw3.h>
-# include <string>
-# include <cstring>
-# include <vector>
-# include <iostream>
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+#include <string>
+#include <cstring>
+#include <vector>
+#include <iostream>
 
-# include "utils/healthHelper.hpp"
+#include "HelExpected.hpp"
 
 namespace hel {
 
@@ -36,21 +36,15 @@ class	VulkanInstance {
 		VulkanInstance(VulkanInstance &&other) = default;
 		VulkanInstance	&operator=(VulkanInstance &&other) = delete;
 
-		std::string		getReason(void) const {
-			return (_reason);
-		}
-		bool			isHealthy(void) const {
-			return (_healthy);
-		}
 		VkInstance		&getVkInstance(void) {
 			return (_instance);
 		}
 
-		bool			createInstance(void);
+		expected<void>	createInstance(void);
 
 	private:
 		template <typename T, typename Extractor>
-		bool	checkSupport(const std::string &type, const std::vector<const char *> &required,
+		expected<void>	checkSupport(const std::string &type, const std::vector<const char *> &required,
 							std::vector<T> &available, Extractor &&extractName) {
 			for (const char *reqName: required) {
 				bool	found = false;
@@ -61,23 +55,19 @@ class	VulkanInstance {
 					}
 				}
 				if (!found)
-					RETURN_SET_UNHEALTHY(
-						"Missing support for a(n) " + type + ": \"" + reqName + "\"",
-						true
-					);
+					return unexpected("Missing support for a(n) " + type
+									+ ": \"" + reqName + "\"");
 			}
 			std::cout << "All " << type << " have been found" << std::endl;
-			return (false);
+			return {};
 		}
 
 		std::vector<const char *>	getExtensions(void);
 		bool						checkAllSupport(std::vector<const char *> &reqExt);
 
-		bool						setupDebugMessenger(void);
+		expected<void>				setupDebugMessenger(void);
 		void						populateMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
 
-		bool							_healthy{true};
-		std::string						_reason{""};
 		VkInstance						_instance{VK_NULL_HANDLE};
 		VkDebugUtilsMessengerEXT		_debugMessenger{VK_NULL_HANDLE};
 

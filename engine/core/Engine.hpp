@@ -3,92 +3,73 @@
 /*                                                                            */
 /*  File: Engine.hpp                                                          */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
+/*  Created: 2026/06/24 17:34:45 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/15 18:01:16                                        */
-/*             By: hle-hena                                                   */
+/*  Last Modified: 2026/06/27 20:50:48                                        */
+/*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
 /*                                                                            */
-/*  Copyright (c) 2026 hle-hena                                               */
+/*  Copyright (c) 2026 pop-os                                                 */
 /*                                                                            */
 /* *************************************************************************  */
 
 #pragma once
 
-#include <vulkan/vulkan.h>
-#include <memory>
-#include <cassert>
-
-#include "utils/Timer.hpp"
-
-#include "api/vulkan/Swapchain.hpp"
-#include "api/vulkan/Buffer.hpp"
-#include "api/vulkan/Descriptors.hpp"
-#include "api/vulkan/ImagePool.hpp"
-#include "api/vulkan/Renderer.hpp"
-
-#include "core/Frame.hpp"
+#include <string>
+#include "api/vulkan/VulkanContext.hpp"
+#include "ecs/Registry.hpp"
 #include "core/SystemManager.hpp"
+#include "utils/expected.hpp"
+#include "core/Frame.hpp"
+#include "platform/input/InputState.hpp"
+#include "api/vulkan/ImagePool.hpp"
 
-namespace hel {
+namespace	hel {
 
+class	ImagePool;
 class	Window;
-class	Device;
-class	Registry;
-class	UiContext;
 
-struct	EngineContext {
-	Device		*device;
-	Registry	*registry;
-	ImagePool	*imagePool;
+struct	EngineConfig {
+	EngineConfig(std::vector<UserData> *globalUserData)
+		:	globalUserData(globalUserData) {}
+
+	std::function<expected<GlobalSetBindings>(void)>	defineGlobalSet;
+	std::function<void(Registry*, Window*)>				loadPrimaryScene;
+	std::function<void(Registry *, FrameContext &)>		updateGlobalData;
+
+	std::vector<UserData>	*globalUserData;
 };
 
 class	Engine {
 	public:
-		Engine(Device &device, Registry &registry);
-		~Engine();
+		Engine(void);
+		~Engine(void);
 
-		Engine(const Engine &) = delete;
-		Engine &operator=(const Engine &) = delete;
-
-		std::string		getReason(void) const {
-			return (_reason);
-		}
-		bool			isHealthy(void) const {
-			return (_healthy);
-		}
-
-		bool			init(Window &window);
-		void			tick(Window *window, uint32_t currentFrame);
-
+		tl::expected<void, std::string>	init(const EngineConfig &config);
+		void	run(void);
+	
 	private:
-		bool			createCommandPool(void);
-		void			createDescriptorPools(void);
-		void			createImagePool(void);
+		tl::expected<void, std::string>	createWindow(int width, int height,
+												const std::string &windowName);
+		tl::expected<void, std::string>	createImagePool(void);
 
-		void			updateTick(UiContext &ui, FrameContext &frameCtx);
-		void			renderTick(Window *window, UiContext &,
-								FrameContext &frameCtx);
-		void			executePass(FrameContext &ctx, const std::vector<
-									sys::ISystem::Func*> &funcs);
+		void	tick(uint32_t frameIndex);
+		void	updateTick(FrameContext &frameCtx);
+		void	renderTick(Window *window, FrameContext &ctx);
+		void	executePass(FrameContext &ctx,
+							const SystemManager::FuncVec &funcs);
 
-		void			updateGlobalData(FrameContext &ctx);
-		void			writeGlobalData(Renderer &renderer);
-
-		bool											_healthy{true};
-		std::string										_reason{""};
-		Device											&_device;
-		Registry										&_registry;
-		Timer											_timer;
-		float											_lastFrameTime;
-		VkCommandPool									_commandPool{VK_NULL_HANDLE};
-		std::unique_ptr<DescriptorPool>					_staticPool;
-		std::unique_ptr<ImagePool>						_imagePool;
-		Frame											_frame;
-		EngineContext									_engineCtx;
-
-		SystemManager									_systems;
+		EngineConfig					_config{nullptr};
+		VulkanContext					_vkContext;
+		Device							*_device{nullptr};
+		std::unique_ptr<Window>			_appWindow{nullptr};
+		Registry						_registry;
+		InputState						_inputState;
+		VkCommandPool					_commandPool;
+		std::unique_ptr<ImagePool>		_imagePool;
+		SystemManager					_systems;
+		Frame							_frame;
 };
 
 }

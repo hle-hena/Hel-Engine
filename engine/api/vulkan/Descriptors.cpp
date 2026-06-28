@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 10:18:51                                        */
+/*  Last Modified: 2026/06/27 18:44:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,7 @@
 #include "utils/mathUtils.hpp"
 
 #include <algorithm>
+#include <iostream>
 
 namespace	std {
 
@@ -224,12 +225,16 @@ std::unique_ptr<DescriptorSet>	DescriptorFactory::build(
 	std::sort(_bindings._bindings.begin(), _bindings._bindings.end(), 
 			[](const auto& a, const auto& b) { return a.binding < b.binding; });
 	VkDescriptorSetLayout	setLayout = getSetLayout();
-	if (!setLayout)
+	if (!setLayout) {
+		std::cout << "No set layout." << std::endl;
 		return (nullptr);
+	}
 	auto	newSet = std::make_unique<DescriptorSet>();
 	newSet->setLayout = setLayout;
-	if (buildPool.allocateSets(*newSet, _setCount))
+	if (buildPool.allocateSets(*newSet, _setCount)) {
+		std::cout << "Couldn't allocate set." << std::endl;
 		return (nullptr);
+	}
 	return (newSet);
 }
 
@@ -243,8 +248,10 @@ DescriptorWriter::DescriptorWriter(Device &device, DescriptorSet *handle)
 DescriptorWriter	&DescriptorWriter::writeBuffer(uint32_t setIndex,
 												uint32_t binding,
 												VkDescriptorType type,
-												Buffer &buffer) {
+												Buffer &buffer,
+												uint32_t offset) {
 	VkDescriptorBufferInfo	bufferInfo = buffer.getDescriptorInfo();
+	bufferInfo.offset = offset;
 	_buffersInfo.push_back(bufferInfo);
 
 	VkWriteDescriptorSet	write{};
@@ -285,6 +292,7 @@ DescriptorWriter	&DescriptorWriter::writeImage(uint32_t setIndex,
 void	DescriptorWriter::update(void) {
 	vkUpdateDescriptorSets(_device.getLogical(), static_cast<uint32_t>(_writes.size()),
 							_writes.data(), 0, nullptr);
+	_writes.clear();
 }
 
 }

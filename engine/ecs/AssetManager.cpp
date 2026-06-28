@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/26 15:19:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:52:01                                        */
+/*  Last Modified: 2026/06/26 16:32:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,8 +20,8 @@
 
 namespace	hel {
 
-AssetManager::AssetManager(Device &device)
-	:	_device{device} {
+void	AssetManager::init(Device *device) {
+	_device = device;
 }
 
 std::vector<char>	AssetManager::readFile(const std::string& filepath) {

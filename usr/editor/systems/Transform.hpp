@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:23:49                                        */
+/*  Last Modified: 2026/06/27 16:36:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,7 +34,6 @@
 namespace	hel {
 
 class	AssetManager;
-class	InputState;
 
 }
 
@@ -119,7 +118,6 @@ class	Transform : public ISystem {
 		void	renderUI(const Renderer &renderer, GizmoContext &gizmoContext);
 
 		AssetManager			*_assetManager;
-		InputState				*_inputState{nullptr};
 		PipelineMap				*_simplePipeline;
 		PipelineMap				*_NDCPipeline;
 

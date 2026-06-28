@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:22:07                                        */
+/*  Last Modified: 2026/06/27 16:58:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -52,7 +52,7 @@ uint32_t	Renderer::passIndex(void) const	{
 
 DrawCall	Renderer::drawCommand(PipelineMap *pipeline, ISystemKey) const {
 	DrawCall	drawCall(this, pipeline);
-	drawCall.addDynamicBinding(_frameContext.globalSet, sizeof(GlobalUBO), nullptr);
+	drawCall.addDynamicBinding(_frameContext.globalSet, _frameContext.setStride, nullptr);
 	return (drawCall);
 }
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:14:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:24:34                                        */
+/*  Last Modified: 2026/06/27 16:31:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,8 +27,6 @@ namespace	hel::sys {
 SystemRegistrar<BaseController>	reg_BaseControllerSystem;
 
 void	BaseController::init(void) {
-	_input = &_registry->getInputState();
-
 	addUpdateDep("game control", &BaseController::handleInput)
 		->getDep()
 			->addBlock("model matrix calculation")
@@ -62,7 +60,7 @@ void	BaseController::handleKeyboardInput(Entity::id handle, float deltaTime) {
 	bool	moved = false;
 
 	for (const auto& [key, dir] : moveConfig) {
-		if (_input->isDown<input::Key>(key)) {
+		if (_inputState->isDown<input::Key>(key)) {
 			delta += dir;
 			moved = true;
 		}
@@ -77,13 +75,13 @@ void	BaseController::handleKeyboardInput(Entity::id handle, float deltaTime) {
 }
 
 void	BaseController::handleMouseMove(Entity::id handle) {
-	if (!_input->mouseMoved())	{ return ; }
+	if (!_inputState->mouseMoved())	{ return ; }
 	auto	constTransform = _registry->getComponent<comp::Transform>(handle);
 	auto	constController = _registry->getComponent<comp::Controller>(handle);
 	auto	tag = _registry->getComponent<comp::BaseControllerTag>(handle);
 	if (!constTransform || !constController || !tag)	{ return ; }
 
-	auto	delta = _input->getMouseDelta();
+	auto	delta = _inputState->getMouseDelta();
 	float	sensitivity = constController->mouseSensivity;
 
 	auto		transform = constTransform.modify();
@@ -98,12 +96,14 @@ void	BaseController::handleMouseMove(Entity::id handle) {
 }
 
 void	BaseController::handleInput(const FrameContext &ctx) {
-	auto	window = _input->getFocused();
+	auto	window = _inputState->getFocused();
 	if (!window)	{ return ; }
 
+	(void)ctx;
+	//TODO -> extract delta_t from ctx.
 	Entity::id	handle = window->getEntityReference();
 	handleMouseMove(handle);
-	handleKeyboardInput(handle, ctx.deltaTime);
+	handleKeyboardInput(handle, 0.001f);
 }
 
 }

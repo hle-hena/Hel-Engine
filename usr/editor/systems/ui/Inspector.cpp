@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 13:04:31                                        */
+/*  Last Modified: 2026/06/27 16:26:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,7 +26,7 @@
 
 namespace	hel::sys {
 
-expected<void, std::string>	Inspector::onInit(void) {
+expected<void>	Inspector::onInit(void) {
 	setBuiltInDrawFunc();
 	return {};
 }

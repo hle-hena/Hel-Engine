@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:09 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/08 19:38:09                                        */
+/*  Last Modified: 2026/06/26 11:09:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,7 +30,6 @@ class	Image;
 
 class	UiContext {
 	public:
-		UiContext(Window *window);
 		~UiContext(void);
 
 		UiContext(const UiContext &other) = delete;
@@ -41,30 +40,28 @@ class	UiContext {
 										VkImageView view);
 		static void				unregisterTexture(VkDescriptorSet texture);
 
-		void	newFrame();
-		void	endFrame(void);
-		void	renderFrame(VkCommandBuffer commandBuffer);
+		static void	newFrame(void);
+		static void	endFrame(void);
+		static void	renderFrame(VkCommandBuffer commandBuffer);
 
 		ImGuiContext	*get(void) const	{ return (_context); }
 
 	private:
-		bool	capturesMouse(void);
-		bool	capturesKeyboard(void);
+		static bool	capturesMouse(void);
+		static bool	capturesKeyboard(void);
 
-		void	destroy(void);
-		void	init();
-		void	initDescriptorPool(Device &device);
-		void	initImGui(Device &device);
-		void	initImGuiStyle(void);
+		static void	destroy(Device *device);
+		static void	init(Window *window, Device *device);
+		static void	initDescriptorPool(Device *device);
+		static void	initImGui(Window *window, Device *device);
+		static void	initImGuiStyle(void);
 
-		bool									_fullyInitialised{false};
+		static bool								_fullyInitialised;
 		static std::unique_ptr<DescriptorPool>	_pool;
 		static std::unordered_map<
 					VkDescriptorSet,
 					DescriptorSet::ptr>			_textures;
-		ImGuiContext							*_context;
-		Window									*_window;
-		Device									&_device;
+		static ImGuiContext						*_context;
 
 	friend class Window;
 };

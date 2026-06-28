@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:33:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 23:33:26                                        */
+/*  Last Modified: 2026/06/27 20:57:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,10 +26,10 @@ VulkanInstance::~VulkanInstance(void) {
 		vkDestroyInstance(_instance, nullptr);
 }
 
-bool	VulkanInstance::createInstance() {
+tl::expected<void, std::string>	VulkanInstance::createInstance() {
 	std::vector<const char *>	reqExt = getExtensions();
-	if (checkAllSupport(reqExt))
-		return (true);
+	if (!checkAllSupport(reqExt))
+		return tl::unexpected("A required extension wasn't found.");
 
 	VkApplicationInfo	appInfo{VK_STRUCTURE_TYPE_APPLICATION_INFO,
 		nullptr, "Hel", VK_MAKE_VERSION(0, 0, 0),
@@ -43,8 +43,8 @@ bool	VulkanInstance::createInstance() {
 	ADD_VALIDATION_LAYERS();
 
 	if (vkCreateInstance(&createInfo, nullptr, &_instance) != VK_SUCCESS)
-		RETURN_SET_UNHEALTHY("Failed to create an instance of vulkan", true);
-	return (SETUP_DEBUG_MESSENGER());
+		return tl::unexpected("Failed to create the VkInstance.");
+	return SETUP_DEBUG_MESSENGER();
 }
 
 std::vector<const char *>	VulkanInstance::getExtensions(void) {
@@ -72,7 +72,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL	debugCallback(
 		VkDebugUtilsMessageTypeFlagsEXT /* messageType */,
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 		void* /* pUserData */) {
-	std::cerr << pCallbackData->pMessage << std::endl;
+	// std::cerr << pCallbackData->pMessage << std::endl;
 	return VK_FALSE;
 }
 
@@ -89,15 +89,15 @@ void	VulkanInstance::populateMessengerCreateInfo(VkDebugUtilsMessengerCreateInfo
 	createInfo.pUserData = nullptr;
 }
 
-bool	VulkanInstance::setupDebugMessenger(void) {
+expected<void>	VulkanInstance::setupDebugMessenger(void) {
 	VkDebugUtilsMessengerCreateInfoEXT	createInfo{};
 	populateMessengerCreateInfo(createInfo);
 	VkResult	res = VK_SUCCESS;
 	CALL_VKINSTANCE_FUNC_VKRESULT(res, _instance, vkCreateDebugUtilsMessengerEXT,
 									&createInfo, nullptr, &_debugMessenger);
 	if (res != VK_SUCCESS)
-		RETURN_SET_UNHEALTHY("Failed to create the debug messenger.", true);
-	return (false);
+		return unexpected("Failed to create the debug messenger.");
+	return {};
 }
 
 }

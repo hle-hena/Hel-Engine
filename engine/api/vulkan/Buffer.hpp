@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/29 16:04:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 17:58:25                                        */
+/*  Last Modified: 2026/06/25 10:44:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -51,8 +51,8 @@ class Buffer {
 			{ return (_mapped); }
 		VkDeviceSize			getSize(void) const
 			{ return (_size); }
-		uint32_t				alignedStride(void) const
-			{ return (_alignedStride); }
+		uint32_t				getStride(void) const
+			{ return (_stride); }
 		VkDeviceSize			getOffset(void) const
 			{ return (0); }
 
@@ -67,7 +67,6 @@ class Buffer {
 		VmaAllocation				_allocation{VK_NULL_HANDLE};
 		VkDeviceSize				_size;
 		uint32_t					_stride;
-		uint32_t					_alignedStride;
 		VmaAllocationCreateFlags	_allocFlags;
 		void			*_mapped{nullptr};
 };

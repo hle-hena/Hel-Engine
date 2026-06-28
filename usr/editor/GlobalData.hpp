@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Texture.hpp                                                         */
+/*  File: GlobalData.hpp                                                      */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/03/24 15:06:28 by hle-hena                                  */
+/*  Created: 2026/06/27 16:38:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/26 16:34:39                                        */
+/*  Last Modified: 2026/06/27 16:38:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,27 +16,13 @@
 
 #pragma once
 
-# include <memory>
-# include <string>
-# include "api/vulkan/Image.hpp"
+#include <glm/glm.hpp>
 
 namespace	hel {
 
-struct	Texture {
-	std::string					filePath;
-
-	std::unique_ptr<Image>		image;
-
-	static std::shared_ptr<Texture>	load(Device *device,
-											const std::string &path);
-
-	protected:
-		struct	RawTexture {
-			unsigned char	*pixels{nullptr};
-			int				width, height, channels;
-		};
-
-		static RawTexture	loadFile(const std::string &path);
+struct	GlobalUBO {
+	glm::mat4	viewProjection;
+	float		elapsedTime;
 };
 
 }

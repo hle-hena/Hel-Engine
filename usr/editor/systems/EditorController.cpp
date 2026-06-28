@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/03 18:56:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:24:36                                        */
+/*  Last Modified: 2026/06/27 16:33:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,8 +27,6 @@ namespace	hel::sys {
 SystemRegistrar<EditorController>	reg_EditorControllerSystem;
 
 void	EditorController::init(void) {
-	_input = &_registry->getInputState();
-
 	addUpdateDep("editor control", &EditorController::handleInput)
 		->getDep()
 			->addBlock("model matrix calculation")
@@ -59,7 +57,7 @@ void	EditorController::handleKeyboardInput(Entity::id handle, float deltaTime) {
 	bool	moved = false;
 
 	for (const auto& [key, dir] : moveConfig) {
-		if (_input->isDown<input::Key>(key)) {
+		if (_inputState->isDown<input::Key>(key)) {
 			delta += dir;
 			moved = true;
 		}
@@ -74,14 +72,14 @@ void	EditorController::handleKeyboardInput(Entity::id handle, float deltaTime) {
 }
 
 void	EditorController::handleMouseMove(Entity::id handle) {
-	if (!_input->isDown<input::Mouse>(GLFW_MOUSE_BUTTON_RIGHT) ||
-		!_input->mouseMoved())	{ return ; }
+	if (!_inputState->isDown<input::Mouse>(GLFW_MOUSE_BUTTON_RIGHT) ||
+		!_inputState->mouseMoved())	{ return ; }
 	auto	constTransform = _registry->getComponent<comp::Transform>(handle);
 	auto	constController = _registry->getComponent<comp::Controller>(handle);
 	auto	tag = _registry->getComponent<comp::EditorControllerTag>(handle);
 	if (!constTransform || !constController || !tag)	{ return ; }
 
-	auto	delta = _input->getMouseDelta();
+	auto	delta = _inputState->getMouseDelta();
 	float	sensitivity = constController->mouseSensivity;
 
 	auto		transform = constTransform.modify();
@@ -94,12 +92,14 @@ void	EditorController::handleMouseMove(Entity::id handle) {
 }
 
 void	EditorController::handleInput(const FrameContext &ctx) {
-	auto	window = _input->getFocused();
+	auto	window = _inputState->getFocused();
 	if (!window)	{ return ; }
 
+	(void)ctx;
+	//TODO -> extract delta_t from ctx.
 	Entity::id	handle = window->getEntityReference();
-	handleKeyboardInput(handle, ctx.deltaTime);
 	handleMouseMove(handle);
+	handleKeyboardInput(handle, 0.001f);
 }
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/09 10:12:35                                        */
+/*  Last Modified: 2026/06/27 18:38:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -130,7 +130,8 @@ class	DescriptorWriter {
 		~DescriptorWriter(void)	= default;
 
 		DescriptorWriter	&writeBuffer(uint32_t setIndex, uint32_t binding,
-										VkDescriptorType type, Buffer &buffer);
+										VkDescriptorType type, Buffer &buffer,
+										uint32_t offset = 0);
 		DescriptorWriter	&writeImage(uint32_t setIndex, uint32_t binding,
 									VkDescriptorType type, VkImageView view,
 									VkImageLayout layout, VkSampler sampler);

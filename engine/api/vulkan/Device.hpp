@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:22 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:26:04                                        */
+/*  Last Modified: 2026/06/27 18:16:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,17 +16,18 @@
 
 #pragma once
 
-# include <vector>
-# include <vulkan/vulkan.h>
-# include <cstdint>
-# include <string>
-# include <optional>
-# include <vma/vk_mem_alloc.h>
+#include <vector>
+#include <vulkan/vulkan.h>
+#include <cstdint>
+#include <optional>
+#include <vma/vk_mem_alloc.h>
+
+#include "HelExpected.hpp"
 
 namespace	hel {
 
-class	Window;
 class	VulkanInstance;
+class	Window;
 
 struct	QueuesFamilyIndices {
 	std::optional<uint32_t>	graphicsFamily;
@@ -39,19 +40,13 @@ struct	QueuesFamilyIndices {
 
 class	Device {
 	public:
-		Device(VulkanInstance	&instance);
+		Device(void) = default;
 		~Device(void);
 		Device(const Device &other) = delete;
 		Device	&operator=(const Device &other) = delete;
 		Device(Device &&other) = default;
 		Device	&operator=(Device &&other) = delete;
 
-		std::string			getReason(void) const {
-			return (_reason);
-		}
-		bool				isHealthy(void) const {
-			return (_healthy);
-		}
 		VkPhysicalDevice	&getPhysical(void) {
 			return (_physicalDevice);
 		}
@@ -75,8 +70,8 @@ class	Device {
 		}
 		uint32_t	getAligned(uint32_t stride, VkBufferUsageFlags usage) const;
 
-		bool				pickPhysicalDevice(Window &bootstrapWindow);
-		bool				supportSurface(Window &window);
+		expected<void>		init(VulkanInstance *instance, Window *bootstrap);
+		bool				supportSurface(Window *window);
 
 		bool				findMemoryType(uint32_t typeFilter,
 								VkMemoryPropertyFlags properties,
@@ -87,18 +82,17 @@ class	Device {
 
 	private:
 		bool				isDeviceSuitable(VkPhysicalDevice device,
-											Window &bootstrapWindow);
+											Window *bootstrapWindow);
 		bool				checkDeviceExtensionSupport(VkPhysicalDevice device);
 		QueuesFamilyIndices	findQueueFamilies(VkPhysicalDevice device,
-											Window &bootstrapWindow);
+											Window *bootstrapWindow);
 
-		bool				createLogicalDevice(void);
-		bool				createCommandPool(void);
-		bool				createVmaAllocator(void);
+		expected<void>				pickPhysicalDevice(VulkanInstance *instance,
+													Window *bootstrapWindow);
+		expected<void>				createLogicalDevice(void);
+		expected<void>				createCommandPool(void);
+		expected<void>				createVmaAllocator(VulkanInstance *instance);
 
-		bool						_healthy{true};
-		std::string					_reason{""};
-		VulkanInstance				&_instance;
 		VkPhysicalDevice			_physicalDevice{VK_NULL_HANDLE};
 		VkPhysicalDeviceProperties2	_physicalProperties{.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
 														.pNext = nullptr, .properties = {}};
@@ -107,7 +101,7 @@ class	Device {
 		VkQueue						_graphicQueue;
 		VkQueue						_presentQueue;
 		VkCommandPool				_transientCommandPool{VK_NULL_HANDLE};
-		VmaAllocator				_allocator;
+		VmaAllocator				_allocator{VK_NULL_HANDLE};
 
 		const std::vector<const char *>	_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 };

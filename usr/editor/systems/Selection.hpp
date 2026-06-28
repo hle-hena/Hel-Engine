@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:23:48                                        */
+/*  Last Modified: 2026/06/27 16:35:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,7 +27,6 @@
 namespace	hel {
 
 class	AssetManager;
-class	InputState;
 class	Window;
 
 }
@@ -55,7 +54,6 @@ class	Selection : public ISystem {
 
 		AssetManager				*_assetManager;
 		PipelineMap					*_tintPipeline{nullptr};
-		InputState					*_inputState{nullptr};
 
 		std::unordered_map<RenderRequest, Read::Context, RenderRequest::Hasher>	_requests;
 };

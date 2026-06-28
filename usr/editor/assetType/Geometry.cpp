@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:03:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:27:40                                        */
+/*  Last Modified: 2026/06/27 17:38:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -219,16 +219,16 @@ bool	Geometry::isLoadedFully(void) const {
 	return (vertexBuffer && triangleIndexBuffer);
 }
 
-std::shared_ptr<Geometry>	Geometry::load(Device &device, const std::string &modelName) {
+std::shared_ptr<Geometry>	Geometry::load(Device *device, const std::string &modelName) {
 	GeometryVectors	vec = loadFile(modelName, false);
 	if (vec.vertices.empty())
 		return (nullptr);
 
 	std::shared_ptr<Geometry>	asset = std::make_shared<Geometry>();
 	asset->modelName = modelName;
-	asset->vertexBuffer = createBuffer(device, vec.vertices,
+	asset->vertexBuffer = createBuffer(*device, vec.vertices,
 										VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-	asset->triangleIndexBuffer = createBuffer(device, vec.triangleIndices,
+	asset->triangleIndexBuffer = createBuffer(*device, vec.triangleIndices,
 										VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 	asset->triangleVertexCount = static_cast<uint32_t>(vec.triangleIndices.size());
 	asset->submeshes = std::move(vec.submeshes);
@@ -242,20 +242,20 @@ bool	FullGeometry::isLoadedFully(void) const {
 	return (vertexBuffer && triangleIndexBuffer && lineIndexBuffer);
 }
 
-std::shared_ptr<FullGeometry>	FullGeometry::load(Device &device, const std::string &modelName) {
+std::shared_ptr<FullGeometry>	FullGeometry::load(Device *device, const std::string &modelName) {
 	GeometryVectors	vec = loadFile(modelName, true);
 	if (vec.vertices.empty())
 		return (nullptr);
 
 	std::shared_ptr<FullGeometry>	asset = std::make_shared<FullGeometry>();
 	asset->modelName = modelName;
-	asset->vertexBuffer = createBuffer(device, vec.vertices,
+	asset->vertexBuffer = createBuffer(*device, vec.vertices,
 										VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-	asset->triangleIndexBuffer = createBuffer(device, vec.triangleIndices,
+	asset->triangleIndexBuffer = createBuffer(*device, vec.triangleIndices,
 										VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 	asset->triangleVertexCount = static_cast<uint32_t>(vec.triangleIndices.size());
 
-	asset->lineIndexBuffer = createBuffer(device, vec.lineIndices,
+	asset->lineIndexBuffer = createBuffer(*device, vec.lineIndices,
 										VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 	asset->lineVertexCount = static_cast<uint32_t>(vec.lineIndices.size());
 	asset->submeshes = std::move(vec.submeshes);

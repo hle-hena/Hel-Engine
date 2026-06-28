@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:36:51                                        */
+/*  Last Modified: 2026/06/27 18:16:04                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,7 +19,6 @@
 #include "api/vulkan/vulkanHelper.hpp"
 #include "api/vulkan/VulkanInstance.hpp"
 #include "platform/window/Window.hpp"
-#include "utils/healthHelper.hpp"
 #include <set>
 
 #define VMA_IMPLEMENTATION
@@ -27,12 +26,8 @@
 
 namespace	hel {
 
-Device::Device(VulkanInstance &instance)
-	:	_instance{instance} {
-}
-
 Device::~Device(void) {
-	if (_allocator)
+	if (_allocator != VK_NULL_HANDLE)
 		vmaDestroyAllocator(_allocator);
 	if (_transientCommandPool != VK_NULL_HANDLE)
 		vkDestroyCommandPool(_device, _transientCommandPool, nullptr);
@@ -40,32 +35,40 @@ Device::~Device(void) {
 		vkDestroyDevice(_device, nullptr);
 }
 
-bool	Device::pickPhysicalDevice(Window &bootstrapWindow) {
+expected<void>	Device::init(VulkanInstance *instance, Window *bootstrap) {
+	return pickPhysicalDevice(instance, bootstrap)
+			.and_then([this]{ return createLogicalDevice(); })
+			.and_then([this]{ return createCommandPool(); })
+			.and_then([this, instance]{ return createVmaAllocator(instance); });
+}
+
+expected<void>	Device::pickPhysicalDevice(VulkanInstance *instance,
+											Window *bootstrap) {
 	auto	physDevices = enumerate<VkPhysicalDevice>(
-		ENUMERATE_WRAP(vkEnumeratePhysicalDevices, _instance.getVkInstance())
+		ENUMERATE_WRAP(vkEnumeratePhysicalDevices, instance->getVkInstance())
 	);
 	if (physDevices.size() == 0)
-		RETURN_SET_UNHEALTHY("Couldn't find a GPU to pair with vulkan", true);
+		return unexpected("Couldn't find a GPU to pair with vulkan");
 
 	for (const auto &device: physDevices) {
-		if (isDeviceSuitable(device, bootstrapWindow)) {
+		if (isDeviceSuitable(device, bootstrap)) {
 			_physicalDevice = device;
 			break ;
 		}
 	}
 	if (_physicalDevice == VK_NULL_HANDLE)
-		RETURN_SET_UNHEALTHY("Couldn't find a suitable physical device.", true);
+		return unexpected("Couldn't find a suitable physical device.");
 	vkGetPhysicalDeviceProperties2(_physicalDevice, &_physicalProperties);
-	return (createLogicalDevice());
+	return {};
 }
 
-bool	Device::isDeviceSuitable(VkPhysicalDevice device, Window &bootstrapWindow) {
-	QueuesFamilyIndices	indices = findQueueFamilies(device, bootstrapWindow);
+bool	Device::isDeviceSuitable(VkPhysicalDevice device, Window *bootstrap) {
+	QueuesFamilyIndices	indices = findQueueFamilies(device, bootstrap);
 	bool				extensionsSupported = checkDeviceExtensionSupport(device);
 	bool				swapChainAdequate = false;
 
 	if (indices.isComplete() && extensionsSupported) {
-		Swapchain::SupportDetails	details = Swapchain::querySwapChainSupport(device, bootstrapWindow.getSurface());
+		Swapchain::SupportDetails	details = Swapchain::querySwapChainSupport(device, bootstrap->getSurface());
 		swapChainAdequate = !details.formats.empty() && !details.presents.empty();
 		if (!swapChainAdequate)
 			return (false);
@@ -86,7 +89,7 @@ bool	Device::checkDeviceExtensionSupport(VkPhysicalDevice device) {
 	return (reqExtensions.empty());
 }
 
-QueuesFamilyIndices	Device::findQueueFamilies(VkPhysicalDevice device, Window &bootstrapWindow) {
+QueuesFamilyIndices	Device::findQueueFamilies(VkPhysicalDevice device, Window *bootstrap) {
 	QueuesFamilyIndices	indices;
 	auto	queueFamilies = enumerate<VkQueueFamilyProperties>(
 		ENUMERATE_WRAP(vkGetPhysicalDeviceQueueFamilyProperties, device)
@@ -96,7 +99,7 @@ QueuesFamilyIndices	Device::findQueueFamilies(VkPhysicalDevice device, Window &b
 		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
 			indices.graphicsFamily = i;
 		VkBool32	presentSupport;
-		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, bootstrapWindow.getSurface(), &presentSupport);
+		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, bootstrap->getSurface(), &presentSupport);
 		if (presentSupport)
 			indices.presentFamily = i;
 		if (indices.isComplete())
@@ -119,7 +122,7 @@ bool	Device::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags propertie
 	return (true);
 }
 
-bool	Device::createLogicalDevice(void) {
+expected<void>	Device::createLogicalDevice(void) {
 	std::vector<VkDeviceQueueCreateInfo>	queueCreateInfos;
 	std::set<uint32_t>						uniqueQueuesFamily = {
 		_indices.graphicsFamily.value(), _indices.presentFamily.value()
@@ -159,31 +162,33 @@ bool	Device::createLogicalDevice(void) {
 	createInfo.ppEnabledExtensionNames = _deviceExtensions.data();
 	createInfo.pEnabledFeatures = nullptr;
 	if (vkCreateDevice(_physicalDevice, &createInfo, nullptr, &_device) != VK_SUCCESS)
-		RETURN_SET_UNHEALTHY("Couldn't create a logical device", true);
+		return unexpected("Couldn't create a logical device");
 	vkGetDeviceQueue(_device, _indices.graphicsFamily.value(), 0, &_graphicQueue);
 	vkGetDeviceQueue(_device, _indices.presentFamily.value(), 0, &_presentQueue);
 	std::cout << "Created the logical device" << std::endl;
-	return (createCommandPool());
+	return {};
 }
 
-bool	Device::createCommandPool(void) {
+expected<void>	Device::createCommandPool(void) {
 	VkCommandPoolCreateInfo	commandPoolInfo{};
 	commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
 	commandPoolInfo.queueFamilyIndex = _indices.graphicsFamily.value();
 
 	if (vkCreateCommandPool(_device, &commandPoolInfo, nullptr, &_transientCommandPool))
-		RETURN_SET_UNHEALTHY("Couldn't create the command pool.", true);
-	return (createVmaAllocator());
+		return unexpected("Couldn't create the command pool.");
+	return {};
 }
 
-bool	Device::createVmaAllocator(void) {
+expected<void>	Device::createVmaAllocator(VulkanInstance *instance) {
 	VmaAllocatorCreateInfo	createInfo{};
 	createInfo.vulkanApiVersion = VK_API_VERSION_1_3;
 	createInfo.device = _device;
 	createInfo.physicalDevice = _physicalDevice;
-	createInfo.instance = _instance.getVkInstance();
-	return (vmaCreateAllocator(&createInfo, &_allocator));
+	createInfo.instance = instance->getVkInstance();
+	if (vmaCreateAllocator(&createInfo, &_allocator) != VK_SUCCESS)
+		return unexpected("Couldn't create the vma allocator.");
+	return {};
 }
 
 VkCommandBuffer	Device::beginSingleTimeCommand(void) {
@@ -218,9 +223,11 @@ void	Device::endSingleTimeCommand(VkCommandBuffer commandBuffer) {
 	vkFreeCommandBuffers(_device, _transientCommandPool, 1, &commandBuffer);
 }
 
-bool	Device::supportSurface(Window &window) {
+bool	Device::supportSurface(Window *window) {
 	VkBool32	presentSupport;
-	vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice, _indices.presentFamily.value(), window.getSurface(), &presentSupport);
+	vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice,
+		_indices.presentFamily.value(), window->getSurface(),
+		&presentSupport);
 
 	return (presentSupport);
 }

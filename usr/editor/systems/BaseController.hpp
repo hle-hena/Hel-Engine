@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:14:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:23:47                                        */
+/*  Last Modified: 2026/06/27 16:33:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,12 +18,6 @@
 
 # include "HelSystem.hpp"
 # include "ecs/Entity.hpp"
-
-namespace	hel {
-
-class	InputState;
-
-}
 
 namespace	hel::sys {
 
@@ -39,8 +33,6 @@ class	BaseController : public ISystem {
 	private:
 		void	handleKeyboardInput(Entity::id handle, float deltaTime);
 		void	handleMouseMove(Entity::id handle);
-
-		InputState	*_input;
 };
 
 }

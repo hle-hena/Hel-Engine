@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 17:31:38                                        */
+/*  Last Modified: 2026/06/27 16:36:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,7 +48,7 @@ void	Sprite::init(void) {
 		->startWrite<DepthStencil>("depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
 			.addDep();
 
-	_assetManager = &_registry->getAssetManager();
+	_assetManager = _registry->assetManager();
 	{
 		PipelineMap::Config	config;
 		config.device = _device;

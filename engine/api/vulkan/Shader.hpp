@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/21 16:58:34 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 17:29:31                                        */
+/*  Last Modified: 2026/06/27 16:44:01                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -31,7 +31,7 @@ struct	Shader {
 
 	VkPipelineShaderStageCreateInfo	getStageInfo(void) const;
 
-	static std::shared_ptr<Shader>	load(Device &device,
+	static std::shared_ptr<Shader>	load(Device *device,
 										const std::string &shaderName);
 };
 
