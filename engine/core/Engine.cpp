@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:39:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/28 10:07:39                                        */
+/*  Last Modified: 2026/06/29 14:29:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -101,7 +101,8 @@ expected<void>	Engine::createImagePool(void) {
 
 expected<void>	Engine::setUserData(std::vector<UserData> *data) {
 	_userData = data;
-	return _frame.bindBuffers(_userData);
+	return _frame.bindBuffers(_userData)
+			.and_then([this]{ return _frame.validateGlobalSet(); });
 }
 
 

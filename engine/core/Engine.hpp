@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:34:45 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/28 10:07:31                                        */
+/*  Last Modified: 2026/06/29 14:55:09                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -44,6 +44,8 @@ class	Engine {
 		expected<void>	init(const EngineConfig &config);
 		expected<void>	setUserData(std::vector<UserData> *userData);
 		void	run(void);
+
+		Device	*device(void)	{ return _device; };
 	
 	private:
 		expected<void>	createWindow(int width, int height,

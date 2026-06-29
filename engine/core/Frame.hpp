@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/28 10:09:43                                        */
+/*  Last Modified: 2026/06/29 14:25:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -95,6 +95,7 @@ class	Frame {
 		expected<void>	init(Device *device, const
 											GlobalSetBindings &setConfig);
 		expected<void>	bindBuffers(std::vector<UserData> *userData);
+		expected<void>	validateGlobalSet(void);
 
 		void	fillContext(FrameContext &frameContext, Window *window);
 		void	writeGlobalData(FrameContext &frameContext);

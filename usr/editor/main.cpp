@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/09 17:10:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/28 10:05:26                                        */
+/*  Last Modified: 2026/06/29 15:06:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -100,7 +100,13 @@ int	main(void) {
 	GlobalUBO globalUBO;
 
 	std::vector<UserData>	data;
-	data.push_back(UserData{.data = &globalUBO, .buffer = nullptr, .bindingIndex = 0});
+	auto	globalUBOBuffer = Buffer::create(*engine.device(), sizeof(GlobalUBO),
+								Frame::MAX_PASS_COUNT *
+									Swapchain::MAX_FRAMES_IN_FLIGHT,
+								VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+								VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+								VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);
+	data.push_back(UserData{.data = &globalUBO, .buffer = globalUBOBuffer.get(), .bindingIndex = 0});
 	res = engine.setUserData(&data);
 	if (!res) {
 		std::cerr << res.error() << std::endl;

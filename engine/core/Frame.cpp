@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:35 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/28 10:11:06                                        */
+/*  Last Modified: 2026/06/29 15:02:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -124,12 +124,20 @@ expected<void>	Frame::createGlobalSets(void) {
 
 expected<void>	Frame::bindBuffers(std::vector<UserData> *userData) {
 	for (auto &data: *userData) {
+		if (!_bindingConfig.contains(data.bindingIndex))
+			return unexpected("Trying to bind on an undefined binding index ("
+							+ std::to_string(data.bindingIndex) + ")");
 		auto	&bind = _bindingConfig[data.bindingIndex];
+		if (bind.buffer != nullptr)
+			return unexpected("The binding index "
+						+ std::to_string(bind.index)
+						+ " already have buffer attached.");
 		auto	*buffer = data.buffer;
 		if (!buffer)
-			return unexpected("Trying to bind a nullptr buffer.");
+			return unexpected("Trying to bind a nullptr buffer on index "
+						+ std::to_string(data.bindingIndex) + ".");
 		uint32_t	requiredCount = Swapchain::MAX_FRAMES_IN_FLIGHT
-									* (bind.dynamicBinding ? MAX_PASS_COUNT : 1);
+								* (bind.dynamicBinding ? MAX_PASS_COUNT : 1);
 		if (buffer->getSize() < buffer->getStride() * requiredCount)
 			return tl::unexpected("Trying to bind on index "
 					+ std::to_string(data.bindingIndex)
@@ -144,6 +152,15 @@ expected<void>	Frame::bindBuffers(std::vector<UserData> *userData) {
 		}
 	}
 	_writer->update();
+	return {};
+}
+
+expected<void>	Frame::validateGlobalSet(void) {
+	for (auto &[index, bind]: _bindingConfig._bindings) {
+		if (bind.buffer == nullptr)
+			return unexpected("The binding " + std::to_string(index)
+								+ " doesn't have a buffer.");
+	}
 	return {};
 }
 
@@ -167,11 +184,6 @@ void	Frame::writeGlobalData(FrameContext &ctx) {
 void	Frame::writeToUBO(void *data, uint32_t bindingIndex,
 						uint32_t passIndex, uint32_t frameIndex) {
 	auto		&bind = _bindingConfig[bindingIndex];
-	if (!bind.buffer) {
-		std::cout << "Writing to a null buffer on bindingIndex "
-				<< bindingIndex << std::endl;
-		return ;
-	}
 	auto		stride = bind.buffer->getStride();
 	uint32_t	offset = bind.dynamicBinding
 							? (frameIndex * Frame::MAX_PASS_COUNT + passIndex)
