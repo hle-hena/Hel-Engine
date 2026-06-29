@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:39:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/29 16:46:55                                        */
+/*  Last Modified: 2026/06/29 19:21:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -43,7 +43,7 @@ Engine::~Engine(void) {
 expected<void>	Engine::init(const EngineConfig &config)
 {
 	_config = config;
-	if (!GLFW::acquire())//TODO -> add wrapper.
+	if (!GLFW::acquire())
 		return tl::unexpected("Couldn't init glfw.");
 	auto	vkInit = _vkContext.initiateVulkan();
 	if (!vkInit)
@@ -203,21 +203,5 @@ void	Engine::executePass(FrameContext &ctx, const SystemManager::FuncVec &funcs)
 			func->execute(renderer);
 	}
 }
-
-
-// void	Engine::updateGlobalData(FrameContext &ctx) {
-// 	auto	handle = ctx.request->handle;
-// 	ctx.globalData.viewProjection = glm::mat4{1.f};
-// 	if (auto camera = _registry.getComponent<comp::Camera>(handle)) {
-// 		auto	extent = ctx.request->images["mainColor"]->getExtent();
-// 		float	aspect = static_cast<float>(extent.width) /
-// 						static_cast<float>(extent.height);
-// 		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), aspect, camera->near, camera->far);
-// 		projection[1][1] *= -1;
-// 		ctx.projection = projection;
-// 		ctx.globalData.viewProjection = projection * camera->view;
-// 	}
-// 	ctx.globalData.elapsedTime = _timer.elapsedTime();
-// }
 
 }
