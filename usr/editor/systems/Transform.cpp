@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 16:40:30                                        */
+/*  Last Modified: 2026/06/29 17:01:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -552,7 +552,7 @@ void	Transform::GizmoContext::dragRotate(const FrameContext &ctx) {
 		glm::vec2	renderSize  = {renderExtent.width, renderExtent.height};
 		glm::vec2	renderOrigin = {ctx.request->origin.x, ctx.request->origin.y};
 
-		GlobalUBO	*data = static_cast<GlobalUBO *>((*ctx.globalData)[0].data);
+		GlobalUBO	*data = ctx.globals->get<GlobalUBO>("main UBO");
 		glm::vec4	clip = data->viewProjection * glm::vec4(focusedTransform->position, 1.0f);
 		glm::vec2	screenSpaceRotationCenter  = (glm::vec2(clip) / clip.w) * 0.5f + 0.5f;
 

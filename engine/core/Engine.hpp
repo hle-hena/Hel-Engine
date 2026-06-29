@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:34:45 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/29 14:55:09                                        */
+/*  Last Modified: 2026/06/29 16:14:24                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,7 +33,8 @@ class	Window;
 struct	EngineConfig {
 	std::function<GlobalSetBindings(void)>			defineGlobalSet;
 	std::function<void(Registry*, Window*)>			loadPrimaryScene;
-	std::function<void(Registry *, FrameContext &)>	updateGlobalData;
+	std::function<void(Registry*, FrameContext&)>	updateGlobalData;
+	std::function<void(Registry*, FrameContext&)>	tickCallback;
 };
 
 class	Engine {
@@ -42,7 +43,7 @@ class	Engine {
 		~Engine(void);
 
 		expected<void>	init(const EngineConfig &config);
-		expected<void>	setUserData(std::vector<UserData> *userData);
+		expected<void>	setUserData(GlobalData *userData);
 		void	run(void);
 
 		Device	*device(void)	{ return _device; };
@@ -58,8 +59,9 @@ class	Engine {
 		void	executePass(FrameContext &ctx,
 							const SystemManager::FuncVec &funcs);
 
-		EngineConfig				_config;
-		std::vector<UserData>		*_userData;
+		EngineConfig	_config;
+		GlobalData		*_userData;
+
 		VulkanContext				_vkContext;
 		Device						*_device{nullptr};
 		std::unique_ptr<Window>		_appWindow{nullptr};

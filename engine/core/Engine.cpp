@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:39:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/29 14:29:38                                        */
+/*  Last Modified: 2026/06/29 16:46:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -99,9 +99,10 @@ expected<void>	Engine::createImagePool(void) {
 	return {};
 }
 
-expected<void>	Engine::setUserData(std::vector<UserData> *data) {
+expected<void>	Engine::setUserData(GlobalData *data) {
 	_userData = data;
-	return _frame.bindBuffers(_userData)
+	return _userData->lock({})
+			.and_then([this]{ return _frame.bindBuffers(_userData); })
 			.and_then([this]{ return _frame.validateGlobalSet(); });
 }
 
@@ -134,6 +135,7 @@ void	Engine::tick(uint32_t frameIndex) {
 	bool	shouldDoRenderTick = true;
 	if (_appWindow->getSwapchain().acquireNextImage(*_appWindow.get(), frameIndex, &ctx.swapIndex))
 		shouldDoRenderTick = false;
+	_config.tickCallback(&_registry, ctx);
 
 	updateTick(ctx);
 	_registry.updateBuffers(*_device);

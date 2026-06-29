@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:35 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/29 15:02:08                                        */
+/*  Last Modified: 2026/06/29 16:55:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,11 +16,74 @@
 
 #include "core/Frame.hpp"
 #include "api/vulkan/Device.hpp"
-#include <iostream>
 
 namespace	hel {
 
 VkDescriptorSetLayout	Frame::_globalLayout = VK_NULL_HANDLE;
+
+#define RETURN_ERROR(error) do {	\
+	_error = error;					\
+	return *this;					\
+} while (0)
+
+GlobalData	&GlobalData::addData(const std::string &key, void *data) {
+	if (_error)
+		return *this;
+	if (_locked)
+		RETURN_ERROR("Trying to call addData for key \"" + key
+					+ "\" when data have already been passed to the engine.");
+	if (_engineGlobals.contains(key) || _shaderGlobals.contains(key))
+		RETURN_ERROR("Trying to set two data with the key \""
+					+ key + "\".");
+	if (data == nullptr)
+		RETURN_ERROR("Trying to set data as nullptr for \""
+					+ key + "\"");
+	_engineGlobals.emplace(key, data);
+	return *this;
+}
+
+GlobalData	&GlobalData::addData(const std::string &key, void *data,
+									Buffer *buffer, uint32_t bindingIndex)
+{
+	if (_error)
+		return *this;
+	if (_locked)
+		RETURN_ERROR("Trying to call addData for key \"" + key
+					+ "\" when data have already been passed to the engine.");
+	if (_engineGlobals.contains(key) || _shaderGlobals.contains(key))
+		RETURN_ERROR("Trying to set two data with the key \""
+					+ key + "\".");
+	if (data == nullptr)
+		RETURN_ERROR("Trying to set data as nullptr for \""
+					+ key + "\"");
+	if (buffer == nullptr)
+		RETURN_ERROR("Trying to set buffer as nullptr for \""
+					+ key + "\"");
+	if (std::find_if(_shaderGlobals.begin(), _shaderGlobals.end(),
+				[bindingIndex](const std::pair<std::string, ShaderData> &pair) {
+					return pair.second.bindingIndex == bindingIndex;
+				}) != _shaderGlobals.end())
+	{
+		RETURN_ERROR("Trying to set the binding "
+					+ std::to_string(bindingIndex) + " two times.");
+	}
+	_shaderGlobals.emplace(key, ShaderData{data, buffer, bindingIndex});
+	return *this;
+}
+
+std::unordered_map<std::string,
+				GlobalData::ShaderData>	&GlobalData::list(FrameKey) {
+	return _shaderGlobals;
+}
+
+expected<void>	GlobalData::lock(EngineKey) {
+	if (_locked)
+		return unexpected("Error: setUserData's engine function called twice.");
+	if (_error.has_value())
+		return unexpected(_error.value());
+	_locked = true;
+	return {};
+}
 
 
 GlobalSetBindings	&GlobalSetBindings::addBinding(uint32_t bindingIndex,
@@ -93,18 +156,19 @@ expected<void>	Frame::createCommandBuffers() {
 }
 
 expected<void>	Frame::createGlobalSets(void) {
-	_descriptorPool = DescriptorPool::Builder(*_device)
-		.addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 2)
-		.setPageSize(Swapchain::MAX_FRAMES_IN_FLIGHT)
-		.build();
+	auto	poolFactory = DescriptorPool::Builder(*_device)
+							.setPageSize(Swapchain::MAX_FRAMES_IN_FLIGHT);
+	for (auto &[index, bind]: _bindingConfig._bindings)
+		poolFactory.addDescriptor(bind.type);
+	_descriptorPool = poolFactory.build();
 	if (!_descriptorPool)
 		return unexpected("Couldn't create the global descriptor pool.");
 
-	_descriptorSets = DescriptorFactory(*_device)
-		.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
-			VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
-		.setSetCount(Swapchain::MAX_FRAMES_IN_FLIGHT)
-		.build(*_descriptorPool);
+	auto	setFactory = DescriptorFactory(*_device)
+					.setSetCount(Swapchain::MAX_FRAMES_IN_FLIGHT);
+	for (auto &[index, bind]: _bindingConfig._bindings)
+		setFactory.addBinding(index, bind.type, bind.stage);
+	_descriptorSets = setFactory.build(*_descriptorPool.get());
 	if (!_descriptorSets)
 		return unexpected("Couldn't create the global descriptor sets.");
 	_globalLayout = _descriptorSets->setLayout;
@@ -122,8 +186,9 @@ expected<void>	Frame::createGlobalSets(void) {
 	return {};
 }
 
-expected<void>	Frame::bindBuffers(std::vector<UserData> *userData) {
-	for (auto &data: *userData) {
+expected<void>	Frame::bindBuffers(GlobalData *globalData) {
+	_setStride = 0;
+	for (auto &[key, data]: globalData->list({})) {
 		if (!_bindingConfig.contains(data.bindingIndex))
 			return unexpected("Trying to bind on an undefined binding index ("
 							+ std::to_string(data.bindingIndex) + ")");
@@ -176,9 +241,9 @@ void	Frame::fillContext(FrameContext &context, Window *window) {
 }
 
 void	Frame::writeGlobalData(FrameContext &ctx) {
-	for (auto write: *ctx.globalData)
+	for (auto &[key, write]: ctx.globals->list({}))
 		writeToUBO(write.data, write.bindingIndex,
-				ctx.passIndex, ctx.frameIndex);
+					ctx.passIndex, ctx.frameIndex);
 }
 
 void	Frame::writeToUBO(void *data, uint32_t bindingIndex,

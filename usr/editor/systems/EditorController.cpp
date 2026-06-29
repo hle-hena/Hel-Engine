@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/03 18:56:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 16:33:57                                        */
+/*  Last Modified: 2026/06/29 17:00:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -95,11 +95,9 @@ void	EditorController::handleInput(const FrameContext &ctx) {
 	auto	window = _inputState->getFocused();
 	if (!window)	{ return ; }
 
-	(void)ctx;
-	//TODO -> extract delta_t from ctx.
 	Entity::id	handle = window->getEntityReference();
 	handleMouseMove(handle);
-	handleKeyboardInput(handle, 0.001f);
+	handleKeyboardInput(handle, *ctx.globals->get<float>("delta_t"));
 }
 
 }

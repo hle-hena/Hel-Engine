@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/09 17:10:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/29 15:06:11                                        */
+/*  Last Modified: 2026/06/29 17:02:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,7 @@
 #include "ecs/Component.hpp"
 #include "GlobalData.hpp"
 #include "core/Queues.hpp"
+#include "utils/Timer.hpp"
 
 namespace	hel {
 
@@ -70,7 +71,7 @@ GlobalSetBindings	defineGlobalSet(void) {
 
 void	updateGlobalData(Registry *registry, FrameContext &ctx) {
 	auto	handle = ctx.request->handle;
-	auto	data = static_cast<GlobalUBO *>((*ctx.globalData)[0].data);
+	auto	data = ctx.globals->get<GlobalUBO>("main UBO");
 	data->viewProjection = glm::mat4{1.f};
 	if (auto camera = registry->getComponent<comp::Camera>(handle)) {
 		auto	extent = ctx.request->images["mainColor"]->getExtent();
@@ -78,18 +79,31 @@ void	updateGlobalData(Registry *registry, FrameContext &ctx) {
 						static_cast<float>(extent.height);
 		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), aspect, camera->near, camera->far);
 		projection[1][1] *= -1;
-		// ctx.projection = projection;
 		data->viewProjection = projection * camera->view;
 	}
-	// ctx.globalData.elapsedTime = _timer.elapsedTime();
+}
+
+Timer	globalTimer;
+
+void	tickCallback(Registry *, FrameContext &ctx) {
+	{
+	auto	data = ctx.globals->get<GlobalUBO>("main UBO");
+	data->elapsedTime = globalTimer.elapsedTime();
+	}
+	{
+	auto	data = ctx.globals->get<float>("delta_t");
+	*data = globalTimer.lap();
+	}
 }
 
 int	main(void) {
+	globalTimer.start();
 	Engine	engine;
 	EngineConfig	config;
-	config.loadPrimaryScene = &loadPrimaryScene;
+	config.loadPrimaryScene = loadPrimaryScene;
 	config.defineGlobalSet = defineGlobalSet;
 	config.updateGlobalData = updateGlobalData;
+	config.tickCallback = tickCallback;
 
 	auto	res = engine.init(config);
 	if (!res) {
@@ -98,16 +112,22 @@ int	main(void) {
 	}
 
 	GlobalUBO globalUBO;
+	auto	globalUBOBuffer = Buffer::create(*engine.device(),
+						sizeof(GlobalUBO),
+						Frame::MAX_PASS_COUNT *
+							Swapchain::MAX_FRAMES_IN_FLIGHT,
+						VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+						VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+						VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
+							| VMA_ALLOCATION_CREATE_MAPPED_BIT);
+	float	delta_t;
 
-	std::vector<UserData>	data;
-	auto	globalUBOBuffer = Buffer::create(*engine.device(), sizeof(GlobalUBO),
-								Frame::MAX_PASS_COUNT *
-									Swapchain::MAX_FRAMES_IN_FLIGHT,
-								VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-								VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
-								VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);
-	data.push_back(UserData{.data = &globalUBO, .buffer = globalUBOBuffer.get(), .bindingIndex = 0});
-	res = engine.setUserData(&data);
+	GlobalData	globals;
+	globals.addData("main UBO", &globalUBO,
+					globalUBOBuffer.get(), 0)
+			.addData("delta_t", &delta_t);
+
+	res = engine.setUserData(&globals);
 	if (!res) {
 		std::cerr << res.error() << std::endl;
 		return 1;

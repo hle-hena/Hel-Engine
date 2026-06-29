@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/29 14:25:41                                        */
+/*  Last Modified: 2026/06/29 17:03:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,16 +16,17 @@
 
 #pragma once
 
-# include <vulkan/vulkan.h>
-# include <array>
-# define GLM_FORCE_RADIANS
-# define GLM_FORCE_DEPTH_ZERO_TO_ONE
-# include <glm/glm.hpp>
+#include <vulkan/vulkan.h>
+#include <array>
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
 #include <optional>
+#include <map>
 
-# include "api/vulkan/Swapchain.hpp"
-# include "api/vulkan/Buffer.hpp"
-# include "api/vulkan/Descriptors.hpp"
+#include "api/vulkan/Swapchain.hpp"
+#include "api/vulkan/Buffer.hpp"
+#include "api/vulkan/Descriptors.hpp"
 #include "HelExpected.hpp"
 
 namespace	hel {
@@ -33,15 +34,47 @@ namespace	hel {
 class	Window;
 struct	RenderRequest;
 
-struct	UserData {
-	void		*data;
-	Buffer		*buffer;
-	uint32_t	bindingIndex;
+struct	GlobalData {
+	private:
+		struct	EngineData {
+			void	*data;
+		};
+		struct	ShaderData {
+			void		*data;
+			Buffer		*buffer;
+			uint32_t	bindingIndex;
+		};
+
+		template <typename Key, typename Tp>
+		using u_map = std::unordered_map<Key, Tp>;
+		u_map<std::string, EngineData>	_engineGlobals;
+		u_map<std::string, ShaderData>	_shaderGlobals;
+		std::optional<std::string>		_error;
+		bool							_locked{false};
+
+	public:
+		GlobalData	&addData(const std::string &key, void *data);
+		GlobalData	&addData(const std::string &key, void *data,
+								Buffer *buffer, uint32_t bindingIndex);
+
+		template <typename T>
+		T	*get(const std::string &key) {
+			if (auto it = _engineGlobals.find(key); it != _engineGlobals.end())
+				return static_cast<T *>(it->second.data);
+			if (auto it = _shaderGlobals.find(key); it != _shaderGlobals.end())
+				return static_cast<T *>(it->second.data);
+			return nullptr;
+		}
+
+		PASSKEY(FrameKey, Frame);
+		u_map<std::string, ShaderData>	&list(FrameKey);
+		PASSKEY(EngineKey, Engine)
+		expected<void>	lock(EngineKey);
 };
 
 struct	FrameContext {
-	FrameContext(uint32_t frameIndex, std::vector<UserData> *globalData)
-		: globalData(globalData) {
+	FrameContext(uint32_t frameIndex, GlobalData *globalData)
+		:	globals(globalData) {
 		this->frameIndex = frameIndex;
 	};
 
@@ -50,7 +83,7 @@ struct	FrameContext {
 
 	VkCommandBuffer			commandBuffer{VK_NULL_HANDLE};
 
-	std::vector<UserData>	*globalData;
+	GlobalData				*globals;
 	VkDescriptorSet			globalSet;
 	uint32_t				setStride;
 	VkDescriptorSetLayout	globalLayout;
@@ -78,8 +111,8 @@ struct	GlobalSetBindings {
 	};
 
 	private:
-		std::optional<std::string>				_error;
-		std::unordered_map<uint32_t, Binding>	_bindings;
+		std::optional<std::string>	_error;
+		std::map<uint32_t, Binding>	_bindings;
 		bool	contains(uint32_t key);
 		Binding	&operator[](uint32_t index);
 	friend class	Frame;
@@ -94,7 +127,7 @@ class	Frame {
 
 		expected<void>	init(Device *device, const
 											GlobalSetBindings &setConfig);
-		expected<void>	bindBuffers(std::vector<UserData> *userData);
+		expected<void>	bindBuffers(GlobalData *globalData);
 		expected<void>	validateGlobalSet(void);
 
 		void	fillContext(FrameContext &frameContext, Window *window);
