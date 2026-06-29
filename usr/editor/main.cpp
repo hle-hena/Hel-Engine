@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/09 17:10:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 21:04:37                                        */
+/*  Last Modified: 2026/06/28 10:05:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -62,11 +62,10 @@ void	loadPrimaryScene(Registry *registry, Window *window) {
 	registry->addComponent<comp::Name>(secondCamera).modify()->name = "Second Camera";
 }
 
-expected<GlobalSetBindings>	defineGlobalSet(void) {
+GlobalSetBindings	defineGlobalSet(void) {
 	return GlobalSetBindings()
-		.addBinding(nullptr, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
-					VK_SHADER_STAGE_ALL_GRAPHICS)
-		.build();
+		.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+					VK_SHADER_STAGE_ALL_GRAPHICS);
 }
 
 void	updateGlobalData(Registry *registry, FrameContext &ctx) {
@@ -86,13 +85,8 @@ void	updateGlobalData(Registry *registry, FrameContext &ctx) {
 }
 
 int	main(void) {
-	GlobalUBO globalUBO;
-
-	std::vector<UserData>	data;
-	data.push_back(UserData{.data = &globalUBO, .bindingIndex = 0});
-
 	Engine	engine;
-	EngineConfig	config(&data);
+	EngineConfig	config;
 	config.loadPrimaryScene = &loadPrimaryScene;
 	config.defineGlobalSet = defineGlobalSet;
 	config.updateGlobalData = updateGlobalData;
@@ -102,6 +96,17 @@ int	main(void) {
 		std::cerr << res.error() << std::endl;
 		return 1;
 	}
+
+	GlobalUBO globalUBO;
+
+	std::vector<UserData>	data;
+	data.push_back(UserData{.data = &globalUBO, .buffer = nullptr, .bindingIndex = 0});
+	res = engine.setUserData(&data);
+	if (!res) {
+		std::cerr << res.error() << std::endl;
+		return 1;
+	}
+
 	engine.run();
 
 	return 0;

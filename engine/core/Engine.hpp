@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:34:45 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 20:50:48                                        */
+/*  Last Modified: 2026/06/28 10:07:31                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,10 +20,10 @@
 #include "api/vulkan/VulkanContext.hpp"
 #include "ecs/Registry.hpp"
 #include "core/SystemManager.hpp"
-#include "utils/expected.hpp"
 #include "core/Frame.hpp"
 #include "platform/input/InputState.hpp"
 #include "api/vulkan/ImagePool.hpp"
+#include "HelExpected.hpp"
 
 namespace	hel {
 
@@ -31,14 +31,9 @@ class	ImagePool;
 class	Window;
 
 struct	EngineConfig {
-	EngineConfig(std::vector<UserData> *globalUserData)
-		:	globalUserData(globalUserData) {}
-
-	std::function<expected<GlobalSetBindings>(void)>	defineGlobalSet;
-	std::function<void(Registry*, Window*)>				loadPrimaryScene;
-	std::function<void(Registry *, FrameContext &)>		updateGlobalData;
-
-	std::vector<UserData>	*globalUserData;
+	std::function<GlobalSetBindings(void)>			defineGlobalSet;
+	std::function<void(Registry*, Window*)>			loadPrimaryScene;
+	std::function<void(Registry *, FrameContext &)>	updateGlobalData;
 };
 
 class	Engine {
@@ -46,13 +41,14 @@ class	Engine {
 		Engine(void);
 		~Engine(void);
 
-		tl::expected<void, std::string>	init(const EngineConfig &config);
+		expected<void>	init(const EngineConfig &config);
+		expected<void>	setUserData(std::vector<UserData> *userData);
 		void	run(void);
 	
 	private:
-		tl::expected<void, std::string>	createWindow(int width, int height,
-												const std::string &windowName);
-		tl::expected<void, std::string>	createImagePool(void);
+		expected<void>	createWindow(int width, int height,
+									const std::string &windowName);
+		expected<void>	createImagePool(void);
 
 		void	tick(uint32_t frameIndex);
 		void	updateTick(FrameContext &frameCtx);
@@ -60,16 +56,16 @@ class	Engine {
 		void	executePass(FrameContext &ctx,
 							const SystemManager::FuncVec &funcs);
 
-		EngineConfig					_config{nullptr};
-		VulkanContext					_vkContext;
-		Device							*_device{nullptr};
-		std::unique_ptr<Window>			_appWindow{nullptr};
-		Registry						_registry;
-		InputState						_inputState;
-		VkCommandPool					_commandPool;
-		std::unique_ptr<ImagePool>		_imagePool;
-		SystemManager					_systems;
-		Frame							_frame;
+		EngineConfig				_config;
+		std::vector<UserData>		*_userData;
+		VulkanContext				_vkContext;
+		Device						*_device{nullptr};
+		std::unique_ptr<Window>		_appWindow{nullptr};
+		Registry					_registry;
+		InputState					_inputState;
+		std::unique_ptr<ImagePool>	_imagePool;
+		SystemManager				_systems;
+		Frame						_frame;
 };
 
 }

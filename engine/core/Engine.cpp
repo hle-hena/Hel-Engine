@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:39:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 21:00:03                                        */
+/*  Last Modified: 2026/06/28 10:07:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,13 +36,11 @@ Engine::~Engine(void) {
 	if (_device) {
 		Sampler::deleteAllSamplers(*_device);
 		DescriptorFactory::deleteLayoutCache(*_device);
-		if (_commandPool != VK_NULL_HANDLE)
-			vkDestroyCommandPool(_device->getLogical(), _commandPool, nullptr);
 	}
 	GLFW::release();
 }
 
-tl::expected<void, std::string>	Engine::init(const EngineConfig &config)
+expected<void>	Engine::init(const EngineConfig &config)
 {
 	_config = config;
 	if (!GLFW::acquire())//TODO -> add wrapper.
@@ -52,9 +50,8 @@ tl::expected<void, std::string>	Engine::init(const EngineConfig &config)
 		return tl::unexpected(vkInit.error());
 	_device = _vkContext.getDevice();
 	auto	res = createWindow(Window::WIDTH, Window::HEIGHT, "Hel-Engine")
-			.and_then([this]{ return _config.defineGlobalSet(); })
-			.and_then([this](GlobalSetBindings bindings){
-				return _frame.init(_device, bindings);
+			.and_then([this]{
+				return _frame.init(_device, _config.defineGlobalSet());
 			}).and_then([this]{ return createImagePool(); });
 	if (!res)
 		return tl::unexpected(res.error());
@@ -68,7 +65,7 @@ tl::expected<void, std::string>	Engine::init(const EngineConfig &config)
 	return {};
 }
 
-tl::expected<void, std::string>	Engine::createWindow(int width, int height,
+expected<void>	Engine::createWindow(int width, int height,
 							const std::string &windowName)
 {
 	Window::windowPtr window = Window::createWindow(static_cast<uint32_t>(width),
@@ -82,7 +79,7 @@ tl::expected<void, std::string>	Engine::createWindow(int width, int height,
 	return {};
 }
 
-tl::expected<void, std::string>	Engine::createImagePool(void) {
+expected<void>	Engine::createImagePool(void) {
 	_imagePool = ImagePool::Builder(*_vkContext.getDevice())
 		.addImage(Image::Config()
 			.setHeight(4096)
@@ -100,6 +97,11 @@ tl::expected<void, std::string>	Engine::createImagePool(void) {
 			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT))
 		.build();
 	return {};
+}
+
+expected<void>	Engine::setUserData(std::vector<UserData> *data) {
+	_userData = data;
+	return _frame.bindBuffers(_userData);
 }
 
 
@@ -125,7 +127,7 @@ void	Engine::run(void) {
 void	Engine::tick(uint32_t frameIndex) {
 	_appWindow->getSwapchain().waitForFrameFence(frameIndex);
 
-	FrameContext	ctx(frameIndex, _config.globalUserData);
+	FrameContext	ctx(frameIndex, _userData);
 	_frame.fillContext(ctx, _appWindow.get());
 	_imagePool->releaseAll();
 	bool	shouldDoRenderTick = true;

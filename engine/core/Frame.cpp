@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:35 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 20:49:45                                        */
+/*  Last Modified: 2026/06/28 10:11:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,16 +23,12 @@ namespace	hel {
 VkDescriptorSetLayout	Frame::_globalLayout = VK_NULL_HANDLE;
 
 
-GlobalSetBindings	&GlobalSetBindings::addBinding(Buffer *buffer, uint32_t bindingIndex,
+GlobalSetBindings	&GlobalSetBindings::addBinding(uint32_t bindingIndex,
 												VkDescriptorType descriptorType,
 												VkShaderStageFlags stage)
 {
-	if (!_error.empty())
+	if (_error.has_value())
 		return *this;
-	if (buffer == nullptr) {
-		_error = "The buffer given to bind was a nullptr.";
-		return *this;
-	}
 	if (_bindings.contains(bindingIndex)) {
 		_error = "Trying to add two descriptors on the same binding ("
 					+ std::to_string(bindingIndex) + ")";
@@ -41,18 +37,11 @@ GlobalSetBindings	&GlobalSetBindings::addBinding(Buffer *buffer, uint32_t bindin
 	auto	newBinding = _bindings.emplace(bindingIndex, Binding{
 										.index = bindingIndex,
 										.type = descriptorType,
-										.stage = stage,
-										.buffer = buffer});
+										.stage = stage});
 	auto	&bind = newBinding.first->second;
 	bind.dynamicBinding =
 			(bind.type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC
 			|| bind.type == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC);
-	return *this;
-}
-
-expected<GlobalSetBindings>	GlobalSetBindings::build(void) {
-	if (!_error.empty())
-		return unexpected(_error);
 	return *this;
 }
 
@@ -65,17 +54,24 @@ GlobalSetBindings::Binding	&GlobalSetBindings::operator[](uint32_t index) {
 }
 
 
-tl::expected<void, std::string>	Frame::init(Device *device,
+
+Frame::~Frame(void) {
+	if (_commandPool != VK_NULL_HANDLE)
+		vkDestroyCommandPool(_device->getLogical(), _commandPool, nullptr);
+}
+
+expected<void>	Frame::init(Device *device,
 										const GlobalSetBindings &setConfig) {
+	if (setConfig._error.has_value())
+		return unexpected(setConfig._error.value());
 	_device = device;
 	_bindingConfig = setConfig;
 
 	return createCommandBuffers()
-			.and_then([this]{return createGlobalSets();})
-			.and_then([this]{return bindBuffers();});
+			.and_then([this]{return createGlobalSets();});
 }
 
-tl::expected<void, std::string>	Frame::createCommandBuffers() {
+expected<void>	Frame::createCommandBuffers() {
 	VkCommandPoolCreateInfo	commandPoolInfo{};
 	commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
@@ -96,7 +92,7 @@ tl::expected<void, std::string>	Frame::createCommandBuffers() {
 	return {};
 }
 
-tl::expected<void, std::string>	Frame::createGlobalSets(void) {
+expected<void>	Frame::createGlobalSets(void) {
 	_descriptorPool = DescriptorPool::Builder(*_device)
 		.addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 2)
 		.setPageSize(Swapchain::MAX_FRAMES_IN_FLIGHT)
@@ -126,24 +122,28 @@ tl::expected<void, std::string>	Frame::createGlobalSets(void) {
 	return {};
 }
 
-tl::expected<void, std::string>	Frame::bindBuffers(void) {
-	for (auto &[index, bind]: _bindingConfig._bindings) {
-		auto	*buffer = bind.buffer;
+expected<void>	Frame::bindBuffers(std::vector<UserData> *userData) {
+	for (auto &data: *userData) {
+		auto	&bind = _bindingConfig[data.bindingIndex];
+		auto	*buffer = data.buffer;
+		if (!buffer)
+			return unexpected("Trying to bind a nullptr buffer.");
 		uint32_t	requiredCount = Swapchain::MAX_FRAMES_IN_FLIGHT
 									* (bind.dynamicBinding ? MAX_PASS_COUNT : 1);
 		if (buffer->getSize() < buffer->getStride() * requiredCount)
-			return tl::unexpected("Trying to bind on index " + std::to_string(index)
-						+ " a buffer too small for it's usage. Expected a count of "
-						+ std::to_string(requiredCount) + ".");
+			return tl::unexpected("Trying to bind on index "
+					+ std::to_string(data.bindingIndex)
+					+ " a buffer too small for it's usage. Expected a count of "
+					+ std::to_string(requiredCount) + ".");
 
+		bind.buffer = buffer;
 		_setStride += buffer->getStride();
 		for (uint32_t i = 0; i < Swapchain::MAX_FRAMES_IN_FLIGHT; i++) {
-			_writer->writeBuffer(i, index, bind.type, *buffer,
+			_writer->writeBuffer(i, data.bindingIndex, bind.type, *buffer,
 								i * buffer->getStride() * MAX_PASS_COUNT);
 		}
-		_writer->update();
 	}
-
+	_writer->update();
 	return {};
 }
 

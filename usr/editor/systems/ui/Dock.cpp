@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 13:04:26                                        */
+/*  Last Modified: 2026/06/29 14:23:04                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,20 +24,32 @@
 
 namespace	hel::sys {
 
-nlohmann::json	Dock::serialize(const ImVec2 &size) const {
+nlohmann::json	Dock::serialize(ImVec2 size) const {
 	nlohmann::json	dst;
 	dst["name"] = _dockName;
 	if (_type == Type::Split) {
+		if (size.x == 0 && size.y == 0) {
+			size.x = 800;
+			size.y = 600;
+		}
+		if (size.x == 0)
+			size.x = 1;
+		if (size.y == 0)
+			size.y = 1;
 		dst["type"] = "Split";
 		dst["splitDir"] = static_cast<int>(_splitDir);
 		bool	isVertical = (_splitDir == Splitter::Dir::Right);
-		dst["splitRatio"] = (*_splitRatio) / (isVertical ? size.x : size.y);
+		float	ratio = _splitRatio.value_or(0.5f
+									* (isVertical ? size.x : size.y));
+		if (ratio < 0.f)
+			ratio = -ratio * (isVertical ? size.x : size.y);
+		dst["splitRatio"] = (ratio) / (isVertical ? size.x : size.y);
 		dst["childOne"] = _childOne->serialize(isVertical ?
-								ImVec2(*_splitRatio, size.y) :
-								ImVec2(size.x, *_splitRatio));
+								ImVec2(ratio, size.y) :
+								ImVec2(size.x, ratio));
 		dst["childTwo"] = _childTwo->serialize(isVertical ?
-								ImVec2(size.x - *_splitRatio, size.y) :
-								ImVec2(size.y, size.y - *_splitRatio));
+								ImVec2(size.x - ratio, size.y) :
+								ImVec2(size.x, size.y - ratio));
 	} else {
 		dst["type"] = "TabGroup";
 		dst["panels"] = nlohmann::json::array();
