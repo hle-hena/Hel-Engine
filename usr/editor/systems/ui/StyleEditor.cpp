@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/18 11:20:37 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 13:04:35                                        */
+/*  Last Modified: 2026/06/27 16:27:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -152,7 +152,7 @@ void	StyleEditor::deserialize(const nlohmann::json &src) {
 	}
 }
 
-expected<void, std::string>	StyleEditor::onInit(void) {
+expected<void>	StyleEditor::onInit(void) {
 	loadFromFile("currentStyle.json");
 	return {};
 }

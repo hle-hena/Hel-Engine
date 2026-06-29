@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:31:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:41:22                                        */
+/*  Last Modified: 2026/06/26 15:01:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,43 +16,29 @@
 
 #pragma once
 
-# include "api/vulkan/VulkanInstance.hpp"
-# include "api/vulkan/Device.hpp"
+#include "HelExpected.hpp"
+#include "api/vulkan/VulkanInstance.hpp"
+#include "api/vulkan/Device.hpp"
 
 namespace	hel {
 
-class	Application;
-
 class	VulkanContext {
 	public:
-		VulkanContext(Application &app);
+		VulkanContext(void);
 		~VulkanContext(void) = default;
 		VulkanContext(const VulkanContext &other) = delete;
 		VulkanContext	&operator=(const VulkanContext &other) = delete;
 		VulkanContext(VulkanContext &&other) = default;
 		VulkanContext	&operator=(VulkanContext &&other) = delete;
 
-		VulkanInstance	&getInstance(void) {
-			return (_instance);
-		}
-		Device			&getDevice(void) {
-			return (_device);
-		}
-		std::string		getReason(void) const {
-			return (_reason);
-		}
-		bool			isHealthy(void) const {
-			return (_healthy);
-		}
+		VkInstance	getInstance(void)	{ return _instance.getVkInstance(); }
+		Device		*getDevice(void)	{ return &_device; }
 
-		bool	initiateVulkan(void);
+		expected<void>	initiateVulkan(void);
 
 	private:
-		bool			_healthy{true};
-		std::string		_reason{""};
 		VulkanInstance	_instance;
 		Device			_device;
-		Application		&_app;
 };
 
 }

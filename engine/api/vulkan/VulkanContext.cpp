@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:32:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:46:16                                        */
+/*  Last Modified: 2026/06/26 15:26:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,22 +19,26 @@
 
 namespace	hel {
 
-VulkanContext::VulkanContext(Application &app)
-	:	_device{_instance},
-		_app{app} {
-}
+VulkanContext::VulkanContext()
+{}
 
-bool	VulkanContext::initiateVulkan(void) {
-	if (_instance.createInstance())
-		RETURN_SET_UNHEALTHY(_instance.getReason(), true);
+expected<void>	VulkanContext::initiateVulkan(void) {
+	{
+	auto	res = _instance.createInstance();
+	if (!res)
+		return unexpected(res.error());
+	}
 
-	Window::windowPtr	bootstrapWindow = Window::createBootstrap(600, 600, "bootstrap", _app, _instance.getVkInstance());
+	Window::windowPtr	bootstrapWindow = Window::createBootstrap(600, 600, "bootstrap", this);
 	if (!bootstrapWindow)
-		RETURN_SET_UNHEALTHY("Couldn't create the bootstrap window", true);
+		return unexpected("Couldn't create the bootstrap window");
 
-	if (_device.pickPhysicalDevice(*bootstrapWindow))
-		RETURN_SET_UNHEALTHY(_device.getReason(), true);
-	return (false);
+	{
+	auto	res = _device.init(&_instance, bootstrapWindow.get());
+	if (!res)
+		return unexpected(res.error());
+	}
+	return {};
 }
 
 }

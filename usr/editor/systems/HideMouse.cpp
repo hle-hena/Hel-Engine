@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/21 14:13:56 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:24:39                                        */
+/*  Last Modified: 2026/06/27 16:34:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,14 +18,13 @@
 #include "ecs/Registry.hpp"
 #include "platform/window/Window.hpp"
 #include "core/SystemManager.hpp"
+#include "platform/input/InputState.hpp"
 
 namespace	hel::sys {
 
 SystemRegistrar<HideMouse>	reg_HideMouseSystem;
 
 void	HideMouse::init(void) {
-	_inputState = &_registry->getInputState();
-
 	addUpdateDep("hides mouse r-click", &HideMouse::update);
 }
 

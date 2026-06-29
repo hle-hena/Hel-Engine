@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 16:50:48                                        */
+/*  Last Modified: 2026/06/29 19:22:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,46 +19,41 @@
 #include "api/vulkan/Descriptors.hpp"
 #include "api/vulkan/Device.hpp"
 #include "api/vulkan/Sampler.hpp"
-#include "core/Application.hpp"
+#include "api/vulkan/VulkanContext.hpp"
 
 namespace	hel {
 
-std::unique_ptr<DescriptorPool>	UiContext::_pool{};
+bool								UiContext::_fullyInitialised{false};
+std::unique_ptr<DescriptorPool>		UiContext::_pool{nullptr};
 std::unordered_map<
-	VkDescriptorSet,
-	DescriptorSet::ptr>			UiContext::_textures{};
+			VkDescriptorSet,
+			DescriptorSet::ptr>		UiContext::_textures{};
+ImGuiContext						*UiContext::_context{nullptr};
 
-UiContext::UiContext(Window *window)
-	:	_window{window},
-		_device{window->_app.getVkContext().getDevice()} {
-}
-
-UiContext::~UiContext(void) {
-	_pool = nullptr;
-}
-
-void	UiContext::destroy(void) {
+void	UiContext::destroy(Device *device) {
 	if (_fullyInitialised) {
-		vkDeviceWaitIdle(_device.getLogical());
+		vkDeviceWaitIdle(device->getLogical());
 		ImGui::SetCurrentContext(_context);
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext(_context);
+		_pool = nullptr;
+		_textures.clear();
 	}
 }
 
-void	UiContext::init() {
-	initDescriptorPool(_device);
-	initImGui(_device);
+void	UiContext::init(Window *window, Device *device) {
+	initDescriptorPool(device);
+	initImGui(window, device);
 	_fullyInitialised = true;
 }
 
-void	UiContext::initImGui(Device &device) {
+void	UiContext::initImGui(Window *window, Device *device) {
 	_context = ImGui::CreateContext();
 	ImGui::SetCurrentContext(_context);
 	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-	ImGui_ImplGlfw_InitForVulkan(_window->_windowPtr, true);
+	ImGui_ImplGlfw_InitForVulkan(window->_windowPtr, true);
 
 	auto	colorFormat = VK_FORMAT_B8G8R8A8_UNORM;
 	VkPipelineRenderingCreateInfo	renderingCreateInfo{};
@@ -68,11 +63,11 @@ void	UiContext::initImGui(Device &device) {
 
 	ImGui_ImplVulkan_InitInfo	initInfo{};
 	initInfo.ApiVersion = VK_API_VERSION_1_3;
-	initInfo.Instance = _window->_instance;
-	initInfo.PhysicalDevice = device.getPhysical();
-	initInfo.Device = device.getLogical();
-	initInfo.QueueFamily = device.getQueueFamily().graphicsFamily.value();
-	initInfo.Queue = device.getGraphicsQueue();
+	initInfo.Instance = window->_vkCtx->getInstance();
+	initInfo.PhysicalDevice = device->getPhysical();
+	initInfo.Device = device->getLogical();
+	initInfo.QueueFamily = device->getQueueFamily().graphicsFamily.value();
+	initInfo.Queue = device->getGraphicsQueue();
 	initInfo.DescriptorPool = _pool->getActivePool();
 	initInfo.ImageCount = Swapchain::MAX_FRAMES_IN_FLIGHT;
 	initInfo.MinImageCount = Swapchain::MAX_FRAMES_IN_FLIGHT;
@@ -90,8 +85,8 @@ void	UiContext::initImGuiStyle(void) {
 	style.TreeLinesRounding = 3.f;
 }
 
-void	UiContext::initDescriptorPool(Device &device) {
-	_pool = DescriptorPool::Builder(device)
+void	UiContext::initDescriptorPool(Device *device) {
+	_pool = DescriptorPool::Builder(*device)
 		.addDescriptor(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1.f)
 		.setPageSize(100)
 		.setCreationFlag(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/21 14:14:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:23:48                                        */
+/*  Last Modified: 2026/06/27 16:34:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,12 +18,6 @@
 
 # include "HelSystem.hpp"
 
-namespace	hel {
-
-class	InputState;
-
-}
-
 namespace	hel::sys {
 
 class	HideMouse : public ISystem {
@@ -34,9 +28,6 @@ class	HideMouse : public ISystem {
 		void	init(void) override;
 
 		void	update(const FrameContext &);
-
-	private:
-		InputState	*_inputState;
 };
 
 }

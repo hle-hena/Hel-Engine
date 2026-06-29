@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/26 14:31:25 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/08 17:31:40                                        */
+/*  Last Modified: 2026/06/26 16:31:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,7 +28,7 @@ class	Device;
 
 class	AssetManager {
 	public:
-		AssetManager(Device &device);
+		void	init(Device *device);
 
 		template <typename Asset>
 		std::shared_ptr<Asset>	get(const std::string &path);
@@ -42,7 +42,7 @@ class	AssetManager {
 		template <typename Asset>
 		std::shared_ptr<Asset>	load(const std::string &path);
 
-		Device		&_device;
+		Device		*_device;
 		assetMap	_assets;
 };
 

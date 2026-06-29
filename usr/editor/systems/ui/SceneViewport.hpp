@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:39 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 13:04:34                                        */
+/*  Last Modified: 2026/06/27 16:26:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,7 +37,7 @@ class	SceneViewport : public Panel<SceneViewport> {
 		SceneViewport(void) = default;
 		~SceneViewport(void) = default;
 
-		expected<void, std::string>	onInit(void) override;
+		expected<void>	onInit(void) override;
 
 		void	render(Window *window, const ImVec2 &size) override;
 

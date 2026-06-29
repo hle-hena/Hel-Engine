@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:30:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 13:04:27                                        */
+/*  Last Modified: 2026/06/29 14:19:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -53,7 +53,7 @@ class	Dock {
 		Dock	*forceGetChildTwo(UIKey)
 					{ return (_childTwo.get()); }
 
-		nlohmann::json					serialize(const ImVec2 &size) const;
+		nlohmann::json					serialize(ImVec2 size) const;
 		static std::unique_ptr<Dock>	deserialize(UI *ui,
 													const nlohmann::json &src);
 

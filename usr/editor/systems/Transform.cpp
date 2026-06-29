@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 17:31:48                                        */
+/*  Last Modified: 2026/06/29 17:01:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -43,6 +43,8 @@
 #include <string>
 #include <vulkan/vulkan_core.h>
 #include "core/SystemManager.hpp"
+#include "GlobalData.hpp"
+
 
 namespace	hel::sys {
 
@@ -76,8 +78,7 @@ void	Transform::init(void) {
 							| VK_IMAGE_ASPECT_STENCIL_BIT))
 				.addDep();
 
-	_assetManager = &_registry->getAssetManager();
-	_inputState = &_registry->getInputState();
+	_assetManager = _registry->assetManager();
 
 	{
 		PipelineMap::Config	conf{};
@@ -551,7 +552,8 @@ void	Transform::GizmoContext::dragRotate(const FrameContext &ctx) {
 		glm::vec2	renderSize  = {renderExtent.width, renderExtent.height};
 		glm::vec2	renderOrigin = {ctx.request->origin.x, ctx.request->origin.y};
 
-		glm::vec4	clip = ctx.globalData.viewProjection * glm::vec4(focusedTransform->position, 1.0f);
+		GlobalUBO	*data = ctx.globals->get<GlobalUBO>("main UBO");
+		glm::vec4	clip = data->viewProjection * glm::vec4(focusedTransform->position, 1.0f);
 		glm::vec2	screenSpaceRotationCenter  = (glm::vec2(clip) / clip.w) * 0.5f + 0.5f;
 
 		rotationCenter = renderOrigin + screenSpaceRotationCenter * renderSize;
