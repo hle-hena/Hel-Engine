@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/26 11:11:43                                        */
+/*  Last Modified: 2026/06/29 19:32:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -132,12 +132,8 @@ void	Window::setEntityReference(Entity::id handle) {
 }
 
 void	Window::setEntityFocus(Entity::id handle) {
-	//TODO -> it should be up to the engine to set that. The user shouldn't directly interact with the window.
-	// if (_focusHandle.has_value())
-	// 	_app.getRegistry().removeComponent<comp::SelectedTag>(*_focusHandle);
 	_focusHandle = handle;
-	_focusChanged = 2;
-	// _app.getRegistry().addComponent<comp::SelectedTag>(*_focusHandle);
+	_focusChanged = Swapchain::MAX_FRAMES_IN_FLIGHT;
 }
 
 void	Window::frameBufferResizedCallback(GLFWwindow *window,

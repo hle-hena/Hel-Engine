@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 16:35:38                                        */
+/*  Last Modified: 2026/06/29 19:30:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -54,6 +54,7 @@ class	Selection : public ISystem {
 
 		AssetManager				*_assetManager;
 		PipelineMap					*_tintPipeline{nullptr};
+		Entity::id					_selectedEntity;
 
 		std::unordered_map<RenderRequest, Read::Context, RenderRequest::Hasher>	_requests;
 };

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 16:36:01                                        */
+/*  Last Modified: 2026/06/29 19:31:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -117,6 +117,14 @@ void	Selection::update(const FrameContext &ctx) {
 		}
 		return (false);
 	});
+
+	if (ctx.window->focusChanged()) {
+		if (_selectedEntity != Entity::NOT_REGISTERED)
+			_registry->removeComponent<comp::SelectedTag>(_selectedEntity);
+		_selectedEntity = ctx.window->getEntityFocus();
+		if (_selectedEntity != Entity::NOT_REGISTERED)
+			_registry->addComponent<comp::SelectedTag>(_selectedEntity);
+	}
 }
 
 void	Selection::renderInteraction(const Renderer &renderer) {
