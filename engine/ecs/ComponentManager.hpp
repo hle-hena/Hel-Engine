@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/23 10:01:59 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/23 17:51:35                                        */
+/*  Last Modified: 2026/06/30 12:52:59                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,48 +16,44 @@
 
 #pragma once
 
-#include <unordered_map>
-#include <vector>
-#include <string>
-#include <typeindex>
-
+#include "ecs/IComponent.hpp"
 #include "ecs/Entity.hpp"
+#include "ecs/Registry.hpp"
+#include <functional>
+#include <vector>
+#include <unordered_map>
 
 namespace hel {
 
-class	Registry;
-
-struct	ComponentMeta {
-	std::string	componentLabel;
-	bool		gpuVisible;
-};
-
 struct	ComponentManager {
-	public:
-		static const std::vector<std::string>	&getCompNames(void) {
-			return _compNames;
-		}
-		static void	addComponent(Registry &registry, Entity::id handle,
-									const std::string &componentName);
+	template <typename Comp>
+	static void	registerComp(void) {
+		_componentList().push_back(Comp::MetaData::label);
+		_componentFactory().emplace(Comp::MetaData::label,
+								[](Registry *registry, Entity::id handle){
+									registry->addComponent<Comp>(handle);
+								});
+	}
 
 	private:
-		template <typename CompType>
-		static void	registerComp(const std::string &componentName) {
-			_compTypes.emplace(componentName, typeid(CompType));
-			_compNames.push_back(componentName);
+		using factoryMap = std::unordered_map<
+								std::string_view,
+								std::function<void(Registry *, Entity::id)>>;
+		static factoryMap	&_componentFactory(void) {
+			static factoryMap	componentFactory;
+			return componentFactory;
 		}
-
-		static std::vector<std::string>							_compNames;
-		static std::unordered_map<std::string, std::type_index>	_compTypes;
-	
-	template <typename SysType>
-	friend struct	ComponentRegistrar;
+		using stringVec = std::vector<std::string_view>;
+		static stringVec	&_componentList(void) {
+			static stringVec	componentList;
+			return componentList;
+		}
 };
 
-template <typename CompType>
+template <ValidComponent CompType>
 struct	ComponentRegistrar {
-	ComponentRegistrar(const std::string &componentName) {
-		ComponentManager::registerComp<CompType>(componentName);
+	ComponentRegistrar(void) {
+		ComponentManager::registerComp<CompType>();
 	}
 };
 
