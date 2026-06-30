@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 10:44:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/30 13:36:34                                        */
+/*  Last Modified: 2026/06/30 14:32:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,8 +27,8 @@ concept	HasMetaData = requires {
 };
 
 template <typename T>
-concept HasPOD = std::is_standard_layout_v<typename T::POD>
-				&& std::is_trivial_v<typename T::POD>;
+concept HasPOD = std::is_aggregate_v<typename T::POD>
+				&& !std::is_polymorphic_v<typename T::POD>;
 
 template <typename T>
 concept ValidComponent = HasMetaData<T> && HasPOD<T>;

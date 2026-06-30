@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/05/01 10:43:27                                        */
+/*  Last Modified: 2026/06/30 14:32:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,8 +27,19 @@
 # include <GLFW/glfw3.h>
 
 # include "ecs/Entity.hpp"
+#include "ecs/IComponent.hpp"
 
 namespace	hel::comp {
+
+struct	Hierarchy: IComponent<Hierarchy> {
+	struct	POD: IComponent<Hierarchy>::POD {
+		Entity::id				parentId{Entity::NOT_REGISTERED};
+		std::vector<Entity::id>	childrenId{};
+	};
+	struct	MetaData: IComponent<Hierarchy>::MetaData {
+		static constexpr std::string_view	label = "Hierarchy";
+	};
+};
 
 struct	EditorControllerTag {
 	static constexpr const char	*label = "Editor Controller Tag";
@@ -163,13 +174,5 @@ struct	Controller {
 	int		upKey{GLFW_KEY_SPACE};
 	int		downKey{GLFW_KEY_LEFT_SHIFT};
 };
-
-struct	Hierarchy {
-	static constexpr const char	*label = "Hierarchy";
-
-	Entity::id				parentId{Entity::NOT_REGISTERED};
-	std::vector<Entity::id>	childrenId{};
-};
-
 
 }

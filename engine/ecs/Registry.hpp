@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 16:32:32                                        */
+/*  Last Modified: 2026/06/30 17:06:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,7 +20,6 @@
 #include <tuple>
 #include <typeindex>
 #include <unordered_map>
-#include <set>
 #include <vector>
 #include <memory>
 #include <optional>
@@ -29,6 +28,7 @@
 #include "api/vulkan/Buffer.hpp"
 #include "api/vulkan/Descriptors.hpp"
 #include "ecs/AssetManager.hpp"
+#include "ecs/Pool.hpp"
 
 namespace	hel {
 
@@ -49,59 +49,6 @@ template <typename T, typename... Rest>
 struct	is_unique<T, Rest...> : std::bool_constant<
 	(!std::is_same_v<T, Rest> && ...) && is_unique<Rest...>::value
 > {};
-
-struct	PendingWrite {
-	uint32_t	index;
-	void		*data;
-
-	bool	operator<(const PendingWrite &other) const {
-		return (index < other.index);
-	}
-};
-
-struct	IPool {
-	bool	isDirty{false};
-
-	virtual ~IPool(void) = default;
-	virtual void	syncBuffer(Device &device) = 0;
-	virtual void	syncBuffer(Device &device, const PendingWrite &write) = 0;
-	virtual void	removeEntity(Entity::id handle) = 0;
-	virtual void	resetDirtyFlag(void) = 0;
-	virtual void	addWrite(uint32_t index, void *data) = 0;
-	virtual void	flushWrites(Device &device) = 0;
-	virtual void	removePendingBuffers(void) = 0;
-
-	virtual bool		has(Entity::id handle) const = 0;
-	virtual void		*getRaw(Entity::id handle) = 0;
-	virtual const char	*getTypeName(void) const = 0;
-};
-
-template <typename Component>
-struct	Pool : IPool {
-	Pool(void) = default;
-
-	std::vector<uint32_t>	indices{};
-	std::vector<Entity::id>	entities{};
-	std::vector<Component>	components{};
-
-	std::unique_ptr<Buffer>	buffer{nullptr};
-
-	void	syncBuffer(Device &device) override;
-	void	syncBuffer(Device &device, const PendingWrite &write) override;
-	void	removeEntity(Entity::id handle) override;
-	void	resetDirtyFlag(void) override;
-	void	addWrite(uint32_t index, void *data) override;
-	void	flushWrites(Device &device) override;
-	void	removePendingBuffers(void) override;
-
-	bool		has(Entity::id handle) const override;
-	void		*getRaw(Entity::id handle) override;
-	const char	*getTypeName(void) const override;
-
-	private:
-		std::set<PendingWrite>	_writes{};
-		std::vector<std::pair<uint32_t, std::unique_ptr<Buffer>>>	_pendingBuffers;
-};
 
 template <typename Component>
 struct	ModificationProxy {
