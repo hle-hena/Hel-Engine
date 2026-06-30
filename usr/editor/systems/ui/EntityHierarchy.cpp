@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 13:04:29                                        */
+/*  Last Modified: 2026/06/27 16:26:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,7 +24,7 @@
 
 namespace	hel::sys {
 
-expected<void, std::string>	EntityHierarchy::onInit(void) {
+expected<void>	EntityHierarchy::onInit(void) {
 	return {};
 }
 

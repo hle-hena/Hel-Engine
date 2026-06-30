@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 23:21:47                                        */
+/*  Last Modified: 2026/06/27 16:32:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,23 +16,21 @@
 
 #pragma once
 
-# include <cstdint>
+#include <cstdint>
 #include <tuple>
-# include <typeindex>
-# include <unordered_map>
-# include <set>
-# include <vector>
-# include <memory>
-# include <optional>
+#include <typeindex>
+#include <unordered_map>
+#include <set>
+#include <vector>
+#include <memory>
+#include <optional>
 
-# include "ecs/Entity.hpp"
-# include "platform/input/InputState.hpp"
-# include "api/vulkan/Buffer.hpp"
-# include "api/vulkan/Descriptors.hpp"
+#include "ecs/Entity.hpp"
+#include "api/vulkan/Buffer.hpp"
+#include "api/vulkan/Descriptors.hpp"
+#include "ecs/AssetManager.hpp"
 
 namespace	hel {
-
-class	AssetManager;
 
 template <typename... Components>
 struct	include {};
@@ -135,16 +133,15 @@ class	Registry {
 		using PoolMap = std::unordered_map<std::type_index,
 										std::unique_ptr<IPool>>;
 
-		Registry(AssetManager &assetManager);
+		Registry(void) = default;
 		~Registry(void) = default;
 		Registry(const Registry &) = delete;
 		Registry	&operator=(const Registry &) = delete;
 
-		AssetManager	&getAssetManager(void) const {
-			return (*_assetManager);
-		}
-		InputState		&getInputState(void) {
-			return (_inputState);
+		void	init(Device *device);
+
+		AssetManager	*assetManager(void) {
+			return (&_assetManager);
 		}
 		PoolMap			&getPools(void) {
 			return (_pools);
@@ -179,8 +176,7 @@ class	Registry {
 
 		std::vector<Entity::id>		_aliveEntities{};
 		PoolMap						_pools;
-		AssetManager				*_assetManager;
-		InputState					_inputState;
+		AssetManager				_assetManager;
 
 	template <typename Include, typename Exclude>
 	friend class View;

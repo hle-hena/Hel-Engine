@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 13:04:32                                        */
+/*  Last Modified: 2026/06/27 16:26:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -41,7 +41,7 @@ class	Inspector : public Panel<Inspector> {
 		Inspector(void) = default;
 		~Inspector(void) = default;
 
-		expected<void, std::string>	onInit(void) override;
+		expected<void>	onInit(void) override;
 
 		template <typename Component>
 		void	setDrawFunc(UIDrawFunc func) {

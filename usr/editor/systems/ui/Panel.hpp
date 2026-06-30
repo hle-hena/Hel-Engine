@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:19:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 21:12:22                                        */
+/*  Last Modified: 2026/06/27 16:25:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,7 +20,7 @@
 #include <limits>
 # include <ui/ImGui/imgui.h>
 
-# include "utils/helExpect.hpp"
+#include "HelExpected.hpp"
 
 namespace	hel {
 
@@ -39,7 +39,7 @@ class	IPanel {
 		IPanel(void) = default;
 		virtual ~IPanel(void) = default;
 
-		virtual expected<void, std::string>	setup(Registry *registry,
+		virtual expected<void>	setup(Registry *registry,
 												ImagePool *imagePool) final;
 		virtual void	shouldClose(bool closing) final
 							{ _shouldClose = closing; }
@@ -49,7 +49,7 @@ class	IPanel {
 		virtual void	changeOwner(Dock *newOwner, size_t insertIdx =
 							std::numeric_limits<size_t>::max()) final;
 		virtual void	setOwner(Dock *newOwner) final;
-		virtual expected<void, std::string>	onInit(void) { return {}; }
+		virtual expected<void>	onInit(void) { return {}; }
 
 		virtual const char	*getLabel(void) const = 0;
 		virtual Dock		*getOwner(void) const final { return (_owner); }

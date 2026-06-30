@@ -3,9 +3,9 @@
 /*                                                                            */
 /*  File: Engine.cpp                                                          */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/20 18:55:13 by hle-hena                                  */
+/*  Created: 2026/06/24 17:39:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 16:38:00                                        */
+/*  Last Modified: 2026/06/29 19:21:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,89 +14,73 @@
 /*                                                                            */
 /* *************************************************************************  */
 
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
 #include "core/Engine.hpp"
-#include "core/Queues.hpp"
-
-#include "api/vulkan/Device.hpp"
-#include "api/vulkan/Swapchain.hpp"
-#include "api/vulkan/Sampler.hpp"
-#include "api/vulkan/Descriptors.hpp"
-#include "api/vulkan/Renderer.hpp"
-
-#include "utils/healthHelper.hpp"
-
 #include "platform/window/Window.hpp"
+#include "api/vulkan/ImagePool.hpp"
+#include "core/Queues.hpp"
+#include "api/vulkan/Renderer.hpp"
 #include "platform/window/GLFW.hpp"
+#include "api/vulkan/Sampler.hpp"
 
-#include "ecs/Registry.hpp"
-#include "ecs/Component.hpp"
+namespace	hel {
 
-#include <iostream>
-
-#include "utils/VFS.hpp"
-
-namespace hel {
-
-Engine::Engine(Device &device, Registry &registry)
-	:	_device{device},
-		_registry{registry} {
-	_timer.start();
-	VFS::load({});
+Engine::Engine(void)
+{
 }
 
 Engine::~Engine(void) {
 	_systems.clear({});
-	Sampler::deleteAllSamplers(_device);
-	DescriptorFactory::deleteLayoutCache(_device);
-	if (_commandPool != VK_NULL_HANDLE)
-		vkDestroyCommandPool(_device.getLogical(), _commandPool, nullptr);
+	if (_device) {
+		Sampler::deleteAllSamplers(*_device);
+		DescriptorFactory::deleteLayoutCache(*_device);
+	}
+	GLFW::release();
 }
 
-bool	Engine::init(Window &window) {
-	if (createCommandPool())
-		return (true);
-	createDescriptorPools();
-	auto	frameRes = _frame.init(_device, _staticPool.get(), _commandPool);
-	if (!frameRes) {
-		std::cerr << frameRes.error() << std::endl;
-		return (true);
-	}
-	createImagePool();
+expected<void>	Engine::init(const EngineConfig &config)
+{
+	_config = config;
+	if (!GLFW::acquire())
+		return tl::unexpected("Couldn't init glfw.");
+	auto	vkInit = _vkContext.initiateVulkan();
+	if (!vkInit)
+		return tl::unexpected(vkInit.error());
+	_device = _vkContext.getDevice();
+	auto	res = createWindow(Window::WIDTH, Window::HEIGHT, "Hel-Engine")
+			.and_then([this]{
+				return _frame.init(_device, _config.defineGlobalSet());
+			}).and_then([this]{ return createImagePool(); });
+	if (!res)
+		return tl::unexpected(res.error());
 
-	auto	frameCtx = _frame.getContext(&window, 0, 0);
-	_engineCtx.device = &_device;
-	_engineCtx.imagePool = _imagePool.get();
-	_engineCtx.registry = &_registry;
-
-	for (auto &system: _systems.getSystems()) {
-		system->init(_engineCtx, frameCtx);
-		system->init();
-	}
+	_registry.init(_device);
+	for (auto &system: _systems.getSystems())
+		system->init(_device, &_registry, _imagePool.get(), &_inputState);
 	_systems.sort({});
-	return (false);
+
+	_config.loadPrimaryScene(&_registry, _appWindow.get());
+	return {};
 }
 
-bool	Engine::createCommandPool(void) {
-	VkCommandPoolCreateInfo	commandPoolInfo{};
-	commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	commandPoolInfo.queueFamilyIndex = _device.getQueueFamily().graphicsFamily.value();
-
-	if (vkCreateCommandPool(_device.getLogical(), &commandPoolInfo, nullptr, &_commandPool) != VK_SUCCESS)
-		RETURN_SET_UNHEALTHY("Couldn't create the command pool.", true);
-	return (false);
+expected<void>	Engine::createWindow(int width, int height,
+							const std::string &windowName)
+{
+	Window::windowPtr window = Window::createWindow(static_cast<uint32_t>(width),
+								static_cast<uint32_t>(height), windowName,
+								&_vkContext, &_inputState);
+	if (!window)
+		return tl::unexpected("Failed to create the window.");
+	if (!_vkContext.getDevice()->supportSurface(window.get()))
+		return tl::unexpected("The window surface is not supported.");
+	_appWindow = std::move(window);
+	return {};
 }
 
-void	Engine::createDescriptorPools(void) {
-	_staticPool = DescriptorPool::Builder(_device)
-		.addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
-		.addDescriptor(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4.f)
-		.setPageSize(GLFW::_maxInstanceCount * Swapchain::MAX_FRAMES_IN_FLIGHT)
-		.build();
-}
-
-void	Engine::createImagePool(void) {
-	_imagePool = ImagePool::Builder(_device)
+expected<void>	Engine::createImagePool(void) {
+	_imagePool = ImagePool::Builder(*_vkContext.getDevice())
 		.addImage(Image::Config()
 			.setHeight(4096)
 			.setWidth(4096)
@@ -112,33 +96,61 @@ void	Engine::createImagePool(void) {
 			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
 			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT))
 		.build();
+	return {};
 }
 
-void	Engine::tick(Window *window, uint32_t frameIndex) {
-	window->getSwapchain().waitForFrameFence(frameIndex);
-	auto	frameCtx = _frame.getContext(window, frameIndex, _lastFrameTime);
-	auto	&ui = window->getUI();
-	_lastFrameTime = _timer.lap();
+expected<void>	Engine::setUserData(GlobalData *data) {
+	_userData = data;
+	return _userData->lock({})
+			.and_then([this]{ return _frame.bindBuffers(_userData); })
+			.and_then([this]{ return _frame.validateGlobalSet(); });
+}
+
+
+
+void	Engine::run(void) {
+	uint32_t	currentFrame = 0;
+
+	while (_appWindow) {
+		_inputState.newFrame();
+		_appWindow->pollEvents();
+
+		if (_appWindow->shouldClose())
+			break ;
+
+		tick(currentFrame);
+
+		currentFrame = (currentFrame + 1) % Swapchain::MAX_FRAMES_IN_FLIGHT;
+		_registry.resetAllDirty();
+	}
+	vkDeviceWaitIdle(_vkContext.getDevice()->getLogical());
+}
+
+void	Engine::tick(uint32_t frameIndex) {
+	_appWindow->getSwapchain().waitForFrameFence(frameIndex);
+
+	FrameContext	ctx(frameIndex, _userData);
+	_frame.fillContext(ctx, _appWindow.get());
 	_imagePool->releaseAll();
 	bool	shouldDoRenderTick = true;
-	if (window->getSwapchain().acquireNextImage(*window, frameCtx.frameIndex,
-												&frameCtx.swapIndex))
+	if (_appWindow->getSwapchain().acquireNextImage(*_appWindow.get(), frameIndex, &ctx.swapIndex))
 		shouldDoRenderTick = false;
+	_config.tickCallback(&_registry, ctx);
 
-	updateTick(ui, frameCtx);
-	_registry.updateBuffers(_device);
+	updateTick(ctx);
+	_registry.updateBuffers(*_device);
 	if (shouldDoRenderTick)
-		renderTick(window, ui, frameCtx);
+		renderTick(_appWindow.get(), ctx);
 }
 
-void	Engine::updateTick(UiContext &ui, FrameContext &frameCtx) {
-	ui.newFrame();
+void	Engine::updateTick(FrameContext &frameCtx) {
+	UiContext::newFrame();
 	for (auto &func: _systems.getUpdates())
 		func->execute(frameCtx);
-	ui.endFrame();
+	UiContext::endFrame();
 }
 
-void	Engine::renderTick(Window *window, UiContext &, FrameContext &ctx) {
+void	Engine::renderTick(Window *window, FrameContext &ctx) {
 	Swapchain	&swapchain = window->getSwapchain();
 
 	RenderPass::newFrame();
@@ -154,17 +166,17 @@ void	Engine::renderTick(Window *window, UiContext &, FrameContext &ctx) {
 
 	for (auto &renderRequest: RenderQueue::flush()) {
 		ctx.request = &renderRequest;
-		updateGlobalData(ctx);
+		_config.updateGlobalData(&_registry, ctx);
 
 		for (auto &funcList: _systems.getRenders(renderRequest.requestType))
 			executePass(ctx, funcList);
 
 		for (auto &level: DrawQueue::flush()) {
 			for (auto &pass: level.second) {
-				if (auto renderer = RenderPass(_device, ctx, _imagePool.get(),
+				if (auto renderer = RenderPass(*_device, ctx, _imagePool.get(),
 										pass.dep)
 									.beginPass()) {
-					writeGlobalData(renderer);
+					_frame.writeGlobalData(renderer.frameContext());
 					for (auto &drawCommand: pass.draws)
 						drawCommand.submit();
 				}
@@ -184,33 +196,12 @@ void	Engine::renderTick(Window *window, UiContext &, FrameContext &ctx) {
 void	Engine::executePass(FrameContext &ctx, const SystemManager::FuncVec &funcs) {
 	if (funcs.empty())
 		return ;
-	if (auto renderer = RenderPass(_device, ctx, _imagePool.get(), funcs)
+	if (auto renderer = RenderPass(*_device, ctx, _imagePool.get(), funcs)
 						.beginPass()) {
-		writeGlobalData(renderer);
+		_frame.writeGlobalData(renderer.frameContext());
 		for (auto &func: funcs)
 			func->execute(renderer);
 	}
-}
-
-
-void	Engine::updateGlobalData(FrameContext &ctx) {
-	auto	handle = ctx.request->handle;
-	ctx.globalData.viewProjection = glm::mat4{1.f};
-	if (auto camera = _registry.getComponent<comp::Camera>(handle)) {
-		auto	extent = ctx.request->images["mainColor"]->getExtent();
-		float	aspect = static_cast<float>(extent.width) /
-						static_cast<float>(extent.height);
-		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), aspect, camera->near, camera->far);
-		projection[1][1] *= -1;
-		ctx.projection = projection;
-		ctx.globalData.viewProjection = projection * camera->view;
-	}
-	ctx.globalData.elapsedTime = _timer.elapsedTime();
-}
-
-void	Engine::writeGlobalData(Renderer &renderer) {
-	auto	ctx = renderer.frameContext();
-	_frame.writeToUBO(&ctx.globalData, renderer.passIndex(), ctx.frameIndex);
 }
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 13:53:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/17 11:26:24                                        */
+/*  Last Modified: 2026/06/26 14:59:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,7 +24,7 @@
 
 	#define CHECK_SUPPORT_VALIDATION_LAYER()
 
-	#define SETUP_DEBUG_MESSENGER() false
+	#define SETUP_DEBUG_MESSENGER() {}
 
 	#define ADD_VALIDATION_LAYERS()
 

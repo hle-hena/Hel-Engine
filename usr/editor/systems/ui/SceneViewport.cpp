@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 13:04:34                                        */
+/*  Last Modified: 2026/06/27 16:26:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,7 +24,7 @@
 
 namespace	hel::sys {
 
-expected<void, std::string>	SceneViewport::onInit(void) {
+expected<void>	SceneViewport::onInit(void) {
 	return {};
 }
 

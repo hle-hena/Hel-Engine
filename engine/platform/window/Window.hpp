@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 13:07:35                                        */
+/*  Last Modified: 2026/06/26 11:02:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,7 +28,8 @@
 
 namespace	hel {
 
-class	Application;
+class	InputState;
+class	VulkanContext;
 
 class	Window {
 	public:
@@ -42,29 +43,18 @@ class	Window {
 
 		static windowPtr	createWindow(uint32_t width, uint32_t height,
 										const std::string &windowName,
-										Application &app, VkInstance &instance) noexcept;
+										VulkanContext *context,
+										InputState *inputState) noexcept;
 		static windowPtr	createBootstrap(uint32_t width, uint32_t height,
 										const std::string &windowName,
-										Application &app, VkInstance &instance) noexcept;
+										VulkanContext *context) noexcept;
 		bool				shouldClose(void);
 
-		std::string		getReason(void) const {
-			return (_reason);
-		}
-		bool			isHealthy(void) const {
-			return (_healthy);
-		}
 		GLFWwindow		*getWindow(void) const {
 			return (_windowPtr);
 		}
 		VkSurfaceKHR	&getSurface(void) {
 			return (_surface);
-		}
-		UiContext		&getUI(void) {
-			return (_uiContext);
-		}
-		Application		&getApp(void) const {
-			return (_app);
 		}
 		Swapchain		&getSwapchain(void) {
 			return (_swapchain);
@@ -92,7 +82,7 @@ class	Window {
 
 	private:
 		Window(uint32_t width, uint32_t height, const std::string &windowName,
-			Application &app, VkInstance &instance);
+			VulkanContext *context, InputState *inputState = nullptr);
 		Window(const Window &other) = delete;
 		Window	&operator=(const Window &other) = delete;
 
@@ -109,17 +99,14 @@ class	Window {
 										double ypos);
 		static void	cursorEnterCallback(GLFWwindow *window, int entered);
 
-		bool						_healthy{true};
-		std::string					_reason{""};
-		Application					&_app;
-		VkInstance					&_instance;
+		VulkanContext				*_vkCtx{nullptr};
+		InputState					*_inputState{nullptr};
 		uint32_t					_width;
 		uint32_t					_height;
 		bool						_frameBufferResized{false};
 		std::string					_windowName;
 		GLFWwindow					*_windowPtr;
 		VkSurfaceKHR				_surface{VK_NULL_HANDLE};
-		UiContext					_uiContext;
 		Swapchain					_swapchain;
 		std::optional<Entity::id>	_entityHandle;
 		std::optional<Entity::id>	_focusHandle;

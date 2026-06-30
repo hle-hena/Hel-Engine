@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/17 16:32:44 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 13:04:36                                        */
+/*  Last Modified: 2026/06/27 16:26:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -38,7 +38,7 @@ class	StyleEditor : public Panel<StyleEditor> {
 		StyleEditor(void) = default;
 		~StyleEditor(void);
 
-		expected<void, std::string>	onInit(void) override;
+		expected<void>	onInit(void) override;
 		static void		applyPalette(void);
 		static bool		loadFromFile(const std::string &path);
 

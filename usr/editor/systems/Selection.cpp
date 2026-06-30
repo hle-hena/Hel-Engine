@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 17:31:31                                        */
+/*  Last Modified: 2026/06/29 19:31:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,6 +22,7 @@
 #include "platform/window/Window.hpp"
 #include <cstdint>
 #include "core/SystemManager.hpp"
+#include "platform/input/InputState.hpp"
 
 namespace	hel::sys {
 
@@ -59,8 +60,7 @@ void	Selection::init(void) {
 			->startWrite<DepthStencil>("depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
 				.addDep();
 
-	_inputState = &_registry->getInputState();
-	_assetManager = &_registry->getAssetManager();
+	_assetManager = _registry->assetManager();
 	{
 		PipelineMap::Config	config;
 		config.device = _device;
@@ -117,6 +117,14 @@ void	Selection::update(const FrameContext &ctx) {
 		}
 		return (false);
 	});
+
+	if (ctx.window->focusChanged()) {
+		if (_selectedEntity != Entity::NOT_REGISTERED)
+			_registry->removeComponent<comp::SelectedTag>(_selectedEntity);
+		_selectedEntity = ctx.window->getEntityFocus();
+		if (_selectedEntity != Entity::NOT_REGISTERED)
+			_registry->addComponent<comp::SelectedTag>(_selectedEntity);
+	}
 }
 
 void	Selection::renderInteraction(const Renderer &renderer) {

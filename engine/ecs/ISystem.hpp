@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 11:57:45                                        */
+/*  Last Modified: 2026/06/27 16:29:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,6 +33,7 @@ struct	EngineContext;
 struct	FrameContext;
 struct	DrawCall;
 class	Renderer;
+class	InputState;
 
 }
 
@@ -46,9 +47,8 @@ class	ISystem {
 		ISystem(const ISystem &other) = delete;
 		ISystem	&operator=(const ISystem &other) = delete;
 
-		virtual void	init(const EngineContext &engineCtx,
-							const FrameContext &frameCtx) final;
-		virtual void	init(void) = 0;
+		virtual void	init(Device *device, Registry *registry,
+							ImagePool *imagePool, InputState *input) final;
 
 		using UpdateFn = void (ISystem::*)(const FrameContext &);
 		using RenderFn = void (ISystem::*)(const Renderer &);
@@ -82,6 +82,8 @@ class	ISystem {
 		std::unordered_map<std::string_view, Func>	renderCycleDep;
 
 	protected:
+		virtual void	init(void) = 0;
+
 		template <typename T>
 		Func	*addUpdateDep(std::string_view depName,
 							void (T::*fn)(const FrameContext&)) {
@@ -109,12 +111,11 @@ class	ISystem {
 
 		Device										*_device;
 		Registry									*_registry;
+		InputState									*_inputState;
 		ImagePool									*_imagePool;
 
 	private:
 		std::vector<std::unique_ptr<PipelineMap>>	_pipelines;
-
-		const FrameContext	*_frameCtx;
 };
 
 }

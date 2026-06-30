@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/24 15:13:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:29:27                                        */
+/*  Last Modified: 2026/06/26 16:34:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -32,7 +32,7 @@ Texture::RawTexture	Texture::loadFile(const std::string &path) {
 	return (raw);
 }
 
-std::shared_ptr<Texture> Texture::load(Device &device,
+std::shared_ptr<Texture> Texture::load(Device *device,
 											const std::string &path) {
 	auto	raw = loadFile(path);
 	if (!raw.pixels) {
@@ -43,7 +43,7 @@ std::shared_ptr<Texture> Texture::load(Device &device,
 	auto	asset = std::make_shared<Texture>();
 	asset->filePath = path;
 
-	asset->image = Image::create(device,
+	asset->image = Image::create(*device,
 		Image::Config{}
 			.setWidth(static_cast<uint32_t>(raw.width))
 			.setHeight(static_cast<uint32_t>(raw.height))

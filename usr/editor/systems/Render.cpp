@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 17:31:21                                        */
+/*  Last Modified: 2026/06/27 16:35:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -49,11 +49,11 @@ void	Render::init(void) {
 			.addDep();
 
 
-	_assetManager = &_registry->getAssetManager();
+	_assetManager = _registry->assetManager();
 	{
 		PipelineMap::Config	config;
 		config.device = _device;
-		config.assetManager = &_registry->getAssetManager();
+		config.assetManager = _registry->assetManager();
 		config.shaderPaths = {
 			"basic.vert",
 			"basic.frag"
@@ -65,7 +65,7 @@ void	Render::init(void) {
 	{
 		PipelineMap::Config	config;
 		config.device = _device;
-		config.assetManager = &_registry->getAssetManager();
+		config.assetManager = _registry->assetManager();
 		config.shaderPaths = {
 			"basic.vert",
 			"basic.frag"

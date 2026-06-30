@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 17:31:11                                        */
+/*  Last Modified: 2026/06/27 16:32:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -53,7 +53,7 @@ void	Camera::init(void) {
 						| VK_IMAGE_ASPECT_STENCIL_BIT))
 			.addDep();
 
-	_assetManager = &_registry->getAssetManager();
+	_assetManager = _registry->assetManager();
 	{
 		PipelineMap::Config	config;
 		config.device = _device;

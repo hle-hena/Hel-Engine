@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:01:55 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:29:03                                        */
+/*  Last Modified: 2026/06/27 17:38:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -58,7 +58,7 @@ struct	Geometry {
 	std::vector<std::string>	materialPaths{};
 
 	virtual bool	isLoadedFully(void) const;
-	static std::shared_ptr<Geometry>	load(Device &device,
+	static std::shared_ptr<Geometry>	load(Device *device,
 											const std::string &modelName);
 
 	protected:
@@ -85,7 +85,7 @@ struct	FullGeometry : public Geometry {
 	uint32_t					lineVertexCount{0};
 
 	bool	isLoadedFully(void) const override;
-	static std::shared_ptr<FullGeometry> load(Device &device,
+	static std::shared_ptr<FullGeometry> load(Device *device,
 											  const std::string &modelName);
 };
 
