@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/30 14:32:54                                        */
+/*  Last Modified: 2026/06/30 17:10:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -69,38 +69,6 @@ struct	Name {
 	static constexpr const char	*label = "Entity Name";
 
 	std::string	name{"Paul"};
-};
-
-struct	TransformGPU {
-	glm::mat4	worldMatrix;
-	glm::mat4	normalMatrix;
-};
-
-struct	Transform {
-	static constexpr const char	*label = "Transform";
-	static constexpr const bool	gpuVisible = true;
-
-	using GPUType = TransformGPU;
-	TransformGPU	toGPU(void) {
-		return {worldMatrix, normalMatrix};
-	}
-
-	glm::vec3	position{0.f};
-	glm::quat	rotation{1.f, 0.f, 0.f, 0.f};
-	glm::vec3	scale{1.f};
-
-	glm::mat4	worldMatrix{1.f};
-	glm::mat4	normalMatrix{1.f};
-
-	bool		isDirty{true};
-};
-
-struct	OffsetTransform {
-	static constexpr const char	*label = "Offset Transform";
-
-	glm::vec3	pos{0.f};
-	glm::quat	rotation{1.f, 0.f, 0.f, 0.f};
-	glm::vec3	scale{1.f};
 };
 
 struct	SurfaceAllignement {

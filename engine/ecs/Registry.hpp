@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/30 17:06:03                                        */
+/*  Last Modified: 2026/07/01 09:33:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -49,31 +49,6 @@ template <typename T, typename... Rest>
 struct	is_unique<T, Rest...> : std::bool_constant<
 	(!std::is_same_v<T, Rest> && ...) && is_unique<Rest...>::value
 > {};
-
-template <typename Component>
-struct	ModificationProxy {
-	ModificationProxy(void) {};
-	ModificationProxy(Pool<Component> *pool, uint32_t denseIndex)
-		:	_pool{pool},
-			_index{denseIndex} {}
-	~ModificationProxy(void) {
-		auto	component = &_pool->components[*_index];
-		if constexpr (requires { component->isDirty = true; }) {
-			if (component)
-				component->isDirty = true;
-		}
-		_pool->addWrite(*_index, component);
-	}
-	Component	*operator->(void) { return &_pool->components[*_index]; };
-	explicit operator bool() const { return (_index.has_value()); }
-
-	private:
-		Pool<Component>			*_pool{nullptr};
-		std::optional<uint32_t>	_index;
-};
-
-template <typename Component>
-struct	ComponentHandle;
 
 class	Registry {
 	public:
@@ -125,26 +100,6 @@ class	Registry {
 		PoolMap						_pools;
 		AssetManager				_assetManager;
 
-	template <typename Include, typename Exclude>
-	friend class View;
-};
-
-template <typename Component>
-struct	ComponentHandle {
-	public:
-		ComponentHandle(void) = default;
-
-		operator bool(void) const	{ return (_index.has_value()); }
-		const Component	*operator->(void)	{ return (&_pool->components[*_index]); }
-		ModificationProxy<Component>	modify(void);
-		uint32_t						getDenseIndex(void) const {
-			return (_index.value_or(Entity::NOT_REGISTERED));
-		}
-
-	private:
-		Pool<Component>			*_pool{nullptr};
-		std::optional<uint32_t>	_index;
-	friend class	Registry;
 	template <typename Include, typename Exclude>
 	friend class View;
 };

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/30 17:04:43                                        */
+/*  Last Modified: 2026/07/01 09:33:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,7 +19,6 @@
 #include "api/vulkan/Swapchain.hpp"
 #include <iostream>
 #include <tuple>
-#include <type_traits>
 
 namespace	hel {
 
@@ -119,15 +118,6 @@ DescriptorSet::ptr	Registry::buildComponentSet(Device &device,
 		*getPool<Component>()->buffer), ...);
 	writer.update();
 	return (set);
-}
-
-
-
-template <typename Component>
-ModificationProxy<Component>	ComponentHandle<Component>::modify(void) {
-	if (_index.has_value())
-		return {_pool, *_index};
-	return {};
 }
 
 }
