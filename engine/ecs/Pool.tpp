@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 16:53:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/02 14:27:07                                        */
+/*  Last Modified: 2026/07/02 16:59:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "ecs/Pool.hpp"
+#include "ecs/IComponent.hpp"
 #include "api/vulkan/Buffer.hpp"
 #include "api/vulkan/Swapchain.hpp"
 #include <vulkan/vulkan.h>
@@ -30,7 +31,10 @@ bool	Pool<Component>::has(Entity::id handle) const {
 
 template <ValidComponent Component>
 OpaqueComponentHandle	Pool<Component>::get(Entity::id handle) {
-	return {._pool = this, ._index = indices[Entity::getIndex(handle)]};
+	OpaqueComponentHandle	comp;
+	comp._pool = this;
+	comp._index = indices[Entity::getIndex(handle)];
+	return comp;
 }
 
 template <ValidComponent Component>
@@ -67,14 +71,14 @@ void	Pool<Component>::removeEntity(Entity::id handle) {
 
 template <ValidComponent Component>
 void	Pool<Component>::syncBuffer(Device &dev) {
-	if (Component::MetaData::gpuVisible) {
+	if constexpr (Component::MetaData::gpuVisible) {
 		uint32_t	nbComp = static_cast<uint32_t>(components.size());
 		if (!buffer || buffer->getSize() < nbComp * buffer->getStride()) {
 			if (buffer)
 				_pendingBuffers.push_back({Swapchain::MAX_FRAMES_IN_FLIGHT,
 											std::move(buffer)});
-			buffer = Buffer::create(dev, sizeof(Component::GPULayout), nbComp,
-						VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+			buffer = Buffer::create(dev, sizeof(typename Component::GPULayout),
+						nbComp, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
 						VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
 						VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
 						| VMA_ALLOCATION_CREATE_MAPPED_BIT);
@@ -90,7 +94,7 @@ void	Pool<Component>::syncBuffer(Device &dev) {
 
 template <ValidComponent Component>
 void	Pool<Component>::syncBuffer(Device &, const PendingWrite &write) {
-	if (Component::MetaData::gpuVisible) {
+	if constexpr (Component::MetaData::gpuVisible) {
 			auto	&comp = *static_cast<Component::POD*>(write.data);
 			auto	gpuData = Component::MetaData::toGPU(comp);
 			uint32_t	stride = buffer->getStride();

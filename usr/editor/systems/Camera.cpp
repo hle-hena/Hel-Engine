@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 16:32:20                                        */
+/*  Last Modified: 2026/07/02 16:49:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -131,7 +131,7 @@ void	Camera::update(const FrameContext &) {
 		auto	constTransform = entities.get<comp::Transform>(entity);
 		auto	constCamera = entities.get<comp::Camera>(entity);
 
-		if (!constCamera->isDirty && !constTransform->isDirty)
+		if (!constCamera.isDirty() && !constTransform.isDirty())
 			continue ;
 		if (auto camera = constCamera.modify()) {
 			glm::mat4 rotate = glm::mat4_cast(glm::conjugate(constTransform->rotation));

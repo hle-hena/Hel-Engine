@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 11:31:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/02 15:13:27                                        */
+/*  Last Modified: 2026/07/02 16:45:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -120,7 +120,7 @@ struct	Transform: IComponent<Transform> {
 		glm::mat4	worldMatrix;
 		glm::mat4	normalMatrix;
 	};
-	struct	MetaData {
+	struct	MetaData: IComponent<Transform>::MetaData {
 		static constexpr std::string_view	label = "Transform";
 		static constexpr bool				gpuVisible = true;
 
@@ -177,8 +177,8 @@ struct	Camera: IComponent<Camera> {
 		glm::mat4	viewMatrix;
 	};
 	struct	MetaData: IComponent<Camera>::MetaData {
-		static constexpr const char	*label = "Camera";
-		static constexpr const bool	gpuVisible = true;
+		static constexpr std::string_view	label = "Camera";
+		static constexpr bool				gpuVisible = true;
 
 		static GPULayout	toGPU(const POD &comp) {
 			return {comp.view};
@@ -199,7 +199,7 @@ struct	Controller: IComponent<Controller> {
 		int		downKey{GLFW_KEY_LEFT_SHIFT};
 	};
 	struct	MetaData: IComponent<Camera>::MetaData {
-		static constexpr const char	*label = "Controller";
+		static constexpr std::string_view	label = "Controller";
 	};
 };
 

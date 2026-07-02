@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 16:36:12                                        */
+/*  Last Modified: 2026/07/02 16:52:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -115,8 +115,8 @@ void	Sprite::render(const Renderer &renderer) {
 	for (auto entity : entities) {
 		if (entity == renderHandle)	{ continue ; }
 		auto	transform = entities.get<comp::Transform>(entity);
-		auto	texture = _assetManager->get<Texture>(entities.get<comp::Texture>
-			(entity)->filePath);
+		auto	texture = _assetManager->get<Texture>(
+							entities.get<comp::Texture>(entity)->filepath);
 		if (!texture)	{ continue ; }
 
 		auto	texture_d = DescriptorFactory(*_device)

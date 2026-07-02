@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 10:44:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/02 14:49:03                                        */
+/*  Last Modified: 2026/07/02 16:58:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,47 +16,16 @@
 
 #pragma once
 
+#include "ecs/ValidComponent.hpp"
 #include <string_view>
-#include <functional>
 #include <optional>
 #include <cstdint>
 
 namespace	hel {
 
-template <typename T>
-concept	HasMetaData = requires {
-	{ T::MetaData::label }		-> std::convertible_to<std::string_view>;
-	{ T::MetaData::gpuVisible }	-> std::convertible_to<bool>;
-};
-
-template <typename T>
-concept HasPOD = std::is_aggregate_v<typename T::POD>
-	&& !std::is_polymorphic_v<typename T::POD>;
-
-template <typename T>
-concept IsFlatData = std::is_standard_layout_v<T> && std::is_trivial_v<T>;
-
-template <typename T>
-concept ValidateGPULayout = requires {
-	requires (!T::MetaData::gpuVisible || (
-		T::MetaData::gpuVisible && requires	{
-			{ T::MetaData::toGPU }	-> std::convertible_to<
-										std::function<typename T::GPULayout
-											(const typename T::POD &)>>;
-		})
-	);
-};
-
-template <typename T>
-concept ValidComponent = HasMetaData<T> && HasPOD<T> && ValidateGPULayout<T>;
-
-
-
 template <ValidComponent Comp>
 struct	Pool;
 struct	IPool;
-
-
 
 template <typename Derived>
 struct	IComponent {
@@ -78,11 +47,14 @@ struct	OpaqueComponentHandle {
 
 		operator 					bool(void) const;
 		template <ValidComponent Component>
-		const Component::POD		*get(void);
+		Component::POD				*get(void);
+		void						*getRaw(void);
 		bool						isDirty(void);
+		std::string_view			typeName(void);
 
-	friend class	Registry;
-	template <ValidComponent Include, ValidComponent Exclude>
+	template <ValidComponent Comp>
+	friend struct Pool;
+	template <typename Include, typename Exclude>
 	friend class View;
 };
 
@@ -101,7 +73,7 @@ struct	ComponentHandle {
 		bool						isDirty(void);
 
 	friend class	Registry;
-	template <ValidComponent Include, ValidComponent Exclude>
+	template <typename Include, typename Exclude>
 	friend class View;
 };
 

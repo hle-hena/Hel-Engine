@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/02 14:55:30                                        */
+/*  Last Modified: 2026/07/02 16:47:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -41,7 +41,7 @@ ComponentHandle<Component>	Registry::addComponent(Entity::id entityHandle) {
 	compHandle._pool->entities.push_back(entityHandle);
 	compHandle._pool->indices[entityIndex] = static_cast<uint32_t>(compHandle._pool->components.size()) - 1;
 	compHandle._index = compHandle._pool->indices[entityIndex];
-	compHandle._pool->isDirty = true;
+	compHandle._pool->GPUBufferDirty = true;
 	return (compHandle);
 }
 
@@ -87,7 +87,7 @@ Pool<Component>	*Registry::getPool() {
 	return (static_cast<Pool<Component> *>(pool->second.get()));
 }
 
-template <ValidComponent Include, ValidComponent Exclude>
+template <typename Include, typename Exclude>
 View<Include, Exclude>	Registry::view() {
 	//TODO -> check if Include or Exclude has duplicates/isEmpty.
 	return (View<Include, Exclude>(*this));

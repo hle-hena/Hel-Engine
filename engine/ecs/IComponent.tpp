@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 18:33:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/01 15:29:50                                        */
+/*  Last Modified: 2026/07/02 17:04:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,21 +20,9 @@
 
 namespace	hel {
 
-OpaqueComponentHandle::~OpaqueComponentHandle(void) {
-	_pool->markDirty(_index.value());
-}
-
-OpaqueComponentHandle::operator bool(void) const {
-	return (_index.has_value());
-}
-
 template <ValidComponent Component>
-const Component::POD		*OpaqueComponentHandle::get(void) {
-	return static_cast<Component::POD>(_pool->getRaw(_index.value()));
-}
-
-bool						OpaqueComponentHandle::isDirty(void) {
-	return _pool->isDirty(_index.value());
+Component::POD	*OpaqueComponentHandle::get(void) {
+	return static_cast<Component::POD *>(_pool->getRaw(_index.value()));
 }
 
 template <ValidComponent Comp>

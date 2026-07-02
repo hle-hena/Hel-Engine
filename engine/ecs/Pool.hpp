@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 15:55:18 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/02 14:52:14                                        */
+/*  Last Modified: 2026/07/02 15:17:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "ecs/IComponent.hpp"
+#include "ecs/ValidComponent.hpp"
 #include "ecs/Entity.hpp"
 #include <vector>
 #include <cstdint>
@@ -27,6 +27,7 @@ namespace	hel {
 
 class	Buffer;
 class	Device;
+struct	OpaqueComponentHandle;
 
 struct	PendingWrite {
 	uint32_t	index;

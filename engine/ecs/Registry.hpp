@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/02 14:49:18                                        */
+/*  Last Modified: 2026/07/02 16:46:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,7 +34,7 @@ template <ValidComponent... Components>
 struct	include {};
 template <ValidComponent... Components>
 struct	exclude {};
-template <ValidComponent Include, ValidComponent  Exclude = exclude<>>
+template <typename Include, typename Exclude = exclude<>>
 class	View;
 
 template <typename... T>
@@ -87,7 +87,7 @@ class	Registry {
 		template <ValidComponent... Component>
 		DescriptorSet::ptr	buildComponentSet(Device &device, DescriptorPool *dynamicPool);
 
-		template <ValidComponent Include, ValidComponent Exclude = exclude<>>
+		template <typename Include, typename Exclude = exclude<>>
 		View<Include, Exclude> view();
 
 	private:
@@ -98,7 +98,7 @@ class	Registry {
 		PoolMap						_pools;
 		AssetManager				_assetManager;
 
-	template <ValidComponent Include, ValidComponent Exclude>
+	template <typename Include, typename Exclude>
 	friend class View;
 };
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 16:26:26                                        */
+/*  Last Modified: 2026/07/02 15:26:44                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,6 +28,7 @@ namespace	hel {
 
 class	Registry;
 class	Window;
+struct	OpaqueComponentHandle;
 
 }
 
@@ -36,7 +37,7 @@ namespace	hel::sys {
 class	Inspector : public Panel<Inspector> {
 	public:
 		static constexpr const char	*label = "Inspector";
-		using UIDrawFunc = std::function<void(Window *, void *)>;
+		using UIDrawFunc = std::function<void(Window *, OpaqueComponentHandle &)>;
 
 		Inspector(void) = default;
 		~Inspector(void) = default;
