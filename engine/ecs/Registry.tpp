@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/01 09:33:51                                        */
+/*  Last Modified: 2026/07/02 14:55:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,7 +22,7 @@
 
 namespace	hel {
 
-template <typename Component>
+template <ValidComponent Component>
 ComponentHandle<Component>	Registry::addComponent(Entity::id entityHandle) {
 	ComponentHandle<Component>	compHandle;
 	if (!isValidHandle(entityHandle))	{ return (compHandle); }
@@ -37,6 +37,7 @@ ComponentHandle<Component>	Registry::addComponent(Entity::id entityHandle) {
 		return (compHandle);
 	}
 	compHandle._pool->components.emplace_back();
+	compHandle._pool->compDirty.emplace_back(false);
 	compHandle._pool->entities.push_back(entityHandle);
 	compHandle._pool->indices[entityIndex] = static_cast<uint32_t>(compHandle._pool->components.size()) - 1;
 	compHandle._index = compHandle._pool->indices[entityIndex];
@@ -44,13 +45,13 @@ ComponentHandle<Component>	Registry::addComponent(Entity::id entityHandle) {
 	return (compHandle);
 }
 
-template <typename... Components>
+template <ValidComponent... Components>
 std::tuple<ComponentHandle<Components>...>	Registry::addComponents(Entity::id handle) {
 	static_assert(is_unique<Components...>::value, "Duplicate values in the addComponents call.");
 	return (std::make_tuple(addComponent<Components>(handle)...));
 }
 
-template <typename Component>
+template <ValidComponent Component>
 ComponentHandle<Component>	Registry::getComponent(Entity::id entityHandle) {
 	ComponentHandle<Component>	compHandle;
 	if (!isValidHandle(entityHandle))	{ return (compHandle); }
@@ -65,7 +66,7 @@ ComponentHandle<Component>	Registry::getComponent(Entity::id entityHandle) {
 	return (compHandle);
 }
 
-template <typename Component>
+template <ValidComponent Component>
 void	Registry::removeComponent(Entity::id handle) {
 	if (!isValidHandle(handle))	{ return ; }
 	Pool<Component>	*pool = getPool<Component>();
@@ -74,7 +75,7 @@ void	Registry::removeComponent(Entity::id handle) {
 
 
 
-template <typename Component>
+template <ValidComponent Component>
 Pool<Component>	*Registry::getPool() {
 	std::type_index	typeKey = typeid(Component);
 
@@ -86,13 +87,13 @@ Pool<Component>	*Registry::getPool() {
 	return (static_cast<Pool<Component> *>(pool->second.get()));
 }
 
-template <typename Include, typename Exclude>
+template <ValidComponent Include, ValidComponent Exclude>
 View<Include, Exclude>	Registry::view() {
 	//TODO -> check if Include or Exclude has duplicates/isEmpty.
 	return (View<Include, Exclude>(*this));
 }
 
-template <typename T>
+template <ValidComponent T>
 constexpr bool	isGpuVisible() {
 	if constexpr (requires { T::gpuVisible; })
 		return T::gpuVisible;
@@ -100,7 +101,7 @@ constexpr bool	isGpuVisible() {
 		return false;
 }
 
-template <typename... Component>
+template <ValidComponent... Component>
 DescriptorSet::ptr	Registry::buildComponentSet(Device &device,
 												DescriptorPool *dynamicPool) {
 	bool	invalid = (!isGpuVisible<Component>() || ...);

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 17:09:00 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/30 18:30:24                                        */
+/*  Last Modified: 2026/07/02 14:45:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,11 +33,17 @@ struct	Transform: IComponent<Transform> {
 
 		// bool		isDirty{true};
 	};
+	struct	GPULayout {
+		glm::mat4	worldMatrix;
+		glm::mat4	normalMatrix;
+	};
 	struct	MetaData {
 		static constexpr std::string_view	label = "Transform";
 		static constexpr bool				gpuVisible = true;
 
-		static GPULayout	toGPU(const POD &comp);
+		static GPULayout	toGPU(const POD &comp) {
+			return {comp.worldMatrix, comp.normalMatrix};
+		}
 	};
 };
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/01 09:33:05                                        */
+/*  Last Modified: 2026/07/02 14:49:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,13 +16,11 @@
 
 #pragma once
 
-#include <cstdint>
 #include <tuple>
 #include <typeindex>
 #include <unordered_map>
 #include <vector>
 #include <memory>
-#include <optional>
 
 #include "ecs/Entity.hpp"
 #include "api/vulkan/Buffer.hpp"
@@ -32,11 +30,11 @@
 
 namespace	hel {
 
-template <typename... Components>
+template <ValidComponent... Components>
 struct	include {};
-template <typename... Components>
+template <ValidComponent... Components>
 struct	exclude {};
-template <typename Include, typename  Exclude = exclude<>>
+template <ValidComponent Include, ValidComponent  Exclude = exclude<>>
 class	View;
 
 template <typename... T>
@@ -71,14 +69,14 @@ class	Registry {
 
 		bool	isValidHandle(Entity::id handle);
 
-		template <typename Component>
+		template <ValidComponent Component>
 		ComponentHandle<Component>	addComponent(Entity::id handle);
-		template <typename... Components>
+		template <ValidComponent... Components>
 		std::tuple<ComponentHandle<Components>...>	addComponents(Entity::id handle);
-		template <typename Component>
+		template <ValidComponent Component>
 		ComponentHandle<Component>	getComponent(Entity::id handle);
-		template <typename Component>
-		void			removeComponent(Entity::id handle);
+		template <ValidComponent Component>
+		void						removeComponent(Entity::id handle);
 
 		Entity::id	createEntity(void);
 		void		removeEntity(Entity::id handle);
@@ -86,21 +84,21 @@ class	Registry {
 		void		resetAllDirty(void);
 		void		updateBuffers(Device &device);
 
-		template <typename... Component>
+		template <ValidComponent... Component>
 		DescriptorSet::ptr	buildComponentSet(Device &device, DescriptorPool *dynamicPool);
 
-		template <typename Include, typename Exclude = exclude<>>
+		template <ValidComponent Include, ValidComponent Exclude = exclude<>>
 		View<Include, Exclude> view();
 
 	private:
-		template <typename Component>
+		template <ValidComponent Component>
 		Pool<Component>			*getPool();
 
 		std::vector<Entity::id>		_aliveEntities{};
 		PoolMap						_pools;
 		AssetManager				_assetManager;
 
-	template <typename Include, typename Exclude>
+	template <ValidComponent Include, ValidComponent Exclude>
 	friend class View;
 };
 

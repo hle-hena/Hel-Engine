@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 16:53:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/01 19:33:09                                        */
+/*  Last Modified: 2026/07/02 14:27:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,6 +26,11 @@ template <ValidComponent Component>
 bool	Pool<Component>::has(Entity::id handle) const {
 	uint32_t	idx = Entity::getIndex(handle);
 	return (idx < indices.size() && indices[idx] != Entity::NOT_REGISTERED);
+}
+
+template <ValidComponent Component>
+OpaqueComponentHandle	Pool<Component>::get(Entity::id handle) {
+	return {._pool = this, ._index = indices[Entity::getIndex(handle)]};
 }
 
 template <ValidComponent Component>

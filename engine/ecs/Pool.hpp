@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 15:55:18 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/01 15:39:35                                        */
+/*  Last Modified: 2026/07/02 14:52:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -44,9 +44,10 @@ struct	IPool {
 	virtual void	syncBuffer(Device &device, const PendingWrite &write) = 0;
 	virtual void	flushWrites(Device &device) = 0;
 	virtual void	removePendingBuffers(void) = 0;
-	
+
 	virtual bool	has(Entity::id handle) const = 0;
 	virtual void	removeEntity(Entity::id handle) = 0;
+	virtual OpaqueComponentHandle	get(Entity::id handle) = 0;
 
 	protected:
 		virtual void				*getRaw(uint32_t index) = 0;
@@ -66,6 +67,7 @@ struct	IPool {
 	friend struct OpaqueComponentHandle;
 	template <ValidComponent Comp>
 	friend struct ComponentHandle;
+	friend class Registry;
 };
 
 template <ValidComponent Component>
@@ -82,11 +84,12 @@ struct	Pool: IPool {
 
 	void	syncBuffer(Device &device) override;
 	void	syncBuffer(Device &device, const PendingWrite &write) override;
-	void	removeEntity(Entity::id handle) override;
 	void	flushWrites(Device &device) override;
 	void	removePendingBuffers(void) override;
-
+	
 	bool	has(Entity::id handle) const override;
+	void	removeEntity(Entity::id handle) override;
+	OpaqueComponentHandle	get(Entity::id handle) override;
 
 	protected:
 		void				*getRaw(Entity::id handle) override;

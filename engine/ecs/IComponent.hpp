@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 10:44:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/01 14:54:27                                        */
+/*  Last Modified: 2026/07/02 14:49:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -61,11 +61,11 @@ struct	IPool;
 template <typename Derived>
 struct	IComponent {
 	struct	POD {};
+	struct	GPULayout {};
 	struct	MetaData {
 		static constexpr std::string_view	label = "Unnamed Component";
 		static constexpr bool				gpuVisible = false;
 	};
-	struct	GPULayout {};
 };
 
 struct	OpaqueComponentHandle {
@@ -82,7 +82,7 @@ struct	OpaqueComponentHandle {
 		bool						isDirty(void);
 
 	friend class	Registry;
-	template <typename Include, typename Exclude>
+	template <ValidComponent Include, ValidComponent Exclude>
 	friend class View;
 };
 
@@ -101,7 +101,7 @@ struct	ComponentHandle {
 		bool						isDirty(void);
 
 	friend class	Registry;
-	template <typename Include, typename Exclude>
+	template <ValidComponent Include, ValidComponent Exclude>
 	friend class View;
 };
 

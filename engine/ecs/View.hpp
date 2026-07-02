@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 16:04:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/09 18:35:40                                        */
+/*  Last Modified: 2026/07/02 14:47:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,12 +22,12 @@
 
 namespace	hel {
 
-template <typename... Include, typename... Exclude>
+template <ValidComponent... Include, ValidComponent... Exclude>
 class	View<include<Include...>, exclude<Exclude...>> {
 	public:
 		View(Registry &registry);
 
-		template <typename Component>
+		template <ValidComponent Component>
 		ComponentHandle<Component>	get(Entity::id handle) const;
 
 		struct	Iterator {

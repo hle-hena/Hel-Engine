@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 16:09:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:54:25                                        */
+/*  Last Modified: 2026/07/02 14:50:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,7 +18,7 @@
 
 namespace	hel {
 
-template <typename... Include, typename... Exclude>
+template <ValidComponent... Include, ValidComponent... Exclude>
 View<include<Include...>, exclude<Exclude...>>::View(Registry &registry)
 	:	_registry{registry},
 		_maxEntities{0} {
@@ -29,8 +29,8 @@ View<include<Include...>, exclude<Exclude...>>::View(Registry &registry)
 		_maxEntities = _leadEntityList->size();
 }
 
-template <typename... Include, typename... Exclude>
-template <typename Component>
+template <ValidComponent... Include, ValidComponent... Exclude>
+template <ValidComponent Component>
 ComponentHandle<Component>	View<include<Include...>, exclude<Exclude...>>::get(Entity::id handle) const {
 	ComponentHandle<Component>	compHandle;
 	compHandle._pool = std::get<Pool<Component>*>(_includePools);
@@ -38,7 +38,7 @@ ComponentHandle<Component>	View<include<Include...>, exclude<Exclude...>>::get(E
 	return (compHandle);
 }
 
-template <typename... Include, typename... Exclude>
+template <ValidComponent... Include, ValidComponent... Exclude>
 std::vector<Entity::id>	*View<include<Include...>, exclude<Exclude...>>::findSmallestPool(void) {
 	std::vector<Entity::id>	*smallestPool = nullptr;
 	size_t					minSize = static_cast<size_t>(-1);
@@ -55,7 +55,7 @@ std::vector<Entity::id>	*View<include<Include...>, exclude<Exclude...>>::findSma
 	return (smallestPool);
 }
 
-template <typename... Include, typename... Exclude>
+template <ValidComponent... Include, ValidComponent... Exclude>
 void	View<include<Include...>, exclude<Exclude...>>::Iterator::moveNext(void) {
 	while (index < view._maxEntities) {
 		Entity::id	handle = (*view._leadEntityList)[index];
@@ -65,7 +65,7 @@ void	View<include<Include...>, exclude<Exclude...>>::Iterator::moveNext(void) {
 	}
 }
 
-template <typename... Include, typename... Exclude>
+template <ValidComponent... Include, ValidComponent... Exclude>
 bool		View<include<Include...>, exclude<Exclude...>>::Iterator::isValid(Entity::id handle) {
 	uint32_t	entityIndex = Entity::getIndex(handle);
 	bool		hasAllIncluded = std::apply([entityIndex, handle](auto*... pools){
@@ -83,36 +83,36 @@ bool		View<include<Include...>, exclude<Exclude...>>::Iterator::isValid(Entity::
 
 
 
-template <typename... Include, typename... Exclude>
+template <ValidComponent... Include, ValidComponent... Exclude>
 typename View<include<Include...>, exclude<Exclude...>>::Iterator	View<include<Include...>, exclude<Exclude...>>::begin(void) {
 	Iterator	it {0, *this};
 	it.moveNext();
 	return (it);
 }
 
-template <typename... Include, typename... Exclude>
+template <ValidComponent... Include, ValidComponent... Exclude>
 typename View<include<Include...>, exclude<Exclude...>>::Iterator	View<include<Include...>, exclude<Exclude...>>::end(void) {
 	return {_maxEntities, *this};
 }
 
-template <typename... Include, typename... Exclude>
+template <ValidComponent... Include, ValidComponent... Exclude>
 Entity::id	View<include<Include...>, exclude<Exclude...>>::Iterator::operator*(void) const {
 	return ((*view._leadEntityList)[index]);
 }
 
-template <typename... Include, typename... Exclude>
+template <ValidComponent... Include, ValidComponent... Exclude>
 typename View<include<Include...>, exclude<Exclude...>>::Iterator	&View<include<Include...>, exclude<Exclude...>>::Iterator::operator++(void) {
 	index++;
 	moveNext();
 	return (*this);
 }
 
-template <typename... Include, typename... Exclude>
+template <ValidComponent... Include, ValidComponent... Exclude>
 bool		View<include<Include...>, exclude<Exclude...>>::Iterator::operator==(const View<include<Include...>, exclude<Exclude...>>::Iterator &other) const {
 	return (index == other.index);
 }
 
-template <typename... Include, typename... Exclude>
+template <ValidComponent... Include, ValidComponent... Exclude>
 bool		View<include<Include...>, exclude<Exclude...>>::Iterator::operator!=(const View<include<Include...>, exclude<Exclude...>>::Iterator &other) const {
 	return (index != other.index);
 }
