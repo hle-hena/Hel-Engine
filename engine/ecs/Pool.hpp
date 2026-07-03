@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 15:55:18 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/02 15:17:16                                        */
+/*  Last Modified: 2026/07/02 17:24:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,6 +39,7 @@ struct	PendingWrite {
 };
 
 struct	IPool {
+	static constexpr uint32_t UNDEFINED = 0xFFFFFFFF;
 
 	virtual ~IPool(void) = default;
 	virtual void	syncBuffer(Device &device) = 0;
@@ -74,8 +75,6 @@ struct	IPool {
 template <ValidComponent Component>
 struct	Pool: IPool {
 	Pool(void) = default;
-
-	static constexpr uint32_t UNDEFINED = 0xFFFFFFFF;
 
 	std::vector<uint32_t>					indices{};
 	std::vector<Entity::id>					entities{};

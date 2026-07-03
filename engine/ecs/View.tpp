@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 16:09:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/02 14:50:18                                        */
+/*  Last Modified: 2026/07/02 17:24:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -70,12 +70,12 @@ bool		View<include<Include...>, exclude<Exclude...>>::Iterator::isValid(Entity::
 	uint32_t	entityIndex = Entity::getIndex(handle);
 	bool		hasAllIncluded = std::apply([entityIndex, handle](auto*... pools){
 		return (... && (entityIndex < pools->indices.size() &&
-						pools->indices[entityIndex] != Entity::NOT_REGISTERED &&
+						pools->indices[entityIndex] != IPool::UNDEFINED &&
 						pools->entities[pools->indices[entityIndex]] == handle));
 	}, view._includePools);
 	bool		hasAnyExcluded = std::apply([entityIndex, handle](auto*... pools){
 		return (... || (entityIndex < pools->indices.size() &&
-						pools->indices[entityIndex] != Entity::NOT_REGISTERED &&
+						pools->indices[entityIndex] != IPool::UNDEFINED &&
 						pools->entities[pools->indices[entityIndex]] == handle));
 	}, view._excludePools);
 	return (hasAllIncluded && !hasAnyExcluded);

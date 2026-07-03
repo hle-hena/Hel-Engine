@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/02 16:47:58                                        */
+/*  Last Modified: 2026/07/03 10:22:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -93,19 +93,11 @@ View<Include, Exclude>	Registry::view() {
 	return (View<Include, Exclude>(*this));
 }
 
-template <ValidComponent T>
-constexpr bool	isGpuVisible() {
-	if constexpr (requires { T::gpuVisible; })
-		return T::gpuVisible;
-	else
-		return false;
-}
-
 template <ValidComponent... Component>
 DescriptorSet::ptr	Registry::buildComponentSet(Device &device,
 												DescriptorPool *dynamicPool) {
-	bool	invalid = (!isGpuVisible<Component>() || ...);
-	if (invalid)
+	bool	anyNonVisible = (!Component::MetaData::gpuVisible || ...);
+	if (anyNonVisible)
 		return (nullptr);
 	(getPool<Component>()->flushWrites(device), ...);
 	auto		factory = DescriptorFactory(device);
