@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/02 17:00:28                                        */
+/*  Last Modified: 2026/07/03 11:20:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,7 +22,7 @@
 #include "core/Queues.hpp"
 #include "ecs/Entity.hpp"
 #include "ecs/Registry.hpp"
-#include "ecs/Component.hpp"
+#include "components/Camera.hpp"
 #include "ecs/AssetManager.hpp"
 #include "assetType/Geometry.hpp"
 #include "assetType/Texture.hpp"

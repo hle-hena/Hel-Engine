@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/09 17:10:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/29 17:02:28                                        */
+/*  Last Modified: 2026/07/03 11:47:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,7 +17,11 @@
 #include "core/Engine.hpp"
 #include "ecs/Entity.hpp"
 #include "platform/window/Window.hpp"
-#include "ecs/Component.hpp"
+#include "components/Controllers.hpp"
+#include "components/Camera.hpp"
+#include "components/Transform.hpp"
+#include "components/Name.hpp"
+#include "components/Model.hpp"
 #include "GlobalData.hpp"
 #include "core/Queues.hpp"
 #include "utils/Timer.hpp"

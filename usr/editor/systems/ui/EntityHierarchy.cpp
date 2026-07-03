@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 16:26:12                                        */
+/*  Last Modified: 2026/07/03 11:36:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,7 +15,8 @@
 /* *************************************************************************  */
 
 #include "systems/ui/EntityHierarchy.hpp"
-#include "ecs/Component.hpp"
+#include "components/HideTag.hpp"
+#include "components/Name.hpp"
 #include "systems/ui/UIHelper.hpp"
 #include "platform/window/Window.hpp"
 

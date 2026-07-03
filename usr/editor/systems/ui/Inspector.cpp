@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/02 15:29:41                                        */
+/*  Last Modified: 2026/07/03 11:53:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,8 +17,14 @@
 #include "systems/ui/Inspector.hpp"
 #include "ecs/Registry.hpp"
 #include "platform/window/Window.hpp"
-#include "ecs/ComponentList.hpp"
-#include "ecs/Component.hpp"
+#include "ecs/Hierarchy.hpp"
+#include "components/Camera.hpp"
+#include "components/Transform.hpp"
+#include "components/Controllers.hpp"
+#include "components/Model.hpp"
+#include "components/Name.hpp"
+#include "ecs/ComponentManager.hpp"
+
 #include "systems/ui/UIHelper.hpp"
 
 #include <ui/ImGui/imgui.h>
@@ -95,15 +101,23 @@ void	Inspector::removeEntity(Window *window, Entity::id handle) {
 
 void	Inspector::addNewComponentPopup(Entity::id handle) {
 	if (_addNewComp) {
-		auto	items = ComponentList::getComponentList();
-		ImGui::Combo("Component type", &_newCompTypeIndex, items.data(),
-					static_cast<int>(items.size()));
+		auto	&items = ComponentManager::getComponentList();
+		ImGui::Combo("Component type", &_newCompTypeIndex,
+			[](void *data, int idx) -> const char * {
+				const auto	&items = *static_cast<const std::vector<std::string_view> *>(data);
+
+				if (idx < 0 || static_cast<size_t>(idx) >= items.size())
+					return "Error";
+				return items[static_cast<size_t>(idx)].data();
+			},
+			const_cast<std::vector<std::string_view> *>(&items),
+			static_cast<int>(items.size()));
 		if (ImGui::Button("Cancel"))
 			_addNewComp = false;
 		ImGui::SameLine();
 		if (ImGui::Button("Add")) {
-			ComponentList::addComponent(*_registry, handle,
-						items[static_cast<size_t>(_newCompTypeIndex)]);
+			ComponentManager::addComponent(_registry, handle,
+				items[static_cast<size_t>(_newCompTypeIndex)]);
 			_addNewComp = false;
 		}
 	}

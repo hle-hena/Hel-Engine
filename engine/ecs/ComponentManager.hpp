@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/23 10:01:59 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/30 13:01:43                                        */
+/*  Last Modified: 2026/07/03 11:53:04                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,12 +23,19 @@
 #include <vector>
 #include <unordered_map>
 
+#include <iostream>
+
 namespace hel {
 
 struct	ComponentManager {
 	private:
 		template <typename Comp>
 		static void	registerComp(void) {
+			if (_componentFactory().contains(Comp::MetaData::label)) {
+				std::cout << "The label " << std::string(Comp::MetaData::label)
+					<< " was already taken.\n";
+				return ;
+			}
 			_componentList().push_back(Comp::MetaData::label);
 			_componentFactory().emplace(Comp::MetaData::label,
 									[](Registry *registry, Entity::id handle){
@@ -48,7 +55,7 @@ struct	ComponentManager {
 			static stringVec	componentList;
 			return componentList;
 		}
-	
+
 	public:
 		static const stringVec	&getComponentList(void)
 			{ return _componentList(); }

@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: ComponentList.hpp                                                   */
+/*  File: Model.hpp                                                           */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/28 16:53:03 by hle-hena                                  */
+/*  Created: 2026/07/03 11:07:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:53:30                                        */
+/*  Last Modified: 2026/07/03 11:08:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,24 +16,17 @@
 
 #pragma once
 
-# include <vector>
+#include "ecs/IComponent.hpp"
 
-# include "ecs/Entity.hpp"
-# include "ecs/Registry.hpp"
+namespace	hel::comp {
 
-namespace	hel {
-
-class	ComponentList {
-	public:
-		static void	addComponent(Registry &registry, Entity::id handle,
-							const char *componentName);
-
-		static std::vector<const char *>	&getComponentList(void) {
-			return (_componentList);
-		}
-
-	private:
-		static std::vector<const char *>	_componentList;
+struct	Model: IComponent<Model> {
+	struct	POD {
+		std::string	modelName{""};
+	};
+	struct	MetaData: IComponent<Model>::MetaData {
+		static constexpr std::string_view	label = "Model";
+	};
 };
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/02 16:49:41                                        */
+/*  Last Modified: 2026/07/03 11:35:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,10 +19,11 @@
 #include "api/vulkan/Shader.hpp"
 #include "ecs/AssetManager.hpp"
 #include "ecs/Registry.hpp"
-#include "ecs/Component.hpp"
+#include "components/Transform.hpp"
+#include "components/Camera.hpp"
+#include "components/HideTag.hpp"
 #include "assetType/Geometry.hpp"
 #include "assetType/Texture.hpp"
-#include "core/Engine.hpp"
 #include "api/vulkan/Renderer.hpp"
 #include "api/vulkan/Sampler.hpp"
 #include <vulkan/vulkan_core.h>
