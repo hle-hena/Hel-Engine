@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/05 16:09:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:22:18                                        */
+/*  Last Modified: 2026/07/05 19:08:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,14 +22,8 @@
 
 namespace	hel {
 
-class	Device;
-class	Registry;
-class	ImagePool;
-struct	EngineContext;
 struct	FrameContext;
-struct	DrawCall;
 class	Renderer;
-class	InputState;
 
 }
 

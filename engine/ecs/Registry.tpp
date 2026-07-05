@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/03 10:22:54                                        */
+/*  Last Modified: 2026/07/05 19:22:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,10 +15,8 @@
 /* *************************************************************************  */
 
 #include "Registry.hpp"
-#include "ecs/View.hpp"
-#include "api/vulkan/Swapchain.hpp"
+#include "api/vulkan/Descriptors.hpp"
 #include <iostream>
-#include <tuple>
 
 namespace	hel {
 
@@ -32,7 +30,7 @@ ComponentHandle<Component>	Registry::addComponent(Entity::id entityHandle) {
 		compHandle._pool->indices.resize(entityIndex + 1, Entity::NOT_REGISTERED);
 	compHandle._index = compHandle._pool->indices[entityIndex];
 	if (compHandle._index != Entity::NOT_REGISTERED) {
-		std::cout << "Cannot add a component when one already exists. " <<
+		std::cout << "Can't add a component when one already exists. " <<
 			"Use getComponent to get it and modify to modifiy it." << std::endl;
 		return (compHandle);
 	}
@@ -94,7 +92,7 @@ View<Include, Exclude>	Registry::view() {
 }
 
 template <ValidComponent... Component>
-DescriptorSet::ptr	Registry::buildComponentSet(Device &device,
+std::unique_ptr<DescriptorSet>	Registry::buildComponentSet(Device &device,
 												DescriptorPool *dynamicPool) {
 	bool	anyNonVisible = (!Component::MetaData::gpuVisible || ...);
 	if (anyNonVisible)

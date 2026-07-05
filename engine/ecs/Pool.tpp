@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 16:53:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/03 10:21:34                                        */
+/*  Last Modified: 2026/07/05 19:16:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,8 +18,6 @@
 #include "ecs/IComponent.hpp"
 #include "api/vulkan/Buffer.hpp"
 #include "api/vulkan/Swapchain.hpp"
-#include <vulkan/vulkan.h>
-#include <vma/vk_mem_alloc.h>
 
 namespace	hel {
 

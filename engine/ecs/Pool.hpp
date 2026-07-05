@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 15:55:18 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/02 17:24:16                                        */
+/*  Last Modified: 2026/07/05 19:15:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,7 @@
 
 #include "ecs/ValidComponent.hpp"
 #include "ecs/Entity.hpp"
+
 #include <vector>
 #include <cstdint>
 #include <memory>

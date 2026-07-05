@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 16:14:27                                        */
+/*  Last Modified: 2026/07/05 19:12:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,6 +19,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <memory>
+#include <unordered_map>
 
 #include "ecs/CycleEntry.hpp"
 #include "api/vulkan/PipelineMap.hpp"
@@ -28,7 +29,6 @@ namespace	hel {
 class	Device;
 class	Registry;
 class	ImagePool;
-struct	EngineContext;
 struct	FrameContext;
 struct	DrawCall;
 class	Renderer;

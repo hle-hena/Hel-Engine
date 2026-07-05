@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 16:04:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/02 16:47:24                                        */
+/*  Last Modified: 2026/07/05 19:24:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,9 +16,10 @@
 
 #pragma once
 
-# include <vector>
-# include <tuple>
-# include "ecs/Registry.hpp"
+#include <vector>
+#include <tuple>
+#include "ecs/ValidComponent.hpp"
+#include "ecs/Registry.hpp"
 
 namespace	hel {
 
