@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:30:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/29 14:19:48                                        */
+/*  Last Modified: 2026/07/05 17:36:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,6 +24,7 @@
 
 # include <vector>
 # include <memory>
+#include "utils/Setters.hpp"
 
 namespace	hel {
 

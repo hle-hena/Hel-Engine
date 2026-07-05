@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/29 17:03:40                                        */
+/*  Last Modified: 2026/07/05 17:35:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,6 +28,7 @@
 #include "api/vulkan/Buffer.hpp"
 #include "api/vulkan/Descriptors.hpp"
 #include "HelExpected.hpp"
+#include "utils/Setters.hpp"
 
 namespace	hel {
 

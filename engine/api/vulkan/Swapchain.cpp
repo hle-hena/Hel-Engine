@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/08 18:32:23                                        */
+/*  Last Modified: 2026/07/05 17:30:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,10 +17,9 @@
 #include "api/vulkan/Swapchain.hpp"
 #include "platform/window/Window.hpp"
 #include "api/vulkan/Device.hpp"
-#include "utils/healthHelper.hpp"
+#include "api/vulkan/Image.hpp"
 
 #include <limits>
-#include <algorithm>
 #include <iostream>
 
 namespace	hel {
@@ -72,7 +71,7 @@ Swapchain::SupportDetails	Swapchain::querySwapChainSupport(VkPhysicalDevice &dev
 	return (details);
 }
 
-bool	Swapchain::initiateSwapChain(Window &window) {
+expected<void>	Swapchain::initiateSwapChain(Window &window) {
 	Swapchain::SupportDetails	details = querySwapChainSupport(_device.getPhysical(), window.getSurface());
 
 	VkSurfaceFormatKHR	format = selectSwapSurfaceFormat(details.formats);
@@ -109,7 +108,7 @@ bool	Swapchain::initiateSwapChain(Window &window) {
 	createInfo.clipped = VK_TRUE;
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 	if (vkCreateSwapchainKHR(_device.getLogical(), &createInfo, nullptr, &_swapchain) != VK_SUCCESS)
-		RETURN_SET_UNHEALTHY("Couldn't create the swap chain", true);
+		return unexpected("Couldn't create the swap chain");
 	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, nullptr);
 	std::vector<VkImage>	images(imageCount);
 	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, images.data());
@@ -121,7 +120,7 @@ bool	Swapchain::initiateSwapChain(Window &window) {
 	return (createSyncObjects());
 }
 
-bool	Swapchain::recreateSwapChain(Window &window) {
+expected<void>	Swapchain::recreateSwapChain(Window &window) {
 	vkDeviceWaitIdle(_device.getLogical());
 
 	deleteSwapChain();
@@ -163,28 +162,29 @@ VkExtent2D	Swapchain::selectSwapExtent(const VkSurfaceCapabilitiesKHR &capabilit
 	return (extent);
 }
 
-bool	Swapchain::createSyncObjects(void) {
+expected<void>	Swapchain::createSyncObjects(void) {
 	size_t	imageCount = _swapImages.size();
-	_imageAvailable.resize(imageCount);
-	_renderFinished.resize(imageCount);
+	_imageAvailable.resize(imageCount, VK_NULL_HANDLE);
+	_renderFinished.resize(imageCount, VK_NULL_HANDLE);
 	VkSemaphoreCreateInfo	semaphoreInfo{};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 	for (size_t i = 0; i < imageCount; i++) {
-		if (vkCreateSemaphore(_device.getLogical(), &semaphoreInfo, nullptr, &_imageAvailable[i]) != VK_SUCCESS ||
-			vkCreateSemaphore(_device.getLogical(), &semaphoreInfo, nullptr, &_renderFinished[i]) != VK_SUCCESS)
-			RETURN_SET_UNHEALTHY("Failed to create synchronization object for a swapchain", true);
+		if (vkCreateSemaphore(_device.getLogical(), &semaphoreInfo, nullptr,
+				&_imageAvailable[i]) != VK_SUCCESS
+			|| vkCreateSemaphore(_device.getLogical(), &semaphoreInfo, nullptr,
+				&_renderFinished[i]) != VK_SUCCESS)
+			return unexpected("Failed to create a semaphore for a swapchain");
 	}
 
 	VkFenceCreateInfo	fenceInfo{};
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
 	for (size_t i = 0; i < Swapchain::MAX_FRAMES_IN_FLIGHT; i++) {
-		if (vkCreateFence(_device.getLogical(), &fenceInfo, nullptr, &_inFlightFences[i]) != VK_SUCCESS)
-			RETURN_SET_UNHEALTHY("Failed to create synchronization object for a swapchain", true);
+		if (vkCreateFence(_device.getLogical(), &fenceInfo, nullptr,
+				&_inFlightFences[i]) != VK_SUCCESS)
+			return unexpected("Failed to create a fence for a swapchain");
 	}
-
-	return (false);
+	return {};
 }
 
 Image	*Swapchain::getSwapImage(uint32_t imageIndex) {
@@ -202,7 +202,9 @@ bool	Swapchain::acquireNextImage(Window &window, uint32_t currentFrame, uint32_t
 												UINT64_MAX, _imageAvailable[currentFrame],
 												VK_NULL_HANDLE, imageIndex);
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || _frameBufferResized) {
-		recreateSwapChain(window);
+		auto	res = recreateSwapChain(window);
+		if (!res)
+			std::cerr << "Unhandled swapchain recreation fail.\n";
 		_frameBufferResized = false;
 		return (true);
 	}
@@ -250,7 +252,9 @@ bool	Swapchain::present(Window &window, uint32_t imageIndex) {
 
 	VkResult	result = vkQueuePresentKHR(_device.getPresentQueue(), &presentInfo);
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _frameBufferResized) {
-		recreateSwapChain(window);
+		auto	res = recreateSwapChain(window);
+		if (!res)
+			std::cerr << "Unhandled swapchain recreation fail.\n";
 		_frameBufferResized = false;
 		return (true);
 	}

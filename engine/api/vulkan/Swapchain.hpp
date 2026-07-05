@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 20:40:28                                        */
+/*  Last Modified: 2026/07/05 17:22:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,19 +16,20 @@
 
 #pragma once
 
-# define GLFW_INCLUDE_VULKAN
-# include <GLFW/glfw3.h>
-# include <vector>
-# include <string>
-# include <array>
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
+#include <vector>
+#include <array>
+#include <memory>
 
-# include "api/vulkan/Image.hpp"
+#include "HelExpected.hpp"
 
 namespace	hel {
 
 class	Device;
 class	Window;
-
+class	Image;
 
 class	Swapchain
 {
@@ -48,18 +49,11 @@ class	Swapchain
 		Swapchain(Swapchain &&other) = default;
 		Swapchain	&operator=(Swapchain &&other) = delete;
 
-		std::string		getReason(void) const {
-			return (_reason);
-		}
-		bool			isHealthy(void) const {
-			return (_healthy);
-		}
-
 		static SupportDetails		querySwapChainSupport(VkPhysicalDevice &device,
 														VkSurfaceKHR surface);
 
-		bool			initiateSwapChain(Window &window);
-		bool			recreateSwapChain(Window &window);
+		expected<void>	initiateSwapChain(Window &window);
+		expected<void>	recreateSwapChain(Window &window);
 		void			deleteSwapChain(void);
 
 		Image			*getSwapImage(uint32_t imageIndex);
@@ -76,17 +70,13 @@ class	Swapchain
 		VkExtent2D			selectSwapExtent(const VkSurfaceCapabilitiesKHR &presents,
 													GLFWwindow *window);
 
-		bool	createSwapchainImageViews(std::vector<VkImage> &images,
-									VkFormat format, VkExtent2D extent);
-		bool	createSyncObjects(void);
+		expected<void>		createSyncObjects(void);
 
-		bool						_healthy{true};
-		std::string					_reason{""};
-		Device						&_device;
-		VkSwapchainKHR				_swapchain{VK_NULL_HANDLE};
-		std::vector<Image::ptr>		_swapImages;
-		std::vector<VkSemaphore>	_imageAvailable{VK_NULL_HANDLE};
-		std::vector<VkSemaphore>	_renderFinished{VK_NULL_HANDLE};
+		Device								&_device;
+		VkSwapchainKHR						_swapchain{VK_NULL_HANDLE};
+		std::vector<std::unique_ptr<Image>>	_swapImages;
+		std::vector<VkSemaphore>			_imageAvailable{VK_NULL_HANDLE};
+		std::vector<VkSemaphore>			_renderFinished{VK_NULL_HANDLE};
 		std::array<VkFence,		MAX_FRAMES_IN_FLIGHT>	_inFlightFences{VK_NULL_HANDLE};
 };
 
