@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/03 15:20:26                                        */
+/*  Last Modified: 2026/07/05 15:33:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,10 +16,9 @@
 
 #pragma once
 
-# define GLFW_INCLUDE_VULKAN
-# include <GLFW/glfw3.h>
-# include <string>
-# include <vector>
+#include <vulkan/vulkan.h>
+#include <string>
+#include <vector>
 
 namespace hel {
 

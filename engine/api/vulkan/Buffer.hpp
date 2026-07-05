@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/29 16:04:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/25 10:44:51                                        */
+/*  Last Modified: 2026/07/05 15:16:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,9 +16,9 @@
 
 #pragma once
 
-# include <vulkan/vulkan.h>
-# include <memory>
-# include <vma/vk_mem_alloc.h>
+#include <vulkan/vulkan.h>
+#include <memory>
+#include <vma/vk_mem_alloc.h>
 
 namespace	hel {
 

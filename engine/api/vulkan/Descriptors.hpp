@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 18:38:20                                        */
+/*  Last Modified: 2026/07/05 15:20:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,17 +16,16 @@
 
 #pragma once
 
-# include <memory>
-# include <vector>
-# include <deque>
-# include <unordered_map>
-# include <vulkan/vulkan.h>
+#include <memory>
+#include <vector>
+#include <deque>
+#include <unordered_map>
+#include <vulkan/vulkan.h>
 
 namespace	hel {
 
 class	Device;
 class	Buffer;
-class	Image;
 struct	DescriptorSet;
 
 class	DescriptorPool {

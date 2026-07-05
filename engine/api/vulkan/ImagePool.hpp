@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 19:42:59                                        */
+/*  Last Modified: 2026/07/05 15:33:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,12 +16,11 @@
 
 #pragma once
 
-# include <vulkan/vulkan.h>
-# include <unordered_map>
-# include <memory>
+#include <unordered_map>
+#include <memory>
 #include <string>
 
-# include "api/vulkan/Image.hpp"
+#include "api/vulkan/Image.hpp"
 
 namespace	hel {
 

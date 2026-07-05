@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:22 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 18:16:07                                        */
+/*  Last Modified: 2026/07/05 15:21:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,7 +18,6 @@
 
 #include <vector>
 #include <vulkan/vulkan.h>
-#include <cstdint>
 #include <optional>
 #include <vma/vk_mem_alloc.h>
 

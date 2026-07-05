@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:33:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/28 09:52:51                                        */
+/*  Last Modified: 2026/07/05 15:22:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,7 +26,7 @@ VulkanInstance::~VulkanInstance(void) {
 		vkDestroyInstance(_instance, nullptr);
 }
 
-tl::expected<void, std::string>	VulkanInstance::createInstance() {
+expected<void>	VulkanInstance::createInstance() {
 	std::vector<const char *>	reqExt = getExtensions();
 	if (!checkAllSupport(reqExt))
 		return tl::unexpected("A required extension wasn't found.");
