@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 10:44:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/02 16:58:21                                        */
+/*  Last Modified: 2026/07/05 11:09:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -41,6 +41,7 @@ struct	OpaqueComponentHandle {
 	private:
 		IPool					*_pool{nullptr};
 		std::optional<uint32_t>	_index;
+		bool					_dismissed{false};
 
 	public:
 		~OpaqueComponentHandle(void);
@@ -49,6 +50,7 @@ struct	OpaqueComponentHandle {
 		template <ValidComponent Component>
 		Component::POD				*get(void);
 		void						*getRaw(void);
+		void						dismiss(void);
 		bool						isDirty(void);
 		std::string_view			typeName(void);
 
@@ -79,10 +81,15 @@ struct	ComponentHandle {
 
 template <ValidComponent Component>
 struct	ComponentHandle<Component>::ModificationProxy: ComponentHandle<Component> {
-	ModificationProxy(const ComponentHandle<Component> &base);
-	~ModificationProxy(void);
+	private:
+		bool	_dismissed{false};
 
-	Component::POD	*operator->(void);
+	public:
+		ModificationProxy(const ComponentHandle<Component> &base);
+		~ModificationProxy(void);
+
+		Component::POD	*operator->(void);
+		void			dismiss(void);
 };
 
 }

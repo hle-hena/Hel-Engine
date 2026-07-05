@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/03 11:53:10                                        */
+/*  Last Modified: 2026/07/05 11:15:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -156,9 +156,8 @@ void	Inspector::setBuiltInDrawFunc(void) {
 			.setValueName({"X:", "Y:", "Z:", "W:"})
 			.setStart(&transform->rotation[0])
 			.build();
-		//TODO -> might want to try to do an opt-out for the isDirty ?
-		// if (changed)
-		// 	transform->isDirty = true;
+		if (!changed)
+			comp.dismiss();
 		table.newRow({Table::WStretch});
 		table.setNextCell([&]{
 			if (ImGui::Button(displayMat ? "Click to hide the resulting matrix"
@@ -212,10 +211,8 @@ void	Inspector::setBuiltInDrawFunc(void) {
 			.setSpeed(0.1f)
 			.setFormat("%.1f°")
 			.build();
-
-		//Same as for the transform.
-		// if (changed)
-		// 	camera->isDirty = true;
+		if (!changed)
+			comp.dismiss();
 	});
 
 	setDrawFunc<comp::Name>([](Window *window, OpaqueComponentHandle &comp){

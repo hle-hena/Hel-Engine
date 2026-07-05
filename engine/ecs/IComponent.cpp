@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/02 17:02:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/02 17:04:48                                        */
+/*  Last Modified: 2026/07/05 11:04:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,7 +19,8 @@
 namespace	hel {
 
 OpaqueComponentHandle::~OpaqueComponentHandle(void) {
-	_pool->markDirty(_index.value());
+	if (!_dismissed)
+		_pool->markDirty(_index.value());
 }
 
 OpaqueComponentHandle::operator bool(void) const {
@@ -32,6 +33,10 @@ void	*OpaqueComponentHandle::getRaw(void) {
 
 bool	OpaqueComponentHandle::isDirty(void) {
 	return _pool->isDirty(_index.value());
+}
+
+void	OpaqueComponentHandle::dismiss(void) {
+	_dismissed = true;
 }
 
 std::string_view	OpaqueComponentHandle::typeName(void) {
