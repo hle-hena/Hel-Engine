@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 14:54:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/03 11:43:40                                        */
+/*  Last Modified: 2026/07/05 15:58:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,18 +16,21 @@
 
 #pragma once
 
-# include <vulkan/vulkan.h>
-# include <unordered_map>
-# include <functional>
-# include <optional>
+#include <vulkan/vulkan.h>
+#include <unordered_map>
+#include <vector>
+#include <functional>
+#include <optional>
+#include <string>
 
-# include "api/vulkan/Pipeline.hpp"
+#include "api/vulkan/Pipeline.hpp"
 
 namespace	hel {
 
 namespace	sys	{ class	ISystem; }
 
 class	AssetManager;
+class	Device;
 
 struct	RenderingConfig {
 	std::vector<VkFormat>	colorFormats;

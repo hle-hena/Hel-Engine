@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:22:09                                        */
+/*  Last Modified: 2026/07/05 16:21:11                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,7 +25,7 @@ namespace hel {
 
 struct	SystemManager {
 	using SysPtr = std::unique_ptr<sys::ISystem>;
-	using FuncVec = std::vector<sys::ISystem::Func*>;
+	using FuncVec = std::vector<sys::CycleEntry *>;
 
 	const FuncVec				&getUpdates(void)
 		{ return _updateCycle; }

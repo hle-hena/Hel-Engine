@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 16:29:51                                        */
+/*  Last Modified: 2026/07/05 16:14:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,13 +16,12 @@
 
 #pragma once
 
-# include "api/vulkan/PipelineMap.hpp"
-# include "core/PhaseDependancy.hpp"
+#include <vulkan/vulkan.h>
+#include <vector>
+#include <memory>
 
-# include <variant>
-# include <vulkan/vulkan.h>
-# include <vector>
-# include <memory>
+#include "ecs/CycleEntry.hpp"
+#include "api/vulkan/PipelineMap.hpp"
 
 namespace	hel {
 
@@ -52,54 +51,28 @@ class	ISystem {
 
 		using UpdateFn = void (ISystem::*)(const FrameContext &);
 		using RenderFn = void (ISystem::*)(const Renderer &);
-		struct	Func {
-			private:
-				using AnyFn = std::variant<
-					sys::ISystem::RenderFn,
-					sys::ISystem::UpdateFn
-				>;
-
-				sys::ISystem		*_system;
-				PhaseDependencies	_dep{};
-				AnyFn				_func;
-
-			public:
-				Func(sys::ISystem *system, AnyFn func)
-					:	_system(system), _func(func)	{}
-
-				PhaseDependencies	*getDep(void)	{ return &_dep; }
-
-				template <typename T>
-				void	execute(const T &arg) {
-					std::visit([&](auto fn){
-						if constexpr (std::is_invocable_v<decltype(fn), sys::ISystem *, const T&>) {
-							(_system->*fn)(arg);
-						}
-					}, _func);
-				}
-		};
-		std::unordered_map<std::string_view, Func>	updateCycleDep;
-		std::unordered_map<std::string_view, Func>	renderCycleDep;
+		std::unordered_map<std::string_view, CycleEntry>	updateCycleDep;
+		std::unordered_map<std::string_view, CycleEntry>	renderCycleDep;
 
 	protected:
 		virtual void	init(void) = 0;
 
 		template <typename T>
-		Func	*addUpdateDep(std::string_view depName,
+		CycleEntry	*addUpdateDep(std::string_view depName,
 							void (T::*fn)(const FrameContext&)) {
 			auto	[it, _] = updateCycleDep.emplace(depName,
-								Func(this, static_cast<UpdateFn>(fn)));
+								CycleEntry(this, static_cast<UpdateFn>(fn)));
 			return &it->second;
 		}
 		template <typename T>
-		Func	*addRenderDep(std::string_view depName,
+		CycleEntry	*addRenderDep(std::string_view depName,
 							void (T::*fn)(const Renderer&)) {
 			auto	[it, _] = renderCycleDep.emplace(depName,
-								Func(this, static_cast<RenderFn>(fn)));
+								CycleEntry(this, static_cast<RenderFn>(fn)));
 			return &it->second;
 		}
 		template <typename T>
-		Func	createRenderFunc(void (T::*fn)(const Renderer&)) {
+		CycleEntry	createRenderFunc(void (T::*fn)(const Renderer&)) {
 			return {this, static_cast<RenderFn>(fn)};
 		}
 

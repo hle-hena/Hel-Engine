@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 18:14:28                                        */
+/*  Last Modified: 2026/07/05 16:29:03                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,10 +20,10 @@
 
 namespace	hel {
 
-std::vector<sys::ISystem::Func*>		SystemManager::_updateCycle{};
+std::vector<sys::CycleEntry*>		SystemManager::_updateCycle{};
 std::unordered_map<std::string_view,
 	std::vector<std::vector<
-			sys::ISystem::Func*>>>		SystemManager::_renderCycle{};
+			sys::CycleEntry*>>>		SystemManager::_renderCycle{};
 
 std::vector<SystemManager::SysPtr>		SystemManager::_data{};
 
@@ -126,7 +126,7 @@ do {														\
 #define kahnSort(data, target, depName)											\
 do {																			\
 	using strView = std::string_view;											\
-	std::unordered_map<strView, sys::ISystem::Func*>		byName;				\
+	std::unordered_map<strView, sys::CycleEntry*>			byName;				\
 	std::unordered_map<strView, std::vector<strView>>		adj;				\
 	std::unordered_map<strView, uint32_t>					inDegree;			\
 																				\

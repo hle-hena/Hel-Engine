@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:48 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 18:15:04                                        */
+/*  Last Modified: 2026/07/05 16:27:32                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,17 +15,21 @@
 /* *************************************************************************  */
 
 #include "api/vulkan/RenderPass.hpp"
+#include "core/PhaseDependancy.hpp"
+#include "api/vulkan/Renderer.hpp"
 #include "api/vulkan/ImagePool.hpp"
 #include "core/Frame.hpp"
 #include "core/Queues.hpp"
-#include "core/SystemManager.hpp"
+#include "ecs/CycleEntry.hpp"
+
+#include <iostream>
 
 namespace	hel {
 
 uint32_t	RenderPass::_passIndex = 0;
 
 RenderPass::RenderPass(Device &device, FrameContext &ctx, ImagePool *imagePool,
-			const SystemManager::FuncVec &funcs)
+			const std::vector<sys::CycleEntry *> &funcs)
 	:	_device{device},
 		_ctx{ctx},
 		_req{ctx.request},
@@ -66,13 +70,6 @@ RenderPass::~RenderPass(void) {
 		endPass();
 }
 
-#define	RETURN_ERROR(error)	\
-do {						\
-	std::cerr << error;		\
-	return true;			\
-} while (0)
-
-
 bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
 	if (_writes.contains(dep._imageName))
 		return false;
@@ -83,10 +80,12 @@ bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
 	else if (dep._config.has_value()) {
 		img = imagePool->acquire(dep._config.value());
 		_req->images[dep._imageName] = img;
-	} else
-		RETURN_ERROR("Error for image \"" << dep._imageName << "\". Image"
+	} else {
+		std::cerr << "Error for image \"" << dep._imageName << "\". Image"
 			<< " doesn't exists, and no config has "
-			<< "been provided in the dependancy.\n");
+			<< "been provided in the dependancy.\n";
+		return true;
+	}
 	if (dep._load == VK_ATTACHMENT_LOAD_OP_MAX_ENUM ||
 		dep._store == VK_ATTACHMENT_STORE_OP_MAX_ENUM)
 		resolveOps(img, dep);
