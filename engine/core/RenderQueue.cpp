@@ -3,9 +3,9 @@
 /*                                                                            */
 /*  File: RenderQueue.cpp                                                     */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/03/21 19:38:48 by hle-hena                                  */
+/*  Created: 2026/07/05 18:26:37 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/15 17:49:41                                        */
+/*  Last Modified: 2026/07/05 18:27:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,44 +14,13 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "core/Queues.hpp"
+#include "core/RenderQueue.hpp"
 #include "utils/mathUtils.hpp"
-#include <algorithm>
+#include "api/vulkan/Image.hpp"
 
 namespace	hel {
 
 std::vector<RenderRequest>	RenderQueue::_requests = {};
-std::vector<Read::Request>	Read::Queue::_requests = {};
-DrawQueue::RequestMap		DrawQueue::_requests = {};
-
-
-
-void	Read::Queue::execute(VkCommandBuffer commandBuffer) {
-	for (auto &req: _requests)
-		req.srcImage->copyTo(commandBuffer, req.dstBuffer,
-							req.offset, req.extent);
-	_requests.clear();
-}
-
-
-
-DrawQueue::RequestVector	*DrawQueue::RequestMap::at(const uint32_t levelAsked, const PhaseDependencies &depAsked) {
-	auto	&data = _data[levelAsked];
-	for (auto &vector: data) {
-		if (vector.dep == depAsked)
-			return &vector;
-	}
-	auto	&newVec = data.emplace_back();
-	newVec.dep = depAsked;
-	return &newVec;
-}
-
-void	DrawQueue::requestDraw(uint32_t level, DrawCall &&drawCommand,
-							PhaseDependencies &dep) {
-	_requests.at(level, dep)->draws.emplace_back(std::move(drawCommand));
-}
-
-
 
 bool	RenderRequest::operator==(const RenderRequest &other) const {
 	bool	sameHandle = (other.handle == this->handle);

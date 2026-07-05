@@ -1,26 +1,31 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: HelSystem.hpp                                                       */
+/*  File: ReadQueue.cpp                                                       */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/06/15 19:04:55 by pop-os                                    */
+/*  Created: 2026/07/05 18:32:28 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:48:23                                        */
-/*             By: pop-os                                                     */
+/*  Last Modified: 2026/07/05 18:33:18                                        */
+/*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
 /*                                                                            */
-/*  Copyright (c) 2026 pop-os                                                 */
+/*  Copyright (c) 2026 hle-hena                                               */
 /*                                                                            */
 /* *************************************************************************  */
 
-#pragma once
+#include "core/ReadQueue.hpp"
+#include "api/vulkan/Image.hpp"
 
-// IWYU pragma: begin_exports
-#include "ecs/ISystem.hpp"
-#include "core/Frame.hpp"
-#include "core/PhaseDependency.hpp"
+namespace	hel {
 
-using enum hel::ImageDep::Usage;
+std::vector<Read::Request>	Read::Queue::_requests = {};
 
-// IWYU pragma: end_exports
+void	Read::Queue::execute(VkCommandBuffer commandBuffer) {
+	for (auto &req: _requests)
+		req.srcImage->copyTo(commandBuffer, req.dstBuffer,
+							req.offset, req.extent);
+	_requests.clear();
+}
+
+}

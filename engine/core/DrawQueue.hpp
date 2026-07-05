@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Selection.hpp                                                       */
+/*  File: DrawQueue.hpp                                                       */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
+/*  Created: 2026/07/05 18:30:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:41:13                                        */
+/*  Last Modified: 2026/07/05 18:37:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,45 +17,40 @@
 #pragma once
 
 #include <cstdint>
-#include <vulkan/vulkan.h>
-#include <glm/glm.hpp>
+#include <vector>
+#include <map>
 
-#include "HelSystem.hpp"
-#include "api/vulkan/PipelineMap.hpp"
+#include "core/PhaseDependency.hpp"
+#include "api/vulkan/Renderer.hpp"
 
 namespace	hel {
 
-class	AssetManager;
-class	Window;
-
-}
-
-namespace	hel::sys {
-
-class	Selection : public ISystem {
+class	DrawQueue {
 	public:
-		Selection(void) = default;
-		~Selection(void) = default;
-
-		void	init(void) override;
-
-		void	update(const FrameContext &ctx);
-		void	postProcessing(const Renderer &renderer);
-		void	renderInteraction(const Renderer &renderer);
-
-	private:
-		struct	EntityData {
-			uint32_t	entityIndex{0};
-			uint32_t	transformIndex{0};
+		struct	RequestVector {
+			PhaseDependencies		dep;
+			std::vector<DrawCall>	draws;
+		};
+		using InnerMap = std::map<uint32_t, std::vector<RequestVector>>;
+		struct	RequestMap {
+			public:
+				RequestVector	*at(uint32_t levelAsked, const PhaseDependencies &depAsked);
+				void			clear(void);
+			private:
+				InnerMap	_data{};
+			
+			friend class DrawQueue;
 		};
 
-		static void	configurePipeline(PipelineConfig &config);
+		static void	requestDraw(uint32_t level, DrawCall &&drawCommand,
+								PhaseDependencies &dep);
+		static InnerMap	flush(void) { return std::move(_requests._data); };
 
-		AssetManager				*_assetManager;
-		PipelineMap					*_tintPipeline{nullptr};
-		Entity::id					_selectedEntity;
+	private:
+		static RequestMap	_requests;
 
-		std::unordered_map<RenderRequest, Read::Context, RenderRequest::Hasher>	_requests;
+	template <typename ReadType>
+	friend struct	Builder;
 };
 
 }

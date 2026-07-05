@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 17:35:15                                        */
+/*  Last Modified: 2026/07/05 18:16:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,22 +18,22 @@
 
 #include <vulkan/vulkan.h>
 #include <array>
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
 #include <optional>
 #include <map>
+#include <unordered_map>
 
-#include "api/vulkan/Swapchain.hpp"
-#include "api/vulkan/Buffer.hpp"
-#include "api/vulkan/Descriptors.hpp"
 #include "HelExpected.hpp"
 #include "utils/Setters.hpp"
+#include "api/vulkan/Swapchain.hpp"
 
 namespace	hel {
 
 class	Window;
+class	DescriptorPool;
+class	DescriptorWriter;
+class	Buffer;
 struct	RenderRequest;
+struct	DescriptorSet;
 
 struct	GlobalData {
 	private:

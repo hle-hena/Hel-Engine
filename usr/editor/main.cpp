@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/09 17:10:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/03 11:47:29                                        */
+/*  Last Modified: 2026/07/05 18:40:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,7 +23,7 @@
 #include "components/Name.hpp"
 #include "components/Model.hpp"
 #include "GlobalData.hpp"
-#include "core/Queues.hpp"
+#include "core/RenderQueue.hpp"
 #include "utils/Timer.hpp"
 
 namespace	hel {

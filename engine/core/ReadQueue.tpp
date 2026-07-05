@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Queues.tpp                                                          */
+/*  File: ReadQueue.tpp                                                       */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/04/13 18:33:14 by hle-hena                                  */
+/*  Created: 2026/07/05 18:33:38 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/13 18:48:24                                        */
+/*  Last Modified: 2026/07/05 18:34:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,11 +14,8 @@
 /*                                                                            */
 /* *************************************************************************  */
 
+#include "core/ReadQueue.hpp"
 #include "api/vulkan/Buffer.hpp"
-#include "core/Queues.hpp"
-#include <cstdint>
-#include <vulkan/vulkan_core.h>
-
 
 namespace	hel {
 

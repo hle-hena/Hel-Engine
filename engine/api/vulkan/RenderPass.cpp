@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:48 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 16:27:32                                        */
+/*  Last Modified: 2026/07/05 18:39:35                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,11 +15,11 @@
 /* *************************************************************************  */
 
 #include "api/vulkan/RenderPass.hpp"
-#include "core/PhaseDependancy.hpp"
+#include "core/PhaseDependency.hpp"
 #include "api/vulkan/Renderer.hpp"
 #include "api/vulkan/ImagePool.hpp"
 #include "core/Frame.hpp"
-#include "core/Queues.hpp"
+#include "core/RenderQueue.hpp"
 #include "ecs/CycleEntry.hpp"
 
 #include <iostream>

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 16:29:03                                        */
+/*  Last Modified: 2026/07/05 18:47:01                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,13 @@
 /* *************************************************************************  */
 
 #include "core/SystemManager.hpp"
+#include "core/PhaseDependency.hpp"
+#include "ecs/CycleEntry.hpp"
+#include "ecs/ISystem.hpp"
+
+#include <optional>
+#include <vulkan/vulkan.h>
+#include <algorithm>
 #include <queue>
 #include <iostream>
 
@@ -196,13 +203,13 @@ void	SystemManager::sort(EngineKey) {
 	_updateCycle.clear();
 	kahnSort(_data, _updateCycle, updateCycleDep); std::cout << std::endl;
 	_renderCycle.clear();
-	FuncVec	sortedFuncs{};
+	EntryVec	sortedFuncs{};
 	kahnSort(_data, sortedFuncs, renderCycleDep); std::cout << std::endl;
 	splitPasses(sortedFuncs);
 }
 
-void	SystemManager::splitPasses(const FuncVec &sortedFuncs) {
-	std::unordered_map<std::string_view, FuncVec>		newList;
+void	SystemManager::splitPasses(const EntryVec &sortedFuncs) {
+	std::unordered_map<std::string_view, EntryVec>		newList;
 	std::unordered_map<std::string_view, LayerState>	states;
 	auto	addList = [&]() {
 		for (auto &[layer, vec]: newList)

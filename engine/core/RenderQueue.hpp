@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Selection.hpp                                                       */
+/*  File: RenderQueue.hpp                                                     */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
+/*  Created: 2026/07/05 18:24:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:41:13                                        */
+/*  Last Modified: 2026/07/05 18:25:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,46 +16,40 @@
 
 #pragma once
 
-#include <cstdint>
-#include <vulkan/vulkan.h>
+#include <string>
 #include <glm/glm.hpp>
 
-#include "HelSystem.hpp"
-#include "api/vulkan/PipelineMap.hpp"
+#include "ecs/Entity.hpp"
 
 namespace	hel {
 
-class	AssetManager;
-class	Window;
+class	Image;
 
-}
+struct	RenderRequest {
+	std::string									requestType;
+	Entity::id									handle;
+	glm::vec2									origin{0.f, 0.f};
+	std::unordered_map<std::string, Image *>	images{};
 
-namespace	hel::sys {
+	bool	operator==(const RenderRequest &other) const;
+	struct	Hasher {
+		size_t	operator()(const RenderRequest &request) const;
+	};
+};
 
-class	Selection : public ISystem {
+
+class	RenderQueue {
 	public:
-		Selection(void) = default;
-		~Selection(void) = default;
-
-		void	init(void) override;
-
-		void	update(const FrameContext &ctx);
-		void	postProcessing(const Renderer &renderer);
-		void	renderInteraction(const Renderer &renderer);
+		static void		push(const RenderRequest &request) {
+			if (!request.images.empty() && request.images.contains("mainColor"))
+				_requests.push_back(request);
+		}
+		static std::vector<RenderRequest>	flush(void) {
+			return (std::move(_requests));
+		}
 
 	private:
-		struct	EntityData {
-			uint32_t	entityIndex{0};
-			uint32_t	transformIndex{0};
-		};
-
-		static void	configurePipeline(PipelineConfig &config);
-
-		AssetManager				*_assetManager;
-		PipelineMap					*_tintPipeline{nullptr};
-		Entity::id					_selectedEntity;
-
-		std::unordered_map<RenderRequest, Read::Context, RenderRequest::Hasher>	_requests;
+		static std::vector<RenderRequest>	_requests;
 };
 
 }

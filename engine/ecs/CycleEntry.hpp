@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/05 16:09:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 16:15:04                                        */
+/*  Last Modified: 2026/07/05 18:22:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,7 +18,7 @@
 
 #include <variant>
 
-#include "core/PhaseDependancy.hpp"
+#include "core/PhaseDependency.hpp"
 
 namespace	hel {
 

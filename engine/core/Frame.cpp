@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:35 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/29 16:55:46                                        */
+/*  Last Modified: 2026/07/05 18:17:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,6 +16,8 @@
 
 #include "core/Frame.hpp"
 #include "api/vulkan/Device.hpp"
+#include "api/vulkan/Descriptors.hpp"
+#include "api/vulkan/Buffer.hpp"
 
 namespace	hel {
 
