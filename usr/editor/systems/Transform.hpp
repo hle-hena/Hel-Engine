@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 16:36:47                                        */
+/*  Last Modified: 2026/07/03 11:34:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,7 +20,14 @@
 #include "core/Frame.hpp"
 #include "core/Queues.hpp"
 #include "ecs/Registry.hpp"
-#include "ecs/Component.hpp"
+
+#include "components/Transform.hpp"
+#include "components/Model.hpp"
+#include "components/Texture.hpp"
+#include "components/Tint.hpp"
+#include "components/HideTag.hpp"
+#include "components/SelectionTag.hpp"
+
 #include "HelSystem.hpp"
 #include <cstdint>
 # define GLM_FORCE_RADIANS

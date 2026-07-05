@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 17:56:43                                        */
+/*  Last Modified: 2026/07/05 11:18:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -38,8 +38,7 @@ UI::~UI(void) {
 void	UI::init(void) {
 	addUpdateDep("update ui", &UI::updateUI)
 		->getDep()
-			->addRequire("view matrix calculation")
-			->addRequire("model matrix calculation");
+			->addBlock("transform gizmo action");
 
 	addRenderDep("render ui", &UI::render)
 	->getDep()

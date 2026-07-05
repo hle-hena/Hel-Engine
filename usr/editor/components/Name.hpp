@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: EntityHierarchy.hpp                                                 */
+/*  File: Name.hpp                                                            */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
+/*  Created: 2026/07/03 11:07:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/03 11:36:19                                        */
+/*  Last Modified: 2026/07/03 11:09:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,30 +16,17 @@
 
 #pragma once
 
-# include <ui/ImGui/imgui.h>
+#include "ecs/IComponent.hpp"
 
-# include "ecs/View.hpp"
-# include "ecs/Hierarchy.hpp"
-# include "ecs/Entity.hpp"
-# include "systems/ui/Panel.hpp"
+namespace	hel::comp {
 
-namespace	hel::sys {
-
-class	EntityHierarchy : public Panel<EntityHierarchy> {
-	public:
-		static constexpr const char	*label = "Entity";
-		EntityHierarchy(void) = default;
-		~EntityHierarchy(void) = default;
-
-		expected<void>	onInit(void) override;
-
-		void	render(Window *window, const ImVec2 &) override;
-
-	private:
-		void	moveEntity(View<include<comp::Hierarchy>> &view,
-					Entity::id srcHandle, Entity::id dstHandle);
-		void	showEntity(Window *window, View<include<comp::Hierarchy>> view,
-					Entity::id handle);
+struct	Name: IComponent<Name> {
+	struct	POD {
+		std::string	name{"Default Entity Name"};
+	};
+	struct	MetaData: IComponent<Name>::MetaData {
+		static constexpr std::string_view	label = "Entity Name";
+	};
 };
 
 }

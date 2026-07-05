@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 16:36:12                                        */
+/*  Last Modified: 2026/07/03 11:34:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,10 +20,13 @@
 #include "core/Frame.hpp"
 #include "ecs/AssetManager.hpp"
 #include "ecs/Registry.hpp"
-#include "ecs/Component.hpp"
+#include "components/Transform.hpp"
+#include "components/Texture.hpp"
+#include "components/Camera.hpp"
+#include "components/HideTag.hpp"
+#include "components/Model.hpp"
 #include "assetType/Geometry.hpp"
 #include "assetType/Texture.hpp"
-#include "core/Engine.hpp"
 #include "api/vulkan/Renderer.hpp"
 #include "api/vulkan/Sampler.hpp"
 #include <vulkan/vulkan_core.h>
@@ -115,8 +118,8 @@ void	Sprite::render(const Renderer &renderer) {
 	for (auto entity : entities) {
 		if (entity == renderHandle)	{ continue ; }
 		auto	transform = entities.get<comp::Transform>(entity);
-		auto	texture = _assetManager->get<Texture>(entities.get<comp::Texture>
-			(entity)->filePath);
+		auto	texture = _assetManager->get<Texture>(
+							entities.get<comp::Texture>(entity)->filepath);
 		if (!texture)	{ continue ; }
 
 		auto	texture_d = DescriptorFactory(*_device)

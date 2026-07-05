@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: EntityHierarchy.hpp                                                 */
+/*  File: IComponent.cpp                                                      */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
+/*  Created: 2026/07/02 17:02:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/03 11:36:19                                        */
+/*  Last Modified: 2026/07/05 11:04:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,32 +14,33 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#pragma once
+#include "IComponent.hpp"
 
-# include <ui/ImGui/imgui.h>
+namespace	hel {
 
-# include "ecs/View.hpp"
-# include "ecs/Hierarchy.hpp"
-# include "ecs/Entity.hpp"
-# include "systems/ui/Panel.hpp"
+OpaqueComponentHandle::~OpaqueComponentHandle(void) {
+	if (!_dismissed)
+		_pool->markDirty(_index.value());
+}
 
-namespace	hel::sys {
+OpaqueComponentHandle::operator bool(void) const {
+	return (_index.has_value());
+}
 
-class	EntityHierarchy : public Panel<EntityHierarchy> {
-	public:
-		static constexpr const char	*label = "Entity";
-		EntityHierarchy(void) = default;
-		~EntityHierarchy(void) = default;
+void	*OpaqueComponentHandle::getRaw(void) {
+	return _pool->getRaw(_index.value());
+}
 
-		expected<void>	onInit(void) override;
+bool	OpaqueComponentHandle::isDirty(void) {
+	return _pool->isDirty(_index.value());
+}
 
-		void	render(Window *window, const ImVec2 &) override;
+void	OpaqueComponentHandle::dismiss(void) {
+	_dismissed = true;
+}
 
-	private:
-		void	moveEntity(View<include<comp::Hierarchy>> &view,
-					Entity::id srcHandle, Entity::id dstHandle);
-		void	showEntity(Window *window, View<include<comp::Hierarchy>> view,
-					Entity::id handle);
-};
+std::string_view	OpaqueComponentHandle::typeName(void) {
+	return _pool->getTypeName();
+}
 
 }

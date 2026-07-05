@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/29 17:01:11                                        */
+/*  Last Modified: 2026/07/03 11:20:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,7 +22,7 @@
 #include "core/Queues.hpp"
 #include "ecs/Entity.hpp"
 #include "ecs/Registry.hpp"
-#include "ecs/Component.hpp"
+#include "components/Camera.hpp"
 #include "ecs/AssetManager.hpp"
 #include "assetType/Geometry.hpp"
 #include "assetType/Texture.hpp"
@@ -172,7 +172,7 @@ void	Transform::update(const FrameContext &) {
 
 	for (auto entity: entities) {
 		auto	constTransform = entities.get<comp::Transform>(entity);
-		if (!constTransform->isDirty)
+		if (!constTransform.isDirty())
 			continue ;
 		auto	transform = constTransform.modify();
 		transform->rotation = glm::normalize(transform->rotation);
@@ -239,7 +239,7 @@ void	Transform::renderGizmo(const Renderer &renderer, GizmoContext &gizmo) {
 	auto	requestTransform = _registry->getComponent<comp::Transform>(gizmo._requestHandle);
 	if (!focusedTransform || !requestTransform)	{ return ; }
 
-	if (focusedTransform->isDirty || requestTransform->isDirty) {
+	if (focusedTransform.isDirty() || requestTransform.isDirty()) {
 		float	dist = glm::distance(focusedTransform->position, requestTransform->position) * 0.05f;
 		for (auto &[name, entity]: gizmo.handles) {
 			if (name.find("Icon") != std::string::npos)
@@ -299,7 +299,7 @@ void	Transform::renderUI(const Renderer &renderer, GizmoContext &gizmo) {
 		if (name.find("Icon") == std::string::npos)
 			continue ;
 		auto	mesh = _assetManager->get<Geometry>(_registry->getComponent<comp::Model>(entity)->modelName);
-		auto	texture = _assetManager->get<Texture>(_registry->getComponent<comp::Texture>(entity)->filePath);
+		auto	texture = _assetManager->get<Texture>(_registry->getComponent<comp::Texture>(entity)->filepath);
 		auto	transform = _registry->getComponent<comp::Transform>(entity);
 		auto	tint = _registry->getComponent<comp::Tint>(entity);
 		if (!mesh || !texture)	{ continue ; }
@@ -793,7 +793,7 @@ Transform::GizmoContext::EntityFactory::setScale(float x, float y) {
 
 Transform::GizmoContext::EntityFactory	&
 Transform::GizmoContext::EntityFactory::setTexture(const std::string &filePath) {
-	std::get<1>(_addedComp).modify()->filePath = filePath;
+	std::get<1>(_addedComp).modify()->filepath = filePath;
 	return (*this);
 }
 

@@ -56,6 +56,7 @@ file(GLOB_RECURSE EXTERNAL_SOURCES CONFIGURE_DEPENDS
 file(GLOB_RECURSE USR_SOURCES CONFIGURE_DEPENDS
 	"${HEL_TARGET_DIR}/systems/*.cpp"
 	"${HEL_TARGET_DIR}/assetType/*.cpp"
+	"${HEL_TARGET_DIR}/components/*.cpp"
 	"${HEL_TARGET_DIR}/main.cpp"
 )
 

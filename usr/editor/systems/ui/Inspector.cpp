@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 16:26:20                                        */
+/*  Last Modified: 2026/07/05 11:15:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,8 +17,14 @@
 #include "systems/ui/Inspector.hpp"
 #include "ecs/Registry.hpp"
 #include "platform/window/Window.hpp"
-#include "ecs/ComponentList.hpp"
-#include "ecs/Component.hpp"
+#include "ecs/Hierarchy.hpp"
+#include "components/Camera.hpp"
+#include "components/Transform.hpp"
+#include "components/Controllers.hpp"
+#include "components/Model.hpp"
+#include "components/Name.hpp"
+#include "ecs/ComponentManager.hpp"
+
 #include "systems/ui/UIHelper.hpp"
 
 #include <ui/ImGui/imgui.h>
@@ -51,7 +57,9 @@ void	Inspector::render(Window *window, const ImVec2 &) {
 	ImGui::Separator();
 	for (auto &[type, pool]: _registry->getPools()) {
 		if (pool->has(handle)) {
-			auto	typeName = pool->getTypeName();
+			auto	comp = pool->get(handle);
+			auto	typeName_str = std::string(comp.typeName());
+			auto	typeName = typeName_str.c_str();
 
 			bool	uiOpened = false;
 			if (type != typeid(comp::Hierarchy)) {
@@ -68,7 +76,7 @@ void	Inspector::render(Window *window, const ImVec2 &) {
 			if (uiOpened) {
 				auto	it = _drawFuncs.find(type);
 				if (it != _drawFuncs.end())
-					_drawFuncs[type](window, pool->getRaw(handle));
+					_drawFuncs[type](window, comp);
 				else
 					ImGui::TextDisabled("No UI integration for %s", typeName);
 			}
@@ -93,26 +101,34 @@ void	Inspector::removeEntity(Window *window, Entity::id handle) {
 
 void	Inspector::addNewComponentPopup(Entity::id handle) {
 	if (_addNewComp) {
-		auto	items = ComponentList::getComponentList();
-		ImGui::Combo("Component type", &_newCompTypeIndex, items.data(),
-					static_cast<int>(items.size()));
+		auto	&items = ComponentManager::getComponentList();
+		ImGui::Combo("Component type", &_newCompTypeIndex,
+			[](void *data, int idx) -> const char * {
+				const auto	&items = *static_cast<const std::vector<std::string_view> *>(data);
+
+				if (idx < 0 || static_cast<size_t>(idx) >= items.size())
+					return "Error";
+				return items[static_cast<size_t>(idx)].data();
+			},
+			const_cast<std::vector<std::string_view> *>(&items),
+			static_cast<int>(items.size()));
 		if (ImGui::Button("Cancel"))
 			_addNewComp = false;
 		ImGui::SameLine();
 		if (ImGui::Button("Add")) {
-			ComponentList::addComponent(*_registry, handle,
-						items[static_cast<size_t>(_newCompTypeIndex)]);
+			ComponentManager::addComponent(_registry, handle,
+				items[static_cast<size_t>(_newCompTypeIndex)]);
 			_addNewComp = false;
 		}
 	}
 }
 
 void	Inspector::setBuiltInDrawFunc(void) {
-	setDrawFunc<comp::BaseControllerTag>([](Window *, void *){});
-	setDrawFunc<comp::EditorControllerTag>([](Window *, void *){});
+	setDrawFunc<comp::BaseControllerTag>([](Window *, OpaqueComponentHandle &){});
+	setDrawFunc<comp::EditorControllerTag>([](Window *, OpaqueComponentHandle &){});
 
-	setDrawFunc<comp::Transform>([](Window *window, void *raw){
-		auto		transform = static_cast<comp::Transform *>(raw);
+	setDrawFunc<comp::Transform>([](Window *window, OpaqueComponentHandle &comp){
+		auto		transform = comp.get<comp::Transform>();
 		bool		changed = false;
 		static bool	displayMat = true;
 
@@ -140,8 +156,8 @@ void	Inspector::setBuiltInDrawFunc(void) {
 			.setValueName({"X:", "Y:", "Z:", "W:"})
 			.setStart(&transform->rotation[0])
 			.build();
-		if (changed)
-			transform->isDirty = true;
+		if (!changed)
+			comp.dismiss();
 		table.newRow({Table::WStretch});
 		table.setNextCell([&]{
 			if (ImGui::Button(displayMat ? "Click to hide the resulting matrix"
@@ -163,8 +179,8 @@ void	Inspector::setBuiltInDrawFunc(void) {
 		}
 	});
 
-	setDrawFunc<comp::Model>([](Window *window, void *raw){
-		auto	*model = static_cast<comp::Model *>(raw);
+	setDrawFunc<comp::Model>([](Window *window, OpaqueComponentHandle &comp){
+		auto	*model = comp.get<comp::Model>();
 
 		auto	table = Table("Model");
 		TableRow(table, window, "Model name")
@@ -173,8 +189,8 @@ void	Inspector::setBuiltInDrawFunc(void) {
 			.build();
 	});
 
-	setDrawFunc<comp::Camera>([](Window *window, void *raw){
-		auto	camera = static_cast<comp::Camera *>(raw);
+	setDrawFunc<comp::Camera>([](Window *window, OpaqueComponentHandle &comp){
+		auto	camera = comp.get<comp::Camera>();
 		bool	changed = false;
 
 		auto	table = Table("Camera");
@@ -195,13 +211,12 @@ void	Inspector::setBuiltInDrawFunc(void) {
 			.setSpeed(0.1f)
 			.setFormat("%.1f°")
 			.build();
-
-		if (changed)
-			camera->isDirty = true;
+		if (!changed)
+			comp.dismiss();
 	});
 
-	setDrawFunc<comp::Name>([](Window *window, void *raw){
-		auto	name = static_cast<comp::Name *>(raw);
+	setDrawFunc<comp::Name>([](Window *window, OpaqueComponentHandle &comp){
+		auto	name = comp.get<comp::Name>();
 
 		auto	table = Table("Name");
 		TableRow(table, window, "Entity's name")
@@ -210,8 +225,8 @@ void	Inspector::setBuiltInDrawFunc(void) {
 			.build();
 	});
 
-	setDrawFunc<comp::Hierarchy>([](Window *, void *raw){
-		auto	hier = static_cast<comp::Hierarchy *>(raw);
+	setDrawFunc<comp::Hierarchy>([](Window *, OpaqueComponentHandle &comp){
+		auto	hier = comp.get<comp::Hierarchy>();
 
 		if (hier->parentId != Entity::NOT_REGISTERED)
 			ImGui::Text("Parent's id: %d", Entity::getIndex(hier->parentId));
@@ -221,16 +236,16 @@ void	Inspector::setBuiltInDrawFunc(void) {
 			ImGui::BulletText("Child entity %d", Entity::getIndex(childHandle));
 	});
 
-	setDrawFunc<comp::SurfaceAllignement>([](Window *, void *raw){
-		auto	surface = static_cast<comp::SurfaceAllignement *>(raw);
+	setDrawFunc<comp::SurfaceAllignement>([](Window *, OpaqueComponentHandle &comp){
+		auto	surface = comp.get<comp::SurfaceAllignement>();
 
 		if (ImGui::DragFloat3("Up vector", &surface->localUp.x, 0.1f))
 			surface->localUp = glm::normalize(surface->localUp);
 		ImGui::Checkbox("Dynamic allignement", &surface->isDynamic);
 	});
 
-	setDrawFunc<comp::Controller>([](Window *window, void *raw){
-		auto	controller = static_cast<comp::Controller *>(raw);
+	setDrawFunc<comp::Controller>([](Window *window, OpaqueComponentHandle &comp){
+		auto	controller = comp.get<comp::Controller>();
 
 		auto	table = Table("Controller");
 		TableRow(table, window, "Mouse sensitivity")
