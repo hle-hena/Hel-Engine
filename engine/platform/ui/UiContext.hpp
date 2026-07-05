@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:09 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/26 11:09:03                                        */
+/*  Last Modified: 2026/07/05 19:28:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,17 +16,20 @@
 
 #pragma once
 
-# include "api/vulkan/Descriptors.hpp"
+// #include "api/vulkan/Descriptors.hpp"
 
-# include <ui/ImGui/imgui.h>
-# include <ui/ImGui/imgui_impl_glfw.h>
-# include <ui/ImGui/imgui_impl_vulkan.h>
+#include <memory>
+#include <unordered_map>
+#include <vulkan/vulkan.h>
+
+#include <ui/ImGui/imgui.h>
 
 namespace	hel {
 
 class	Window;
 class	Device;
-class	Image;
+class	DescriptorPool;
+struct	DescriptorSet;
 
 class	UiContext {
 	public:
@@ -56,12 +59,12 @@ class	UiContext {
 		static void	initImGui(Window *window, Device *device);
 		static void	initImGuiStyle(void);
 
-		static bool								_fullyInitialised;
-		static std::unique_ptr<DescriptorPool>	_pool;
+		static bool									_fullyInitialised;
+		static std::unique_ptr<DescriptorPool>		_pool;
 		static std::unordered_map<
 					VkDescriptorSet,
-					DescriptorSet::ptr>			_textures;
-		static ImGuiContext						*_context;
+					std::unique_ptr<DescriptorSet>>	_textures;
+		static ImGuiContext							*_context;
 
 	friend class Window;
 };

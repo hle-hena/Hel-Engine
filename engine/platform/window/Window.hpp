@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/26 11:02:46                                        */
+/*  Last Modified: 2026/07/05 19:31:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,17 +14,16 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-# pragma once
+#pragma once
 
-# define GLFW_INCLUDE_VULKAN
-# include <GLFW/glfw3.h>
-# include <string>
-# include <memory>
-# include <optional>
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+#include <string>
+#include <memory>
+#include <optional>
 
-# include "api/vulkan/Swapchain.hpp"
-# include "ecs/Entity.hpp"
-# include "platform/ui/UiContext.hpp"
+#include "api/vulkan/Swapchain.hpp"
+#include "ecs/Entity.hpp"
 
 namespace	hel {
 

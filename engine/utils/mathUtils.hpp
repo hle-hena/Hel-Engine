@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/11 14:41:39 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/17 11:26:32                                        */
+/*  Last Modified: 2026/07/05 19:33:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include <functional>
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/ext/scalar_constants.hpp>
