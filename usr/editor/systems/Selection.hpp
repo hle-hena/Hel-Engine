@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:41:13                                        */
+/*  Last Modified: 2026/07/05 19:39:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,7 +21,8 @@
 #include <glm/glm.hpp>
 
 #include "HelSystem.hpp"
-#include "api/vulkan/PipelineMap.hpp"
+#include "core/ReadQueue.hpp"
+#include "core/RenderQueue.hpp"
 
 namespace	hel {
 

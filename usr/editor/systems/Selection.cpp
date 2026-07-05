@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:41:07                                        */
+/*  Last Modified: 2026/07/05 19:40:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,6 +24,7 @@
 #include <cstdint>
 #include "core/SystemManager.hpp"
 #include "platform/input/InputState.hpp"
+#include "api/vulkan/Renderer.hpp"
 
 namespace	hel::sys {
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:41:18                                        */
+/*  Last Modified: 2026/07/05 19:36:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -43,6 +43,7 @@
 #include <vulkan/vulkan_core.h>
 #include "core/SystemManager.hpp"
 #include "GlobalData.hpp"
+#include "core/DrawQueue.hpp"
 
 
 namespace	hel::sys {

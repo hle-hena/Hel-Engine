@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:22:54                                        */
+/*  Last Modified: 2026/07/05 19:37:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,7 +14,8 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "Registry.hpp"
+#include "ecs/Registry.hpp"
+#include "ecs/View.hpp"
 #include "api/vulkan/Descriptors.hpp"
 #include <iostream>
 

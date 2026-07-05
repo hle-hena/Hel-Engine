@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:41:33                                        */
+/*  Last Modified: 2026/07/05 19:43:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,7 @@
 #include "platform/window/Window.hpp"
 #include "api/vulkan/ImagePool.hpp"
 #include "systems/ui/UIHelper.hpp"
+#include "core/RenderQueue.hpp"
 
 namespace	hel::sys {
 
@@ -76,10 +77,11 @@ void	SceneViewport::render(Window *window, const ImVec2 &) {
 	if (_handle == Entity::NOT_REGISTERED)
 		_handle = window->getEntityReference();
 
+	auto	cursorPos = ImGui::GetCursorScreenPos();
 	RenderRequest	viewportRequest{
 		.requestType = "RenderScene",
 		.handle = _handle,
-		.origin = ImGui::GetCursorScreenPos(),
+		.origin = {cursorPos.x, cursorPos.y},
 		.images = {
 			{"mainColor", mainImg},
 			{"depth layer", depthImg},

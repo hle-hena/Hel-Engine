@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/03 11:34:58                                        */
+/*  Last Modified: 2026/07/05 19:40:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,7 +28,6 @@
 
 #include "assetType/Geometry.hpp"
 #include "assetType/Texture.hpp"
-#include "core/Engine.hpp"
 #include "api/vulkan/Renderer.hpp"
 #include "api/vulkan/Sampler.hpp"
 #include <vulkan/vulkan_core.h>

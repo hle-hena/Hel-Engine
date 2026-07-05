@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:41:16                                        */
+/*  Last Modified: 2026/07/05 19:38:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -31,6 +31,7 @@
 #include "api/vulkan/Sampler.hpp"
 #include <vulkan/vulkan_core.h>
 #include "core/SystemManager.hpp"
+#include "core/RenderQueue.hpp"
 
 namespace	hel::sys {
 

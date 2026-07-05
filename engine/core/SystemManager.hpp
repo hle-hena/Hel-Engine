@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:44:58                                        */
+/*  Last Modified: 2026/07/05 19:48:39                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -50,9 +50,7 @@ struct	SystemManager {
 
 	PASSKEY(EngineKey, Engine)
 	static void	sort(EngineKey);
-	static void	clear(EngineKey) {
-		_data.clear();
-	}
+	static void	clear(EngineKey);
 
 	private:
 		static void	splitPasses(const EntryVec &sortedFuncs);

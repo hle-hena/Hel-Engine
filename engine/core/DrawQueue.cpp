@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/05 18:37:54 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:38:13                                        */
+/*  Last Modified: 2026/07/05 19:50:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,8 @@
 #include "core/DrawQueue.hpp"
 
 namespace	hel {
+
+DrawQueue::RequestMap		DrawQueue::_requests = {};
 
 DrawQueue::RequestVector	*DrawQueue::RequestMap::at(const uint32_t levelAsked, const PhaseDependencies &depAsked) {
 	auto	&data = _data[levelAsked];

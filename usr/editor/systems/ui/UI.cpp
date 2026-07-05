@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 11:18:23                                        */
+/*  Last Modified: 2026/07/05 19:44:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,6 +22,8 @@
 #include "systems/ui/StyleEditor.hpp"
 #include "systems/ui/SceneViewport.hpp"
 #include "systems/ui/Inspector.hpp"
+#include "api/vulkan/Renderer.hpp"
+#include "platform/ui/UiContext.hpp"
 
 #include <ui/ImGui/imgui.h>
 #include <fstream>

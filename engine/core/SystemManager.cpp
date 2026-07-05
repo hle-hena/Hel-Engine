@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:47:01                                        */
+/*  Last Modified: 2026/07/05 19:48:56                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -206,6 +206,10 @@ void	SystemManager::sort(EngineKey) {
 	EntryVec	sortedFuncs{};
 	kahnSort(_data, sortedFuncs, renderCycleDep); std::cout << std::endl;
 	splitPasses(sortedFuncs);
+}
+
+void	SystemManager::clear(EngineKey) {
+	_data.clear();
 }
 
 void	SystemManager::splitPasses(const EntryVec &sortedFuncs) {

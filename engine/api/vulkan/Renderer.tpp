@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/22 12:19:09 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 16:04:40                                        */
+/*  Last Modified: 2026/07/05 19:45:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,6 +16,7 @@
 
 #include "api/vulkan/Renderer.hpp"
 #include <iostream>
+#include <cstring>
 
 namespace	hel {
 
@@ -49,7 +50,7 @@ DrawCall	&DrawCall::addPush(VkShaderStageFlags stage, const T &data) {
 		return (*this);
 	_pushInfos.stage = stage;
 	_pushInfos.structSize = structSize;
-	memcpy(_pushInfos.data, &data, structSize);
+	std::memcpy(_pushInfos.data, &data, structSize);
 	_hasPush = true;
 	return (*this);
 }

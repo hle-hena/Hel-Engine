@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:03:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 17:38:20                                        */
+/*  Last Modified: 2026/07/05 19:46:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,6 +27,8 @@
 #include <algorithm>
 #include "Geometry.hpp"
 #include "utils/VFS.hpp"
+
+#include <iostream>
 
 namespace std {
 
