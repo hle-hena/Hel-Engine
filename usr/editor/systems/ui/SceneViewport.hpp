@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:39 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 16:26:44                                        */
+/*  Last Modified: 2026/07/06 10:39:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,15 +16,15 @@
 
 #pragma once
 
-# include <ui/ImGui/imgui.h>
-# include "systems/ui/Panel.hpp"
-# include "ecs/Entity.hpp"
+#include <ui/ImGui/imgui.h>
+#include <string>
+
+#include "systems/ui/Panel.hpp"
+#include "ecs/Entity.hpp"
 
 namespace	hel {
 
 class	Window;
-class	Device;
-class	ImagePool;
 struct	RenderRequest;
 
 }

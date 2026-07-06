@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:44:32                                        */
+/*  Last Modified: 2026/07/06 11:01:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,17 +17,18 @@
 
 #include "systems/ui/UI.hpp"
 #include "systems/ui/UIHelper.hpp"
-#include "core/Engine.hpp"
 #include "systems/ui/EntityHierarchy.hpp"
 #include "systems/ui/StyleEditor.hpp"
 #include "systems/ui/SceneViewport.hpp"
 #include "systems/ui/Inspector.hpp"
 #include "api/vulkan/Renderer.hpp"
 #include "platform/ui/UiContext.hpp"
+#include "systems/ui/Dock.hpp"
+#include "core/SystemManager.hpp"
+#include "platform/window/Window.hpp"
 
 #include <ui/ImGui/imgui.h>
 #include <fstream>
-#include "core/SystemManager.hpp"
 
 namespace	hel::sys {
 

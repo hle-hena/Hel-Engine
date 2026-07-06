@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:21:34                                        */
+/*  Last Modified: 2026/07/06 11:02:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -106,4 +106,4 @@ class	Registry {
 
 }
 
-# include "ecs/Registry.tpp"
+#include "ecs/Registry.tpp"

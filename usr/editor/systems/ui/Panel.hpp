@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:19:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 16:25:51                                        */
+/*  Last Modified: 2026/07/06 10:37:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,9 +16,8 @@
 
 #pragma once
 
-# include <string>
 #include <limits>
-# include <ui/ImGui/imgui.h>
+#include <ui/ImGui/imgui.h>
 
 #include "HelExpected.hpp"
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:36:29                                        */
+/*  Last Modified: 2026/07/06 10:59:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,34 +16,19 @@
 
 #pragma once
 
-#include "api/vulkan/PipelineMap.hpp"
-#include "core/Frame.hpp"
-#include "ecs/Registry.hpp"
-
+#include "HelSystem.hpp"
 #include "components/Transform.hpp"
 #include "components/Model.hpp"
 #include "components/Texture.hpp"
 #include "components/Tint.hpp"
 #include "components/HideTag.hpp"
 #include "components/SelectionTag.hpp"
-#include "core/ReadQueue.hpp"
-#include "core/RenderQueue.hpp"
 
-#include "HelSystem.hpp"
-#include <cstdint>
-# define GLM_FORCE_RADIANS
-#include <glm/fwd.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <optional>
 #include <tuple>
 #include <vector>
 #include <unordered_map>
-
-namespace	hel {
-
-class	AssetManager;
-
-}
 
 namespace	hel::sys {
 

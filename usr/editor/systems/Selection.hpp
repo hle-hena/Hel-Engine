@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:39:09                                        */
+/*  Last Modified: 2026/07/06 10:56:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,20 +16,7 @@
 
 #pragma once
 
-#include <cstdint>
-#include <vulkan/vulkan.h>
-#include <glm/glm.hpp>
-
 #include "HelSystem.hpp"
-#include "core/ReadQueue.hpp"
-#include "core/RenderQueue.hpp"
-
-namespace	hel {
-
-class	AssetManager;
-class	Window;
-
-}
 
 namespace	hel::sys {
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:36:48                                        */
+/*  Last Modified: 2026/07/06 11:01:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,36 +15,16 @@
 /* *************************************************************************  */
 
 #include "systems/Transform.hpp"
-#include "api/vulkan/PipelineMap.hpp"
-#include "api/vulkan/Renderer.hpp"
-#include "api/vulkan/Sampler.hpp"
-#include "core/Frame.hpp"
-#include "ecs/Entity.hpp"
-#include "ecs/Registry.hpp"
 #include "components/Camera.hpp"
-#include "ecs/AssetManager.hpp"
 #include "assetType/Geometry.hpp"
 #include "assetType/Texture.hpp"
-#include "platform/input/InputState.hpp"
-#include "platform/window/Window.hpp"
-#include "utils/mathUtils.hpp"
+#include "GlobalData.hpp"
+
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <cstdint>
 #include <ui/ImGui/imgui.h>
-# define GLM_FORCE_RADIANS
-#include <glm/common.hpp>
-#include <glm/ext/quaternion_transform.hpp>
-#include <glm/ext/quaternion_trigonometric.hpp>
-#include <glm/ext/vector_float3.hpp>
-#include <glm/fwd.hpp>
-#include <glm/geometric.hpp>
 #include <string>
-#include <vulkan/vulkan_core.h>
-#include "core/SystemManager.hpp"
-#include "GlobalData.hpp"
-#include "core/DrawQueue.hpp"
-
 
 namespace	hel::sys {
 

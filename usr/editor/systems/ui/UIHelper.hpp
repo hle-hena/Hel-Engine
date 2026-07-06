@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/03 11:48:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 13:04:45                                        */
+/*  Last Modified: 2026/07/06 10:46:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,19 +16,22 @@
 
 #pragma once
 
-# define GLFW_INCLUDE_VULKAN
-# include <GLFW/glfw3.h>
-# include <string>
-# include <math.h>
-# include <ui/ImGui/imgui.h>
+#include <optional>
+#include <unordered_map>
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+#include <string>
+#include <math.h>
+#include <ui/ImGui/imgui.h>
+#include <vector>
 
-# include "platform/window/Window.hpp"
+#include "utils/Setters.hpp"
 
-#define	SETTER(name, type, member)	\
-	auto	&set##name(type val)	{ member = val; return (*this); }
+namespace	hel {
 
-#define	SETTER_INIT(name, type, member)	\
-	auto	&set##name(type val)	{ member = {val}; return (*this); }
+class	Window;
+
+}
 
 namespace	hel::sys {
 

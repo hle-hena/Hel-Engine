@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/03 18:56:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/03 11:35:41                                        */
+/*  Last Modified: 2026/07/06 10:54:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,13 +15,8 @@
 /* *************************************************************************  */
 
 #include "systems/EditorController.hpp"
-#include "ecs/Registry.hpp"
 #include "components/Transform.hpp"
 #include "components/Controllers.hpp"
-#include "platform/input/InputState.hpp"
-#include "platform/window/Window.hpp"
-#include "core/Frame.hpp"
-#include "core/SystemManager.hpp"
 
 namespace	hel::sys {
 

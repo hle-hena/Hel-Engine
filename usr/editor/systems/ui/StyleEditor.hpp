@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/17 16:32:44 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 16:26:55                                        */
+/*  Last Modified: 2026/07/06 10:40:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,12 +16,18 @@
 
 #pragma once
 
-# include "systems/ui/Panel.hpp"
+#include "systems/ui/Panel.hpp"
 
+#include <map>
+#include <vector>
+#include <utils/json.hpp>
+#include <ui/ImGui/imgui.h>
 
-# include <map>
-# include <utils/json.hpp>
-# include <ui/ImGui/imgui.h>
+namespace	hel {
+
+class	Window;
+
+}
 
 namespace	hel::sys {
 
