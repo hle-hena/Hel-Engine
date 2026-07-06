@@ -1,20 +1,20 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: PhaseDependancy.cpp                                                 */
+/*  File: PhaseDependency.cpp                                                 */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/06/05 12:15:13 by pop-os                                    */
+/*  Created: 2026/07/05 15:14:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/17 10:50:59                                        */
-/*             By: pop-os                                                     */
+/*  Last Modified: 2026/07/05 18:22:03                                        */
+/*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
 /*                                                                            */
-/*  Copyright (c) 2026 pop-os                                                 */
+/*  Copyright (c) 2026 hle-hena                                               */
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "core/PhaseDependancy.hpp"
+#include "core/PhaseDependency.hpp"
 #include "utils/mathUtils.hpp"
 
 namespace hel {

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/29 19:32:54                                        */
+/*  Last Modified: 2026/07/05 19:32:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,10 +15,10 @@
 /* *************************************************************************  */
 
 #include "platform/window/Window.hpp"
+#include "platform/ui/UiContext.hpp"
 #include "platform/window/GLFW.hpp"
 #include "api/vulkan/VulkanContext.hpp"
 #include "platform/input/InputState.hpp"
-#include <GLFW/glfw3.h>
 
 namespace	hel {
 
@@ -35,7 +35,8 @@ Window::windowPtr	Window::createWindow(uint32_t width, uint32_t height,
 		if (glfwCreateWindowSurface(ctx->getInstance(), window->getWindow(),
 									nullptr, &window->_surface) != VK_SUCCESS)
 			return (nullptr);
-		if (window->_swapchain.initiateSwapChain(*window)) {
+		if (auto res = window->_swapchain.initiateSwapChain(*window); !res) {
+			std::cerr << res.error() << std::endl;
 			return (nullptr);
 		}
 		UiContext::init(window.get(), ctx->getDevice());

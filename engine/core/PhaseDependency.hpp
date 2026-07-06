@@ -1,16 +1,16 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: PhaseDependancy.hpp                                                 */
+/*  File: PhaseDependency.hpp                                                 */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/06/05 12:15:03 by pop-os                                    */
+/*  Created: 2026/07/05 15:14:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 18:16:10                                        */
-/*             By: pop-os                                                     */
+/*  Last Modified: 2026/07/05 18:21:47                                        */
+/*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
 /*                                                                            */
-/*  Copyright (c) 2026 pop-os                                                 */
+/*  Copyright (c) 2026 hle-hena                                               */
 /*                                                                            */
 /* *************************************************************************  */
 
@@ -19,6 +19,8 @@
 #include "utils/Setters.hpp"
 #include "api/vulkan/Image.hpp"
 
+#include <vulkan/vulkan.h>
+#include <vector>
 #include <string>
 #include <optional>
 

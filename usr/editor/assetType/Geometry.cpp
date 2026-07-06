@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:03:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 17:38:20                                        */
+/*  Last Modified: 2026/07/06 10:21:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,18 +15,17 @@
 /* *************************************************************************  */
 
 #include "assetType/Geometry.hpp"
-#include "api/vulkan/Buffer.hpp"
 #include "utils/mathUtils.hpp"
+#include "utils/VFS.hpp"
 
 #ifndef TINYOBJLOADER_IMPLEMENTATION
-# define TINYOBJLOADER_IMPLEMENTATION
-# include <assetLoader/tinyObjLoader.h>
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <assetLoader/tinyObjLoader.h>
 #endif
 
 #include <unordered_map>
 #include <algorithm>
-#include "Geometry.hpp"
-#include "utils/VFS.hpp"
+#include <iostream>
 
 namespace std {
 

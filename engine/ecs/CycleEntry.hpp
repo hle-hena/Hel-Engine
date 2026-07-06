@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: SceneViewport.hpp                                                   */
+/*  File: CycleEntry.hpp                                                      */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/03/09 11:38:39 by hle-hena                                  */
+/*  Created: 2026/07/05 16:09:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:39:18                                        */
+/*  Last Modified: 2026/07/05 19:08:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,37 +16,46 @@
 
 #pragma once
 
-#include <ui/ImGui/imgui.h>
-#include <string>
+#include <variant>
 
-#include "systems/ui/Panel.hpp"
-#include "ecs/Entity.hpp"
+#include "core/PhaseDependency.hpp"
 
 namespace	hel {
 
-class	Window;
-struct	RenderRequest;
+struct	FrameContext;
+class	Renderer;
 
 }
 
 namespace	hel::sys {
 
-class	SceneViewport : public Panel<SceneViewport> {
-	public:
-		static constexpr const char	*label = "Viewport";
-		SceneViewport(void) = default;
-		~SceneViewport(void) = default;
+class	ISystem;
 
-		expected<void>	onInit(void) override;
-
-		void	render(Window *window, const ImVec2 &size) override;
-
-		RenderRequest	*mainRequest{nullptr};
-
+struct	CycleEntry {
 	private:
-		bool		_captured;
-		Entity::id	_handle{Entity::NOT_REGISTERED};
-		std::string	_showImage{"Color Image"};
+		using UpdateFn = void (ISystem::*)(const FrameContext &);
+		using RenderFn = void (ISystem::*)(const Renderer &);
+
+		using AnyFn = std::variant<RenderFn, UpdateFn>;
+
+		sys::ISystem		*_system;
+		PhaseDependencies	_dep{};
+		AnyFn				_func;
+
+	public:
+		CycleEntry(sys::ISystem *system, AnyFn func)
+			:	_system(system), _func(func)	{}
+
+		PhaseDependencies	*getDep(void)	{ return &_dep; }
+
+		template <typename T>
+		void	execute(const T &arg) {
+			std::visit([&](auto fn){
+				if constexpr (std::is_invocable_v<decltype(fn), sys::ISystem *, const T&>) {
+					(_system->*fn)(arg);
+				}
+			}, _func);
+		}
 };
 
 }

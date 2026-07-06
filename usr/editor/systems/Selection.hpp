@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/29 19:30:14                                        */
+/*  Last Modified: 2026/07/06 10:56:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,20 +16,7 @@
 
 #pragma once
 
-#include <cstdint>
-#include <vulkan/vulkan.h>
-#include <glm/glm.hpp>
-
-#include "core/Queues.hpp"
 #include "HelSystem.hpp"
-#include "api/vulkan/PipelineMap.hpp"
-
-namespace	hel {
-
-class	AssetManager;
-class	Window;
-
-}
 
 namespace	hel::sys {
 

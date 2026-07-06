@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:34:45 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/29 16:14:24                                        */
+/*  Last Modified: 2026/07/05 18:43:25                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,12 +17,12 @@
 #pragma once
 
 #include <string>
+
 #include "api/vulkan/VulkanContext.hpp"
 #include "ecs/Registry.hpp"
 #include "core/SystemManager.hpp"
 #include "core/Frame.hpp"
 #include "platform/input/InputState.hpp"
-#include "api/vulkan/ImagePool.hpp"
 #include "HelExpected.hpp"
 
 namespace	hel {
@@ -57,7 +57,7 @@ class	Engine {
 		void	updateTick(FrameContext &frameCtx);
 		void	renderTick(Window *window, FrameContext &ctx);
 		void	executePass(FrameContext &ctx,
-							const SystemManager::FuncVec &funcs);
+							const SystemManager::EntryVec &funcs);
 
 		EngineConfig	_config;
 		GlobalData		*_userData;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/05/01 12:18:01                                        */
+/*  Last Modified: 2026/07/05 15:55:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,33 +16,34 @@
 
 #include "api/vulkan/Pipeline.hpp"
 #include "api/vulkan/Device.hpp"
-#include "utils/healthHelper.hpp"
-
-#include <cassert>
-#include <vulkan/vulkan_core.h>
 
 namespace hel {
 
-Pipeline::Pipeline(Device& device)
-	:	_device{device} {
+Pipeline::~Pipeline() {
+	deleteGraphicsPipeline();
 }
 
-Pipeline::~Pipeline() {
+expected<void>	Pipeline::init(Device *device, PipelineConfig &config,
+			const std::vector<VkPipelineShaderStageCreateInfo> &stageInfo) {
+	_device = device;
+	if (config.type == PipelineConfig::Compute)
+		return unexpected("Not yet supported pipeline: Compute pipeline.");
+	return createGraphicsPipeline(config, stageInfo);
 }
 
 void	Pipeline::deleteGraphicsPipeline(void) {
 	if (_graphicsPipeline != VK_NULL_HANDLE)
-		vkDestroyPipeline(_device.getLogical(), _graphicsPipeline, nullptr);
+		vkDestroyPipeline(_device->getLogical(), _graphicsPipeline, nullptr);
 }
 
 void Pipeline::bind(VkCommandBuffer commandBuffer) {
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _graphicsPipeline);
 }
 
-bool	Pipeline::createGraphicsPipeline(PipelineConfig &config,
-						const std::vector<VkPipelineShaderStageCreateInfo> &stageInfo) {
+expected<void>	Pipeline::createGraphicsPipeline(PipelineConfig &config,
+			const std::vector<VkPipelineShaderStageCreateInfo> &stageInfo) {
 	if (config.pipelineLayout == VK_NULL_HANDLE)
-		RETURN_SET_UNHEALTHY("Missing pipeline layout for pipeline creation", true);
+		return unexpected("Missing pipeline layout for pipeline creation");
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -77,10 +78,10 @@ bool	Pipeline::createGraphicsPipeline(PipelineConfig &config,
 	pipelineInfo.subpass = config.subpass;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 	pipelineInfo.basePipelineIndex = -1;
-	if (vkCreateGraphicsPipelines(_device.getLogical(), VK_NULL_HANDLE, 1,
+	if (vkCreateGraphicsPipelines(_device->getLogical(), VK_NULL_HANDLE, 1,
 								&pipelineInfo, nullptr, &_graphicsPipeline) != VK_SUCCESS)
-		RETURN_SET_UNHEALTHY("Failed to create a pipeline", true);
-	return (false);
+		return unexpected("Failed to create a pipeline");
+	return {};
 }
 
 void	Pipeline::setBlendAttachment(PipelineConfig &config, uint32_t index,

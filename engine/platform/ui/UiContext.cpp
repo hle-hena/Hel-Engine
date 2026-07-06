@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/29 19:22:49                                        */
+/*  Last Modified: 2026/07/05 19:30:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,17 +17,18 @@
 #include "platform/ui/UiContext.hpp"
 #include "platform/window/Window.hpp"
 #include "api/vulkan/Descriptors.hpp"
-#include "api/vulkan/Device.hpp"
-#include "api/vulkan/Sampler.hpp"
 #include "api/vulkan/VulkanContext.hpp"
+
+#include <ui/ImGui/imgui_impl_vulkan.h>
+#include <ui/ImGui/imgui_impl_glfw.h>
 
 namespace	hel {
 
-bool								UiContext::_fullyInitialised{false};
-std::unique_ptr<DescriptorPool>		UiContext::_pool{nullptr};
+bool										UiContext::_fullyInitialised{false};
+std::unique_ptr<DescriptorPool>				UiContext::_pool{nullptr};
 std::unordered_map<
 			VkDescriptorSet,
-			DescriptorSet::ptr>		UiContext::_textures{};
+			std::unique_ptr<DescriptorSet>>	UiContext::_textures{};
 ImGuiContext						*UiContext::_context{nullptr};
 
 void	UiContext::destroy(Device *device) {

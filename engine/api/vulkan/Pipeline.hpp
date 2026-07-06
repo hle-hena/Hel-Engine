@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/03 15:20:26                                        */
+/*  Last Modified: 2026/07/06 11:02:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,10 +16,10 @@
 
 #pragma once
 
-# define GLFW_INCLUDE_VULKAN
-# include <GLFW/glfw3.h>
-# include <string>
-# include <vector>
+#include <vulkan/vulkan.h>
+#include <vector>
+
+#include "HelExpected.hpp"
 
 namespace hel {
 
@@ -43,28 +43,27 @@ struct	PipelineConfig {
 	VkPipelineLayout									pipelineLayout{nullptr};
 	uint32_t											subpass{0};
 
+	enum	Type {
+		Graphics,
+		Compute
+	};
+	Type	type{Graphics};
+
 	VkPipelineRenderingCreateInfo						renderingInfo{};
 };
 
 class	Pipeline {
 	public:
-		Pipeline(Device &device);
+		Pipeline(void) = default;
 		~Pipeline(void);
+
+		expected<void>	init(Device *device, PipelineConfig &config,
+				const std::vector<VkPipelineShaderStageCreateInfo> &stageInfo);
 
 		Pipeline(const Pipeline&) = delete;
 		Pipeline	&operator=(const Pipeline&) = delete;
 
-		std::string		getReason(void) const {
-			return (_reason);
-		}
-		bool			isHealthy(void) const {
-			return (_healthy);
-		}
-
 		void	bind(VkCommandBuffer commandBuffer);
-		bool	createGraphicsPipeline(PipelineConfig &config,
-					const std::vector<VkPipelineShaderStageCreateInfo> &stageInfo);
-		void	deleteGraphicsPipeline(void);
 
 		static void	defaultPipelineconfig(PipelineConfig &config);
 		static void	setBlendAttachment(PipelineConfig &config, uint32_t index,
@@ -73,12 +72,15 @@ class	Pipeline {
 		static void	setVertexInputDescriptions(PipelineConfig &config);
 
 	private:
-		bool				_healthy{true};
-		std::string			_reason{""};
-		Device				&_device;
+		Device				*_device;
+		bool				_fullyInit;
 		VkPipeline			_graphicsPipeline{VK_NULL_HANDLE};
+
+		void			deleteGraphicsPipeline(void);
+		expected<void>	createGraphicsPipeline(PipelineConfig &config,
+			const std::vector<VkPipelineShaderStageCreateInfo> &stageInfo);
 };
 
 }
 
-# include "api/vulkan/Pipeline.tpp"
+#include "api/vulkan/Pipeline.tpp"

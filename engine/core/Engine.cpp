@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:39:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/29 19:21:46                                        */
+/*  Last Modified: 2026/07/05 18:47:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,11 +19,16 @@
 
 #include "core/Engine.hpp"
 #include "platform/window/Window.hpp"
+#include "platform/ui/UiContext.hpp"
 #include "api/vulkan/ImagePool.hpp"
-#include "core/Queues.hpp"
+#include "core/RenderQueue.hpp"
+#include "core/ReadQueue.hpp"
+#include "core/DrawQueue.hpp"
 #include "api/vulkan/Renderer.hpp"
 #include "platform/window/GLFW.hpp"
 #include "api/vulkan/Sampler.hpp"
+#include "ecs/CycleEntry.hpp"
+#include "ecs/ISystem.hpp"
 
 namespace	hel {
 
@@ -193,7 +198,7 @@ void	Engine::renderTick(Window *window, FrameContext &ctx) {
 	swapchain.present(*window, ctx.swapIndex);
 }
 
-void	Engine::executePass(FrameContext &ctx, const SystemManager::FuncVec &funcs) {
+void	Engine::executePass(FrameContext &ctx, const SystemManager::EntryVec &funcs) {
 	if (funcs.empty())
 		return ;
 	if (auto renderer = RenderPass(*_device, ctx, _imagePool.get(), funcs)

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/17 14:25:36                                        */
+/*  Last Modified: 2026/07/05 16:02:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,27 +16,16 @@
 
 #pragma once
 
-#include <cstdint>
 #include <vulkan/vulkan.h>
 
 #include "utils/Setters.hpp"
-#include "api/vulkan/PipelineMap.hpp"
 #include "api/vulkan/RenderPass.hpp"
-
-namespace hel::sys {
-
-class	ISystem;
-
-}
 
 namespace	hel {
 
-class	Image;
-class	Renderer;
 class	Device;
+class	PipelineMap;
 struct	FrameContext;
-struct	RenderRequest;
-class	ImagePool;
 
 struct	DrawCall;
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/26 11:02:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/03/23 15:45:43                                        */
+/*  Last Modified: 2026/07/05 16:30:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,8 +17,6 @@
 #include "api/vulkan/Sampler.hpp"
 #include "api/vulkan/Device.hpp"
 #include "utils/mathUtils.hpp"
-
-#include <algorithm>
 
 namespace	std {
 

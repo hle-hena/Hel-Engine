@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 10:44:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 11:09:05                                        */
+/*  Last Modified: 2026/07/05 19:09:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,7 @@
 #pragma once
 
 #include "ecs/ValidComponent.hpp"
+
 #include <string_view>
 #include <optional>
 #include <cstdint>

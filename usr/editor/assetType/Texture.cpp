@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/24 15:13:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/26 16:34:33                                        */
+/*  Last Modified: 2026/07/06 10:21:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,12 +15,12 @@
 /* *************************************************************************  */
 
 #include "assetType/Texture.hpp"
+#include "utils/VFS.hpp"
+#include "api/vulkan/Image.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <assetLoader/stb_image.h>
-
 #include <iostream>
-#include "utils/VFS.hpp"
 
 namespace	hel {
 

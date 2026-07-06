@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:49:04 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 16:58:20                                        */
+/*  Last Modified: 2026/07/05 16:04:04                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,13 +14,9 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-# include "api/vulkan/Renderer.hpp"
-# include "api/vulkan/Image.hpp"
-# include "api/vulkan/Device.hpp"
-# include "core/Frame.hpp"
-# include "ecs/ISystem.hpp"
-# include "api/vulkan/ImagePool.hpp"
-# include "core/Queues.hpp"
+#include "api/vulkan/Renderer.hpp"
+#include "api/vulkan/Device.hpp"
+#include "core/Frame.hpp"
 
 namespace	hel {
 

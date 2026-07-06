@@ -1,34 +1,39 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: healthHelper.hpp                                                    */
+/*  File: DrawQueue.cpp                                                       */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2025/12/16 18:27:40 by hle-hena                                  */
+/*  Created: 2026/07/05 18:37:54 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2025/12/16 18:51:29                                        */
+/*  Last Modified: 2026/07/05 19:50:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
 /*                                                                            */
-/*  Copyright (c) 2025 hle-hena                                               */
+/*  Copyright (c) 2026 hle-hena                                               */
 /*                                                                            */
 /* *************************************************************************  */
 
-#pragma once
+#include "core/DrawQueue.hpp"
 
 namespace	hel {
 
-#define SET_UNHEALTHY(reason)	\
-do {							\
-	_healthy = false;			\
-	_reason = reason;			\
-} while (0);
+DrawQueue::RequestMap		DrawQueue::_requests = {};
 
-#define RETURN_SET_UNHEALTHY(reason, ...)	\
-do {										\
-	_healthy = false;						\
-	_reason = reason;						\
-	return __VA_OPT__((__VA_ARGS__));		\
-} while (0);
+DrawQueue::RequestVector	*DrawQueue::RequestMap::at(const uint32_t levelAsked, const PhaseDependencies &depAsked) {
+	auto	&data = _data[levelAsked];
+	for (auto &vector: data) {
+		if (vector.dep == depAsked)
+			return &vector;
+	}
+	auto	&newVec = data.emplace_back();
+	newVec.dep = depAsked;
+	return &newVec;
+}
+
+void	DrawQueue::requestDraw(uint32_t level, DrawCall &&drawCommand,
+							PhaseDependencies &dep) {
+	_requests.at(level, dep)->draws.emplace_back(std::move(drawCommand));
+}
 
 }

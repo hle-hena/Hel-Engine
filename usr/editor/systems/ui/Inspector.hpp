@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/02 15:26:44                                        */
+/*  Last Modified: 2026/07/06 10:34:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,17 +16,17 @@
 
 #pragma once
 
-# include <unordered_map>
-# include <typeindex>
-# include <functional>
-# include <ui/ImGui/imgui.h>
+#include <unordered_map>
+#include <typeindex>
+#include <functional>
+#include <ui/ImGui/imgui.h>
 
-# include "ecs/Entity.hpp"
-# include "systems/ui/Panel.hpp"
+#include "systems/ui/Panel.hpp"
+#include "ecs/Entity.hpp"
+#include "HelExpected.hpp"
 
 namespace	hel {
 
-class	Registry;
 class	Window;
 struct	OpaqueComponentHandle;
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:30:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/29 14:19:48                                        */
+/*  Last Modified: 2026/07/06 10:25:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,14 +16,13 @@
 
 #pragma once
 
-# include "systems/ui/Panel.hpp"
-# include "systems/ui/UIHelper.hpp"
+#include "systems/ui/UIHelper.hpp"
+#include "utils/Setters.hpp"
 
-# include <utils/json.hpp>
-# include <ui/ImGui/imgui.h>
-
-# include <vector>
-# include <memory>
+#include <utils/json.hpp>
+#include <ui/ImGui/imgui.h>
+#include <vector>
+#include <memory>
 
 namespace	hel {
 
@@ -34,6 +33,7 @@ struct	RenderRequest;
 namespace	hel::sys {
 
 class	UI;
+class	IPanel;
 
 class	Dock {
 	public:

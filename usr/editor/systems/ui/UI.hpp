@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 13:04:43                                        */
+/*  Last Modified: 2026/07/06 11:02:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,22 +16,19 @@
 
 #pragma once
 
-# include <memory>
-# include <functional>
+#include <memory>
+#include <functional>
+#include <ui/ImGui/imgui.h>
 
-# include "HelSystem.hpp"
-# include "systems/ui/Dock.hpp"
+#include "HelSystem.hpp"
 
-# define PanelFactoryMacro(panelType)							\
+#define PanelFactoryMacro(panelType)							\
 	[](UI *ui, Dock *dock){ ui->addNewPanel<panelType>(dock); }
 
-namespace	hel {
-
-class	Window;
-
-}
-
 namespace	hel::sys {
+
+class	Dock;
+class	IPanel;
 
 class	UI : public ISystem {
 	public:
@@ -72,4 +69,4 @@ class	UI : public ISystem {
 
 }
 
-# include "systems/ui/UI.tpp"
+#include "systems/ui/UI.tpp"

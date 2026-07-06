@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 15:01:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/30 21:05:49                                        */
+/*  Last Modified: 2026/07/05 19:25:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,14 +16,13 @@
 
 #pragma once
 
-# define GLFW_INCLUDE_VULKAN
-# include <GLFW/glfw3.h>
-# define GLM_FORCE_RADIANS
-# define GLM_FORCE_DEPTH_ZERO_TO_ONE
-# include <glm/glm.hpp>
-# include <bitset>
-# include <vector>
-# include <optional>
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <bitset>
+#include <optional>
 
 namespace	hel::input {
 

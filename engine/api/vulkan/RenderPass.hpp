@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:27 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:22:07                                        */
+/*  Last Modified: 2026/07/05 16:20:48                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,12 +19,25 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <map>
-#include "ecs/ISystem.hpp"
+#include <unordered_map>
+#include <string>
+#include <optional>
+
+#include "api/vulkan/PipelineMap.hpp"
+
+namespace	hel::sys {
+
+struct	CycleEntry;
+
+}
 
 namespace	hel {
 
+class	Image;
 class	Device;
+class	Renderer;
 class	ImagePool;
+struct	ImageDep;
 struct	FrameContext;
 struct	RenderRequest;
 struct	PhaseDependencies;
@@ -32,7 +45,7 @@ struct	PhaseDependencies;
 class	RenderPass {
 	public:
 		RenderPass(Device &device, FrameContext &context, ImagePool *imagePool,
-			const std::vector<sys::ISystem::Func*> &systems);
+			const std::vector<sys::CycleEntry *> &systems);
 		RenderPass(Device &device, FrameContext &context, ImagePool *imagePool,
 			PhaseDependencies dep);
 		RenderPass(RenderPass &&other);

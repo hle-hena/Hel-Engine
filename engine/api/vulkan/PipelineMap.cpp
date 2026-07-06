@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 15:07:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 17:28:06                                        */
+/*  Last Modified: 2026/07/05 15:59:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -58,8 +58,6 @@ PipelineMap::PipelineMap(const Config &conf)
 PipelineMap::~PipelineMap(void) {
 	if (_layout)
 		vkDestroyPipelineLayout(_device.getLogical(), _layout, nullptr);
-	for (auto &it: _pipelines)
-		it.second.deleteGraphicsPipeline();
 }
 
 void	PipelineMap::initDefaultSets(std::vector<VkDescriptorSetLayout> sets) {
@@ -101,7 +99,7 @@ bool	PipelineMap::getStageInfo(void) {
 
 bool	PipelineMap::bindPipeline(const RenderingConfig &renderingConfig,
 								VkCommandBuffer commandBuffer) {
-	auto	[it, inserted] = _pipelines.try_emplace(renderingConfig, _device);
+	auto	[it, inserted] = _pipelines.try_emplace(renderingConfig);
 	auto	&pipeline = it->second;
 	if (inserted) {
 		if (!getLayout() || !getStageInfo())
@@ -131,8 +129,10 @@ bool	PipelineMap::bindPipeline(const RenderingConfig &renderingConfig,
 			config.renderingInfo.stencilAttachmentFormat
 				= renderingConfig.stencilFormat.value();
 
-		if (pipeline.createGraphicsPipeline(config, _shaderStageInfos))
-			return (true);
+		if (auto res = pipeline.init(&_device, config, _shaderStageInfos); !res) {
+			std::cerr << res.error() << std::endl;
+			return true;
+		}
 	}
 
 	pipeline.bind(commandBuffer);

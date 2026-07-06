@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 11:15:06                                        */
+/*  Last Modified: 2026/07/06 10:36:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,15 +17,15 @@
 #include "systems/ui/Inspector.hpp"
 #include "ecs/Registry.hpp"
 #include "platform/window/Window.hpp"
+#include "systems/ui/UIHelper.hpp"
+
+#include "ecs/ComponentManager.hpp"
 #include "ecs/Hierarchy.hpp"
 #include "components/Camera.hpp"
 #include "components/Transform.hpp"
 #include "components/Controllers.hpp"
 #include "components/Model.hpp"
 #include "components/Name.hpp"
-#include "ecs/ComponentManager.hpp"
-
-#include "systems/ui/UIHelper.hpp"
 
 #include <ui/ImGui/imgui.h>
 #include <ui/ImGui/imgui_stdlib.h>

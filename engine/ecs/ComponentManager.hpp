@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/23 10:01:59 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/03 11:53:04                                        */
+/*  Last Modified: 2026/07/06 10:35:50                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,13 +16,13 @@
 
 #pragma once
 
-#include "ecs/IComponent.hpp"
+#include "ecs/ValidComponent.hpp"
 #include "ecs/Entity.hpp"
 #include "ecs/Registry.hpp"
+
 #include <functional>
 #include <vector>
 #include <unordered_map>
-
 #include <iostream>
 
 namespace hel {

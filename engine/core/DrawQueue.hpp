@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: SceneViewport.hpp                                                   */
+/*  File: DrawQueue.hpp                                                       */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/03/09 11:38:39 by hle-hena                                  */
+/*  Created: 2026/07/05 18:30:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:39:18                                        */
+/*  Last Modified: 2026/07/05 18:37:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,37 +16,41 @@
 
 #pragma once
 
-#include <ui/ImGui/imgui.h>
-#include <string>
+#include <cstdint>
+#include <vector>
+#include <map>
 
-#include "systems/ui/Panel.hpp"
-#include "ecs/Entity.hpp"
+#include "core/PhaseDependency.hpp"
+#include "api/vulkan/Renderer.hpp"
 
 namespace	hel {
 
-class	Window;
-struct	RenderRequest;
-
-}
-
-namespace	hel::sys {
-
-class	SceneViewport : public Panel<SceneViewport> {
+class	DrawQueue {
 	public:
-		static constexpr const char	*label = "Viewport";
-		SceneViewport(void) = default;
-		~SceneViewport(void) = default;
+		struct	RequestVector {
+			PhaseDependencies		dep;
+			std::vector<DrawCall>	draws;
+		};
+		using InnerMap = std::map<uint32_t, std::vector<RequestVector>>;
+		struct	RequestMap {
+			public:
+				RequestVector	*at(uint32_t levelAsked, const PhaseDependencies &depAsked);
+				void			clear(void);
+			private:
+				InnerMap	_data{};
+			
+			friend class DrawQueue;
+		};
 
-		expected<void>	onInit(void) override;
-
-		void	render(Window *window, const ImVec2 &size) override;
-
-		RenderRequest	*mainRequest{nullptr};
+		static void	requestDraw(uint32_t level, DrawCall &&drawCommand,
+								PhaseDependencies &dep);
+		static InnerMap	flush(void) { return std::move(_requests._data); };
 
 	private:
-		bool		_captured;
-		Entity::id	_handle{Entity::NOT_REGISTERED};
-		std::string	_showImage{"Color Image"};
+		static RequestMap	_requests;
+
+	template <typename ReadType>
+	friend struct	Builder;
 };
 
 }

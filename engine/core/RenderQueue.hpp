@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: SceneViewport.hpp                                                   */
+/*  File: RenderQueue.hpp                                                     */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/03/09 11:38:39 by hle-hena                                  */
+/*  Created: 2026/07/05 18:24:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:39:18                                        */
+/*  Last Modified: 2026/07/05 18:25:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,37 +16,40 @@
 
 #pragma once
 
-#include <ui/ImGui/imgui.h>
 #include <string>
+#include <glm/glm.hpp>
 
-#include "systems/ui/Panel.hpp"
 #include "ecs/Entity.hpp"
 
 namespace	hel {
 
-class	Window;
-struct	RenderRequest;
+class	Image;
 
-}
+struct	RenderRequest {
+	std::string									requestType;
+	Entity::id									handle;
+	glm::vec2									origin{0.f, 0.f};
+	std::unordered_map<std::string, Image *>	images{};
 
-namespace	hel::sys {
+	bool	operator==(const RenderRequest &other) const;
+	struct	Hasher {
+		size_t	operator()(const RenderRequest &request) const;
+	};
+};
 
-class	SceneViewport : public Panel<SceneViewport> {
+
+class	RenderQueue {
 	public:
-		static constexpr const char	*label = "Viewport";
-		SceneViewport(void) = default;
-		~SceneViewport(void) = default;
-
-		expected<void>	onInit(void) override;
-
-		void	render(Window *window, const ImVec2 &size) override;
-
-		RenderRequest	*mainRequest{nullptr};
+		static void		push(const RenderRequest &request) {
+			if (!request.images.empty() && request.images.contains("mainColor"))
+				_requests.push_back(request);
+		}
+		static std::vector<RenderRequest>	flush(void) {
+			return (std::move(_requests));
+		}
 
 	private:
-		bool		_captured;
-		Entity::id	_handle{Entity::NOT_REGISTERED};
-		std::string	_showImage{"Color Image"};
+		static std::vector<RenderRequest>	_requests;
 };
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/18 18:14:28                                        */
+/*  Last Modified: 2026/07/05 19:48:56                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,15 +15,22 @@
 /* *************************************************************************  */
 
 #include "core/SystemManager.hpp"
+#include "core/PhaseDependency.hpp"
+#include "ecs/CycleEntry.hpp"
+#include "ecs/ISystem.hpp"
+
+#include <optional>
+#include <vulkan/vulkan.h>
+#include <algorithm>
 #include <queue>
 #include <iostream>
 
 namespace	hel {
 
-std::vector<sys::ISystem::Func*>		SystemManager::_updateCycle{};
+std::vector<sys::CycleEntry*>		SystemManager::_updateCycle{};
 std::unordered_map<std::string_view,
 	std::vector<std::vector<
-			sys::ISystem::Func*>>>		SystemManager::_renderCycle{};
+			sys::CycleEntry*>>>		SystemManager::_renderCycle{};
 
 std::vector<SystemManager::SysPtr>		SystemManager::_data{};
 
@@ -126,7 +133,7 @@ do {														\
 #define kahnSort(data, target, depName)											\
 do {																			\
 	using strView = std::string_view;											\
-	std::unordered_map<strView, sys::ISystem::Func*>		byName;				\
+	std::unordered_map<strView, sys::CycleEntry*>			byName;				\
 	std::unordered_map<strView, std::vector<strView>>		adj;				\
 	std::unordered_map<strView, uint32_t>					inDegree;			\
 																				\
@@ -196,13 +203,17 @@ void	SystemManager::sort(EngineKey) {
 	_updateCycle.clear();
 	kahnSort(_data, _updateCycle, updateCycleDep); std::cout << std::endl;
 	_renderCycle.clear();
-	FuncVec	sortedFuncs{};
+	EntryVec	sortedFuncs{};
 	kahnSort(_data, sortedFuncs, renderCycleDep); std::cout << std::endl;
 	splitPasses(sortedFuncs);
 }
 
-void	SystemManager::splitPasses(const FuncVec &sortedFuncs) {
-	std::unordered_map<std::string_view, FuncVec>		newList;
+void	SystemManager::clear(EngineKey) {
+	_data.clear();
+}
+
+void	SystemManager::splitPasses(const EntryVec &sortedFuncs) {
+	std::unordered_map<std::string_view, EntryVec>		newList;
 	std::unordered_map<std::string_view, LayerState>	states;
 	auto	addList = [&]() {
 		for (auto &[layer, vec]: newList)

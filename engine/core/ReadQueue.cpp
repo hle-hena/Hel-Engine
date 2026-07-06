@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: MemoryHelper.hpp                                                    */
+/*  File: ReadQueue.cpp                                                       */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/02/04 18:37:06 by hle-hena                                  */
+/*  Created: 2026/07/05 18:32:28 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/02/05 11:50:34                                        */
+/*  Last Modified: 2026/07/05 18:33:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,26 +14,18 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#pragma once
+#include "core/ReadQueue.hpp"
+#include "api/vulkan/Image.hpp"
 
-# include <vulkan/vulkan.h>
+namespace	hel {
 
-# include "api/vulkan/Device.hpp"
+std::vector<Read::Request>	Read::Queue::_requests = {};
 
-namespace	hel::MemoryHelper {
-
-static inline VkResult	allocate(Device &device, VkMemoryRequirements requirements,
-					VkMemoryPropertyFlags properties, VkDeviceMemory &memory) {
-	uint32_t	typeIndex;
-	if (device.findMemoryType(requirements.memoryTypeBits, properties, typeIndex))
-		return (VK_ERROR_FEATURE_NOT_PRESENT);
-
-	VkMemoryAllocateInfo	allocateInfo{};
-	allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocateInfo.allocationSize = requirements.size;
-	allocateInfo.memoryTypeIndex = typeIndex;
-
-	return (vkAllocateMemory(device.getLogical(), &allocateInfo, nullptr, &memory));
+void	Read::Queue::execute(VkCommandBuffer commandBuffer) {
+	for (auto &req: _requests)
+		req.srcImage->copyTo(commandBuffer, req.dstBuffer,
+							req.offset, req.extent);
+	_requests.clear();
 }
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:22:09                                        */
+/*  Last Modified: 2026/07/05 19:48:39                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,18 +18,26 @@
 
 #include <memory>
 #include <vector>
+#include <unordered_map>
 
-#include "ecs/ISystem.hpp"
+#include "utils/Setters.hpp"
+
+namespace hel::sys {
+
+class	ISystem;
+struct	CycleEntry;
+
+}
 
 namespace hel {
 
 struct	SystemManager {
 	using SysPtr = std::unique_ptr<sys::ISystem>;
-	using FuncVec = std::vector<sys::ISystem::Func*>;
+	using EntryVec = std::vector<sys::CycleEntry *>;
 
-	const FuncVec				&getUpdates(void)
+	const EntryVec				&getUpdates(void)
 		{ return _updateCycle; }
-	const std::vector<FuncVec>	&getRenders(std::string_view layer)
+	const std::vector<EntryVec>	&getRenders(std::string_view layer)
 		{ return _renderCycle[layer]; }
 	const std::vector<SysPtr>	&getSystems(void)
 		{ return _data; }
@@ -42,17 +50,15 @@ struct	SystemManager {
 
 	PASSKEY(EngineKey, Engine)
 	static void	sort(EngineKey);
-	static void	clear(EngineKey) {
-		_data.clear();
-	}
+	static void	clear(EngineKey);
 
 	private:
-		static void	splitPasses(const FuncVec &sortedFuncs);
+		static void	splitPasses(const EntryVec &sortedFuncs);
 
-		static FuncVec									_updateCycle;
+		static EntryVec									_updateCycle;
 		static std::unordered_map<
 					std::string_view,
-					std::vector<FuncVec>>				_renderCycle;
+					std::vector<EntryVec>>				_renderCycle;
 
 		static std::vector<SysPtr>						_data;
 };

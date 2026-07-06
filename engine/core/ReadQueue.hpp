@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Queues.hpp                                                          */
+/*  File: ReadQueue.hpp                                                       */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/04/13 15:14:30 by hle-hena                                  */
+/*  Created: 2026/07/05 18:30:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/15 17:49:55                                        */
+/*  Last Modified: 2026/07/05 18:34:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,54 +16,17 @@
 
 #pragma once
 
-#include "api/vulkan/Buffer.hpp"
-#include "api/vulkan/Image.hpp"
-#include "ecs/Entity.hpp"
-#include "utils/Setters.hpp"
-#include "core/PhaseDependancy.hpp"
-#include <cstdint>
+#include <vulkan/vulkan.h>
 #include <memory>
-#include <ui/ImGui/imgui.h>
-#include <unordered_map>
-#include <map>
-#include <utility>
 #include <vector>
-#include <vulkan/vulkan_core.h>
+
+#include "utils/Setters.hpp"
 
 namespace	hel {
 
-struct	RenderRequest {
-	std::string									requestType;
-	Entity::id									handle;
-	ImVec2										origin{0.f, 0.f};
-	std::unordered_map<std::string, Image *>	images{};
-
-	bool	operator==(const RenderRequest &other) const;
-	struct	Hasher {
-		size_t	operator()(const RenderRequest &request) const;
-	};
-};
-
-}
-
-//TODO this is not beautifull. The ideal would be to split the files I think.
-#include "api/vulkan/Renderer.hpp"
-
-namespace	hel {
-
-class	RenderQueue {
-	public:
-		static void		push(const RenderRequest &request) {
-			if (!request.images.empty() && request.images.contains("mainColor"))
-				_requests.push_back(request);
-		}
-		static std::vector<RenderRequest>	flush(void) {
-			return (std::move(_requests));
-		}
-
-	private:
-		static std::vector<RenderRequest>	_requests;
-};
+class	Device;
+class	Buffer;
+class	Image;
 
 class	Read {
 	private:
@@ -121,36 +84,6 @@ class	Read::Queue {
 	friend struct	Builder;
 };
 
-
-
-class	DrawQueue {
-	public:
-		struct	RequestVector {
-			PhaseDependencies		dep;
-			std::vector<DrawCall>	draws;
-		};
-		using InnerMap = std::map<uint32_t, std::vector<RequestVector>>;
-		struct	RequestMap {
-			public:
-				RequestVector	*at(uint32_t levelAsked, const PhaseDependencies &depAsked);
-				void			clear(void);
-			private:
-				InnerMap	_data{};
-			
-			friend class DrawQueue;
-		};
-
-		static void	requestDraw(uint32_t level, DrawCall &&drawCommand,
-								PhaseDependencies &dep);
-		static InnerMap	flush(void) { return std::move(_requests._data); };
-
-	private:
-		static RequestMap	_requests;
-
-	template <typename ReadType>
-	friend struct	Builder;
-};
-
 }
 
-#include "core/Queues.tpp"
+#include "core/ReadQueue.tpp"

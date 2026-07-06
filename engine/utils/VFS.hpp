@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/27 22:19:38 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/27 23:35:30                                        */
+/*  Last Modified: 2026/07/05 19:34:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,8 +17,9 @@
 #pragma once
 
 #include <string>
-#include "core/Engine.hpp"
 #include <unordered_map>
+
+#include "utils/Setters.hpp"
 
 namespace	hel {
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/02 16:46:48                                        */
+/*  Last Modified: 2026/07/06 11:02:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,12 +23,13 @@
 #include <memory>
 
 #include "ecs/Entity.hpp"
-#include "api/vulkan/Buffer.hpp"
-#include "api/vulkan/Descriptors.hpp"
 #include "ecs/AssetManager.hpp"
 #include "ecs/Pool.hpp"
 
 namespace	hel {
+
+struct	DescriptorSet;
+class	DescriptorPool;
 
 template <ValidComponent... Components>
 struct	include {};
@@ -85,7 +86,8 @@ class	Registry {
 		void		updateBuffers(Device &device);
 
 		template <ValidComponent... Component>
-		DescriptorSet::ptr	buildComponentSet(Device &device, DescriptorPool *dynamicPool);
+		std::unique_ptr<DescriptorSet>	buildComponentSet(Device &device,
+												DescriptorPool *dynamicPool);
 
 		template <typename Include, typename Exclude = exclude<>>
 		View<Include, Exclude> view();
@@ -104,4 +106,4 @@ class	Registry {
 
 }
 
-# include "ecs/Registry.tpp"
+#include "ecs/Registry.tpp"

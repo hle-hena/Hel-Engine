@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/03 11:34:46                                        */
+/*  Last Modified: 2026/07/06 10:56:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,16 +15,9 @@
 /* *************************************************************************  */
 
 #include "systems/Selection.hpp"
-#include "core/Queues.hpp"
-#include "ecs/Entity.hpp"
-#include "ecs/Registry.hpp"
 #include "components/SelectionTag.hpp"
 #include "components/Camera.hpp"
 #include "components/Transform.hpp"
-#include "platform/window/Window.hpp"
-#include <cstdint>
-#include "core/SystemManager.hpp"
-#include "platform/input/InputState.hpp"
 
 namespace	hel::sys {
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/19 10:55:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 13:04:43                                        */
+/*  Last Modified: 2026/07/06 10:42:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "systems/ui/UI.hpp"
+#include "systems/ui/Panel.hpp"
 
 namespace	hel::sys {
 

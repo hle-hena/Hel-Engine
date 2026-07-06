@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/24 15:06:28 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/26 16:34:39                                        */
+/*  Last Modified: 2026/07/06 10:20:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,15 +16,16 @@
 
 #pragma once
 
-# include <memory>
-# include <string>
-# include "api/vulkan/Image.hpp"
+#include <memory>
+#include <string>
 
 namespace	hel {
 
+class	Device;
+class	Image;
+
 struct	Texture {
 	std::string					filePath;
-
 	std::unique_ptr<Image>		image;
 
 	static std::shared_ptr<Texture>	load(Device *device,
