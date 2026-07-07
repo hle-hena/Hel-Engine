@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:56:18                                        */
+/*  Last Modified: 2026/07/07 18:05:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,9 +29,8 @@ SystemRegistrar<Render>	reg_RenderSystem;
 void	Render::init(void) {
 	VkClearValue	clear{};
 	clear.color.uint32[0] = 0xFFFFFFFF;
-	addRenderDep("rendering of the 3d objects", &Render::render)
+	addRenderDep("render/scene/3d objects", &Render::render)
 	->getDep()
-		->addBlock("render camera frustum")
 		->addActiveLayer("RenderScene")
 		->startWrite<Color>("mainColor", VK_FORMAT_B8G8R8A8_SRGB, 0)
 			.addDep()

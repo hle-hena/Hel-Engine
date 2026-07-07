@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/07 16:28:28                                        */
+/*  Last Modified: 2026/07/07 18:07:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -41,7 +41,7 @@ UI::~UI(void) {
 void	UI::init(void) {
 	addUpdateDep("input/ui", &UI::updateUI);
 
-	addRenderDep("render ui", &UI::render)
+	addRenderDep("render/ui", &UI::render)
 	->getDep()
 		->addActiveLayer("RenderUI")
 		->startWrite<Color>("mainColor", VK_FORMAT_B8G8R8A8_UNORM, 0)

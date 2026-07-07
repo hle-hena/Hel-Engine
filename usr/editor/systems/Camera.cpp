@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/07 16:32:44                                        */
+/*  Last Modified: 2026/07/07 18:06:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,10 +28,11 @@ SystemRegistrar<Camera>	reg_CameraSystem;
 void	Camera::init(void) {
 	addUpdateDep("general/view matrix calculation", &Camera::update);
 
-	addRenderDep("render camera frustum", &Camera::renderInteraction)
+	addRenderDep("render/gizmo/camera", &Camera::renderInteraction)
 	->getDep()
-		->addBlock("render transform gizmo")
 		->addActiveLayer("RenderScene")
+		->addRequire("render/scene")
+		->addBlock("render/gizmo/transform")
 		->startWrite<Color>("mainColor", VK_FORMAT_B8G8R8A8_SRGB, 0)
 			.addDep()
 		->startWrite<Color>("entity layer", VK_FORMAT_R32_UINT, 1)
