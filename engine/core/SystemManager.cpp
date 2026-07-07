@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:48:56                                        */
+/*  Last Modified: 2026/07/07 16:55:29                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,7 @@
 #include "core/PhaseDependency.hpp"
 #include "ecs/CycleEntry.hpp"
 #include "ecs/ISystem.hpp"
+#include "utils/match.hpp"
 
 #include <optional>
 #include <vulkan/vulkan.h>
@@ -34,13 +35,6 @@ std::unordered_map<std::string_view,
 
 std::vector<SystemManager::SysPtr>		SystemManager::_data{};
 
-bool	matchName(const std::string_view &pattern,
-				const std::string_view &name)
-{
-	if (pattern.ends_with('*'))
-		return name.starts_with(pattern.substr(0, pattern.size() - 1));
-	return pattern == name;
-};
 
 #define	RETURN_ERROR(functionProvide, imageName, error)	\
 do {													\
@@ -71,7 +65,7 @@ struct	LayerState {
 
 	bool	check(const ImageDep &write) {
 		if (std::any_of(reads.begin(), reads.end(),
-			[&](const auto &value){return matchName(value, write._imageName);}))
+			[&](const auto &value){return match(value, write._imageName);}))
 			return true;
 		if (write._usage & ImageDep::Color
 				&& colors.contains(write._bindingIndex)
@@ -97,12 +91,12 @@ struct	LayerState {
 		return false;
 	}
 	bool	check(std::string_view read) {
-		if (depth.has_value() && matchName(read, depth.value()))
+		if (depth.has_value() && match(read, depth.value()))
 			return true;
-		if (stencil.has_value() && matchName(read, stencil.value()))
+		if (stencil.has_value() && match(read, stencil.value()))
 			return true;
 		if (std::any_of(colors.begin(), colors.end(),
-			[&](const auto &pair){return matchName(read, pair.second);}))
+			[&](const auto &pair){return match(read, pair.second);}))
 			return true;
 		track(read);
 		return false;
@@ -164,20 +158,28 @@ do {																			\
 	}																			\
 	for (auto &[provide, systemFunc]: byName) {									\
 		for (auto &require: systemFunc->getDep()->require) {					\
-			if (!byName.contains(require)) {									\
-				depNotFound(require, "require", provide);						\
-				continue ;														\
+			bool	found = false;												\
+			for (auto &[name, _]: byName) {										\
+				if (matchPath(require, name)) {									\
+					found = true;												\
+					inDegree[provide]++;										\
+					adj[name].push_back(provide);								\
+				}																\
 			}																	\
-			inDegree[provide]++;												\
-			adj[require].push_back(provide);									\
+			if (!found)															\
+				depNotFound(require, "require", provide);						\
 		}																		\
 		for (auto &block: systemFunc->getDep()->block) {						\
-			if (!byName.contains(block)) {										\
-				depNotFound(block, "block", provide);							\
-				continue ;														\
+			bool	found = false;												\
+			for (auto &[name, _]: byName) {										\
+				if (matchPath(block, name)) {									\
+					found = true;												\
+					inDegree[name]++;											\
+					adj[provide].push_back(name);								\
+				}																\
 			}																	\
-			inDegree[block]++;													\
-			adj[provide].push_back(block);										\
+			if (!found)															\
+				depNotFound(block, "block", provide);							\
 		}																		\
 	}																			\
 																				\

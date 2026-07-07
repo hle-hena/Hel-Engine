@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:57:38                                        */
+/*  Last Modified: 2026/07/07 18:06:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,9 +30,8 @@ SystemRegistrar<Sprite>	reg_SpriteSystem;
 void	Sprite::init(void) {
 	VkClearValue	clear{};
 	clear.color.uint32[0] = 0xFFFFFFFF;
-	addRenderDep("rendering of the sprites", &Sprite::render)
+	addRenderDep("render/scene/sprites", &Sprite::render)
 	->getDep()
-		->addBlock("render camera frustum")
 		->addActiveLayer("RenderScene")
 		->startWrite<Color>("mainColor", VK_FORMAT_B8G8R8A8_SRGB, 0)
 			.addDep()

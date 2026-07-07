@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 11:01:03                                        */
+/*  Last Modified: 2026/07/07 18:30:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,18 +33,15 @@ SystemRegistrar<Transform>	reg_TransformSystem;
 Transform::Action	Transform::GizmoContext::action = Action::Move;
 
 void	Transform::init(void) {
-	addUpdateDep("transform gizmo action", &Transform::gizmoAction)
+	addUpdateDep("input/gizmo/transform", &Transform::gizmoAction);
+	addUpdateDep("general/model matrix calculation", &Transform::update)
 		->getDep()
-			->addBlock("align normal to parent")
-			->addBlock("model matrix calculation");
-	addUpdateDep("model matrix calculation", &Transform::update)
-		->getDep()
-			->addRequire("align normal to parent")
-			->addBlock("view matrix calculation");
+			->addRequire("input")
+			->addBlock("general/view matrix calculation");
 
-	addRenderDep("render transform gizmo", &Transform::renderInteraction)
+	addRenderDep("render/gizmo/transform", &Transform::renderInteraction)
 		->getDep()
-			->addBlock("render stencil on selected entity")
+			->addRequire("render/scene")
 			->addActiveLayer("RenderScene")
 			->startWrite<Color>("mainColor", VK_FORMAT_B8G8R8A8_SRGB, 0)
 				.addDep()
@@ -301,7 +298,7 @@ void	Transform::renderUI(const Renderer &renderer, GizmoContext &gizmo) {
 			.addVertexBuffers({mesh->vertexBuffer->getBuffer()}, {0})
 			.addIndexBuffer(mesh->triangleIndexBuffer->getBuffer())
 			.setVertexCount(mesh->triangleVertexCount);
-		DrawQueue::requestDraw(0, std::move(draw), *(renderCycleDep.at("render transform gizmo").getDep()));
+		DrawQueue::requestDraw(0, std::move(draw), *(renderCycleDep.at("render/gizmo/transform").getDep()));
 	}
 }
 

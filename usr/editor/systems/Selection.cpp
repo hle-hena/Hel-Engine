@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:56:56                                        */
+/*  Last Modified: 2026/07/07 18:31:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,11 +24,12 @@ namespace	hel::sys {
 SystemRegistrar<Selection>	reg_SelectionSystem;
 
 void	Selection::init(void) {
-	addUpdateDep("select entity", &Selection::update);
+	addUpdateDep("input/logic/selection", &Selection::update);
 
-	addRenderDep("render stencil on selected entity", &Selection::renderInteraction)
+	addRenderDep("post-processing/selection read", &Selection::renderInteraction)
 		->getDep()
 			->addActiveLayer("RenderScene")
+			->addRequire("render")
 			->startWrite<Color>("mainColor", VK_FORMAT_B8G8R8A8_SRGB, 0)
 				.addDep()
 			->startWrite<Color>("entity layer", VK_FORMAT_R32_UINT, 1)
@@ -41,12 +42,10 @@ void	Selection::init(void) {
 							| VK_IMAGE_ASPECT_STENCIL_BIT))
 				.addDep();
 
-	addRenderDep("render color overlay on selected entity", &Selection::postProcessing)
+	addRenderDep("post-processing/selection color overlay", &Selection::postProcessing)
 		->getDep()
-			->addRequire("rendering of the 3d objects")
-			->addRequire("rendering of the sprites")
-			->addBlock("render camera frustum")
-			->addBlock("render transform gizmo")
+			->addRequire("render/scene")
+			->addBlock("render/gizmo")
 			->addActiveLayer("RenderScene")
 			->startWrite<Color>("mainColor", VK_FORMAT_B8G8R8A8_SRGB, 0)
 				.addDep()
@@ -105,9 +104,8 @@ void	Selection::update(const FrameContext &ctx) {
 			Entity::id	handle = data[0];
 			if (handle == Entity::NOT_REGISTERED)
 				ctx.window->setEntityFocus(handle);
-			else if (!_registry->getComponent<comp::NonSelectableTag>(handle)) {
+			else if (!_registry->getComponent<comp::NonSelectableTag>(handle))
 				ctx.window->setEntityFocus(handle);
-			}
 			return (true);
 		}
 		return (false);
