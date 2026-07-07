@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:48 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:39:35                                        */
+/*  Last Modified: 2026/07/07 15:03:30                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,7 @@
 #include "core/Frame.hpp"
 #include "core/RenderQueue.hpp"
 #include "ecs/CycleEntry.hpp"
+#include "utils/match.hpp"
 
 #include <iostream>
 
@@ -137,17 +138,9 @@ void	RenderPass::addWriteImage(Image *img, ImageDep &dep){
 }
 
 bool	RenderPass::addRead(const std::string_view &readName) {
-	auto	matchName = [](const std::string_view &pattern,
-						const std::string_view &name)
-	{
-		if (pattern.ends_with('*'))
-			return name.starts_with(pattern.substr(0, pattern.size() - 1));
-		return pattern == name;
-	};
-
 	bool	notFound = true;
 	for (auto &[imageName, image]: _req->images) {
-		if (matchName(readName, imageName)) {
+		if (match(readName, imageName)) {
 			if (_reads.contains(imageName))
 				continue ;
 			if (!image->wasWritten()) {
