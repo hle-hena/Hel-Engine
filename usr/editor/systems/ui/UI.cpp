@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 11:01:37                                        */
+/*  Last Modified: 2026/07/07 16:28:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,9 +39,7 @@ UI::~UI(void) {
 }
 
 void	UI::init(void) {
-	addUpdateDep("update ui", &UI::updateUI)
-		->getDep()
-			->addBlock("transform gizmo action");
+	addUpdateDep("input/ui", &UI::updateUI);
 
 	addRenderDep("render ui", &UI::render)
 	->getDep()

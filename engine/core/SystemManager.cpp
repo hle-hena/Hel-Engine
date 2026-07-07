@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/07 15:02:20                                        */
+/*  Last Modified: 2026/07/07 16:55:29                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -158,20 +158,28 @@ do {																			\
 	}																			\
 	for (auto &[provide, systemFunc]: byName) {									\
 		for (auto &require: systemFunc->getDep()->require) {					\
-			if (!byName.contains(require)) {									\
-				depNotFound(require, "require", provide);						\
-				continue ;														\
+			bool	found = false;												\
+			for (auto &[name, _]: byName) {										\
+				if (matchPath(require, name)) {									\
+					found = true;												\
+					inDegree[provide]++;										\
+					adj[name].push_back(provide);								\
+				}																\
 			}																	\
-			inDegree[provide]++;												\
-			adj[require].push_back(provide);									\
+			if (!found)															\
+				depNotFound(require, "require", provide);						\
 		}																		\
 		for (auto &block: systemFunc->getDep()->block) {						\
-			if (!byName.contains(block)) {										\
-				depNotFound(block, "block", provide);							\
-				continue ;														\
+			bool	found = false;												\
+			for (auto &[name, _]: byName) {										\
+				if (matchPath(block, name)) {									\
+					found = true;												\
+					inDegree[name]++;											\
+					adj[provide].push_back(name);								\
+				}																\
 			}																	\
-			inDegree[block]++;													\
-			adj[provide].push_back(block);										\
+			if (!found)															\
+				depNotFound(block, "block", provide);							\
 		}																		\
 	}																			\
 																				\

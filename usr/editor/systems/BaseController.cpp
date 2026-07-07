@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:14:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:54:44                                        */
+/*  Last Modified: 2026/07/07 17:11:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,10 +23,7 @@ namespace	hel::sys {
 SystemRegistrar<BaseController>	reg_BaseControllerSystem;
 
 void	BaseController::init(void) {
-	addUpdateDep("game control", &BaseController::handleInput)
-		->getDep()
-			->addBlock("model matrix calculation")
-			->addRequire("align normal to parent");
+	addUpdateDep("input/controller/base", &BaseController::handleInput);
 }
 
 void	BaseController::handleKeyboardInput(Entity::id handle, float deltaTime) {

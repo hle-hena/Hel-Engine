@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 11:01:03                                        */
+/*  Last Modified: 2026/07/07 16:32:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,14 +33,11 @@ SystemRegistrar<Transform>	reg_TransformSystem;
 Transform::Action	Transform::GizmoContext::action = Action::Move;
 
 void	Transform::init(void) {
-	addUpdateDep("transform gizmo action", &Transform::gizmoAction)
+	addUpdateDep("input/gizmo/transform", &Transform::gizmoAction);
+	addUpdateDep("general/model matrix calculation", &Transform::update)
 		->getDep()
-			->addBlock("align normal to parent")
-			->addBlock("model matrix calculation");
-	addUpdateDep("model matrix calculation", &Transform::update)
-		->getDep()
-			->addRequire("align normal to parent")
-			->addBlock("view matrix calculation");
+			->addRequire("input")
+			->addBlock("general/view matrix calculation");
 
 	addRenderDep("render transform gizmo", &Transform::renderInteraction)
 		->getDep()

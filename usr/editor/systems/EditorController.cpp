@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/03 18:56:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:54:17                                        */
+/*  Last Modified: 2026/07/07 17:11:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,10 +23,7 @@ namespace	hel::sys {
 SystemRegistrar<EditorController>	reg_EditorControllerSystem;
 
 void	EditorController::init(void) {
-	addUpdateDep("editor control", &EditorController::handleInput)
-		->getDep()
-			->addBlock("model matrix calculation")
-			->addRequire("align normal to parent");
+	addUpdateDep("input/controller/editor", &EditorController::handleInput);
 }
 
 void	EditorController::handleKeyboardInput(Entity::id handle, float deltaTime) {
