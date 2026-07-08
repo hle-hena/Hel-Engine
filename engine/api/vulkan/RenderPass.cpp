@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:48 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/07 15:03:30                                        */
+/*  Last Modified: 2026/07/08 12:23:38                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -62,6 +62,7 @@ RenderPass::RenderPass(RenderPass &&other)
 		_ctx{other._ctx},
 		_req{other._ctx.request},
 		_commandBuffer{other._commandBuffer},
+		_extent{other._extent},
 		_passStarted{other._passStarted} {
 	other._commandBuffer = VK_NULL_HANDLE;
 }

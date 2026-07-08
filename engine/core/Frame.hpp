@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:16:16                                        */
+/*  Last Modified: 2026/07/08 12:22:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -85,11 +85,11 @@ struct	FrameContext {
 	VkCommandBuffer			commandBuffer{VK_NULL_HANDLE};
 
 	GlobalData				*globals;
-	VkDescriptorSet			globalSet;
-	uint32_t				setStride;
-	VkDescriptorSetLayout	globalLayout;
+	VkDescriptorSet			globalSet{VK_NULL_HANDLE};
+	uint32_t				setStride{0};
+	VkDescriptorSetLayout	globalLayout{VK_NULL_HANDLE};
 
-	DescriptorPool			*descriptorPool;
+	DescriptorPool			*descriptorPool{nullptr};
 
 	uint32_t				passIndex{0};
 	uint32_t				frameIndex{0};
