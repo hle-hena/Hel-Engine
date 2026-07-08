@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/07 18:07:48                                        */
+/*  Last Modified: 2026/07/08 15:05:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,6 +36,7 @@ SystemRegistrar<UI>	reg_UISystem;
 
 UI::~UI(void) {
 	saveToFile("currentLayout.json");
+	StyleEditor::saveToFile("currentStyle.json");
 }
 
 void	UI::init(void) {

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/18 11:20:37 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/27 16:27:00                                        */
+/*  Last Modified: 2026/07/08 15:04:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,7 +29,6 @@ std::vector<std::string>	StyleEditor::_baseColorsLabel = {
 };
 
 StyleEditor::~StyleEditor(void) {
-	saveToFile("currentStyle.json");
 }
 
 void	StyleEditor::saveToFile(const std::string &path) {
@@ -49,10 +48,10 @@ bool	StyleEditor::loadFromFile(const std::string &path) {
 	if (_baseColors.empty()) {
 		_baseColors = {
 			{"highlight", {1.000f, 1.000f, 1.000f, 1.000f}},
-			{"primary", {0.401f, 0.349f, 0.908f, 1.000f}},
-			{"secondary", {0.155f, 0.166f, 0.328f, 1.000f}},
+			{"primary", {0.484f, 0.892f, 0.958f, 1.000f}},
+			{"secondary", {0.088f, 0.092f, 0.153f, 1.000f}},
 			{"shadow", {0.000f, 0.000f, 0.000f, 1.000f}},
-			{"tertiary", {0.374f, 0.867f, 0.742f, 1.000f}},
+			{"tertiary", {0.207f, 0.938f, 0.793f, 1.000f}},
 		};
 	}
 
@@ -115,7 +114,7 @@ bool	StyleEditor::loadFromFile(const std::string &path) {
 	return (true);
 }
 
-nlohmann::json	StyleEditor::serialize(void) const {
+nlohmann::json	StyleEditor::serialize(void) {
 	nlohmann::json	dst;
 	for (auto &name: _baseColorsLabel) {
 		auto	col = _baseColors[name];
