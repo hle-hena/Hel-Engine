@@ -29,15 +29,15 @@ A few renders and editor views to show where things currently stand *(placeholde
 
 **Sponza — render only**
 
-![Sponza scene, render only](docs/images/sponza-render.png)
+![Sponza scene, render only](.github/assets/sponza.png)
 
 **Sponza — in the editor**
 
-![Sponza scene, in editor](docs/images/sponza-editor.png)
+![Sponza scene, in editor](.github/assets/sponza_editor.png)
 
 **Stanford dragon — dual camera view**
 
-![Stanford dragon, dual camera view](docs/images/dragon-dual-camera.png)
+![Stanford dragon, dual camera view](.github/assets/selected_dragon.png)
 
 ----------
 
@@ -71,7 +71,7 @@ A few of the things planned next:
 2. Open the project folder and configure with CMake.
 3. Build and run `hel.exe`.
 
-<br><br>
+<br>
 
 ### Linux
 
