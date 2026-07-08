@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 18:33:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:13:26                                        */
+/*  Last Modified: 2026/07/08 13:12:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,7 +30,7 @@ ComponentHandle<Comp>::operator bool(void) const {
 }
 
 template <ValidComponent Comp>
-const Comp::POD	*ComponentHandle<Comp>::operator->(void) {
+const typename Comp::POD	*ComponentHandle<Comp>::operator->(void) {
 	return (&_pool->components[*_index]);
 }
 
@@ -58,12 +58,12 @@ ComponentHandle<Comp>::ModificationProxy
 template <ValidComponent Comp>
 ComponentHandle<Comp>::ModificationProxy
 ::~ModificationProxy(void) {
-	if (!_dismissed)
+	if (!_dismissed && _index.has_value())
 		_pool->markDirty(_index.value());
 }
 
 template <ValidComponent Comp>
-Comp::POD	*ComponentHandle<Comp>::ModificationProxy::operator->(void) {
+typename Comp::POD	*ComponentHandle<Comp>::ModificationProxy::operator->(void) {
 	return (&_pool->components[*_index]);
 }
 
