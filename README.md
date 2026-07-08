@@ -45,9 +45,8 @@ A few renders and editor views to show where things currently stand *(placeholde
 
 A few of the things planned next:
 
-- **Validation system refactor** — Replace the current class validation layer with `std::expected` for more expressive, value-based error handling.
 - **Light definition in engine** — Move light source definitions out of shaders and into the engine layer, for more flexible, data-driven lighting setups.
-- **Physics system** — Integrate a basic rigid-body physics simulation.
+- **Physics system** — Integrate a rigid-body physics simulation.
 - **Shadow rendering** — Add support for real-time shadow maps, starting with directional light.
 
 ----------
