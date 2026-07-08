@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 18:33:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/08 12:18:34                                        */
+/*  Last Modified: 2026/07/08 13:12:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -58,7 +58,7 @@ ComponentHandle<Comp>::ModificationProxy
 template <ValidComponent Comp>
 ComponentHandle<Comp>::ModificationProxy
 ::~ModificationProxy(void) {
-	if (!_dismissed)
+	if (!_dismissed && _index.has_value())
 		_pool->markDirty(_index.value());
 }
 
