@@ -17,7 +17,7 @@ The engine's goal is to explore how a rendering/game engine fits together end to
 Two parts currently make up most of the engine:
 
 - **Vulkan wrapper** — Abstracts the most verbose parts of the Vulkan API into focused, RAII-managed types (devices, swapchains, buffers, images, pipelines, descriptors), so higher-level code works with clean C++ objects instead of raw `Vk*` handles and `VkCreateInfo` chains. Buffers and images are allocated through VMA, and pipeline compilation is cached per attachment-format combination via a dedicated `PipelineMap`.
-- **Entity Component System (ECS)** — A sparse-set based ECS with versioned entity handles, compile-time `View` queries, and first-class support for GPU-resident components (component pools can back themselves with a VMA storage buffer and track dirty writes automatically).
+- **Entity Component System (ECS)** — A sparse-set based ECS with versioned entity handles, `View` queries, and first-class support for GPU-resident components (component pools can back themselves with a VMA storage buffer and track dirty writes automatically).
 
 Around these two, the engine also includes a render queue / GPU readback system, an asset manager, and an ImGui-based editor with its own docking system and style editor.
 
@@ -25,7 +25,7 @@ Around these two, the engine also includes a render queue / GPU readback system,
 
 ## Gallery
 
-A few renders and editor views to show where things currently stand *(placeholders below — actual images coming soon)*.
+A few renders and editor views to show where things currently stand.
 
 **Sponza — render only**
 
