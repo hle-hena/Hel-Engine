@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/17 16:32:44 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:40:24                                        */
+/*  Last Modified: 2026/07/08 15:04:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -47,13 +47,13 @@ class	StyleEditor : public Panel<StyleEditor> {
 		expected<void>	onInit(void) override;
 		static void		applyPalette(void);
 		static bool		loadFromFile(const std::string &path);
+		static void		saveToFile(const std::string &path);
 
 		void	render(Window *window, const ImVec2 &) override;
 
 	private:
-		void			saveToFile(const std::string &path);
-		nlohmann::json	serialize(void) const;
-		static void		deserialize(const nlohmann::json &src);
+		static nlohmann::json	serialize(void);
+		static void				deserialize(const nlohmann::json &src);
 
 		void	baseColorEditor(void);
 		static constexpr ImVec2					_tabSize = {32.f, 32.f};
