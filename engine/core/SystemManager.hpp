@@ -19,6 +19,7 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include <string_view>
 
 #include "utils/Setters.hpp"
 
@@ -45,7 +46,7 @@ struct	SystemManager {
 
 	template <typename SysType>
 	static void	addSystem() {
-		_data.emplace_back(std::make_unique<SysType>()).get();
+		_data.emplace_back(std::make_unique<SysType>());
 	}
 
 	PASSKEY(EngineKey, Engine)

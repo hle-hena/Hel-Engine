@@ -21,6 +21,7 @@
 
 #include <limits>
 #include <iostream>
+#include <algorithm>
 
 namespace	hel {
 
