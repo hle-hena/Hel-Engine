@@ -2,7 +2,7 @@
 build/
 .cache/
 .clangd
-assets/models/sponza
+usr/editor/assets/models/sponza
 vcpkg/installed/
 vcpkg/buildtrees/
 vcpkg/downloads/

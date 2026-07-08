@@ -1,0 +1,75 @@
+/* *************************************************************************  */
+/*                                                                            */
+/*                                                                            */
+/*  File: UIHelper.tpp                                                        */
+/*  Project: Hel Engine                                                       */
+/*  Created: 2026/03/05 15:22:31 by hle-hena                                  */
+/*                                                                            */
+/*  Last Modified: 2026/06/21 13:04:47                                        */
+/*             By: hle-hena                                                   */
+/*                                                                            */
+/*    -----                                                                   */
+/*                                                                            */
+/*  Copyright (c) 2026 hle-hena                                               */
+/*                                                                            */
+/* *************************************************************************  */
+
+#include "systems/ui/UIHelper.hpp"
+
+namespace	hel::sys {
+
+template <typename Func>
+void	Table::setNextCell(Func&& drawAction) {
+	ImGui::TableNextColumn();
+	ImGui::PushItemWidth(-1.0f);
+	ImGui::PushID(ImGui::GetColumnIndex());
+	drawAction();
+	ImGui::PopID();
+	ImGui::PopItemWidth();
+}
+
+template <typename Func>
+void	Table::setNextCell(const char *label, Func&& drawAction) {
+	if (label != nullptr) {
+		ImGui::TableNextColumn();
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("%s", label);
+	}
+
+	ImGui::TableNextColumn();
+	ImGui::PushItemWidth(-1.0f);
+	if (label)	{ ImGui::PushID(label); }
+	else		{ ImGui::PushID("##"); }
+	drawAction();
+	ImGui::PopID();
+	ImGui::PopItemWidth();
+}
+
+template <typename T>
+void	TableRow::fillVec(std::vector<T> &vec, size_t wantedSize) {
+	if (vec.size() != wantedSize)
+		vec = std::vector<T>(wantedSize, vec[0]);
+}
+
+template <typename Func>
+void	DropTarget::build(Func &&dropAction) {
+	if (ImGui::BeginDragDropTarget()) {
+		ImGuiDragDropFlags	flags = ImGuiDragDropFlags_AcceptNoDrawDefaultRect |
+									ImGuiDragDropFlags_AcceptBeforeDelivery;
+		if (auto payload = ImGui::AcceptDragDropPayload(_type, flags)) {
+			if (payload->Preview) {
+				ImVec2	rectMin = ImGui::GetItemRectMin();
+				ImVec2	rectMax = ImGui::GetItemRectMax();
+				auto	color = ImGui::ColorConvertFloat4ToU32(
+					ImGui::GetStyleColorVec4(ImGuiCol_DragDropTargetBg)
+				);
+				ImGui::GetWindowDrawList()->AddRectFilled(rectMin, rectMax, color);
+			}
+			if (payload->IsDelivery())
+				dropAction(payload);
+		}
+		ImGui::EndDragDropTarget();
+	}
+}
+
+}
