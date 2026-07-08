@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:48 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/08 12:23:38                                        */
+/*  Last Modified: 2026/07/08 12:27:45                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,15 +45,15 @@ RenderPass::RenderPass(Device &device, FrameContext &ctx, ImagePool *imagePool,
 }
 
 RenderPass::RenderPass(Device &device, FrameContext &ctx, ImagePool *imagePool,
-	PhaseDependencies dep)
+	PhaseDependencies deps)
 	:	_device{device},
 		_ctx{ctx},
 		_req{ctx.request},
 		_commandBuffer{ctx.commandBuffer},
 		_extent{ctx.request->images["mainColor"]->getExtent()} {
-	for (auto &dep: dep.write)
+	for (auto &dep: deps.write)
 		_invalidDep |= addWrite(dep, imagePool);
-	for (auto &dep: dep.read)
+	for (auto &dep: deps.read)
 		_invalidDep |= addRead(dep);
 }
 
