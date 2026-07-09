@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:36:27                                        */
+/*  Last Modified: 2026/07/09 10:48:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "systems/ui/Inspector.hpp"
+#include "components/Light.hpp"
 #include "ecs/Registry.hpp"
 #include "platform/window/Window.hpp"
 #include "systems/ui/UIHelper.hpp"
@@ -126,6 +127,40 @@ void	Inspector::addNewComponentPopup(Entity::id handle) {
 void	Inspector::setBuiltInDrawFunc(void) {
 	setDrawFunc<comp::BaseControllerTag>([](Window *, OpaqueComponentHandle &){});
 	setDrawFunc<comp::EditorControllerTag>([](Window *, OpaqueComponentHandle &){});
+
+	setDrawFunc<comp::SpotLight>([](Window *window, OpaqueComponentHandle &comp){
+		auto	spot = comp.get<comp::SpotLight>();
+		
+		bool	changed = false;
+		auto	table = Table("Spotlight");
+		changed |= TableRow(table, window, "Color")
+			.setType(TableRow::Type::VecDrag)
+			.setSpeed(0.01f)
+			.setStart(&spot->color.r)
+			.setRange(3)
+			.setMin(0.f)
+			.setMax(1.f)
+			.setValueName({"R:", "G:", "B:"})
+			.build();
+		changed |= TableRow(table, window, "Intensity")
+			.setType(TableRow::Type::VecDrag)
+			.setSpeed(0.1f)
+			.setStart(&spot->color.a)
+			.setRange(1)
+			.setMin(0.f)
+			.build();
+		changed |= TableRow(table, window, "Beam angle")
+			.setType(TableRow::Type::VecDrag)
+			.setSpeed(1.f)
+			.setMin(1.f)
+			.setMax(179.f)
+			.setStart(&spot->beamAngle)
+			.setRange(1)
+			.build();
+
+		if (!changed)
+			comp.dismiss();
+	});
 
 	setDrawFunc<comp::Transform>([](Window *window, OpaqueComponentHandle &comp){
 		auto		transform = comp.get<comp::Transform>();

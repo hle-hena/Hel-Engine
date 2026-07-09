@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/03 11:12:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/03 11:50:30                                        */
+/*  Last Modified: 2026/07/09 10:40:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,6 +23,7 @@
 #include "components/Texture.hpp"
 #include "components/Tint.hpp"
 #include "components/Camera.hpp"
+#include "components/Light.hpp"
 
 #include "ecs/ComponentManager.hpp"
 
@@ -43,5 +44,7 @@ ComponentRegistrar<comp::Texture>					_texture;
 ComponentRegistrar<comp::Tint>						_tint;
 ComponentRegistrar<comp::Camera>					_camera;
 ComponentRegistrar<comp::Controller>				_controller;
+
+ComponentRegistrar<comp::SpotLight>					_spotLight;
 
 }
