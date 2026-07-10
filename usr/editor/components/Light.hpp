@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/09 10:23:30 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/09 10:41:40                                        */
+/*  Last Modified: 2026/07/09 11:05:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,10 +24,13 @@ namespace	hel::comp {
 struct	SpotLight: IComponent<SpotLight> {
 	struct	POD {
 		glm::vec4	color;
+		glm::vec3	dir;
+		glm::vec3	pos;
 		float		beamAngle;
 	};
 	struct alignas(16)	GPULayout {
 		glm::vec4	color;
+		glm::vec3	dir;
 		float		beamAngle;
 	};
 	struct	MetaData {
@@ -35,7 +38,7 @@ struct	SpotLight: IComponent<SpotLight> {
 		static constexpr bool				gpuVisible = true;
 
 		static GPULayout	toGPU(const POD &comp) {
-			return {comp.color, comp.beamAngle};
+			return {comp.color, comp.dir, comp.beamAngle};
 		}
 	};
 };

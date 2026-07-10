@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/27 17:07:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/28 16:15:17                                        */
+/*  Last Modified: 2026/07/09 11:01:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,6 +28,14 @@ layout (binding = 0) uniform UniformBufferObject {
 	mat4	viewProjection;
 	float	elapsedTime;
 }	ubo;
+
+struct	Transform {
+	mat4	modelMatrix;
+	mat4	normalMatrix;
+};
+layout(set = 1, binding = 0) readonly buffer Transforms {
+	Transform data[];
+} transforms;
 
 layout(set = 2, binding = 0) uniform sampler2D materialTexture;
 
@@ -62,6 +70,10 @@ struct	Spotlight {
 	vec4	color;	//color.w beeing the intensity;
 };
 
+vec3	getColorFromLight(vec3 surfaceNormal, uint transformIndex, uint spotLightIndex) {
+	vec3	lightPos = 
+}
+
 vec3	getColorFromSpotlight(vec3 surfaceNormal, Spotlight light, bool lightDebug) {
 	vec3	toLight = inPos - light.pos;
 	float	dist = length(toLight);
@@ -75,42 +87,7 @@ vec3	getColorFromSpotlight(vec3 surfaceNormal, Spotlight light, bool lightDebug)
 	return (light.color.xyz * (light.color.w * diffuse * falloff * coneIntensity));
 }
 
-vec3	getThreeLightsColor(vec3 surfaceNormal, bool lightDebug) {
-	float	lightOffset = 2.0943951023931953;
-	Spotlight	redSpotlight = Spotlight(
-		vec3(cos(ubo.elapsedTime * 0.5) * 3, 10., sin(ubo.elapsedTime * 0.5) * 3),
-		vec4(normalize(vec3(0., -1., 0.)), 0.5 + cos(ubo.elapsedTime * 3) * 0.1),
-		vec4(1., 0., 0., (sin(ubo.elapsedTime) * 0.25 + 0.75) * 5000.)
-	);
-	Spotlight	greenSpotlight = Spotlight(
-		vec3(cos(ubo.elapsedTime * 0.5 + lightOffset) * 3, 10., sin(ubo.elapsedTime * 0.5 + lightOffset) * 3),
-		vec4(normalize(vec3(0., -1., 0.)), 0.5 + cos(ubo.elapsedTime * 3) * 0.1),
-		vec4(0., 1., 0., (sin(ubo.elapsedTime) * 0.25 + 0.75) * 5000.)
-	);
-	Spotlight	blueSpotlight = Spotlight(
-		vec3(cos(ubo.elapsedTime * 0.5 + 2 * lightOffset) * 3, 10., sin(ubo.elapsedTime * 0.5 + 2 * lightOffset) * 3),
-		vec4(normalize(vec3(0., -1., 0.)), 0.5 + cos(ubo.elapsedTime * 3) * 0.1),
-		vec4(0., 0., 1., (sin(ubo.elapsedTime) * 0.25 + 0.75) * 5000.)
-	);
 
-	return (getColorFromSpotlight(surfaceNormal, redSpotlight, lightDebug) +
-		getColorFromSpotlight(surfaceNormal, greenSpotlight, lightDebug) +
-		getColorFromSpotlight(surfaceNormal, blueSpotlight, lightDebug));
-}
-
-vec3	getOneAlternatingLight(vec3 surfaceNormal, bool lightDebug) {
-	float	interval = 2.0943951023931953;
-	Spotlight	light = Spotlight(
-		vec3(10., 20., 10.),
-		vec4(normalize(vec3(-2., -2, -2.)), 0.8),
-		vec4(cos(ubo.elapsedTime),
-			cos(ubo.elapsedTime + interval),
-			cos(ubo.elapsedTime + 2 * interval),
-			1000.)
-	);
-
-	return (getColorFromSpotlight(surfaceNormal, light, lightDebug));
-}
 
 void	main() {
 	bool	triangleDebug = false;
