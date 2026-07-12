@@ -3,9 +3,9 @@
 /*                                                                            */
 /*  File: Buffer.hpp                                                          */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/29 16:04:53 by hle-hena                                  */
+/*  Created: 2026/07/11 17:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 15:16:00                                        */
+/*  Last Modified: 2026/07/12 20:18:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,59 +16,85 @@
 
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include <type_traits>
 #include <memory>
+#include <vulkan/vulkan.h>
 #include <vma/vk_mem_alloc.h>
+#include <optional>
+
+#include "HelExpected.hpp"
+#include "utils/Setters.hpp"
 
 namespace	hel {
 
 class	Device;
 
-class Buffer {
+template <typename T>
+concept	POD = std::is_trivial_v<T>;
+
+template <POD T>
+class	Buffer {
 	public:
-		static std::unique_ptr<Buffer>	create(Device &device, uint32_t stride,
-						uint32_t count, VkBufferUsageFlags usage,
-						VmaMemoryUsage memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,
-						VmaAllocationCreateFlags allocFlags = 0);
-		~Buffer(void);
+		struct	Settings {
+			public:
+				SETTER_VERBOSE(usage, VkBufferUsageFlags);
+				SETTER_VERBOSE(allocFlags, VkBufferUsageFlags);
+				SETTER_VERBOSE(memoryUsage, VmaMemoryUsage);
+				SETTER_VERBOSE(count, uint32_t);
+				SETTER_VERBOSE(dynamicAccess, bool);
 
-		Buffer(const Buffer &) = delete;
-		Buffer	operator=(const Buffer &) = delete;
+			private:
+				VkBufferUsageFlags			_usage;
+				VmaAllocationCreateFlags	_allocFlags;
+				VmaMemoryUsage				_memoryUsage;
+				std::optional<uint32_t>		_count;
+				bool						_dynamicAccess{false};
+		};
 
-		VkResult		map(void);
-		void			unmap(void);
+		static expected<std::unique_ptr<Buffer>>	create(Device *device,
+						const Settings &settings);
 
-		void			writeToBuffer(void* data, VkDeviceSize size = VK_WHOLE_SIZE,
-									VkDeviceSize offset = 0);
-		VkResult		flush(VkDeviceSize size = VK_WHOLE_SIZE,
-							VkDeviceSize offset = 0);
+		expected<void>	writeToBuffer(T *data, uint32_t count = 1,
+									uint32_t offset = 0);
 
-		VkDescriptorBufferInfo	getDescriptorInfo(void) const
+
+		VkDescriptorBufferInfo	getDescriptorInfo(void) const//Might need to set the range to something other than _stride ?
 			{ return {_buffer, 0, _stride}; }
 		VkBuffer				getBuffer(void) const
 			{ return (_buffer); }
 		void					*getMapped(void) const
 			{ return (_mapped); }
 		VkDeviceSize			getSize(void) const
-			{ return (_size); }
+			{ return (_availableSize); }
 		uint32_t				getStride(void) const
 			{ return (_stride); }
-		VkDeviceSize			getOffset(void) const
-			{ return (0); }
 
 	private:
-		Buffer(Device &device, uint32_t stride,
-				uint32_t count, VkBufferUsageFlags usage,
-				VmaMemoryUsage memoryUsage,
-				VmaAllocationCreateFlags allocFlags);
+		Buffer(void) = default;
+		~Buffer(void) = default;
+		Buffer(const Buffer &) = delete;
+		Buffer	&operator=(const Buffer &) = delete;
+		Buffer(const Buffer &&) = delete;
+		Buffer	&operator=(const Buffer &&) = delete;
 
-		Device						&_device;
-		VkBuffer					_buffer{VK_NULL_HANDLE};
-		VmaAllocation				_allocation{VK_NULL_HANDLE};
-		VkDeviceSize				_size;
-		uint32_t					_stride;
-		VmaAllocationCreateFlags	_allocFlags;
-		void			*_mapped{nullptr};
+		expected<void>	init(Device *device, const Settings &settings);
+
+		void			deallocate(void);
+		expected<void>	allocate(uint32_t count);
+
+		Device			*_device;
+
+		Settings		_settings;
+		uint32_t		_stride;
+		uint32_t		_maxCount{0u};
+		VkDeviceSize	_availableSize{0};
+		VkDeviceSize	_range{0};
+
+		VmaAllocation	_allocation{VK_NULL_HANDLE};
+		VkBuffer		_buffer{VK_NULL_HANDLE};
+		T				*_mapped{nullptr};
 };
 
 }
+
+#include "api/vulkan/Buffer.tpp"
