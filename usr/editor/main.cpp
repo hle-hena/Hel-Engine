@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/09 17:10:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:35:35                                        */
+/*  Last Modified: 2026/07/13 16:32:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -101,6 +101,32 @@ void	tickCallback(Registry *, FrameContext &ctx) {
 	}
 }
 
+expected<void>	init(Engine &engine, EngineConfig &config) {
+	auto		globalUBO = std::make_shared<GlobalUBO>();
+	Ref<Buffer>	globalUBOBuffer;
+	auto		delta_t = std::make_shared<float>();
+	auto		globals = std::make_shared<GlobalData>();
+
+	return engine.init(config)
+		.and_then([&](void) -> expected<void>{
+			globalUBO = std::make_shared<GlobalUBO>();
+			auto	res = Buffer::create<GlobalUBO>(engine.device(),
+						BufferConfig().dynamicAccess(true)
+						.usage(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT)
+						.allocFlags(VMA_ALLOCATION_CREATE_MAPPED_BIT |
+							VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT)
+						.count(Frame::MAX_PASS_COUNT * Swapchain::MAX_FRAMES_IN_FLIGHT));
+			if (!res)
+				return unexpected(res.error());
+			globalUBOBuffer = *res;
+			return {};
+		}).and_then([&](void) -> expected<void>{
+			globals->addData("delta_t", delta_t)
+				->addData("main UBO", globalUBO, globalUBOBuffer, 0);
+			return engine.setUserData(GlobalData *userData);
+		});
+}
+
 int	main(void) {
 	globalTimer.start();
 	Engine	engine;
@@ -109,37 +135,12 @@ int	main(void) {
 	config.defineGlobalSet = defineGlobalSet;
 	config.updateGlobalData = updateGlobalData;
 	config.tickCallback = tickCallback;
-
-	auto	res = engine.init(config);
+	auto	res = init(engine, config)
+		.and_then([&](void)->expected<void>{ engine.run(); return {}; });
 	if (!res) {
 		std::cerr << res.error() << std::endl;
 		return 1;
 	}
-
-	GlobalUBO globalUBO;
-	auto	globalUBOBuffer = Buffer::create(*engine.device(),
-						sizeof(GlobalUBO),
-						Frame::MAX_PASS_COUNT *
-							Swapchain::MAX_FRAMES_IN_FLIGHT,
-						VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-						VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
-						VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
-							| VMA_ALLOCATION_CREATE_MAPPED_BIT);
-	float	delta_t;
-
-	GlobalData	globals;
-	globals.addData("main UBO", &globalUBO,
-					globalUBOBuffer.get(), 0)
-			.addData("delta_t", &delta_t);
-
-	res = engine.setUserData(&globals);
-	if (!res) {
-		std::cerr << res.error() << std::endl;
-		return 1;
-	}
-
-	engine.run();
-
 	return 0;
 }
 

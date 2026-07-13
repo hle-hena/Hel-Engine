@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 15:55:18 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/13 12:38:43                                        */
+/*  Last Modified: 2026/07/13 12:54:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -79,8 +79,6 @@ struct	Pool: IPool {
 	std::vector<typename Component::POD>	components{};
 
 	Ref<Buffer<typename Component::POD>>	buffer{nullptr};
-	std::vector<std::pair<uint32_t, Ref<
-		Buffer<typename Component::POD>>>>	_pendingBuffers;
 
 	expected<void>	syncBuffer(void) override;
 	expected<void>	syncBuffer(const PendingWrite &write) override;
@@ -94,6 +92,9 @@ struct	Pool: IPool {
 	protected:
 		void				*getRaw(Entity::id handle) override;
 		std::string_view	getTypeName(void) const override;
+
+		std::vector<std::pair<uint32_t, Ref<
+			Buffer<typename Component::POD>>>>	_pendingBuffers;
 };
 
 }

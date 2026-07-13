@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:35 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:17:16                                        */
+/*  Last Modified: 2026/07/13 16:29:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,8 +16,8 @@
 
 #include "core/Frame.hpp"
 #include "api/vulkan/Device.hpp"
-#include "api/vulkan/Descriptors.hpp"
 #include "api/vulkan/Buffer.hpp"
+#include "api/vulkan/Descriptors.hpp"
 
 namespace	hel {
 
@@ -25,12 +25,14 @@ VkDescriptorSetLayout	Frame::_globalLayout = VK_NULL_HANDLE;
 
 #define RETURN_ERROR(error) do {	\
 	_error = error;					\
-	return *this;					\
+	return this;					\
 } while (0)
 
-GlobalData	&GlobalData::addData(const std::string &key, void *data) {
+GlobalData	*GlobalData::addData(const std::string &key,
+								std::shared_ptr<void> data)
+{
 	if (_error)
-		return *this;
+		return this;
 	if (_locked)
 		RETURN_ERROR("Trying to call addData for key \"" + key
 					+ "\" when data have already been passed to the engine.");
@@ -41,14 +43,15 @@ GlobalData	&GlobalData::addData(const std::string &key, void *data) {
 		RETURN_ERROR("Trying to set data as nullptr for \""
 					+ key + "\"");
 	_engineGlobals.emplace(key, data);
-	return *this;
+	return this;
 }
 
-GlobalData	&GlobalData::addData(const std::string &key, void *data,
-									Buffer *buffer, uint32_t bindingIndex)
+GlobalData	*GlobalData::addData(const std::string &key,
+								std::shared_ptr<void> data,
+								Ref<Buffer> buffer, uint32_t bindingIndex)
 {
 	if (_error)
-		return *this;
+		return this;
 	if (_locked)
 		RETURN_ERROR("Trying to call addData for key \"" + key
 					+ "\" when data have already been passed to the engine.");
@@ -70,7 +73,7 @@ GlobalData	&GlobalData::addData(const std::string &key, void *data,
 					+ std::to_string(bindingIndex) + " two times.");
 	}
 	_shaderGlobals.emplace(key, ShaderData{data, buffer, bindingIndex});
-	return *this;
+	return this;
 }
 
 std::unordered_map<std::string,
@@ -199,7 +202,7 @@ expected<void>	Frame::bindBuffers(GlobalData *globalData) {
 			return unexpected("The binding index "
 						+ std::to_string(bind.index)
 						+ " already have buffer attached.");
-		auto	*buffer = data.buffer;
+		auto	buffer = data.buffer;
 		if (!buffer)
 			return unexpected("Trying to bind a nullptr buffer on index "
 						+ std::to_string(data.bindingIndex) + ".");
@@ -244,7 +247,7 @@ void	Frame::fillContext(FrameContext &context, Window *window) {
 
 void	Frame::writeGlobalData(FrameContext &ctx) {
 	for (auto &[key, write]: ctx.globals->list({}))
-		writeToUBO(write.data, write.bindingIndex,
+		writeToUBO(write.data.get(), write.bindingIndex,
 					ctx.passIndex, ctx.frameIndex);
 }
 

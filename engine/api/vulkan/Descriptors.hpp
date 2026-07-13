@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 15:20:21                                        */
+/*  Last Modified: 2026/07/13 13:01:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,10 +22,11 @@
 #include <unordered_map>
 #include <vulkan/vulkan.h>
 
+#include "api/vulkan/Buffer.hpp"
+
 namespace	hel {
 
 class	Device;
-class	Buffer;
 struct	DescriptorSet;
 
 class	DescriptorPool {
@@ -128,9 +129,10 @@ class	DescriptorWriter {
 		DescriptorWriter(Device &device, DescriptorSet *sets);
 		~DescriptorWriter(void)	= default;
 
+		template <typename T>
 		DescriptorWriter	&writeBuffer(uint32_t setIndex, uint32_t binding,
-										VkDescriptorType type, Buffer &buffer,
-										uint32_t offset = 0);
+									VkDescriptorType type, Buffer<T> &buffer,
+									uint32_t offset = 0);
 		DescriptorWriter	&writeImage(uint32_t setIndex, uint32_t binding,
 									VkDescriptorType type, VkImageView view,
 									VkImageLayout layout, VkSampler sampler);
