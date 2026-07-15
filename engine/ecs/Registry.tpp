@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 14:42:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:37:20                                        */
+/*  Last Modified: 2026/07/15 15:30:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -98,7 +98,15 @@ std::unique_ptr<DescriptorSet>	Registry::buildComponentSet(Device &device,
 	bool	anyNonVisible = (!Component::MetaData::gpuVisible || ...);
 	if (anyNonVisible)
 		return (nullptr);
-	(getPool<Component>()->flushWrites(device), ...);
+
+	auto	flush = [&](auto poolPtr) -> bool {
+		if (auto res = poolPtr->flushWrites(device); !res)
+			{ std::cerr << res.error() << '\n'; return (false); }
+		return (true);
+	};
+	if (!(flush(getPool<Component>()) && ...))
+		return (nullptr);
+
 	auto		factory = DescriptorFactory(device);
 	uint32_t	binding = 0;
 	((factory.addBinding(binding++, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
@@ -106,8 +114,7 @@ std::unique_ptr<DescriptorSet>	Registry::buildComponentSet(Device &device,
 	auto	set = factory.build(*dynamicPool);
 	auto	writer = DescriptorWriter(device, set.get());
 	binding = 0;
-	(writer.writeBuffer(0, binding++, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-		*getPool<Component>()->buffer), ...);
+	(writer.writeBuffer(0, binding++, getPool<Component>()->buffer), ...);
 	writer.update();
 	return (set);
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/08 12:22:15                                        */
+/*  Last Modified: 2026/07/15 15:49:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,29 +21,31 @@
 #include <optional>
 #include <map>
 #include <unordered_map>
+#include <memory>
 
 #include "HelExpected.hpp"
 #include "utils/Setters.hpp"
 #include "api/vulkan/Swapchain.hpp"
+#include "api/vulkan/Buffer.hpp"
+#include "utils/Ref.hpp"
 
 namespace	hel {
 
 class	Window;
 class	DescriptorPool;
 class	DescriptorWriter;
-class	Buffer;
 struct	RenderRequest;
 struct	DescriptorSet;
 
 struct	GlobalData {
 	private:
 		struct	EngineData {
-			void	*data;
+			std::shared_ptr<void>	data;
 		};
 		struct	ShaderData {
-			void		*data;
-			Buffer		*buffer;
-			uint32_t	bindingIndex;
+			std::shared_ptr<void>	data;
+			Ref<Buffer>				buffer;
+			uint32_t				bindingIndex;
 		};
 
 		template <typename Key, typename Tp>
@@ -54,16 +56,16 @@ struct	GlobalData {
 		bool							_locked{false};
 
 	public:
-		GlobalData	&addData(const std::string &key, void *data);
-		GlobalData	&addData(const std::string &key, void *data,
-								Buffer *buffer, uint32_t bindingIndex);
+		GlobalData	*addData(const std::string &key, std::shared_ptr<void> data);
+		GlobalData	*addData(const std::string &key, std::shared_ptr<void> data,
+								Ref<Buffer> buffer, uint32_t bindingIndex);
 
 		template <typename T>
 		T	*get(const std::string &key) {
 			if (auto it = _engineGlobals.find(key); it != _engineGlobals.end())
-				return static_cast<T *>(it->second.data);
+				return static_cast<T *>(it->second.data.get());
 			if (auto it = _shaderGlobals.find(key); it != _shaderGlobals.end())
-				return static_cast<T *>(it->second.data);
+				return static_cast<T *>(it->second.data.get());
 			return nullptr;
 		}
 
@@ -107,7 +109,7 @@ struct	GlobalSetBindings {
 		uint32_t			index;
 		VkDescriptorType	type;
 		VkShaderStageFlags	stage;
-		Buffer				*buffer{nullptr};
+		Ref<Buffer>			buffer{};
 		bool				dynamicBinding{false};
 	};
 

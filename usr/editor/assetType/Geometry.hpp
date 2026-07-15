@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 16:01:55 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:16:58                                        */
+/*  Last Modified: 2026/07/15 15:21:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,8 @@
 #include <vector>
 #include <memory>
 #include <string>
+
+#include "utils/Ref.hpp"
 
 namespace	hel {
 
@@ -48,11 +50,11 @@ struct	Submesh {
 };
 
 struct	Geometry {
-	std::string					modelName;
+	std::string		modelName;
 
-	std::unique_ptr<Buffer>		vertexBuffer;
-	std::unique_ptr<Buffer>		triangleIndexBuffer;
-	uint32_t					triangleVertexCount{0};
+	Ref<Buffer>		vertexBuffer;
+	Ref<Buffer>		triangleIndexBuffer;
+	uint32_t		triangleVertexCount{0};
 
 	std::vector<Submesh>		submeshes;
 	std::vector<std::string>	materialPaths{};
@@ -73,16 +75,16 @@ struct	Geometry {
 		static GeometryVectors	loadFile(const std::string &modelName, bool fullLoad);
 
 		template <typename T>
-		static std::unique_ptr<Buffer>	createBuffer(Device &device,
-													std::vector<T> data,
-													VkBufferUsageFlags usage);
+		static Ref<Buffer>	createBuffer(Device &device,
+										std::vector<T> data,
+										VkBufferUsageFlags usage);
 };
 
 struct	FullGeometry : public Geometry {
 	using AssetPool = Geometry;
 
-	std::unique_ptr<Buffer>		lineIndexBuffer;
-	uint32_t					lineVertexCount{0};
+	Ref<Buffer>	lineIndexBuffer;
+	uint32_t	lineVertexCount{0};
 
 	bool	isLoadedFully(void) const override;
 	static std::shared_ptr<FullGeometry> load(Device *device,

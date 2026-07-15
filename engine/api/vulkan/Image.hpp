@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 15:27:22                                        */
+/*  Last Modified: 2026/07/15 11:28:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,6 +23,8 @@
 #include <vma/vk_mem_alloc.h>
 
 #include "utils/Setters.hpp"
+#include "HelExpected.hpp"
+#include "utils/Ref.hpp"
 
 namespace	hel {
 
@@ -121,9 +123,9 @@ class Image {
 
 		void	transitionLayout(VkCommandBuffer commandBuffer,
 								VkImageLayout newLayout);
-		void	setData(void *data, VkDeviceSize size);
-		void	copyTo(VkCommandBuffer commandBuffer, Image *dst);
-		void	copyTo(VkCommandBuffer commandBuffer, Buffer *dst,
+		expected<void>	setData(void *data, uint32_t count);
+		void			copyTo(VkCommandBuffer commandBuffer, Image *dst);
+		void			copyTo(VkCommandBuffer commandBuffer, Ref<Buffer> dst,
 					VkOffset3D startPos, VkExtent3D extent);
 
 		PASSKEY(PoolKey, ImagePool)

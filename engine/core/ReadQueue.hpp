@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/05 18:30:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:34:53                                        */
+/*  Last Modified: 2026/07/15 15:06:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,15 +17,15 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
-#include <memory>
 #include <vector>
 
 #include "utils/Setters.hpp"
+#include "api/vulkan/Buffer.hpp"
+#include "HelExpected.hpp"
 
 namespace	hel {
 
 class	Device;
-class	Buffer;
 class	Image;
 
 class	Read {
@@ -43,13 +43,13 @@ class	Read {
 
 struct	Read::Request {
 	Image		*srcImage{nullptr};
-	Buffer		*dstBuffer{nullptr};
+	Ref<Buffer>	dstBuffer{};
 	VkOffset3D	offset{0, 0, 0};
 	VkExtent3D	extent{1, 1, 1};
 };
 
 struct	Read::Context {
-	std::unique_ptr<Buffer>	buffer{nullptr};
+	Ref<Buffer>				buffer{};
 	uint32_t				frameIndex;
 };
 
@@ -58,7 +58,7 @@ struct	Read::Builder {
 	SETTER(Offset, VkOffset3D, _request.offset);
 	SETTER(Extent, VkExtent3D, _request.extent);
 	SETTER(SrcImage, Image *, _request.srcImage);
-	Context	push(Device &device);//TODO -> Check the current request cache to try to re use
+	expected<Context>	push(Device *device);
 
 	private:
 		Builder(uint32_t frameIndex);

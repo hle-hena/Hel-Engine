@@ -3,9 +3,9 @@
 /*                                                                            */
 /*  File: Buffer.hpp                                                          */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/29 16:04:53 by hle-hena                                  */
+/*  Created: 2026/07/11 17:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 15:16:00                                        */
+/*  Last Modified: 2026/07/15 18:16:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,59 +16,102 @@
 
 #pragma once
 
+#include <type_traits>
 #include <vulkan/vulkan.h>
-#include <memory>
 #include <vma/vk_mem_alloc.h>
+
+#include "HelExpected.hpp"
+#include "utils/Setters.hpp"
+#include "utils/Ref.hpp"
 
 namespace	hel {
 
 class	Device;
 
-class Buffer {
+template <typename T>
+concept	POD = std::is_standard_layout_v<T> && std::is_trivially_copyable_v<T>;
+
+struct	BufferConfig {
 	public:
-		static std::unique_ptr<Buffer>	create(Device &device, uint32_t stride,
-						uint32_t count, VkBufferUsageFlags usage,
-						VmaMemoryUsage memoryUsage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,
-						VmaAllocationCreateFlags allocFlags = 0);
-		~Buffer(void);
+		SETTER_VERBOSE(usage, VkBufferUsageFlags);
+		SETTER_VERBOSE(allocFlags, VkBufferUsageFlags);
+		SETTER_VERBOSE(memoryUsage, VmaMemoryUsage);
+		SETTER_VERBOSE(dynamicAccess, bool);
 
-		Buffer(const Buffer &) = delete;
-		Buffer	operator=(const Buffer &) = delete;
-
-		VkResult		map(void);
-		void			unmap(void);
-
-		void			writeToBuffer(void* data, VkDeviceSize size = VK_WHOLE_SIZE,
-									VkDeviceSize offset = 0);
-		VkResult		flush(VkDeviceSize size = VK_WHOLE_SIZE,
-							VkDeviceSize offset = 0);
-
-		VkDescriptorBufferInfo	getDescriptorInfo(void) const
-			{ return {_buffer, 0, _stride}; }
-		VkBuffer				getBuffer(void) const
-			{ return (_buffer); }
-		void					*getMapped(void) const
-			{ return (_mapped); }
-		VkDeviceSize			getSize(void) const
-			{ return (_size); }
-		uint32_t				getStride(void) const
-			{ return (_stride); }
-		VkDeviceSize			getOffset(void) const
-			{ return (0); }
+		BufferConfig	&baseCount(uint32_t count)
+			{ _count = count; return *this; }
+		BufferConfig	&fixedCount(uint32_t count)
+			{ _count = count; _fixedCount = true; return *this; }
 
 	private:
-		Buffer(Device &device, uint32_t stride,
-				uint32_t count, VkBufferUsageFlags usage,
-				VmaMemoryUsage memoryUsage,
-				VmaAllocationCreateFlags allocFlags);
-
-		Device						&_device;
-		VkBuffer					_buffer{VK_NULL_HANDLE};
-		VmaAllocation				_allocation{VK_NULL_HANDLE};
-		VkDeviceSize				_size;
-		uint32_t					_stride;
+		VkBufferUsageFlags			_usage;
 		VmaAllocationCreateFlags	_allocFlags;
+		VmaMemoryUsage				_memoryUsage{VMA_MEMORY_USAGE_AUTO};
+		uint32_t					_count{0};
+		bool						_dynamicAccess{false};
+		bool						_fixedCount{false};
+
+		VkDescriptorType	_descriptorType{VK_DESCRIPTOR_TYPE_MAX_ENUM};
+
+	friend class Buffer;
+};
+
+class	Buffer : public RefCounted {
+	public:
+		template <POD T>
+		static expected<Ref<Buffer>>	create(Device *device,
+											const BufferConfig &config);
+
+		expected<Ref<Buffer>>	writeToBuffer(void *data, uint32_t count = 1,
+											uint32_t offset = 0);
+
+		VkDescriptorBufferInfo	getDescriptorInfo(uint32_t offset = 0);
+		VkDescriptorType	getDescriptorType(void) const
+			{ return _config._descriptorType; }
+		VkBuffer			getBuffer(void) const
+			{ return _buffer; }
+		VkDeviceSize		getSize(void) const
+			{ return _availableSize; }
+		VkDeviceSize		getRange(void) const
+			{ return _range; }
+		uint32_t			getStride(void) const
+			{ return _stride; }
+
+		void	*getMapped(void) const
+			{ return _mapped; }
+		template <POD T>
+		void	*getMappedAs(void) const
+			{ return static_cast<T *>(_mapped); }
+
+	private:
+		Buffer(void) = default;
+		~Buffer(void);
+		Buffer(const Buffer &) = delete;
+		Buffer	&operator=(const Buffer &) = delete;
+		Buffer(const Buffer &&) = delete;
+		Buffer	&operator=(const Buffer &&) = delete;
+
+		template <POD T>
+		expected<void>	init(Device *device, const BufferConfig &config);
+
+		void			deallocate(void);
+		expected<void>	allocate(uint32_t count);
+
+		Device			*_device;
+
+		BufferConfig	_config;
+		uint32_t		_stride;
+		uint32_t		_elementSize;
+		uint32_t		_maxCount{0u};
+		VkDeviceSize	_availableSize{0u};
+		uint32_t		_currentCount{0u};
+		VkDeviceSize	_range{0u};
+
+		VmaAllocation	_allocation{VK_NULL_HANDLE};
+		VkBuffer		_buffer{VK_NULL_HANDLE};
 		void			*_mapped{nullptr};
 };
 
 }
+
+#include "api/vulkan/Buffer.tpp"

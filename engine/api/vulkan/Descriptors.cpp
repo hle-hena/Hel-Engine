@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 15:20:33                                        */
+/*  Last Modified: 2026/07/15 11:21:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -246,18 +246,16 @@ DescriptorWriter::DescriptorWriter(Device &device, DescriptorSet *handle)
 
 DescriptorWriter	&DescriptorWriter::writeBuffer(uint32_t setIndex,
 												uint32_t binding,
-												VkDescriptorType type,
-												Buffer &buffer,
+												Ref<Buffer> buffer,
 												uint32_t offset) {
-	VkDescriptorBufferInfo	bufferInfo = buffer.getDescriptorInfo();
-	bufferInfo.offset = offset;
+	VkDescriptorBufferInfo	bufferInfo = buffer->getDescriptorInfo(offset);
 	_buffersInfo.push_back(bufferInfo);
 
 	VkWriteDescriptorSet	write{};
 	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	write.dstSet = _handle->sets[setIndex];
 	write.dstBinding = binding;
-	write.descriptorType = type;
+	write.descriptorType = buffer->getDescriptorType();
 	write.descriptorCount = 1;
 	write.pBufferInfo = &_buffersInfo.back();
 	_writes.push_back(write);

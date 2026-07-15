@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/10 19:31:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/21 12:27:41                                        */
+/*  Last Modified: 2026/07/15 16:01:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,32 +18,43 @@
 #include "api/vulkan/Buffer.hpp"
 #include "api/vulkan/Device.hpp"
 
+#include <iostream>
+
 namespace	hel {
 
 template <typename T>
-std::unique_ptr<Buffer>	Geometry::createBuffer(Device &device,
+Ref<Buffer>	Geometry::createBuffer(Device &device,
 											std::vector<T> data,
 											VkBufferUsageFlags usage) {
-	VkDeviceSize	size = sizeof(T) * data.size();
-	auto	stagingBuffer = Buffer::create(device, sizeof(T),
-		static_cast<uint32_t>(data.size()),
-		VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
-		VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+	uint32_t	count = static_cast<uint32_t>(data.size());
+	auto	newStagingBuffer = Buffer::create<T>(&device, BufferConfig()
+								.usage(VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
+								.allocFlags(VMA_ALLOCATION_CREATE_MAPPED_BIT |
+						VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT)
+								.fixedCount(count));
+	auto	newBuffer = Buffer::create<T>(&device, BufferConfig()
+		.memoryUsage(VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE)
+		.usage(VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage)
+		.fixedCount(count));
 
-	stagingBuffer->writeToBuffer(data.data(), size);
+	if (!newStagingBuffer || !newBuffer)
+		return {};
 
-	auto	buffer = Buffer::create(device, sizeof(T),
-		static_cast<uint32_t>(data.size()),
-		VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage,
-		VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE);
+	auto	stagingBuffer = *newStagingBuffer;
+	auto	buffer = *newBuffer;
 
+	auto	res = stagingBuffer->writeToBuffer(data.data(), count);
+	if (!res) {
+		std::cerr << res.error() << std::endl;
+		return {};
+	}
 
 	auto	commandBuffer = device.beginSingleTimeCommand();
 
 	VkBufferCopy copyRegion{};
 	copyRegion.srcOffset = 0;
 	copyRegion.dstOffset = 0;
-	copyRegion.size = size;
+	copyRegion.size = count * stagingBuffer->getStride();
 	vkCmdCopyBuffer(commandBuffer, stagingBuffer->getBuffer(),
 					buffer->getBuffer(), 1, &copyRegion);
 

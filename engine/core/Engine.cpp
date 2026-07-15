@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:39:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:47:40                                        */
+/*  Last Modified: 2026/07/15 17:37:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,6 +37,7 @@ Engine::Engine(void)
 }
 
 Engine::~Engine(void) {
+	_userData = nullptr;
 	_systems.clear({});
 	if (_device) {
 		Sampler::deleteAllSamplers(*_device);
@@ -104,10 +105,10 @@ expected<void>	Engine::createImagePool(void) {
 	return {};
 }
 
-expected<void>	Engine::setUserData(GlobalData *data) {
+expected<void>	Engine::setUserData(std::shared_ptr<GlobalData> data) {
 	_userData = data;
 	return _userData->lock({})
-			.and_then([this]{ return _frame.bindBuffers(_userData); })
+			.and_then([this]{ return _frame.bindBuffers(_userData.get()); })
 			.and_then([this]{ return _frame.validateGlobalSet(); });
 }
 
@@ -134,7 +135,7 @@ void	Engine::run(void) {
 void	Engine::tick(uint32_t frameIndex) {
 	_appWindow->getSwapchain().waitForFrameFence(frameIndex);
 
-	FrameContext	ctx(frameIndex, _userData);
+	FrameContext	ctx(frameIndex, _userData.get());
 	_frame.fillContext(ctx, _appWindow.get());
 	_imagePool->releaseAll();
 	bool	shouldDoRenderTick = true;

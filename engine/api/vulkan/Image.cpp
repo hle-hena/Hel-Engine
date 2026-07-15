@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:15:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 15:28:50                                        */
+/*  Last Modified: 2026/07/15 14:58:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -203,13 +203,20 @@ void	Image::transitionLayout(VkCommandBuffer commandBuffer,
 	_currentLayout = newLayout;
 }
 
-void	Image::setData(void *data, VkDeviceSize size) {
-	auto	stagingBuffer = Buffer::create(_device, 1, static_cast<uint32_t>(size),
-		VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
-		VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-	stagingBuffer->map();
-	stagingBuffer->writeToBuffer(data, size);
-	stagingBuffer->unmap();
+expected<void>	Image::setData(void *data, uint32_t count) {
+	Ref<Buffer>	stagingBuffer;
+	auto		res = Buffer::create<char>(&_device, BufferConfig()
+					.allocFlags(VMA_ALLOCATION_CREATE_MAPPED_BIT |
+						VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT)
+					.usage(VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
+					.fixedCount(count))
+		.and_then([&](Ref<Buffer> buffer) -> expected<Ref<Buffer>> {
+			stagingBuffer = buffer;
+			return buffer->writeToBuffer(data, count);
+		});
+	if (!res)
+		return unexpected("Failed to write/create the buffer for image write: "
+					+ res.error());
 
 	VkCommandBuffer commandBuffer = _device.beginSingleTimeCommand();
 	transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -220,6 +227,7 @@ void	Image::setData(void *data, VkDeviceSize size) {
 						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 	transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	_device.endSingleTimeCommand(commandBuffer);
+	return {};
 }
 
 void	Image::copyTo(VkCommandBuffer commandBuffer, Image *dst) {
@@ -250,7 +258,7 @@ void	Image::copyTo(VkCommandBuffer commandBuffer, Image *dst) {
 	setWrittenState();
 }
 
-void	Image::copyTo(VkCommandBuffer commandBuffer, Buffer *dst,
+void	Image::copyTo(VkCommandBuffer commandBuffer, Ref<Buffer> dst,
 					VkOffset3D startPos, VkExtent3D extent) {
 	this->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 

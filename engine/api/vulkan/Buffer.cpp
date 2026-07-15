@@ -3,9 +3,9 @@
 /*                                                                            */
 /*  File: Buffer.cpp                                                          */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/29 16:04:48 by hle-hena                                  */
+/*  Created: 2026/07/13 16:21:31 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 15:18:17                                        */
+/*  Last Modified: 2026/07/15 18:18:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,81 +17,93 @@
 #include "api/vulkan/Buffer.hpp"
 #include "api/vulkan/Device.hpp"
 
-#include <cstring>
-#include <iostream>
+#include <bit>
 
 namespace	hel {
 
-std::unique_ptr<Buffer>	Buffer::create(Device &device, uint32_t stride,
-						uint32_t count, VkBufferUsageFlags usage,
-						VmaMemoryUsage memoryUsage,
-						VmaAllocationCreateFlags allocFlags) {
-	try	 {
-		return (std::unique_ptr<Buffer>(new Buffer(device, stride, count, usage, memoryUsage, allocFlags)));
-	} catch (const std::exception &e) {
-		std::cerr << e.what() << std::endl;
-		return (nullptr);
-	}
-}
-
-Buffer::Buffer(Device &device, uint32_t stride,
-			uint32_t count, VkBufferUsageFlags usage,
-			VmaMemoryUsage memoryUsage,
-			VmaAllocationCreateFlags allocFlags)
-	:	_device{device} {
-	_stride = device.getAligned(stride, usage);
-	_size = _stride * count;
-	_allocFlags = allocFlags;
-	VkBufferCreateInfo	createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	createInfo.size = _size;
-	createInfo.usage = usage;
-	createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-	VmaAllocationCreateInfo	allocCreateInfo{};
-	allocCreateInfo.usage = memoryUsage;
-	allocCreateInfo.flags = allocFlags;
-	VmaAllocationInfo		allocInfo;
-	if (vmaCreateBuffer(_device.getAllocator(), &createInfo, &allocCreateInfo,
-						&_buffer, &_allocation, &allocInfo))
-		throw std::runtime_error("Failed to create a buffer");
-
-	if (allocFlags & VMA_ALLOCATION_CREATE_MAPPED_BIT)
-		_mapped = allocInfo.pMappedData;
-}
-
 Buffer::~Buffer(void) {
-	unmap();
-	if (_allocation)
-		vmaDestroyBuffer(_device.getAllocator(), _buffer, _allocation);
+	deallocate();
 }
 
-VkResult	Buffer::map(void) {
-	if (_mapped)	{ return (VK_SUCCESS); }
-	return (vmaMapMemory(_device.getAllocator(), _allocation, &_mapped));
+VkDescriptorBufferInfo	Buffer::getDescriptorInfo(uint32_t offset) {
+	return _config._dynamicAccess
+				? VkDescriptorBufferInfo{_buffer, offset * _stride, _stride}
+				: VkDescriptorBufferInfo{_buffer, offset * _stride, _range};
 }
 
-void	Buffer::unmap(void) {
-	if (_mapped && !(_allocFlags & VMA_ALLOCATION_CREATE_MAPPED_BIT)) {
-		vmaUnmapMemory(_device.getAllocator(), _allocation);
-		_mapped = nullptr;
+void	Buffer::deallocate(void) {
+	if (_allocation != VK_NULL_HANDLE)
+		vmaDestroyBuffer(_device->getAllocator(), _buffer, _allocation);
+	_maxCount		= 0;
+	_currentCount	= 0;
+	_allocation		= VK_NULL_HANDLE;
+	_buffer			= VK_NULL_HANDLE;
+	_mapped			= nullptr;
+}
+
+expected<void>	Buffer::allocate(uint32_t count) {
+	count = std::bit_ceil(count);
+	VkBufferCreateInfo		create{};
+	create.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	create.usage = _config._usage;
+	create.size = count * _stride;
+	create.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	VmaAllocationCreateInfo	allocCreate{};
+	allocCreate.usage = _config._memoryUsage;
+	allocCreate.flags = _config._allocFlags;
+	VmaAllocationInfo		allocInfo;
+	if (vmaCreateBuffer(_device->getAllocator(), &create, &allocCreate,
+					&_buffer, &_allocation, &allocInfo) != VK_SUCCESS)
+		return unexpected("Couldn't allocate the buffer.");
+
+	_maxCount = count;
+	_availableSize = create.size;
+	if (_config._allocFlags & VMA_ALLOCATION_CREATE_MAPPED_BIT)
+		_mapped = allocInfo.pMappedData;
+	return {};
+}
+
+expected<Ref<Buffer>>	Buffer::writeToBuffer(void *data, uint32_t count, uint32_t offset)
+{
+	Ref<Buffer>	oldBuffer;
+
+	if (offset + count > _maxCount) {
+		if (_config._fixedCount)
+			return unexpected("Trying to write outside of a fixed buffer.");
+
+		Ref<Buffer>	old(new Buffer());
+		old->_device		= _device;
+		old->_config		= _config;
+		old->_stride		= _stride;
+		old->_elementSize	= _elementSize;
+		old->_maxCount		= _maxCount;
+		old->_availableSize	= _availableSize;
+		old->_allocation	= _allocation;
+		old->_buffer		= _buffer;
+		old->_mapped		= _mapped;
+		oldBuffer = old;
+
+		_maxCount		= 0;
+		_currentCount	= 0;
+		_allocation		= VK_NULL_HANDLE;
+		_buffer			= VK_NULL_HANDLE;
+		_mapped			= nullptr;
+		if (auto res = allocate(count + offset); !res)
+			return unexpected(res.error());
+		_currentCount = count + offset;
+		_range = _currentCount * _stride;
 	}
-}
 
-VkResult	Buffer::flush(VkDeviceSize size, VkDeviceSize offset) {
-	if (!_mapped)	{ return (VK_SUCCESS); }
-	if (size == VK_WHOLE_SIZE)	{ size = _size; }
+	if (_mapped) {
+		char		*dest = static_cast<char*>(_mapped) + (offset * _stride);
+		const char	*src = static_cast<const char*>(data);
 
-	return (vmaFlushAllocation(_device.getAllocator(), _allocation, offset, size));
-}
-
-void	Buffer::writeToBuffer(void* data, VkDeviceSize size, VkDeviceSize offset) {
-	if (size == VK_WHOLE_SIZE)	{ size = _size; }
-
-	bool	notMapped = (_mapped == nullptr);
-	if (notMapped)	{ map(); }
-	std::memcpy(static_cast<char *>(_mapped) + offset, data, size);
-	if (notMapped)	{ unmap(); }
+		for (uint32_t i = 0; i < count; ++i)
+			std::memcpy(dest + (i * _stride), src + (i * _elementSize),
+						_elementSize);
+	}
+	return oldBuffer;
 }
 
 }
