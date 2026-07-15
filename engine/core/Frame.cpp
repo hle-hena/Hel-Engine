@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:35 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/13 16:29:25                                        */
+/*  Last Modified: 2026/07/15 16:05:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,8 +16,9 @@
 
 #include "core/Frame.hpp"
 #include "api/vulkan/Device.hpp"
-#include "api/vulkan/Buffer.hpp"
 #include "api/vulkan/Descriptors.hpp"
+
+#include <iostream>
 
 namespace	hel {
 
@@ -217,8 +218,7 @@ expected<void>	Frame::bindBuffers(GlobalData *globalData) {
 		bind.buffer = buffer;
 		_setStride += buffer->getStride();
 		for (uint32_t i = 0; i < Swapchain::MAX_FRAMES_IN_FLIGHT; i++) {
-			_writer->writeBuffer(i, data.bindingIndex, bind.type, *buffer,
-								i * buffer->getStride() * MAX_PASS_COUNT);
+			_writer->writeBuffer(i, data.bindingIndex, buffer, i * MAX_PASS_COUNT);
 		}
 	}
 	_writer->update();
@@ -259,7 +259,9 @@ void	Frame::writeToUBO(void *data, uint32_t bindingIndex,
 							? (frameIndex * Frame::MAX_PASS_COUNT + passIndex)
 							: (frameIndex);
 	offset *= stride;
-	bind.buffer->writeToBuffer(data, stride, offset);
+	if (auto res = bind.buffer->writeToBuffer(data, stride, offset); !res) {
+		std::cerr << "Error on write on UBO: " << res.error() << std::endl; 
+	}
 }
 
 }

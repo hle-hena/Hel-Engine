@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:34:45 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:43:25                                        */
+/*  Last Modified: 2026/07/15 15:08:40                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -43,7 +43,7 @@ class	Engine {
 		~Engine(void);
 
 		expected<void>	init(const EngineConfig &config);
-		expected<void>	setUserData(GlobalData *userData);
+		expected<void>	setUserData(std::shared_ptr<GlobalData> userData);
 		void	run(void);
 
 		Device	*device(void)	{ return _device; };
@@ -59,8 +59,8 @@ class	Engine {
 		void	executePass(FrameContext &ctx,
 							const SystemManager::EntryVec &funcs);
 
-		EngineConfig	_config;
-		GlobalData		*_userData;
+		EngineConfig				_config;
+		std::shared_ptr<GlobalData>	_userData;
 
 		VulkanContext				_vkContext;
 		Device						*_device{nullptr};

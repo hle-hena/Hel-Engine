@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/13 16:01:34                                        */
+/*  Last Modified: 2026/07/15 15:49:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -63,9 +63,9 @@ struct	GlobalData {
 		template <typename T>
 		T	*get(const std::string &key) {
 			if (auto it = _engineGlobals.find(key); it != _engineGlobals.end())
-				return static_cast<T *>(it->second.data);
+				return static_cast<T *>(it->second.data.get());
 			if (auto it = _shaderGlobals.find(key); it != _shaderGlobals.end())
-				return static_cast<T *>(it->second.data);
+				return static_cast<T *>(it->second.data.get());
 			return nullptr;
 		}
 
@@ -109,7 +109,7 @@ struct	GlobalSetBindings {
 		uint32_t			index;
 		VkDescriptorType	type;
 		VkShaderStageFlags	stage;
-		Ref<Buffer>			buffer{nullptr};
+		Ref<Buffer>			buffer{};
 		bool				dynamicBinding{false};
 	};
 

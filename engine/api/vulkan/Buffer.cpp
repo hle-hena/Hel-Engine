@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/13 16:21:31 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/13 17:02:13                                        */
+/*  Last Modified: 2026/07/15 11:21:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,9 +25,10 @@ Buffer::~Buffer(void) {
 	deallocate();
 }
 
-VkDescriptorBufferInfo	Buffer::getDescriptorInfo(void) {
-	return _config._dynamicAccess ? VkDescriptorBufferInfo{_buffer, 0, _stride}
-								: VkDescriptorBufferInfo{_buffer, 0, _range};
+VkDescriptorBufferInfo	Buffer::getDescriptorInfo(uint32_t offset) {
+	return _config._dynamicAccess
+				? VkDescriptorBufferInfo{_buffer, offset * _stride, _stride}
+				: VkDescriptorBufferInfo{_buffer, offset * _stride, _range};
 }
 
 void	Buffer::deallocate(void) {

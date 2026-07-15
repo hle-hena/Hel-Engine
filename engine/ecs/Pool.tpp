@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 16:53:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/13 12:59:59                                        */
+/*  Last Modified: 2026/07/15 15:54:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -68,6 +68,10 @@ void	Pool<Component>::removeEntity(Entity::id handle) {
 
 template <ValidComponent Component>
 expected<void>	Pool<Component>::syncBuffer() {
+	if constexpr (!Component::MetaData::gpuVisible) {
+		return {};
+	} else
+	{
 	using GPULayout = typename Component::GPULayout;
 
 	uint32_t	nComp = static_cast<uint32_t>(components.size());
@@ -81,10 +85,15 @@ expected<void>	Pool<Component>::syncBuffer() {
 	if (*res)
 		_pendingBuffers.push_back({Swapchain::MAX_FRAMES_IN_FLIGHT, *res});
 	return {};
+	}
 }
 
 template <ValidComponent Component>
 expected<void>	Pool<Component>::syncBuffer(const PendingWrite &write) {
+	if constexpr (!Component::MetaData::gpuVisible) {
+		return {};
+	} else
+	{
 	auto	&comp = *static_cast<Component::POD*>(write.data);
 	auto	gpuData = Component::MetaData::toGPU(comp);
 	auto	res = buffer->writeToBuffer(&gpuData, 1, write.index);
@@ -93,23 +102,25 @@ expected<void>	Pool<Component>::syncBuffer(const PendingWrite &write) {
 	if (*res)
 		_pendingBuffers.push_back({Swapchain::MAX_FRAMES_IN_FLIGHT, *res});
 	return {};
+	}
+
 }
 
 template <ValidComponent Component>
 expected<void>	Pool<Component>::flushWrites(Device &device) {
-	if (!buffer) {
-		auto	res = Buffer<typename Component::POD>::create(&device,
-			BufferConfig()
-			.usage(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
-			.allocFlags(VMA_ALLOCATION_CREATE_MAPPED_BIT |
-				VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT));
-		if (!res)
-			return unexpected(res.error());
-		buffer = res;
-	}
-
 	expected<void>	res;
 	if constexpr (Component::MetaData::gpuVisible) {
+		if (!buffer) {
+			auto	res = Buffer::create<typename Component::GPULayout>(&device,
+				BufferConfig()
+				.usage(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
+				.allocFlags(VMA_ALLOCATION_CREATE_MAPPED_BIT |
+					VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT));
+			if (!res)
+				return unexpected(res.error());
+			buffer = *res;
+		}
+
 		if (GPUBufferDirty) {
 			auto	r = syncBuffer();
 			if (!r && res) res = r;

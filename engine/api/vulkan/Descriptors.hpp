@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/13 13:01:20                                        */
+/*  Last Modified: 2026/07/15 11:16:36                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -129,10 +129,8 @@ class	DescriptorWriter {
 		DescriptorWriter(Device &device, DescriptorSet *sets);
 		~DescriptorWriter(void)	= default;
 
-		template <typename T>
 		DescriptorWriter	&writeBuffer(uint32_t setIndex, uint32_t binding,
-									VkDescriptorType type, Buffer<T> &buffer,
-									uint32_t offset = 0);
+									Ref<Buffer> buffer, uint32_t offset = 0);
 		DescriptorWriter	&writeImage(uint32_t setIndex, uint32_t binding,
 									VkDescriptorType type, VkImageView view,
 									VkImageLayout layout, VkSampler sampler);

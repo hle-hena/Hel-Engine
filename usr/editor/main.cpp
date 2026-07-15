@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/09 17:10:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/13 16:32:13                                        */
+/*  Last Modified: 2026/07/15 15:08:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -115,7 +115,7 @@ expected<void>	init(Engine &engine, EngineConfig &config) {
 						.usage(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT)
 						.allocFlags(VMA_ALLOCATION_CREATE_MAPPED_BIT |
 							VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT)
-						.count(Frame::MAX_PASS_COUNT * Swapchain::MAX_FRAMES_IN_FLIGHT));
+						.fixedCount(Frame::MAX_PASS_COUNT * Swapchain::MAX_FRAMES_IN_FLIGHT));
 			if (!res)
 				return unexpected(res.error());
 			globalUBOBuffer = *res;
@@ -123,7 +123,7 @@ expected<void>	init(Engine &engine, EngineConfig &config) {
 		}).and_then([&](void) -> expected<void>{
 			globals->addData("delta_t", delta_t)
 				->addData("main UBO", globalUBO, globalUBOBuffer, 0);
-			return engine.setUserData(GlobalData *userData);
+			return engine.setUserData(globals);
 		});
 }
 

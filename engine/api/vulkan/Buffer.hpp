@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/11 17:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/13 16:53:36                                        */
+/*  Last Modified: 2026/07/15 15:53:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,7 +29,7 @@ namespace	hel {
 class	Device;
 
 template <typename T>
-concept	POD = std::is_trivial_v<T>;
+concept	POD = std::is_standard_layout_v<T> && std::is_trivially_copyable_v<T>;
 
 struct	BufferConfig {
 	public:
@@ -65,20 +65,22 @@ class	Buffer : public RefCounted {
 		expected<Ref<Buffer>>	writeToBuffer(void *data, uint32_t count = 1,
 											uint32_t offset = 0);
 
-		VkDescriptorBufferInfo	getDescriptorInfo(void);
-		VkBuffer		getBuffer(void) const
+		VkDescriptorBufferInfo	getDescriptorInfo(uint32_t offset = 0);
+		VkDescriptorType	getDescriptorType(void) const
+			{ return _config._descriptorType; }
+		VkBuffer			getBuffer(void) const
 			{ return _buffer; }
-		VkDeviceSize	getSize(void) const
+		VkDeviceSize		getSize(void) const
 			{ return _availableSize; }
-		VkDeviceSize	getRange(void) const
+		VkDeviceSize		getRange(void) const
 			{ return _range; }
-		uint32_t		getStride(void) const
+		uint32_t			getStride(void) const
 			{ return _stride; }
 
-		void			*getMapped(void) const
+		void	*getMapped(void) const
 			{ return _mapped; }
 		template <POD T>
-		void			*getMappedAs(void) const
+		void	*getMappedAs(void) const
 			{ return static_cast<T *>(_mapped); }
 
 	private:

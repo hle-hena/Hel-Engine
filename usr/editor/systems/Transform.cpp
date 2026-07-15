@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/07 18:30:42                                        */
+/*  Last Modified: 2026/07/15 15:57:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -337,11 +337,17 @@ void	Transform::registerClick(const FrameContext &ctx, GizmoContext &gizmo) {
 	if (pos.x < 0 || pos.y < 0 || pos.x > viewportSize.x || pos.y > viewportSize.y)
 		return ;
 
-	gizmo._read = Read::Queue::newRequest<uint32_t>(ctx.frameIndex)
+	auto	newRead = Read::Queue::newRequest<uint32_t>(ctx.frameIndex)
 			.setSrcImage(entityImg)
 			.setOffset({(int32_t)pos.x, (int32_t)pos.y, 0})
 			.setExtent({1, 1, 1})
-			.push(*_device);
+			.push(_device);
+	if (!newRead) {
+		std::cerr << "Failed to create a new read: "
+			<< newRead.error() << std::endl;
+		return ;
+	}
+	gizmo._read = *newRead;
 }
 
 void	Transform::registerDrag(const FrameContext &ctx, GizmoContext &gizmo) {

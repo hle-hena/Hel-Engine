@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/24 15:13:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:21:33                                        */
+/*  Last Modified: 2026/07/15 15:13:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -52,10 +52,16 @@ std::shared_ptr<Texture> Texture::load(Device *device,
 					VK_IMAGE_USAGE_SAMPLED_BIT)
 			.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
 
-	VkDeviceSize	size = static_cast<VkDeviceSize>(raw.width * raw.height * 4);
-	asset->image->setData(raw.pixels, size);
+	uint32_t	size = static_cast<uint32_t>(raw.width * raw.height * 4);
+	auto		res = asset->image->setData(raw.pixels, size);
 
 	stbi_image_free(raw.pixels);
+
+	if (!res) {
+		std::cerr << "Failed to write image: " << res.error() << std::endl;
+		return (nullptr);
+	}
+
 	return (asset);
 }
 
