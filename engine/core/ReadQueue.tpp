@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/05 18:33:38 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/15 15:05:46                                        */
+/*  Last Modified: 2026/07/15 17:36:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -38,9 +38,10 @@ expected<Read::Context>	Read::Builder<ReadType>::push(Device *device) {
 	if (!dstBuffer)
 		return unexpected("Failed to create buffer for read: "
 				+ dstBuffer.error());
+	_context.buffer = *dstBuffer;
 	_request.dstBuffer = _context.buffer.get();
 	Read::Queue::_requests.push_back(_request);
-	return (std::move(_context));
+	return (_context);
 }
 
 }

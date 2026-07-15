@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:39:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/15 15:09:09                                        */
+/*  Last Modified: 2026/07/15 17:37:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,6 +37,7 @@ Engine::Engine(void)
 }
 
 Engine::~Engine(void) {
+	_userData = nullptr;
 	_systems.clear({});
 	if (_device) {
 		Sampler::deleteAllSamplers(*_device);

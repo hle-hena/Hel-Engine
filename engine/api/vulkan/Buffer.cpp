@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/13 16:21:31 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/15 11:21:28                                        */
+/*  Last Modified: 2026/07/15 17:36:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -43,7 +43,7 @@ void	Buffer::deallocate(void) {
 
 expected<void>	Buffer::allocate(uint32_t count) {
 	count = std::bit_ceil(count);
-	VkBufferCreateInfo		create;
+	VkBufferCreateInfo		create{};
 	create.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	create.usage = _config._usage;
 	create.size = count * _stride;
@@ -94,8 +94,9 @@ expected<Ref<Buffer>>	Buffer::writeToBuffer(void *data, uint32_t count, uint32_t
 		_range = _currentCount * _stride;
 	}
 
-	std::memcpy(static_cast<char *>(_mapped) + offset * _stride,
-				data, count * _stride);
+	if (_mapped)
+		std::memcpy(static_cast<char *>(_mapped) + offset * _stride,
+					data, count * _stride);
 	return oldBuffer;
 }
 
