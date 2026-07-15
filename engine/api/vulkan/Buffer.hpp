@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/11 17:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/15 15:53:19                                        */
+/*  Last Modified: 2026/07/15 18:16:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -101,6 +101,7 @@ class	Buffer : public RefCounted {
 
 		BufferConfig	_config;
 		uint32_t		_stride;
+		uint32_t		_elementSize;
 		uint32_t		_maxCount{0u};
 		VkDeviceSize	_availableSize{0u};
 		uint32_t		_currentCount{0u};

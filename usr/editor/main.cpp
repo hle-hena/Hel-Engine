@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/09 17:10:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/15 15:08:09                                        */
+/*  Last Modified: 2026/07/15 17:43:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -41,7 +41,7 @@ void	loadPrimaryScene(Registry *registry, Window *window) {
 
 	Entity::id	sponzaHandle = registry->createEntity();
 	if (auto mesh = registry->addComponent<comp::Model>(sponzaHandle).modify()) {
-		mesh->modelName = "sponza";
+		mesh->modelName = "cube";
 	}
 	if (auto transform = registry->addComponent<comp::Transform>(sponzaHandle).modify()) {
 		transform->position = {0.f, -80.f, 0.f};

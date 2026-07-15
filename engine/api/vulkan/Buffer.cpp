@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/13 16:21:31 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/15 17:36:03                                        */
+/*  Last Modified: 2026/07/15 18:18:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -76,6 +76,7 @@ expected<Ref<Buffer>>	Buffer::writeToBuffer(void *data, uint32_t count, uint32_t
 		old->_device		= _device;
 		old->_config		= _config;
 		old->_stride		= _stride;
+		old->_elementSize	= _elementSize;
 		old->_maxCount		= _maxCount;
 		old->_availableSize	= _availableSize;
 		old->_allocation	= _allocation;
@@ -94,9 +95,14 @@ expected<Ref<Buffer>>	Buffer::writeToBuffer(void *data, uint32_t count, uint32_t
 		_range = _currentCount * _stride;
 	}
 
-	if (_mapped)
-		std::memcpy(static_cast<char *>(_mapped) + offset * _stride,
-					data, count * _stride);
+	if (_mapped) {
+		char		*dest = static_cast<char*>(_mapped) + (offset * _stride);
+		const char	*src = static_cast<const char*>(data);
+
+		for (uint32_t i = 0; i < count; ++i)
+			std::memcpy(dest + (i * _stride), src + (i * _elementSize),
+						_elementSize);
+	}
 	return oldBuffer;
 }
 

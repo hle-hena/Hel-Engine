@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/11 17:25:36 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/13 17:00:56                                        */
+/*  Last Modified: 2026/07/15 18:16:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,6 +37,7 @@ expected<void>	Buffer::init(Device *device, const BufferConfig &config)
 	_device = device;
 	_config = config;
 	_stride = sizeof(T);
+	_elementSize = sizeof(T);
 
 	if (_config._dynamicAccess && _config._usage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
 		_config._descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
