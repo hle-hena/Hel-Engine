@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/11 17:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/16 10:58:00                                        */
+/*  Last Modified: 2026/07/16 14:58:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -76,6 +76,7 @@ class	Buffer : public RefCounted {
 			{ return _range; }
 		uint32_t			getStride(void) const
 			{ return _stride; }
+		bool				syncVersion(uint32_t *clientVersion);
 
 		void	*getMapped(void) const
 			{ return _mapped; }
@@ -102,6 +103,7 @@ class	Buffer : public RefCounted {
 		BufferConfig	_config;
 		uint32_t		_stride;
 		uint32_t		_elementSize;
+
 		uint32_t		_maxCount{0u};
 		VkDeviceSize	_availableSize{0u};
 		uint32_t		_currentCount{0u};
@@ -110,6 +112,8 @@ class	Buffer : public RefCounted {
 		VmaAllocation	_allocation{VK_NULL_HANDLE};
 		VkBuffer		_buffer{VK_NULL_HANDLE};
 		void			*_mapped{nullptr};
+
+		uint32_t		_version{0};
 };
 
 }

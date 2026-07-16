@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/13 16:21:31 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/16 10:57:34                                        */
+/*  Last Modified: 2026/07/16 14:59:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,6 +29,14 @@ VkDescriptorBufferInfo	Buffer::getDescriptorInfo(uint32_t offset) {
 	return _config._dynamicAccess
 				? VkDescriptorBufferInfo{_buffer, offset * _stride, _stride}
 				: VkDescriptorBufferInfo{_buffer, offset * _stride, _range};
+}
+
+bool	Buffer::syncVersion(uint32_t *clientVersion) {
+	if (*clientVersion != _version) {
+		*clientVersion = _version;
+		return true;
+	}
+	return false;
 }
 
 void	Buffer::deallocate(void) {
@@ -61,6 +69,7 @@ expected<void>	Buffer::allocate(uint32_t count) {
 	_availableSize = create.size;
 	if (_config._allocFlags & VMA_ALLOCATION_CREATE_MAPPED_BIT)
 		_mapped = allocInfo.pMappedData;
+	_version++;
 	return {};
 }
 
@@ -91,8 +100,10 @@ expected<Ref<Buffer>>	Buffer::writeToBuffer(void *data, uint32_t count, uint32_t
 		_mapped			= nullptr;
 		if (auto res = allocate(count + offset); !res)
 			return unexpected(res.error());
+	} if (count + offset > _currentCount) {
 		_currentCount = count + offset;
 		_range = _currentCount * _stride;
+		_version++;
 	}
 
 	if (_mapped) {
