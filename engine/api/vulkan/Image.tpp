@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Image.hpp                                                           */
+/*  File: Image.tpp                                                           */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/07/17 15:33:47 by hle-hena                                  */
+/*  Created: 2026/07/17 17:52:36 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/17 19:04:35                                        */
+/*  Last Modified: 2026/07/17 18:18:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,39 +14,36 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#pragma once
-
-#include <vulkan/vulkan.h>
-#include <vma/vk_mem_alloc.h>
-
-#include "utils/Ref.hpp"
-#include "HelExpected.hpp"
-#include "api/vulkan/ImageConfig.hpp"
+#include "api/vulkan/Image.hpp"
 
 namespace	hel {
 
-class	Device;
+template <ImageType T>
+expected<Ref<Image>>	Image::create(Device *device,
+									const ImageConfig<T> &config)
+{
+	auto	newImage = makeRef<Image>();
 
-class	Image {
-	public:
-		template <ImageType T>
-		expected<Ref<Image>>	create(Device *device, const ImageConfig<T> &config);
-
-	private:
-		expected<void>	validateConfig(void);
-		void			deallocateImage(void);
-		expected<void>	allocateImage(void);
-
-		template <ImageType T>
-		expected<void>	init(Device *device, const ImageConfig<T> &config);
-
-		Device			*_device;
-		ImageInfo		_config;
-
-		VmaAllocation	_allocation{VK_NULL_HANDLE};
-		VkImage			_image{VK_NULL_HANDLE};
-};
+	if (auto res = newImage->init(device, config); !res)
+		return unexpected("Couldn't create an image: " + res.error());
 
 }
 
-#include "api/vulkan/Image.tpp"
+template <ImageType T>
+expected<void>	Image::init(Device *device, const ImageConfig<T> &config) {
+	_device = device;
+	_config = config;
+
+	if constexpr (std::is_same_v<T, ImageTypeCube>) {
+		_config._layers = 6;
+		_config._usage |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+	}
+	_config._type = T::imageType;
+		
+	if (auto res = validateConfig().and_then([this](void)
+						{return allocateImage();}); !res)
+		return unexpected(res.error());
+	return {};
+}
+
+}

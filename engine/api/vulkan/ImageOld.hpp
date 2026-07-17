@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/25 13:16:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/16 10:58:55                                        */
+/*  Last Modified: 2026/07/17 17:43:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -54,10 +54,10 @@ struct	ViewConfig {
 				return _parent;
 			}
 
-			PROXY_SETTER(r, VkComponentSwizzle, _parent._components.r, _parent)
-			PROXY_SETTER(g, VkComponentSwizzle, _parent._components.g, _parent)
-			PROXY_SETTER(b, VkComponentSwizzle, _parent._components.b, _parent)
-			PROXY_SETTER(a, VkComponentSwizzle, _parent._components.a, _parent)
+			PROXY_SETTER(r, VkComponentSwizzle, _parent._components.r)
+			PROXY_SETTER(g, VkComponentSwizzle, _parent._components.g)
+			PROXY_SETTER(b, VkComponentSwizzle, _parent._components.b)
+			PROXY_SETTER(a, VkComponentSwizzle, _parent._components.a)
 
 			private:
 				ViewConfig	&_parent;
