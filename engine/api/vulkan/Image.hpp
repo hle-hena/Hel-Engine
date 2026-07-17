@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 15:33:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/17 19:04:35                                        */
+/*  Last Modified: 2026/07/17 19:38:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,16 +29,30 @@ class	Device;
 
 class	Image {
 	public:
+		Image(const Image &) = delete;
+		Image	operator=(const Image &) = delete;
+
 		template <ImageType T>
-		expected<Ref<Image>>	create(Device *device, const ImageConfig<T> &config);
+		static expected<Ref<Image>>	create(Device *device,
+										const ImageConfig<T> &config);
+		static expected<Ref<Image>>	wrapImage(Device *device, VkImage image,
+										VkFormat format, VkExtent2D extent);
+
+		void	transitionLayout(VkCommandBuffer commandBuffer,
+								VkImageLayout newLayout);
 
 	private:
-		expected<void>	validateConfig(void);
-		void			deallocateImage(void);
-		expected<void>	allocateImage(void);
+		Image(void) = default;
+		~Image(void);
 
 		template <ImageType T>
 		expected<void>	init(Device *device, const ImageConfig<T> &config);
+		expected<void>	init(Device *device, VkImage image,
+							VkFormat format, VkExtent2D extent);
+
+		expected<void>	validateConfig(void);
+		void			deallocateImage(void);
+		expected<void>	allocateImage(void);
 
 		Device			*_device;
 		ImageInfo		_config;

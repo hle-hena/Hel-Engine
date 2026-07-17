@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 18:05:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/17 18:34:14                                        */
+/*  Last Modified: 2026/07/17 19:11:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -33,6 +33,8 @@ struct	ImageInfo {
 		VkExtent3D					_extent{1u, 1u, 1u};
 		uint32_t					_layers{1u};
 		VkImageType					_type;
+
+		bool						_owning{true};
 
 	friend class	Image;
 };

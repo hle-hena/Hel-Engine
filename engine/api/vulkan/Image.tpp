@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 17:52:36 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/17 18:18:20                                        */
+/*  Last Modified: 2026/07/17 19:24:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,7 +26,7 @@ expected<Ref<Image>>	Image::create(Device *device,
 
 	if (auto res = newImage->init(device, config); !res)
 		return unexpected("Couldn't create an image: " + res.error());
-
+	return newImage;
 }
 
 template <ImageType T>

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 15:33:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/17 19:05:02                                        */
+/*  Last Modified: 2026/07/17 19:47:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,14 +21,46 @@
 
 namespace	hel {
 
+Image::~Image(void) {
+	deallocateImage();
+}
+
 void			Image::deallocateImage(void) {
-	if (_allocation)
+	if (_allocation && _config._owning)
 		vmaDestroyImage(_device->getAllocator(), _image, _allocation);
 	_image = VK_NULL_HANDLE;
 	_allocation = VK_NULL_HANDLE;
 }
 
+expected<Ref<Image>>	Image::wrapImage(Device *device, VkImage image,
+								VkFormat format, VkExtent2D extent)
+{
+	Ref<Image>	newImage(new Image());
+	if (auto res = newImage->init(device, image, format, extent); !res)
+		return unexpected("Couldn't create an image: " + res.error());
+	return newImage;
+}
+
+expected<void>	Image::init(Device *device, VkImage image, VkFormat format,
+							VkExtent2D extent)
+{
+	_device = device;
+	_config = ImageConfig2D()
+				.formats({format})
+				.extent().width(extent.width)
+				.extent().height(extent.height);
+	_config._type = VK_IMAGE_TYPE_2D;
+	_config._owning = false;
+
+	_image = image;
+
+	return {};
+}
+
 expected<void>	Image::validateConfig(void) {
+	if (!_config._owning)
+		return {};
+
 	if (_config._layers == 0)
 		return unexpected("Expecting at least 1 layer.");
 
@@ -60,6 +92,9 @@ expected<void>	Image::validateConfig(void) {
 }
 
 expected<void>	Image::allocateImage(void) {
+	if (!_config._owning)
+		return {};
+
 	VkImageCreateInfo		create{};
 	create.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	create.imageType = _config._type;
@@ -89,6 +124,13 @@ expected<void>	Image::allocateImage(void) {
 						&_image, &_allocation, nullptr) != VK_SUCCESS)
 		return unexpected("Failed to allocate an image.");
 	return {};
+}
+
+
+void	Image::transitionLayout(VkCommandBuffer commandBuffer,
+								VkImageLayout newlayout)
+{
+		
 }
 
 
