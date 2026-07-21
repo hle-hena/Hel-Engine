@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/11 17:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/17 16:40:54                                        */
+/*  Last Modified: 2026/07/20 15:48:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -62,7 +62,7 @@ class	Buffer : public RefCounted {
 		static expected<Ref<Buffer>>	create(Device *device,
 											const BufferConfig &config);
 
-		expected<Ref<Buffer>>	writeToBuffer(void *data, uint32_t count = 1,
+		expected<Ref<Buffer>>	writeToBuffer(const void *data, uint32_t count = 1,
 											uint32_t offset = 0);
 
 		VkDescriptorBufferInfo	getDescriptorInfo(uint32_t offset = 0);

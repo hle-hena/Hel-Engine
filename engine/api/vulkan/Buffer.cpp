@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/13 16:21:31 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/17 16:59:48                                        */
+/*  Last Modified: 2026/07/20 15:49:11                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -64,7 +64,8 @@ expected<void>	Buffer::allocate(uint32_t count) {
 	return {};
 }
 
-expected<Ref<Buffer>>	Buffer::writeToBuffer(void *data, uint32_t count, uint32_t offset)
+expected<Ref<Buffer>>	Buffer::writeToBuffer(const void *data, uint32_t count,
+											uint32_t offset)
 {
 	Ref<Buffer>	oldBuffer;
 

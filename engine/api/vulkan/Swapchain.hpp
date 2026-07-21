@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 17:22:31                                        */
+/*  Last Modified: 2026/07/21 11:33:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,7 +34,8 @@ class	Image;
 class	Swapchain
 {
 	public:
-		static constexpr int	MAX_FRAMES_IN_FLIGHT = 2;
+		static constexpr int		MAX_FRAMES_IN_FLIGHT = 2;
+		static constexpr VkFormat	SWAPCHAIN_FORMAT = VK_FORMAT_B8G8R8A8_UNORM;
 
 		struct	SupportDetails {
 			VkSurfaceCapabilitiesKHR		capabilities;

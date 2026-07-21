@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 17:30:17                                        */
+/*  Last Modified: 2026/07/21 11:33:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -132,7 +132,7 @@ expected<void>	Swapchain::recreateSwapChain(Window &window) {
 VkSurfaceFormatKHR	Swapchain::selectSwapSurfaceFormat(std::vector<VkSurfaceFormatKHR> &formats) {
 	for (const auto &format: formats) {
 		if (format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
-			&& format.format == VK_FORMAT_B8G8R8A8_UNORM)
+			&& format.format == SWAPCHAIN_FORMAT)
 			return (format);
 	}
 	return (formats[0]);

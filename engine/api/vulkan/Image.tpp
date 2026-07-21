@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 17:52:36 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/17 19:24:59                                        */
+/*  Last Modified: 2026/07/21 11:45:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,15 +34,35 @@ expected<void>	Image::init(Device *device, const ImageConfig<T> &config) {
 	_device = device;
 	_config = config;
 
-	if constexpr (std::is_same_v<T, ImageTypeCube>) {
-		_config._layers = 6;
-		_config._usage |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
-	}
-	_config._type = T::imageType;
-		
 	if (auto res = validateConfig().and_then([this](void)
 						{return allocateImage();}); !res)
 		return unexpected(res.error());
+	_extent = _config._extent;
+	return {};
+}
+
+template <VkFormat Format>
+expected<Ref<Image>>	Image::wrapImage(Device *device, VkImage image,
+										VkExtent2D extent)
+{
+	Ref<Image>	newImage(new Image());
+	if (auto res = newImage->init<Format>(device, image, extent); !res)
+		return unexpected("Couldn't create an image: " + res.error());
+	return newImage;
+}
+
+template <VkFormat Format>
+expected<void>	Image::init(Device *device, VkImage image, VkExtent2D extent) {
+	_device = device;
+	_config = ImageConfig2D()
+				.formats<Format>()
+				.extent().width(extent.width)
+				.extent().height(extent.height);
+	_config._owning = false;
+
+	_image = image;
+	_extent = _config._extent;
+
 	return {};
 }
 

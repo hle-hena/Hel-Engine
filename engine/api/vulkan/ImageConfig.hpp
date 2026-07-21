@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 18:05:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/17 19:11:40                                        */
+/*  Last Modified: 2026/07/21 17:49:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,24 +20,13 @@
 #include <vma/vk_mem_alloc.h>
 #include <vector>
 #include <cstdint>
+#include <algorithm>
 
 #include "utils/Setters.hpp"
+#include "utils/mathUtils.hpp"
+#include "api/vulkan/generated/HelFormatUtils.hpp"
 
 namespace	hel {
-
-struct	ImageInfo {
-	protected:
-		VkImageUsageFlags			_usage;
-		VmaAllocationCreateFlags	_allocFlags;
-		std::vector<VkFormat>		_formats;
-		VkExtent3D					_extent{1u, 1u, 1u};
-		uint32_t					_layers{1u};
-		VkImageType					_type;
-
-		bool						_owning{true};
-
-	friend class	Image;
-};
 
 struct	ImageType1D {
 	static constexpr VkImageType	imageType = VK_IMAGE_TYPE_1D;
@@ -74,6 +63,52 @@ concept	ImageType =
 	std::is_same_v<T, ImageType3D> ||
 	std::is_same_v<T, ImageTypeCube>;
 
+struct	ImageInfo {
+	protected:
+		ImageInfo(VkImageType type) : _type(type) {}
+		ImageInfo(void) : _type(VK_IMAGE_TYPE_2D) {}
+
+		VkImageUsageFlags			_usage;
+		VmaAllocationCreateFlags	_allocFlags;
+		std::vector<VkFormat>		_formats;
+		VkExtent3D					_extent{1u, 1u, 1u};
+		uint32_t					_layers{1u};
+
+		VkImageType					_type;
+		VkImageAspectFlags			_aspect;
+
+		bool						_owning{true};
+
+
+	public:
+		bool	operator==(const ImageInfo &other) const {
+			return (this->_type == other._type &&
+					this->_layers == other._layers &&
+					this->_formats == other._formats &&
+					this->_usage == other._usage &&
+					this->_extent.width == other._extent.width &&
+					this->_extent.height == other._extent.height &&
+					this->_extent.depth == other._extent.depth);
+		}
+
+	friend class	Image;
+	friend class	ImagePool;
+	template <ImageType T>
+	friend struct	ImageConfig;
+	friend struct	ImageInfoHasher;
+};
+
+struct	ImageInfoHasher {
+	size_t	operator()(const ImageInfo &info) const {
+		size_t	seed = 0;
+		for (auto format: info._formats)
+			hel::mathUtils::hashCombine(seed, format);
+		hel::mathUtils::hashCombine(seed, info._layers, info._extent.width,
+			info._extent.height, info._extent.depth, info._usage, info._type);
+		return (seed);
+	}
+};
+
 template <ImageType T>
 struct	ImageConfig: public ImageInfo {
 	private:
@@ -88,10 +123,83 @@ struct	ImageConfig: public ImageInfo {
 				ImageConfig<T>	&_parent;
 		};
 
+		template <size_t N>
+		constexpr bool sameAspect(const std::array<VkFormat, N> &formats) {
+			auto	a = getFormatAspect(formats[0]);
+			for (auto f: formats) if (getFormatAspect(f) != a) return false;
+			return true;
+		}
+
+		template <size_t N>
+		constexpr bool sameTexelSize(const std::array<VkFormat, N> &formats) {
+			auto	s = getFormatTexelSize(formats[0]);
+			for (auto f: formats) if (getFormatTexelSize(f) != s) return false;
+			return true;
+		}
+
+		template <size_t N>
+		constexpr bool noDuplicates(const std::array<VkFormat, N> &formats) {
+			for (size_t i = 0; i < N; ++i)
+				for (size_t j = i + 1; j < N; ++j)
+					if (formats[i] == formats[j]) return false;
+			return true;
+		}
+
+		bool	formatsEqual(const std::vector<VkFormat> &other) {
+			for (auto fmt: _formats) {
+				if (std::find(other.begin(), other.end(), fmt) == other.end())
+					return false;
+			}
+			return true;
+		}
+
 	public:
-		SETTER_VERBOSE(usage, VkImageUsageFlags)
-		SETTER_VERBOSE(allocFlags, VmaAllocationCreateFlags)
-		SETTER_VERBOSE(formats, std::initializer_list<VkFormat>)
+		ImageConfig(void) : ImageInfo(T::imageType) {
+			if constexpr (std::is_same_v<T, ImageTypeCube>) {
+				_layers = 6;
+				_usage |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+			}
+		}
+
+		template <VkImageUsageFlags Usage>
+		ImageConfig	&usage(void) {
+			static_assert(Usage != 0,
+				"Expecting a non-empty usage mask.");
+			static_assert(Usage != VK_IMAGE_USAGE_FLAG_BITS_MAX_ENUM,
+				"Invalid usage mask.");
+			_usage |= Usage;
+			return *this;
+		}
+
+		template <VkFormat First, VkFormat... Rest>
+		ImageConfig	&formats(void) {
+			constexpr std::array	arr{First, Rest...};
+
+			static_assert(sameAspect(arr),
+				"All formats must share the same aspect "
+				"(color/depth/stencil).");
+			static_assert(sameTexelSize(arr),
+				"All formats must have the same byte size.");
+			static_assert(noDuplicates(arr),
+				"Duplicate format in the format list.");
+
+			constexpr auto sorted_arr = []() {
+				auto a = arr;
+				for (size_t i = 0; i < a.size(); ++i) {
+					for (size_t j = i + 1; j < a.size(); ++j) {
+						if (static_cast<int>(a[i]) > static_cast<int>(a[j])) {
+							std::swap(a[i], a[j]);
+						}
+					}
+				}
+				return a;
+			}();
+
+			_aspect = getFormatAspect(First);
+			_formats.assign(sorted_arr.begin(), sorted_arr.end());
+			return *this;
+		}
+
 		SETTER_VERBOSE_REQ(layers, uint32_t, T::has_layers)
 		Extent	extent(void) {
 			return {*this};
