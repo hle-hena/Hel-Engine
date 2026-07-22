@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 15:33:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/21 15:44:40                                        */
+/*  Last Modified: 2026/07/21 19:51:29                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -126,10 +126,15 @@ expected<VkImageView>	Image::createView(const ViewConfig &conf) {
 
 
 
-expected<VkImageView>	Image::getView(const ViewConfig &conf) {
+VkImageView	Image::getView(const ViewConfig &conf) {
 	if (auto it = _views.find(conf); it != _views.end())
 		return it->second;
-	return createView(conf);
+	auto	res = createView(conf);
+	if (!res) {
+		HEL_FATAL("Failed to create a view: {}", res.error());
+		return VK_NULL_HANDLE;
+	}
+	return res.value();
 }
 
 VkDescriptorSet	Image::getTexture(VkImageView view) {
@@ -208,27 +213,22 @@ expected<void>	Image::validateSetData(const std::vector<char *> &src) {
 	return {};
 }
 
-expected<void>	Image::setData(VkCommandBuffer commandBuffer,
+void	Image::setData(VkCommandBuffer commandBuffer,
 							const std::vector<char *> &src)
 {
-	if (auto r = validateSetData(src); !r)
-		return unexpected("Error when copying from a buffer: " + r.error());
+	if (auto res = validateSetData(src); !res) {
+		HEL_FATAL("Error when copying from a buffer: {}", res.error());
+		return ;
+	}
 
-	Ref<Buffer>	stagingBuffer;
-	auto		count = static_cast<uint32_t>(src.size());
-	auto		data = static_cast<const void *>(src.data());
-	auto		res = Buffer::create<char>(_device, BufferConfig()
+	auto	count = static_cast<uint32_t>(src.size());
+	auto	data = static_cast<const void *>(src.data());
+	auto	stagingBuffer = Buffer::create<char>(_device, BufferConfig()
 					.allocFlags(VMA_ALLOCATION_CREATE_MAPPED_BIT |
 						VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT)
 					.usage(VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
-					.fixedCount(count))
-		.and_then([&](Ref<Buffer> buffer) -> expected<Ref<Buffer>> {
-			stagingBuffer = buffer;
-			return buffer->writeToBuffer(data, count);
-		});
-	if (!res)
-		return unexpected("Failed to write/create the buffer: "
-					+ res.error());
+					.fixedCount(count));
+	stagingBuffer->writeToBuffer(data, count);
 
 	transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	VkBufferImageCopy	region{};
@@ -239,7 +239,6 @@ expected<void>	Image::setData(VkCommandBuffer commandBuffer,
 	region.imageExtent = _config._extent;
 	vkCmdCopyBufferToImage(commandBuffer, stagingBuffer->getBuffer(), _image,
 						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-	return {};
 }
 
 expected<void>	Image::validateCopy(Ref<Image> dst) {
@@ -275,9 +274,11 @@ expected<void>	Image::validateCopy(Ref<Image> dst) {
 	return {};
 }
 
-expected<void>	Image::copyTo(VkCommandBuffer commandBuffer, Ref<Image> dst) {
-	if (auto res = validateCopy(dst); !res)
-		return unexpected("Error when copying to an image: " + res.error());
+void	Image::copyTo(VkCommandBuffer commandBuffer, Ref<Image> dst) {
+	if (auto res = validateCopy(dst); !res) {
+		HEL_FATAL("Error when copying to an image: {}", res.error());
+		return ;
+	}
 
 	transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 	dst->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -304,7 +305,6 @@ expected<void>	Image::copyTo(VkCommandBuffer commandBuffer, Ref<Image> dst) {
 	blitInfo.filter = VK_FILTER_LINEAR;
 	vkCmdBlitImage2(commandBuffer, &blitInfo);
 	dst->setWrittenState();
-	return {};
 }
 
 void	Image::copyTo(VkCommandBuffer commandBuffer, Ref<Buffer> dst,

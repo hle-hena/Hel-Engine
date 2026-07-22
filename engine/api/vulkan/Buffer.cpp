@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/13 16:21:31 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/20 15:49:11                                        */
+/*  Last Modified: 2026/07/21 19:48:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -64,14 +64,16 @@ expected<void>	Buffer::allocate(uint32_t count) {
 	return {};
 }
 
-expected<Ref<Buffer>>	Buffer::writeToBuffer(const void *data, uint32_t count,
+Ref<Buffer>	Buffer::writeToBuffer(const void *data, uint32_t count,
 											uint32_t offset)
 {
 	Ref<Buffer>	oldBuffer;
 
 	if (offset + count > _maxCount) {
-		if (_config._fixedCount)
-			return unexpected("Trying to write outside of a fixed buffer.");
+		if (_config._fixedCount) {
+			HEL_ERROR("Trying to write outside of a fixed size buffer.");
+			return nullptr;
+		}
 
 		Ref<Buffer>	old(new Buffer());
 		old->_device		= _device;
@@ -90,8 +92,10 @@ expected<Ref<Buffer>>	Buffer::writeToBuffer(const void *data, uint32_t count,
 		_allocation		= VK_NULL_HANDLE;
 		_buffer			= VK_NULL_HANDLE;
 		_mapped			= nullptr;
-		if (auto res = allocate(count + offset); !res)
-			return unexpected(res.error());
+		if (auto res = allocate(count + offset); !res) {
+			HEL_FATAL("Failed to recreate a buffer: {}", res.error());
+			return nullptr;
+		}
 		_currentCount = count + offset;
 		_range = _currentCount * _stride;
 	}

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/13 11:45:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/13 12:06:20                                        */
+/*  Last Modified: 2026/07/22 14:03:56                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -91,6 +91,7 @@ class	Ref {
 			if (_ptr) _ptr->release();
 			_ptr = nullptr;
 		}
+		uint32_t	refCount(void) noexcept { return _ptr->refCount(); }
 
 		T	*get() const noexcept { return _ptr; }
 		T	*operator->() const noexcept { return _ptr; }
@@ -112,5 +113,16 @@ template <typename T, typename... Args>
 Ref<T>	makeRef(Args&&... args) {
 	return Ref<T>(new T(std::forward<Args>(args)...));
 }
+
+}
+
+namespace	std {
+
+template <typename T>
+struct	hash<hel::Ref<T>> {
+	size_t	operator()(const hel::Ref<T>& r) const noexcept {
+		return std::hash<T*>()(r.get());
+	}
+};
 
 }

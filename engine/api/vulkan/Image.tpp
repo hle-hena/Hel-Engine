@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 17:52:36 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/21 11:45:46                                        */
+/*  Last Modified: 2026/07/21 19:20:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,17 +15,20 @@
 /* *************************************************************************  */
 
 #include "api/vulkan/Image.hpp"
+#include "utils/Logger.hpp"
 
 namespace	hel {
 
 template <ImageType T>
-expected<Ref<Image>>	Image::create(Device *device,
+Ref<Image>	Image::create(Device *device,
 									const ImageConfig<T> &config)
 {
 	auto	newImage = makeRef<Image>();
 
-	if (auto res = newImage->init(device, config); !res)
-		return unexpected("Couldn't create an image: " + res.error());
+	if (auto res = newImage->init(device, config); !res) {
+		HEL_FATAL("Couldn't create an image: {}", res.error());
+		return nullptr;
+	}
 	return newImage;
 }
 
@@ -42,12 +45,14 @@ expected<void>	Image::init(Device *device, const ImageConfig<T> &config) {
 }
 
 template <VkFormat Format>
-expected<Ref<Image>>	Image::wrapImage(Device *device, VkImage image,
+Ref<Image>	Image::wrapImage(Device *device, VkImage image,
 										VkExtent2D extent)
 {
 	Ref<Image>	newImage(new Image());
-	if (auto res = newImage->init<Format>(device, image, extent); !res)
-		return unexpected("Couldn't create an image: " + res.error());
+	if (auto res = newImage->init<Format>(device, image, extent); !res) {
+		HEL_FATAL("Couldn't wrap an image: {}", res.error());
+		return nullptr;
+	}
 	return newImage;
 }
 

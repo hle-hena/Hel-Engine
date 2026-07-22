@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 15:33:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/21 11:44:55                                        */
+/*  Last Modified: 2026/07/22 11:39:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,18 +35,18 @@ class	Image {
 		Image	operator=(const Image &) = delete;
 
 		template <ImageType T>
-		static expected<Ref<Image>>	create(Device *device,
+		static Ref<Image>	create(Device *device,
 										const ImageConfig<T> &config);
 		template <VkFormat Format>
-		static expected<Ref<Image>>	wrapImage(Device *device, VkImage image,
+		static Ref<Image>	wrapImage(Device *device, VkImage image,
 										VkExtent2D extent);
 
 		void	transitionLayout(VkCommandBuffer commandBuffer,
 								VkImageLayout newLayout);
 
-		expected<void>	setData(VkCommandBuffer commandBuffer,
+		void	setData(VkCommandBuffer commandBuffer,
 								const std::vector<char *> &src);
-		expected<void>	copyTo(VkCommandBuffer commandBuffer, Ref<Image> dst);
+		void	copyTo(VkCommandBuffer commandBuffer, Ref<Image> dst);
 		void			copyTo(VkCommandBuffer commandBuffer, Ref<Buffer> dst,
 								VkOffset3D startPos, VkExtent3D extent);
 
@@ -66,7 +66,7 @@ class	Image {
 		VkExtent3D					getPhysicalExtent(void) const
 			{ return _config._extent; }
 
-		expected<VkImageView>		getView(const ViewConfig &conf);
+		VkImageView					getView(const ViewConfig &conf);
 		VkDescriptorSet				getTexture(VkImageView view);
 		VkDescriptorImageInfo		getDescriptorInfo(VkImageView view) const;
 		VkRenderingAttachmentInfo	getRenderingInfo(VkClearValue clearValue,
@@ -110,6 +110,8 @@ class	Image {
 		VkImageLayout	_currentLayout{VK_IMAGE_LAYOUT_UNDEFINED};
 		VmaAllocation	_allocation{VK_NULL_HANDLE};
 		VkImage			_image{VK_NULL_HANDLE};
+
+	friend class ImagePool;
 };
 
 }

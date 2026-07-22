@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/11 17:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/20 15:48:42                                        */
+/*  Last Modified: 2026/07/21 19:45:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -59,10 +59,10 @@ struct	BufferConfig {
 class	Buffer : public RefCounted {
 	public:
 		template <POD T>
-		static expected<Ref<Buffer>>	create(Device *device,
-											const BufferConfig &config);
+		static Ref<Buffer>	create(Device *device,
+								const BufferConfig &config);
 
-		expected<Ref<Buffer>>	writeToBuffer(const void *data, uint32_t count = 1,
+		Ref<Buffer>	writeToBuffer(const void *data, uint32_t count = 1,
 											uint32_t offset = 0);
 
 		VkDescriptorBufferInfo	getDescriptorInfo(uint32_t offset = 0);

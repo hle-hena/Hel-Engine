@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/21 17:46:59                                        */
+/*  Last Modified: 2026/07/22 14:01:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,10 +17,12 @@
 #pragma once
 
 #include <unordered_map>
-#include <memory>
-#include <string>
+#include <vector>
+#include <unordered_map>
+#include <chrono>
 
 #include "api/vulkan/Image.hpp"
+#include "api/vulkan/Swapchain.hpp"
 
 namespace	hel {
 
@@ -32,17 +34,29 @@ class	ImagePool {
 		static Ref<ImagePool>	create(Device *device);
 
 		template <ImageType T>
-		Ref<Image>	acquire(const ImageConfig<T> &requested);
-		// Image	*acquire(const Image::Config &requested, uint32_t life = 1u);
-		// Image	*acquire(const std::string &referenceID,
-		// 				const Image::Config &requested, uint32_t life = 1u);
-		// Image	*get(const std::string &referenceID);
-		// void	release(Image *);
-		// void	releaseAll(void);
+		Ref<Image>	acquire(uint32_t frameIndex,
+						const ImageConfig<T> &requested);
+		void		collectFromFrame(uint32_t frameIndex);
+		void		evict(void);
 
 		~ImagePool(void);
 
 	private:
+		using clock = std::chrono::steady_clock;
+		template <typename T>
+		using ImageInfoMap = std::unordered_map<ImageInfo, T, ImageInfoHasher>;
+
+		static constexpr std::chrono::milliseconds	evictionThreshold{10000};
+		struct	UnusedEntry {
+			Ref<Image>			image;
+			clock::time_point	releaseAt{clock::now()};
+		};
+		struct	Slots {
+			std::vector<UnusedEntry>					unusedImages;
+
+			std::array<std::vector<Ref<Image>>,
+				Swapchain::MAX_FRAMES_IN_FLIGHT>	usedImages;
+		};
 		struct	Slot {
 			Ref<Image>	image{nullptr};
 			uint32_t	life{0};
@@ -53,15 +67,8 @@ class	ImagePool {
 		expected<uint64_t>	candidateScore(const ImageInfo &requested,
 						const ImageInfo &candidate);
 
-		// bool		candidateFits(const Image::Config &requested,
-		// 				const Image::Config &candidate);
-		// uint64_t	candidateScore(const Image::Config &requested,
-		// 				const Image::Config &candidate);
-
-		template <typename T>
-		using ImageInfoMap = std::unordered_map<ImageInfo, T, ImageInfoHasher>;
-		Device							*_device;
-		ImageInfoMap<std::vector<Slot>>	_pools;
+		Device				*_device;
+		ImageInfoMap<Slots>	_pools;
 };
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/11 17:25:36 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/15 18:16:58                                        */
+/*  Last Modified: 2026/07/21 19:46:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,18 +16,21 @@
 
 #include "api/vulkan/Buffer.hpp"
 #include "api/vulkan/Device.hpp"
+#include "utils/Logger.hpp"
 
 #include <cstring>
 
 namespace	hel {
 
 template <POD T>
-expected<Ref<Buffer>>	Buffer::create(Device *device,
+Ref<Buffer>	Buffer::create(Device *device,
 	const BufferConfig &config)
 {
 	Ref<Buffer>	buffer(new Buffer());
-	if (auto err = buffer->init<T>(device, config); !err)
-		return unexpected(err.error());
+	if (auto err = buffer->init<T>(device, config); !err) {
+		HEL_FATAL("Failed to create a buffer: {}", err.error());
+		return nullptr;
+	}
 	return buffer;
 }
 
