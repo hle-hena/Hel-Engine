@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/24 15:06:28 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:20:27                                        */
+/*  Last Modified: 2026/07/22 14:28:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,14 +19,16 @@
 #include <memory>
 #include <string>
 
+#include "utils/Ref.hpp"
+
 namespace	hel {
 
 class	Device;
 class	Image;
 
 struct	Texture {
-	std::string					filePath;
-	std::unique_ptr<Image>		image;
+	std::string	filePath;
+	Ref<Image>	image;
 
 	static std::shared_ptr<Texture>	load(Device *device,
 											const std::string &path);

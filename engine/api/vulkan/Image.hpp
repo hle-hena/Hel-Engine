@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 15:33:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/22 11:39:16                                        */
+/*  Last Modified: 2026/07/22 14:34:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,7 +45,7 @@ class	Image {
 								VkImageLayout newLayout);
 
 		void	setData(VkCommandBuffer commandBuffer,
-								const std::vector<char *> &src);
+								const std::vector<unsigned char> &src);
 		void	copyTo(VkCommandBuffer commandBuffer, Ref<Image> dst);
 		void			copyTo(VkCommandBuffer commandBuffer, Ref<Buffer> dst,
 								VkOffset3D startPos, VkExtent3D extent);
@@ -88,7 +88,7 @@ class	Image {
 		expected<void>			allocateImage(void);
 		expected<VkImageView>	createView(const ViewConfig &conf);
 
-		expected<void>	validateSetData(const std::vector<char *> &src);
+		expected<void>	validateSetData(const std::vector<unsigned char> &src);
 		expected<void>	validateCopy(Ref<Image> dst);
 
 		void	setWrittenState(void)	{ _written = true; }

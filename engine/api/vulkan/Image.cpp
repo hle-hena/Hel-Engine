@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 15:33:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/21 19:51:29                                        */
+/*  Last Modified: 2026/07/22 14:40:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -204,7 +204,7 @@ void	Image::transitionLayout(VkCommandBuffer commandBuffer,
 	_currentLayout = newlayout;
 }
 
-expected<void>	Image::validateSetData(const std::vector<char *> &src) {
+expected<void>	Image::validateSetData(const std::vector<unsigned char> &src) {
 	if (src.empty())
 		return unexpected("The src was empty.");
 	if (!(_config._usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT))
@@ -214,16 +214,16 @@ expected<void>	Image::validateSetData(const std::vector<char *> &src) {
 }
 
 void	Image::setData(VkCommandBuffer commandBuffer,
-							const std::vector<char *> &src)
+							const std::vector<unsigned char> &src)
 {
 	if (auto res = validateSetData(src); !res) {
-		HEL_FATAL("Error when copying from a buffer: {}", res.error());
+		HEL_ERROR("Error when copying from a buffer: {}", res.error());
 		return ;
 	}
 
 	auto	count = static_cast<uint32_t>(src.size());
 	auto	data = static_cast<const void *>(src.data());
-	auto	stagingBuffer = Buffer::create<char>(_device, BufferConfig()
+	auto	stagingBuffer = Buffer::create<unsigned char>(_device, BufferConfig()
 					.allocFlags(VMA_ALLOCATION_CREATE_MAPPED_BIT |
 						VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT)
 					.usage(VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
@@ -276,7 +276,7 @@ expected<void>	Image::validateCopy(Ref<Image> dst) {
 
 void	Image::copyTo(VkCommandBuffer commandBuffer, Ref<Image> dst) {
 	if (auto res = validateCopy(dst); !res) {
-		HEL_FATAL("Error when copying to an image: {}", res.error());
+		HEL_ERROR("Error when copying to an image: {}", res.error());
 		return ;
 	}
 
