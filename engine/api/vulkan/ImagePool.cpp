@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 11:59:51                                        */
+/*  Last Modified: 2026/07/23 15:59:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,7 +35,7 @@ ImagePool::ImagePool(Device *device) {
 Ref<Image>	ImagePool::acquire(uint32_t frameIndex,
 							const ImageInfo &requestedConfig)
 {
-	auto	&slots = _pools[requestedConfig];//Does this create the bucket if needed ?
+	auto	&slots = _pools[requestedConfig];
 
 	if (slots.unusedImages.empty()) {
 		auto	image = Image::create(_device, requestedConfig);
