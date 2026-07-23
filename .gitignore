@@ -8,4 +8,4 @@ vcpkg/buildtrees/
 vcpkg/downloads/
 vcpkg/packages/
 
-engine/api/vulkan/generated/
+engine/rhi/generated/

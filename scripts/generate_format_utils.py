@@ -19,7 +19,7 @@ VK_XML_URL = "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Docs/main/xm
 # Force relative resolution based on script path
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
-OUTPUT_DIR = REPO_ROOT / "engine" / "api" / "vulkan" / "generated"
+OUTPUT_DIR = REPO_ROOT / "engine" / "rhi" / "generated"
 OUTPUT_PATH = OUTPUT_DIR / "HelFormatUtils.hpp"
 TEMP_CPP_PATH = OUTPUT_DIR / "test_compile.cpp"
 
