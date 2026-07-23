@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:39:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 11:05:01                                        */
+/*  Last Modified: 2026/07/23 15:20:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -122,17 +122,15 @@ void	Engine::tick(uint32_t frameIndex) {
 
 	FrameContext	ctx(frameIndex, _userData.get());
 	_frame.fillContext(ctx, _appWindow.get());
-	bool	shouldDoRenderTick = true;
 	if (_appWindow->getSwapchain().acquireNextImage(*_appWindow.get(), frameIndex, &ctx.swapIndex))
-		shouldDoRenderTick = false;
+		return ;
 	_imagePool->collectFromFrame(frameIndex);
 	_imagePool->evict();
 	_config.tickCallback(&_registry, ctx);
 
 	updateTick(ctx);
 	_registry.updateBuffers(*_device);
-	if (shouldDoRenderTick)
-		renderTick(_appWindow.get(), ctx);
+	renderTick(_appWindow.get(), ctx);
 }
 
 void	Engine::updateTick(FrameContext &frameCtx) {

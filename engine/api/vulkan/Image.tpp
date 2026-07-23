@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 17:52:36 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 12:30:33                                        */
+/*  Last Modified: 2026/07/23 15:17:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -34,7 +34,7 @@ Ref<Image>	Image::wrapImage(Device *device, VkImage image,
 template <VkFormat Format>
 expected<void>	Image::init(Device *device, VkImage image, VkExtent2D extent) {
 	_device = device;
-	_config = ImageConfig2D()
+	_config = ImageConfig2D("Wrapped image")
 				.formats<Format>()
 				.extent2D(extent.width, extent.height);
 	_config._owning = false;

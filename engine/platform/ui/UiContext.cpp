@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:30:39                                        */
+/*  Last Modified: 2026/07/23 14:32:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -38,8 +38,8 @@ void	UiContext::destroy(Device *device) {
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext(_context);
-		_pool = nullptr;
 		_textures.clear();
+		_pool = nullptr;
 	}
 }
 

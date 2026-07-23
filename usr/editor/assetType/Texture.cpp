@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/24 15:13:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 14:17:29                                        */
+/*  Last Modified: 2026/07/23 14:47:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,6 +18,7 @@
 #include "utils/VFS.hpp"
 #include "api/vulkan/Image.hpp"
 #include "api/vulkan/Device.hpp"
+#include "api/vulkan/Buffer.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <assetLoader/stb_image.h>
@@ -52,7 +53,8 @@ std::shared_ptr<Texture> Texture::load(Device *device,
 
 	uint32_t	size = static_cast<uint32_t>(raw.width * raw.height);
 	auto	commandBuffer = device->beginSingleTimeCommand();
-	asset->image->setData(commandBuffer, std::vector<unsigned char>(raw.pixels, raw.pixels + size * 4));
+	auto	stagingBuffer = asset->image->setData(commandBuffer,
+				std::vector<unsigned char>(raw.pixels, raw.pixels + size * 4));
 	asset->image->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	device->endSingleTimeCommand(commandBuffer);
 

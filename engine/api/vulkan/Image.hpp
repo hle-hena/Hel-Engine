@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 15:33:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 12:12:44                                        */
+/*  Last Modified: 2026/07/23 14:45:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -43,9 +43,9 @@ class	Image: public RefCounted {
 		void	transitionLayout(VkCommandBuffer commandBuffer,
 								VkImageLayout newLayout);
 
-		void	setData(VkCommandBuffer commandBuffer,
+		Ref<Buffer>			setData(VkCommandBuffer commandBuffer,
 								const std::vector<unsigned char> &src);
-		void	copyTo(VkCommandBuffer commandBuffer, Ref<Image> dst);
+		void			copyTo(VkCommandBuffer commandBuffer, Ref<Image> dst);
 		void			copyTo(VkCommandBuffer commandBuffer, Ref<Buffer> dst,
 								VkOffset3D startPos, VkExtent3D extent);
 

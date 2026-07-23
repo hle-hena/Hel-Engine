@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 15:33:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 14:27:07                                        */
+/*  Last Modified: 2026/07/23 15:21:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -52,10 +52,6 @@ expected<void>	Image::init(Device *device, const ImageInfo &config) {
 		return unexpected(res.error());
 	_extent = _config._extent;
 	_aspect = getFormatAspect(config._formats[0]);
-
-	std::cout << "Initialisation of the image " << _config._imageName
-		<< " of size: {" << _extent.width << ", " << _extent.height
-		<< ", " << _extent.depth << "}\n";
 
 	return {};
 }
@@ -249,12 +245,12 @@ expected<void>	Image::validateSetData(const std::vector<unsigned char> &src) {
 	return {};
 }
 
-void	Image::setData(VkCommandBuffer commandBuffer,
+Ref<Buffer>	Image::setData(VkCommandBuffer commandBuffer,
 							const std::vector<unsigned char> &src)
 {
 	if (auto res = validateSetData(src); !res) {
 		HEL_ERROR("Error when copying from a buffer: {}", res.error());
-		return ;
+		return nullptr;
 	}
 
 	auto	count = static_cast<uint32_t>(src.size());
@@ -275,6 +271,7 @@ void	Image::setData(VkCommandBuffer commandBuffer,
 	region.imageExtent = _config._extent;
 	vkCmdCopyBufferToImage(commandBuffer, stagingBuffer->getBuffer(), _image,
 						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+	return stagingBuffer;
 }
 
 expected<void>	Image::validateCopy(Ref<Image> dst) {
