@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 18:05:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/21 17:49:19                                        */
+/*  Last Modified: 2026/07/23 12:06:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -56,6 +56,9 @@ struct	ImageTypeCube {
 	static constexpr bool	has_depth = false;
 };
 
+template <typename A>
+concept ToU32 = std::convertible_to<A, uint32_t>;
+
 template <typename T>
 concept	ImageType =
 	std::is_same_v<T, ImageType1D> ||
@@ -65,12 +68,14 @@ concept	ImageType =
 
 struct	ImageInfo {
 	protected:
+		// ImageInfo cannot be constructed directly.
+		// Use ImageConfig1D / ImageConfig2D / ImageConfig3D / ImageConfigCube instead.
 		ImageInfo(VkImageType type) : _type(type) {}
 		ImageInfo(void) : _type(VK_IMAGE_TYPE_2D) {}
 
-		VkImageUsageFlags			_usage;
-		VmaAllocationCreateFlags	_allocFlags;
-		std::vector<VkFormat>		_formats;
+		VkImageUsageFlags			_usage{0};
+		VmaAllocationCreateFlags	_allocFlags{0};
+		std::vector<VkFormat>		_formats{};
 		VkExtent3D					_extent{1u, 1u, 1u};
 		uint32_t					_layers{1u};
 
@@ -124,21 +129,21 @@ struct	ImageConfig: public ImageInfo {
 		};
 
 		template <size_t N>
-		constexpr bool sameAspect(const std::array<VkFormat, N> &formats) {
+		static constexpr bool sameAspect(const std::array<VkFormat, N> &formats) {
 			auto	a = getFormatAspect(formats[0]);
 			for (auto f: formats) if (getFormatAspect(f) != a) return false;
 			return true;
 		}
 
 		template <size_t N>
-		constexpr bool sameTexelSize(const std::array<VkFormat, N> &formats) {
+		static constexpr bool sameTexelSize(const std::array<VkFormat, N> &formats) {
 			auto	s = getFormatTexelSize(formats[0]);
 			for (auto f: formats) if (getFormatTexelSize(f) != s) return false;
 			return true;
 		}
 
 		template <size_t N>
-		constexpr bool noDuplicates(const std::array<VkFormat, N> &formats) {
+		static constexpr bool noDuplicates(const std::array<VkFormat, N> &formats) {
 			for (size_t i = 0; i < N; ++i)
 				for (size_t j = i + 1; j < N; ++j)
 					if (formats[i] == formats[j]) return false;
@@ -151,6 +156,10 @@ struct	ImageConfig: public ImageInfo {
 					return false;
 			}
 			return true;
+		}
+
+		uint32_t	castToU32(ToU32 auto val) {
+			return std::max(static_cast<uint32_t>(val), 1u);
 		}
 
 	public:
@@ -183,7 +192,7 @@ struct	ImageConfig: public ImageInfo {
 			static_assert(noDuplicates(arr),
 				"Duplicate format in the format list.");
 
-			constexpr auto sorted_arr = []() {
+			constexpr auto sorted_arr = [&arr]() {
 				auto a = arr;
 				for (size_t i = 0; i < a.size(); ++i) {
 					for (size_t j = i + 1; j < a.size(); ++j) {
@@ -203,6 +212,21 @@ struct	ImageConfig: public ImageInfo {
 		SETTER_VERBOSE_REQ(layers, uint32_t, T::has_layers)
 		Extent	extent(void) {
 			return {*this};
+		}
+		auto	extent2D(ToU32 auto width) {
+			_extent.width = castToU32(width);
+			return *this;
+		}
+		auto	extent2D(ToU32 auto width, ToU32 auto height) {
+			_extent.width = castToU32(width);
+			_extent.height = castToU32(height);
+			return *this;
+		}
+		auto	extent3D(ToU32 auto width, ToU32 auto height, ToU32 auto depth) {
+			_extent.width = castToU32(width);
+			_extent.height = castToU32(height);
+			_extent.depth = castToU32(depth);
+			return *this;
 		}
 };
 

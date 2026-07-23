@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/24 15:13:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/22 14:42:56                                        */
+/*  Last Modified: 2026/07/23 10:38:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,8 +45,7 @@ std::shared_ptr<Texture> Texture::load(Device *device,
 	asset->filePath = path;
 
 	asset->image = Image::create(device, ImageConfig2D()
-						.extent().width((uint32_t)raw.width)
-						.extent().height((uint32_t)raw.height)
+						.extent2D(raw.width, raw.height)
 						.formats<VK_FORMAT_R8G8B8A8_SRGB>()
 						.usage<VK_IMAGE_USAGE_TRANSFER_DST_BIT |
 								VK_IMAGE_USAGE_SAMPLED_BIT>());

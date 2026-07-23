@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:30:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:25:56                                        */
+/*  Last Modified: 2026/07/23 10:15:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,17 +18,12 @@
 
 #include "systems/ui/UIHelper.hpp"
 #include "utils/Setters.hpp"
+#include "HelSystem.hpp"
 
 #include <utils/json.hpp>
 #include <ui/ImGui/imgui.h>
 #include <vector>
 #include <memory>
-
-namespace	hel {
-
-struct	RenderRequest;
-
-}
 
 namespace	hel::sys {
 
@@ -42,7 +37,7 @@ class	Dock {
 		Dock(const std::string &dockName, UI *ui)
 				:	_ui{ui}, _dockName{dockName} {}
 
-		void	render(RenderRequest *request, Window *window, const ImVec2 &size,
+		void	render(RenderRequest *uiRequest, const FrameContext &ctx, const ImVec2 &size,
 								const ImVec2 &rescale = {-1.f, -1.f});
 
 		PASSKEY(UIKey, UI)
@@ -83,11 +78,11 @@ class	Dock {
 								ImDrawList *draw, IPanel *panel);
 		void	renderDragDrop(const RenderDragDropContext &ctx);
 		void	newPanelPopup(void);
-		void	renderPanels(RenderRequest *request, Window *window, const ImVec2 &size);
+		void	renderPanels(RenderRequest *uiRequest, const FrameContext &ctx, const ImVec2 &size);
 		std::vector<IPanel *>	_panels{};
 		std::vector<float>		_gaps{};
 
-		void	renderSplits(RenderRequest *request, Window *window, const ImVec2 &size, const ImVec2 &rescale);
+		void	renderSplits(RenderRequest *uiRequest, const FrameContext &ctx, const ImVec2 &size, const ImVec2 &rescale);
 		std::unique_ptr<Dock>	_childOne{nullptr};
 		std::unique_ptr<Dock>	_childTwo{nullptr};
 		std::optional<float>	_splitRatio;

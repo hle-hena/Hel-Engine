@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/22 14:15:37                                        */
+/*  Last Modified: 2026/07/23 11:59:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,12 +20,33 @@
 
 namespace	hel {
 
+	
 Ref<ImagePool>	ImagePool::create(Device *device) {
 	return new ImagePool(device);
 }
 
+ImagePool::~ImagePool(void) {
+}
+
 ImagePool::ImagePool(Device *device) {
 	_device = device;
+}
+
+Ref<Image>	ImagePool::acquire(uint32_t frameIndex,
+							const ImageInfo &requestedConfig)
+{
+	auto	&slots = _pools[requestedConfig];//Does this create the bucket if needed ?
+
+	if (slots.unusedImages.empty()) {
+		auto	image = Image::create(_device, requestedConfig);
+		slots.usedImages[frameIndex].push_back(image);
+		return image;
+	} else {
+		auto	entry = slots.unusedImages.back();
+		slots.unusedImages.pop_back();
+		slots.usedImages[frameIndex].push_back(entry.image);
+		return entry.image;
+	}
 }
 
 void	ImagePool::collectFromFrame(uint32_t frameIndex) {

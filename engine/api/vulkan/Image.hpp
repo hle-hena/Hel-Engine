@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 15:33:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/22 14:34:06                                        */
+/*  Last Modified: 2026/07/23 11:54:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,14 +29,13 @@ namespace	hel {
 class	Device;
 class	Buffer;
 
-class	Image {
+class	Image: public RefCounted {
 	public:
 		Image(const Image &) = delete;
 		Image	operator=(const Image &) = delete;
 
-		template <ImageType T>
 		static Ref<Image>	create(Device *device,
-										const ImageConfig<T> &config);
+										const ImageInfo &config);
 		template <VkFormat Format>
 		static Ref<Image>	wrapImage(Device *device, VkImage image,
 										VkExtent2D extent);
@@ -63,10 +62,12 @@ class	Image {
 			{ return _image; }
 		VkExtent3D					getExtent(void) const
 			{ return _extent; }
+		VkExtent2D					getExtent2D(void) const
+			{ return {_extent.width, _extent.height}; }
 		VkExtent3D					getPhysicalExtent(void) const
 			{ return _config._extent; }
 
-		VkImageView					getView(const ViewConfig &conf);
+		VkImageView					getView(ViewConfig conf);
 		VkDescriptorSet				getTexture(VkImageView view);
 		VkDescriptorImageInfo		getDescriptorInfo(VkImageView view) const;
 		VkRenderingAttachmentInfo	getRenderingInfo(VkClearValue clearValue,
@@ -78,8 +79,7 @@ class	Image {
 		Image(void) = default;
 		~Image(void);
 
-		template <ImageType T>
-		expected<void>	init(Device *device, const ImageConfig<T> &config);
+		expected<void>	init(Device *device, const ImageInfo &config);
 		template <VkFormat Format>
 		expected<void>	init(Device *device, VkImage image, VkExtent2D extent);
 

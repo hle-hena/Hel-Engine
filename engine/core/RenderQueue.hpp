@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/05 18:24:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:25:55                                        */
+/*  Last Modified: 2026/07/23 10:23:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,7 @@
 #include <glm/glm.hpp>
 
 #include "ecs/Entity.hpp"
+#include "utils/Ref.hpp"
 
 namespace	hel {
 
@@ -29,7 +30,7 @@ struct	RenderRequest {
 	std::string									requestType;
 	Entity::id									handle;
 	glm::vec2									origin{0.f, 0.f};
-	std::unordered_map<std::string, Image *>	images{};
+	std::unordered_map<std::string, Ref<Image>>	images{};
 
 	bool	operator==(const RenderRequest &other) const;
 	struct	Hasher {

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/13 16:21:31 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/21 19:48:48                                        */
+/*  Last Modified: 2026/07/23 11:47:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -71,7 +71,7 @@ Ref<Buffer>	Buffer::writeToBuffer(const void *data, uint32_t count,
 
 	if (offset + count > _maxCount) {
 		if (_config._fixedCount) {
-			HEL_ERROR("Trying to write outside of a fixed size buffer.");
+			HEL_FATAL("Trying to write outside of a fixed size buffer.");
 			return nullptr;
 		}
 

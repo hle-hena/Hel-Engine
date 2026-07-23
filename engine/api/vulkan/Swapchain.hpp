@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/21 11:33:15                                        */
+/*  Last Modified: 2026/07/22 14:49:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,9 +21,9 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <array>
-#include <memory>
 
 #include "HelExpected.hpp"
+#include "utils/Ref.hpp"
 
 namespace	hel {
 
@@ -75,7 +75,7 @@ class	Swapchain
 
 		Device								&_device;
 		VkSwapchainKHR						_swapchain{VK_NULL_HANDLE};
-		std::vector<std::unique_ptr<Image>>	_swapImages;
+		std::vector<Ref<Image>>	_swapImages;
 		std::vector<VkSemaphore>			_imageAvailable{VK_NULL_HANDLE};
 		std::vector<VkSemaphore>			_renderFinished{VK_NULL_HANDLE};
 		std::array<VkFence,		MAX_FRAMES_IN_FLIGHT>	_inFlightFences{VK_NULL_HANDLE};

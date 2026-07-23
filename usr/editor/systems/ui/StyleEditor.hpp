@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/17 16:32:44 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/08 15:04:41                                        */
+/*  Last Modified: 2026/07/23 10:22:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -49,7 +49,7 @@ class	StyleEditor : public Panel<StyleEditor> {
 		static bool		loadFromFile(const std::string &path);
 		static void		saveToFile(const std::string &path);
 
-		void	render(Window *window, const ImVec2 &) override;
+		void	render(const FrameContext &ctx, const ImVec2 &) override;
 
 	private:
 		static nlohmann::json	serialize(void);

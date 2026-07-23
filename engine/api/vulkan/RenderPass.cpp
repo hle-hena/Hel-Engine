@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:48 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/08 12:27:45                                        */
+/*  Last Modified: 2026/07/23 11:56:18                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,7 +35,7 @@ RenderPass::RenderPass(Device &device, FrameContext &ctx, ImagePool *imagePool,
 		_ctx{ctx},
 		_req{ctx.request},
 		_commandBuffer{ctx.commandBuffer},
-		_extent{ctx.request->images["mainColor"]->getExtent()} {
+		_extent{ctx.request->images["mainColor"]->getExtent2D()} {
 	for (auto &func: funcs) {
 		for (auto &dep: func->getDep()->write)
 			_invalidDep |= addWrite(dep, imagePool);
@@ -50,7 +50,7 @@ RenderPass::RenderPass(Device &device, FrameContext &ctx, ImagePool *imagePool,
 		_ctx{ctx},
 		_req{ctx.request},
 		_commandBuffer{ctx.commandBuffer},
-		_extent{ctx.request->images["mainColor"]->getExtent()} {
+		_extent{ctx.request->images["mainColor"]->getExtent2D()} {
 	for (auto &dep: deps.write)
 		_invalidDep |= addWrite(dep, imagePool);
 	for (auto &dep: deps.read)
@@ -76,11 +76,11 @@ bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
 	if (_writes.contains(dep._imageName))
 		return false;
 
-	Image	*img = nullptr;
+	Ref<Image>	img = nullptr;
 	if (_req->images.contains(dep._imageName))
 		img = _req->images[dep._imageName];
 	else if (dep._config.has_value()) {
-		img = imagePool->acquire(dep._config.value());
+		img = imagePool->acquire(_ctx.frameIndex, dep._config.value());
 		_req->images[dep._imageName] = img;
 	} else {
 		std::cerr << "Error for image \"" << dep._imageName << "\". Image"
@@ -90,8 +90,8 @@ bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
 	}
 	if (dep._load == VK_ATTACHMENT_LOAD_OP_MAX_ENUM ||
 		dep._store == VK_ATTACHMENT_STORE_OP_MAX_ENUM)
-		resolveOps(img, dep);
-	addWriteImage(img, dep);
+		resolveOps(img.get(), dep);
+	addWriteImage(img.get(), dep);
 	return (false);
 }
 
@@ -150,7 +150,7 @@ bool	RenderPass::addRead(const std::string_view &readName) {
 				return (true);
 			}
 
-			_reads[imageName] = image;
+			_reads[imageName] = image.get();
 			image->transitionLayout(_commandBuffer,
 				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 			notFound = false;

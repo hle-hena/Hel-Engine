@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:27:24                                        */
+/*  Last Modified: 2026/07/23 10:18:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -151,27 +151,28 @@ void	Dock::merge(void) {
 	}
 }
 
-void	Dock::render(RenderRequest *request, Window *window, const ImVec2 &size, const ImVec2 &rescale) {
-
+void	Dock::render(RenderRequest *uiRequest, const FrameContext &ctx,
+					const ImVec2 &size, const ImVec2 &rescale)
+{
 	if (_type == Type::Split &&
 			(_childOne->_askForMerge || _childTwo->_askForMerge))
 		merge();
 
 	if (_type == Type::Split) {
-		renderSplits(request, window, size, rescale);
+		renderSplits(uiRequest, ctx, size, rescale);
 	} else {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {6.f, 6.f});
 		ImGui::BeginChild(_dockName.c_str(), size, ImGuiChildFlags_Borders,
 						ImGuiWindowFlags_NoScrollbar);
-		RenderDragDropContext	ctx(size);
-		renderPanels(request, window, size);
-		renderDragDrop(ctx);
+		renderPanels(uiRequest, ctx, size);
+		RenderDragDropContext	dragDropCtx(size);
+		renderDragDrop(dragDropCtx);
 		ImGui::EndChild();
 		ImGui::PopStyleVar();
 	}
 }
 
-void	Dock::renderSplits(RenderRequest *request, Window *window, const ImVec2 &size, const ImVec2 &rescale) {
+void	Dock::renderSplits(RenderRequest *uiRequest, const FrameContext &ctx, const ImVec2 &size, const ImVec2 &rescale) {
 	ImVec2	origin = ImGui::GetCursorScreenPos();
 	bool	isVertical = (_splitDir == Splitter::Dir::Right);
 
@@ -197,10 +198,10 @@ void	Dock::renderSplits(RenderRequest *request, Window *window, const ImVec2 &si
 								: ImVec2(size.x, size.y - oneSize.y);
 	ImVec2	start = ImGui::GetCursorScreenPos();
 
-	_childOne->render(request, window, oneSize, rescale);
+	_childOne->render(uiRequest, ctx, oneSize, rescale);
 	ImGui::SetCursorScreenPos(isVertical ? ImVec2(start.x + oneSize.x, start.y)
 										: ImVec2(start.x, start.y + oneSize.y));
-	_childTwo->render(request, window, twoSize, rescale);
+	_childTwo->render(uiRequest, ctx, twoSize, rescale);
 }
 
 Dock::RenderDragDropContext::RenderDragDropContext(const ImVec2 &size) {
@@ -296,7 +297,9 @@ void	Dock::newPanelPopup(void) {
 	ImGui::PopStyleVar();
 }
 
-void	Dock::renderPanels(RenderRequest *request, Window *window, const ImVec2 &) {
+void	Dock::renderPanels(RenderRequest *uiRequest, const FrameContext &ctx,
+						const ImVec2 &)
+{
 	auto	prev = ImGui::GetStyle().ItemInnerSpacing;
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, {10.f, 0.f});
 	float	innerSpacing = ImGui::GetStyle().ItemInnerSpacing.x;
@@ -327,8 +330,8 @@ void	Dock::renderPanels(RenderRequest *request, Window *window, const ImVec2 &) 
 				panel->shouldClose(true);
 			if (open) {
 				if (auto *viewport = dynamic_cast<SceneViewport *>(panel))
-					viewport->mainRequest = request;
-				panel->render(window, effectiveSize);
+					viewport->mainRequest = uiRequest;
+				panel->render(ctx, effectiveSize);
 				ImGui::EndTabItem();
 			}
 			ImGui::PopStyleVar();

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:39:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/16 10:59:07                                        */
+/*  Last Modified: 2026/07/23 11:05:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -86,22 +86,7 @@ expected<void>	Engine::createWindow(int width, int height,
 }
 
 expected<void>	Engine::createImagePool(void) {
-	_imagePool = ImagePool::Builder(*_vkContext.getDevice())
-		.addImage(Image::Config()
-			.setHeight(4096)
-			.setWidth(4096)
-			.setFormats({VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM})
-			.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-			.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
-			.setUsage(VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
-			.setAspect(VK_IMAGE_ASPECT_COLOR_BIT))
-		.addImage(Image::Config()
-			.setHeight(4096)
-			.setWidth(4096)
-			.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
-			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT))
-		.build();
+	_imagePool = ImagePool::create(_device);
 	return {};
 }
 
@@ -137,10 +122,11 @@ void	Engine::tick(uint32_t frameIndex) {
 
 	FrameContext	ctx(frameIndex, _userData.get());
 	_frame.fillContext(ctx, _appWindow.get());
-	_imagePool->releaseAll();
 	bool	shouldDoRenderTick = true;
 	if (_appWindow->getSwapchain().acquireNextImage(*_appWindow.get(), frameIndex, &ctx.swapIndex))
 		shouldDoRenderTick = false;
+	_imagePool->collectFromFrame(frameIndex);
+	_imagePool->evict();
 	_config.tickCallback(&_registry, ctx);
 
 	updateTick(ctx);

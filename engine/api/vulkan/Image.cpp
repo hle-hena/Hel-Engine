@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 15:33:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/22 14:40:39                                        */
+/*  Last Modified: 2026/07/23 11:53:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,6 +24,29 @@ namespace	hel {
 
 Image::~Image(void) {
 	deallocateImage();
+}
+
+Ref<Image>	Image::create(Device *device,
+									const ImageInfo &config)
+{
+	Ref<Image>	newImage = new Image();
+
+	if (auto res = newImage->init(device, config); !res) {
+		HEL_FATAL("Couldn't create an image: {}", res.error());
+		return nullptr;
+	}
+	return newImage;
+}
+
+expected<void>	Image::init(Device *device, const ImageInfo &config) {
+	_device = device;
+	_config = config;
+
+	if (auto res = validateConfig().and_then([this](void)
+						{return allocateImage();}); !res)
+		return unexpected(res.error());
+	_extent = _config._extent;
+	return {};
 }
 
 void			Image::deallocateImage(void) {
@@ -126,7 +149,9 @@ expected<VkImageView>	Image::createView(const ViewConfig &conf) {
 
 
 
-VkImageView	Image::getView(const ViewConfig &conf) {
+VkImageView	Image::getView(ViewConfig conf) {
+	if (conf._aspect == VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM)
+		conf._aspect = _aspect;
 	if (auto it = _views.find(conf); it != _views.end())
 		return it->second;
 	auto	res = createView(conf);

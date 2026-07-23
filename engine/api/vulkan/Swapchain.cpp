@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/21 11:33:32                                        */
+/*  Last Modified: 2026/07/22 14:49:20                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -115,8 +115,7 @@ expected<void>	Swapchain::initiateSwapChain(Window &window) {
 	vkGetSwapchainImagesKHR(_device.getLogical(), _swapchain, &imageCount, images.data());
 
 	for (auto image: images)
-		_swapImages.emplace_back(Image::wrapSwapchainImages(_device, image,
-													format.format, extent));
+		_swapImages.emplace_back(Image::wrapImage<SWAPCHAIN_FORMAT>(&_device, image, extent));
 
 	return (createSyncObjects());
 }

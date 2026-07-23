@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:31:46                                        */
+/*  Last Modified: 2026/07/23 10:22:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -91,7 +91,7 @@ void	EntityHierarchy::showEntity(Window *window, View<include<comp::Hierarchy>> 
 	}
 }
 
-void	EntityHierarchy::render(Window *window, const ImVec2 &) {
+void	EntityHierarchy::render(const FrameContext &ctx, const ImVec2 &) {
 	if (ImGui::Button("Add a new Entity"))
 		_registry->createEntity();
 	ImGui::Separator();
@@ -107,10 +107,10 @@ void	EntityHierarchy::render(Window *window, const ImVec2 &) {
 	for (auto handle: view) {
 		auto	hierarchy = view.get<comp::Hierarchy>(handle);
 		if (hierarchy->parentId == Entity::NOT_REGISTERED)	
-			showEntity(window, view, handle);
+			showEntity(ctx.window, view, handle);
 	}
 	if (ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered() && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
-		window->setEntityFocus(Entity::NOT_REGISTERED);
+		ctx.window->setEntityFocus(Entity::NOT_REGISTERED);
 }
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/22 14:01:03                                        */
+/*  Last Modified: 2026/07/23 11:52:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,14 +28,13 @@ namespace	hel {
 
 class	Device;
 
-class	ImagePool {
+class	ImagePool: public RefCounted {
 	public:
 
 		static Ref<ImagePool>	create(Device *device);
 
-		template <ImageType T>
 		Ref<Image>	acquire(uint32_t frameIndex,
-						const ImageConfig<T> &requested);
+						const ImageInfo &requested);
 		void		collectFromFrame(uint32_t frameIndex);
 		void		evict(void);
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:39 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:39:18                                        */
+/*  Last Modified: 2026/07/23 10:20:38                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -39,7 +39,7 @@ class	SceneViewport : public Panel<SceneViewport> {
 
 		expected<void>	onInit(void) override;
 
-		void	render(Window *window, const ImVec2 &size) override;
+		void	render(const FrameContext &ctx, const ImVec2 &size) override;
 
 		RenderRequest	*mainRequest{nullptr};
 
