@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/16 11:02:16                                        */
+/*  Last Modified: 2026/07/23 12:41:09                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,11 +35,10 @@ void	Selection::init(void) {
 			->startWrite<Color>("entity layer", VK_FORMAT_R32_UINT, 1)
 				.addDep()
 			->startWrite<Depth>("gizmo depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
-				.config(Image::Config()
-					.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
-					.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-					.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT
-							| VK_IMAGE_ASPECT_STENCIL_BIT))
+				.config(ImageConfig2D("gizmo depth layer")
+					.formats<VK_FORMAT_D32_SFLOAT_S8_UINT>()
+					.usage<VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT>()
+					.extent2D(4000, 4000))//TODO -> extentAuto
 				.addDep();
 
 	addRenderDep("post-processing/selection color overlay", &Selection::postProcessing)
@@ -129,7 +128,7 @@ void	Selection::renderInteraction(const Renderer &renderer) {
 	if (!camera || !transform)
 		return ;
 	glm::vec2	viewportOrigin(ctx.request->origin.x, ctx.request->origin.y);
-	VkExtent2D	imgExtent = ctx.request->images["mainColor"]->getExtent();
+	VkExtent2D	imgExtent = ctx.request->images["mainColor"]->getExtent2D();
 	glm::vec2	viewportSize(imgExtent.width, imgExtent.height);
 	auto	pos = glm::vec2(_inputState->getMousePos() - viewportOrigin);
 	glm::vec4	viewport(viewportOrigin, viewportSize);

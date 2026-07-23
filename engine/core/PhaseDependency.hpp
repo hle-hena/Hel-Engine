@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/05 15:14:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:21:47                                        */
+/*  Last Modified: 2026/07/22 14:47:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,7 +37,8 @@ struct	ImageDep {
 	};
 
 
-	SETTER_VERBOSE(config, Image::Config)
+	template <ImageType T>
+	SETTER_VERBOSE(config, ImageConfig<T>)
 	SETTER_VERBOSE(load, VkAttachmentLoadOp)
 	SETTER_VERBOSE(store, VkAttachmentStoreOp)
 	SETTER_VERBOSE(clearValue, VkClearValue)
@@ -61,7 +62,7 @@ struct	ImageDep {
 		std::string							_imageName;
 		VkFormat							_format;
 		Usage								_usage;
-		std::optional<Image::Config>		_config;
+		std::optional<ImageInfo>			_config;
 		std::optional<VkClearValue>			_clearValue;
 		VkAttachmentLoadOp					_load{VK_ATTACHMENT_LOAD_OP_MAX_ENUM};
 		VkAttachmentStoreOp					_store{VK_ATTACHMENT_STORE_OP_MAX_ENUM};

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:34:43                                        */
+/*  Last Modified: 2026/07/23 10:18:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -49,7 +49,7 @@ class	Inspector : public Panel<Inspector> {
 			_drawFuncs[typeid(Component)] = func;
 		}
 
-		void	render(Window *window, const ImVec2 &) override;
+		void	render(const FrameContext &ctx, const ImVec2 &) override;
 
 	private:
 		void	addNewComponentPopup(Entity::id handle);

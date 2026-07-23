@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:43:25                                        */
+/*  Last Modified: 2026/07/23 12:41:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,10 +28,11 @@ expected<void>	SceneViewport::onInit(void) {
 	return {};
 }
 
-void	SceneViewport::render(Window *window, const ImVec2 &) {
+void	SceneViewport::render(const FrameContext &ctx, const ImVec2 &) {
 	if (!mainRequest)
 		return ;
 
+	auto	window = ctx.window;
 	auto	windowEntityHandle = window->getEntityReference();
 	auto	rectMin = ImGui::GetCursorScreenPos() - ImGui::GetStyle().WindowPadding;
 	rectMin.y += 1.1f;
@@ -54,24 +55,22 @@ void	SceneViewport::render(Window *window, const ImVec2 &) {
 
 	ImVec2	size = ImGui::GetContentRegionAvail();
 
-	auto	mainImg = _imagePool->acquire(Image::Config()
-			.setWidth(static_cast<uint32_t>(std::max(size.x, 1.f)))
-			.setHeight(static_cast<uint32_t>(std::max(size.y, 1.f)))
-			.setFormats({VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM})
-			.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-			.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
-			.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
-	auto	depthImg = _imagePool->acquire(Image::Config()
-			.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
-			.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-			.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
-			.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT));
-	auto	entityImg = _imagePool->acquire(Image::Config()
-			.setFormats({VK_FORMAT_R32_UINT, VK_FORMAT_R32_SFLOAT})
-			.setUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-			.setUsage(VK_IMAGE_USAGE_SAMPLED_BIT)
-			.setUsage(VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
-			.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
+	auto	mainImg = _imagePool->acquire(ctx.frameIndex, ImageConfig2D("main color image")
+			.extent2D(size.x, size.y)
+			.formats<VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM>()
+			.usage<VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+				| VK_IMAGE_USAGE_SAMPLED_BIT>());
+	auto	depthImg = _imagePool->acquire(ctx.frameIndex, ImageConfig2D("depth image")
+			.extent2D(size.x, size.y)
+			.formats<VK_FORMAT_D32_SFLOAT_S8_UINT>()
+			.usage<VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+				| VK_IMAGE_USAGE_SAMPLED_BIT>());
+	auto	entityImg = _imagePool->acquire(ctx.frameIndex, ImageConfig2D("entity id image")
+			.extent2D(size.x, size.y)
+			.formats<VK_FORMAT_R32_UINT, VK_FORMAT_R32_SFLOAT>()
+			.usage<VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+				| VK_IMAGE_USAGE_SAMPLED_BIT
+				| VK_IMAGE_USAGE_TRANSFER_SRC_BIT>());
 	if (!mainImg || !depthImg || !entityImg)
 		return ;
 	if (_handle == Entity::NOT_REGISTERED)
@@ -89,7 +88,7 @@ void	SceneViewport::render(Window *window, const ImVec2 &) {
 		}
 	};
 	RenderQueue::push(viewportRequest);
-	auto	addImage = [&](const std::string &name, Image *img) {
+	auto	addImage = [&](const std::string &name, Ref<Image> img) {
 		
 		int i = 0;
 		while (true) {
@@ -105,12 +104,11 @@ void	SceneViewport::render(Window *window, const ImVec2 &) {
 	addImage("entity", entityImg);
 	mainRequest = nullptr;
 
-	Image		*img = nullptr;
+	Ref<Image>	img = nullptr;
 	ViewConfig	viewConfig;
 	if (_showImage == "Color Image") {
 		img = mainImg;
 		viewConfig.format(VK_FORMAT_B8G8R8A8_UNORM)
-				.aspect(VK_IMAGE_ASPECT_COLOR_BIT)
 				.components().identity();
 	} else if (_showImage == "Depth Image") {
 		img = depthImg;
@@ -120,7 +118,6 @@ void	SceneViewport::render(Window *window, const ImVec2 &) {
 	} else if (_showImage == "Entity Image") {
 		img = entityImg;
 		viewConfig.format(VK_FORMAT_R32_SFLOAT)
-				.aspect(VK_IMAGE_ASPECT_COLOR_BIT)
 				.components().RRR1();
 	}
 

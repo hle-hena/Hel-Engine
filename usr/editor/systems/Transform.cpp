@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/16 11:02:19                                        */
+/*  Last Modified: 2026/07/23 12:41:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,11 +48,10 @@ void	Transform::init(void) {
 			->startWrite<Color>("entity layer", VK_FORMAT_R32_UINT, 1)
 				.addDep()
 			->startWrite<DepthStencil>("gizmo depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
-				.config(Image::Config()
-					.setFormats(VK_FORMAT_D32_SFLOAT_S8_UINT)
-					.setUsage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-					.setAspect(VK_IMAGE_ASPECT_DEPTH_BIT
-							| VK_IMAGE_ASPECT_STENCIL_BIT))
+				.config(ImageConfig2D("gizmo depth layer")
+					.formats<VK_FORMAT_D32_SFLOAT_S8_UINT>()
+					.usage<VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT>()
+					.extent2D(4000, 4000))
 				.addDep();
 
 	_assetManager = _registry->assetManager();
@@ -331,7 +330,7 @@ void	Transform::registerClick(const FrameContext &ctx, GizmoContext &gizmo) {
 	if (!_inputState->isPressed<input::Mouse>(0) || !entityImg || !camera || !transform)
 		return ;
 	glm::vec2	viewportOrigin(ctx.request->origin.x, ctx.request->origin.y);
-	VkExtent2D	imgExtent = ctx.request->images["mainColor"]->getExtent();
+	VkExtent2D	imgExtent = ctx.request->images["mainColor"]->getExtent2D();
 	glm::vec2	viewportSize(imgExtent.width, imgExtent.height);
 	auto	pos = glm::vec2(_inputState->getMousePos() - viewportOrigin);
 	if (pos.x < 0 || pos.y < 0 || pos.x > viewportSize.x || pos.y > viewportSize.y)

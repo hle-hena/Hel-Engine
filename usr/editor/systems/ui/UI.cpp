@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/08 15:05:42                                        */
+/*  Last Modified: 2026/07/23 10:15:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -93,7 +93,7 @@ bool	UI::loadFromFile(const std::string &path) {
 	return (true);
 }
 
-void	UI::addDock(Window *window, const ImVec2 &size) {
+void	UI::addDock(const FrameContext &ctx, const ImVec2 &size) {
 	ImGuiWindowFlags	hostFlags =
 		ImGuiWindowFlags_NoTitleBar				|
 		ImGuiWindowFlags_NoCollapse				|
@@ -119,11 +119,11 @@ void	UI::addDock(Window *window, const ImVec2 &size) {
 		_lastSize = size;
 	if (size.x > 0.f && size.y > 0.f &&
 			((*_lastSize).x != size.x || (*_lastSize).y != size.y)) {
-		_dock->render(&_request, window, size, {size.x / (*_lastSize).x, size.y / (*_lastSize).y});
+		_dock->render(&_request, ctx, size, {size.x / (*_lastSize).x, size.y / (*_lastSize).y});
 		_lastSize = size;
 	}
 	else
-		_dock->render(&_request, window, size);
+		_dock->render(&_request, ctx, size);
 	ImGui::End();
 
 	ImGui::PopStyleVar(2);
@@ -139,7 +139,7 @@ void	UI::updateUI(const FrameContext &ctx) {
 	_request.origin = {0, 0};
 	_request.images = {{"mainColor", ctx.window->getSwapchain()
 									.getSwapImage(ctx.swapIndex)}};
-	addDock(ctx.window, {windowWidth, windowHeight});
+	addDock(ctx, {windowWidth, windowHeight});
 	RenderQueue::push(_request);
 }
 

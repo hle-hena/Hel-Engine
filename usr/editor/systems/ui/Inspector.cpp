@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:36:27                                        */
+/*  Last Modified: 2026/07/23 10:18:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -37,7 +37,8 @@ expected<void>	Inspector::onInit(void) {
 	return {};
 }
 
-void	Inspector::render(Window *window, const ImVec2 &) {
+void	Inspector::render(const FrameContext &ctx, const ImVec2 &) {
+	auto	window = ctx.window;
 	auto	handle = window->getEntityFocus();
 	if (handle == Entity::NOT_REGISTERED)
 		return ;

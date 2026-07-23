@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 15:55:18 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/16 11:01:23                                        */
+/*  Last Modified: 2026/07/22 14:25:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -63,11 +63,6 @@ struct	IPool {
 		void	addWrite(uint32_t index, void *data);
 		bool							GPUBufferDirty{false};
 		std::set<PendingWrite>			_writes{};
-<<<<<<< HEAD
-=======
-		std::vector<std::pair<uint32_t,
-			std::unique_ptr<Buffer>>>	_pendingBuffers;
->>>>>>> origin/release
 
 	friend struct OpaqueComponentHandle;
 	template <ValidComponent Comp>

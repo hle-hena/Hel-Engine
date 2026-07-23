@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 16:53:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/16 11:01:31                                        */
+/*  Last Modified: 2026/07/23 11:49:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -79,11 +79,9 @@ expected<void>	Pool<Component>::syncBuffer() {
 	gpuData.reserve(nComp);
 	for (auto &comp: components)
 		gpuData.push_back(Component::MetaData::toGPU(comp));
-	auto	res = buffer->writeToBuffer(gpuData.data(), nComp);
-	if (!res)
-		return unexpected(res.error());
-	if (*res)
-		_pendingBuffers.push_back({Swapchain::MAX_FRAMES_IN_FLIGHT, *res});
+	auto	pending = buffer->writeToBuffer(gpuData.data(), nComp);
+	if (pending)
+		_pendingBuffers.push_back({Swapchain::MAX_FRAMES_IN_FLIGHT, pending});
 	return {};
 	}
 }
@@ -96,11 +94,9 @@ expected<void>	Pool<Component>::syncBuffer(const PendingWrite &write) {
 	{
 	auto	&comp = *static_cast<Component::POD*>(write.data);
 	auto	gpuData = Component::MetaData::toGPU(comp);
-	auto	res = buffer->writeToBuffer(&gpuData, 1, write.index);
-	if (!res)
-		return unexpected(res.error());
-	if (*res)
-		_pendingBuffers.push_back({Swapchain::MAX_FRAMES_IN_FLIGHT, *res});
+	auto	pending = buffer->writeToBuffer(&gpuData, 1, write.index);
+	if (pending)
+		_pendingBuffers.push_back({Swapchain::MAX_FRAMES_IN_FLIGHT, pending});
 	return {};
 	}
 
@@ -111,14 +107,11 @@ expected<void>	Pool<Component>::flushWrites(Device &device) {
 	expected<void>	res;
 	if constexpr (Component::MetaData::gpuVisible) {
 		if (!buffer) {
-			auto	res = Buffer::create<typename Component::GPULayout>(&device,
+			buffer = Buffer::create<typename Component::GPULayout>(&device,
 				BufferConfig()
 				.usage(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
 				.allocFlags(VMA_ALLOCATION_CREATE_MAPPED_BIT |
 					VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT));
-			if (!res)
-				return unexpected(res.error());
-			buffer = *res;
 		}
 
 		if (GPUBufferDirty) {

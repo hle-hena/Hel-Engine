@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:34:45 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/16 10:59:27                                        */
+/*  Last Modified: 2026/07/23 11:04:02                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -67,7 +67,7 @@ class	Engine {
 		std::unique_ptr<Window>		_appWindow{nullptr};
 		Registry					_registry;
 		InputState					_inputState;
-		std::unique_ptr<ImagePool>	_imagePool;
+		Ref<ImagePool>				_imagePool;
 		SystemManager				_systems;
 		Frame						_frame;
 };

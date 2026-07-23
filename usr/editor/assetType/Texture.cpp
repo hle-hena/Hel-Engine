@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/24 15:13:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/16 11:02:13                                        */
+/*  Last Modified: 2026/07/23 14:47:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,8 @@
 #include "assetType/Texture.hpp"
 #include "utils/VFS.hpp"
 #include "api/vulkan/Image.hpp"
+#include "api/vulkan/Device.hpp"
+#include "api/vulkan/Buffer.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <assetLoader/stb_image.h>
@@ -43,24 +45,20 @@ std::shared_ptr<Texture> Texture::load(Device *device,
 	auto	asset = std::make_shared<Texture>();
 	asset->filePath = path;
 
-	asset->image = Image::create(*device,
-		Image::Config{}
-			.setWidth(static_cast<uint32_t>(raw.width))
-			.setHeight(static_cast<uint32_t>(raw.height))
-			.setFormats({VK_FORMAT_R8G8B8A8_SRGB})
-			.setUsage(VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-					VK_IMAGE_USAGE_SAMPLED_BIT)
-			.setAspect(VK_IMAGE_ASPECT_COLOR_BIT));
+	asset->image = Image::create(device, ImageConfig2D("Texture image")
+						.extent2D(raw.width, raw.height)
+						.formats<VK_FORMAT_R8G8B8A8_SRGB>()
+						.usage<VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+								VK_IMAGE_USAGE_SAMPLED_BIT>());
 
-	uint32_t	size = static_cast<uint32_t>(raw.width * raw.height * 4);
-	auto		res = asset->image->setData(raw.pixels, size);
+	uint32_t	size = static_cast<uint32_t>(raw.width * raw.height);
+	auto	commandBuffer = device->beginSingleTimeCommand();
+	auto	stagingBuffer = asset->image->setData(commandBuffer,
+				std::vector<unsigned char>(raw.pixels, raw.pixels + size * 4));
+	asset->image->transitionLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	device->endSingleTimeCommand(commandBuffer);
 
 	stbi_image_free(raw.pixels);
-
-	if (!res) {
-		std::cerr << "Failed to write image: " << res.error() << std::endl;
-		return (nullptr);
-	}
 
 	return (asset);
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 15:33:59                                        */
+/*  Last Modified: 2026/07/23 11:52:10                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,64 +17,57 @@
 #pragma once
 
 #include <unordered_map>
-#include <memory>
-#include <string>
+#include <vector>
+#include <unordered_map>
+#include <chrono>
 
 #include "api/vulkan/Image.hpp"
+#include "api/vulkan/Swapchain.hpp"
 
 namespace	hel {
 
 class	Device;
 
-class	ImagePool {
+class	ImagePool: public RefCounted {
 	public:
-		template <typename T>
-		using ImageDescMap = std::unordered_map<Image::Config, T,
-												Image::ConfigHasher>;
 
-		class	Builder {
-			public:
-				Builder(Device &device);
+		static Ref<ImagePool>	create(Device *device);
 
-				Builder	&addImage(const Image::Config &config,
-									uint32_t count = 1);
-
-				std::unique_ptr<ImagePool>	build(void);
-
-			private:
-				Device					&_device;
-				ImageDescMap<uint32_t>	_imageDescs;
-		};
-
-		Image	*acquire(const Image::Config &requested, uint32_t life = 1u);
-		Image	*acquire(const std::string &referenceID,
-						const Image::Config &requested, uint32_t life = 1u);
-		Image	*get(const std::string &referenceID);
-		void	release(Image *);
-		void	releaseAll(void);
+		Ref<Image>	acquire(uint32_t frameIndex,
+						const ImageInfo &requested);
+		void		collectFromFrame(uint32_t frameIndex);
+		void		evict(void);
 
 		~ImagePool(void);
 
 	private:
+		using clock = std::chrono::steady_clock;
+		template <typename T>
+		using ImageInfoMap = std::unordered_map<ImageInfo, T, ImageInfoHasher>;
+
+		static constexpr std::chrono::milliseconds	evictionThreshold{10000};
+		struct	UnusedEntry {
+			Ref<Image>			image;
+			clock::time_point	releaseAt{clock::now()};
+		};
+		struct	Slots {
+			std::vector<UnusedEntry>					unusedImages;
+
+			std::array<std::vector<Ref<Image>>,
+				Swapchain::MAX_FRAMES_IN_FLIGHT>	usedImages;
+		};
 		struct	Slot {
-			std::unique_ptr<Image>	image{nullptr};
-			uint32_t				life{0};
+			Ref<Image>	image{nullptr};
+			uint32_t	life{0};
 		};
 
-		ImagePool(Device &device, ImageDescMap<uint32_t> &&imageDescs);
+		ImagePool(Device *device);
 
-		bool		candidateFits(const Image::Config &requested,
-						const Image::Config &candidate);
-		uint64_t	candidateScore(const Image::Config &requested,
-						const Image::Config &candidate);
+		expected<uint64_t>	candidateScore(const ImageInfo &requested,
+						const ImageInfo &candidate);
 
-		auto	findNamed(const std::string &referenceID);
-		auto	findNamed(Image *image);
-		void	removeIfNamed(Image *image);
-
-		Device											&_device;
-		ImageDescMap<std::vector<Slot>>					_pools;
-		std::vector<std::pair<std::string, Image *>>	_namedImages;
+		Device				*_device;
+		ImageInfoMap<Slots>	_pools;
 };
 
 }

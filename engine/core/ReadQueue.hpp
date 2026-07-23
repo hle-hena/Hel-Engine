@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/05 18:30:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/16 11:00:42                                        */
+/*  Last Modified: 2026/07/23 11:08:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -42,7 +42,7 @@ class	Read {
 };
 
 struct	Read::Request {
-	Image		*srcImage{nullptr};
+	Ref<Image>	srcImage{nullptr};
 	Ref<Buffer>	dstBuffer{};
 	VkOffset3D	offset{0, 0, 0};
 	VkExtent3D	extent{1, 1, 1};
@@ -57,7 +57,7 @@ template	<typename ReadType>
 struct	Read::Builder {
 	SETTER(Offset, VkOffset3D, _request.offset);
 	SETTER(Extent, VkExtent3D, _request.extent);
-	SETTER(SrcImage, Image *, _request.srcImage);
+	SETTER(SrcImage, Ref<Image>, _request.srcImage);
 	expected<Context>	push(Device *device);
 
 	private:

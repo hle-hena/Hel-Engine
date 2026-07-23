@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 11:02:28                                        */
+/*  Last Modified: 2026/07/23 10:11:50                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -55,7 +55,7 @@ class	UI : public ISystem {
 		void	render(const Renderer &renderer);
 
 	private:
-		void	addDock(Window *window, const ImVec2 &size);
+		void	addDock(const FrameContext &ctx, const ImVec2 &size);
 
 		std::unique_ptr<Dock>	_dock;
 		std::optional<ImVec2>	_lastSize;

@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: Texture.hpp                                                         */
+/*  File: Image.tpp                                                           */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/03/24 15:06:28 by hle-hena                                  */
+/*  Created: 2026/07/17 17:52:36 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/22 14:28:40                                        */
+/*  Last Modified: 2026/07/23 15:17:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,32 +14,37 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#pragma once
-
-#include <memory>
-#include <string>
-
-#include "utils/Ref.hpp"
+#include "api/vulkan/Image.hpp"
+#include "utils/Logger.hpp"
 
 namespace	hel {
 
-class	Device;
-class	Image;
+template <VkFormat Format>
+Ref<Image>	Image::wrapImage(Device *device, VkImage image,
+										VkExtent2D extent)
+{
+	Ref<Image>	newImage(new Image());
+	if (auto res = newImage->init<Format>(device, image, extent); !res) {
+		HEL_FATAL("Couldn't wrap an image: {}", res.error());
+		return nullptr;
+	}
+	return newImage;
+}
 
-struct	Texture {
-	std::string	filePath;
-	Ref<Image>	image;
+template <VkFormat Format>
+expected<void>	Image::init(Device *device, VkImage image, VkExtent2D extent) {
+	_device = device;
+	_config = ImageConfig2D("Wrapped image")
+				.formats<Format>()
+				.extent2D(extent.width, extent.height);
+	_config._owning = false;
 
-	static std::shared_ptr<Texture>	load(Device *device,
-											const std::string &path);
+	_aspect = getFormatAspect(Format);
 
-	protected:
-		struct	RawTexture {
-			unsigned char	*pixels{nullptr};
-			int				width, height, channels;
-		};
+	_image = image;
+	_extent = _config._extent;
 
-		static RawTexture	loadFile(const std::string &path);
-};
+	return {};
+}
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/13 11:45:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/13 12:06:20                                        */
+/*  Last Modified: 2026/07/23 11:18:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -40,9 +40,6 @@ class	RefCounted {
 		virtual ~RefCounted() = default;
 
 	private:
-		template <typename T>
-		friend class	Ref;
-
 		void	addRef(void) const noexcept {
 			_refCount.fetch_add(1, std::memory_order_relaxed);
 		}
@@ -54,33 +51,59 @@ class	RefCounted {
 		}
 
 		mutable std::atomic<uint32_t>	_refCount{0};
+
+	template <typename T>
+	friend class Ref;
 };
 
 template <typename T>
+concept IsRefCounted = std::derived_from<T, RefCounted>;
+
+template <typename T>
 class	Ref {
+	private:
+		static void	checkConstraint() noexcept {
+			static_assert(IsRefCounted<T>,
+				"Ref<T> requires T to derive from RefCounted");
+		}
+
 	public:
 		Ref(void) noexcept = default;
 		Ref(std::nullptr_t) noexcept {}
 
-		Ref(T *p) noexcept : _ptr(p)
-			{ if (_ptr) _ptr->addRef(); }
+		Ref(T *p) noexcept : _ptr(p) {
+			checkConstraint();
+			if (_ptr) _ptr->addRef();
+		}
 
-		Ref(const Ref &other) noexcept : _ptr(other._ptr)
-			{ if (_ptr) _ptr->addRef(); }
-
-		template <typename U>
-		Ref(const Ref<U> &other) noexcept : _ptr(other.get())
-			{ if (_ptr) _ptr->addRef(); }
-
-		Ref(Ref &&other) noexcept : _ptr(other._ptr)
-			{ other._ptr = nullptr; }
+		Ref(const Ref &other) noexcept : _ptr(other._ptr) {
+			checkConstraint();
+			if (_ptr) _ptr->addRef();
+		}
 
 		template <typename U>
-		Ref(Ref<U> &&other) noexcept : _ptr(other._ptr)
-			{ other._ptr = nullptr; }
+			requires std::convertible_to<U*, T*>
+		Ref(const Ref<U> &other) noexcept : _ptr(other.get()) {
+			checkConstraint();
+			if (_ptr) _ptr->addRef();
+		}
 
-		~Ref()
-			{ if (_ptr) _ptr->release(); }
+		Ref(Ref &&other) noexcept : _ptr(other._ptr) {
+			checkConstraint();
+			other._ptr = nullptr;
+		}
+
+		template <typename U>
+			requires std::convertible_to<U*, T*>
+		Ref(Ref<U> &&other) noexcept : _ptr(other._ptr) {
+			checkConstraint();
+			other._ptr = nullptr;
+		}
+
+		~Ref() {
+			checkConstraint();
+			if (_ptr) _ptr->release();
+		}
 
 		Ref	&operator=(Ref other) noexcept {
 			std::swap(_ptr, other._ptr);
@@ -91,6 +114,7 @@ class	Ref {
 			if (_ptr) _ptr->release();
 			_ptr = nullptr;
 		}
+		uint32_t	refCount(void) const noexcept { return _ptr ? _ptr->refCount() : 0; }
 
 		T	*get() const noexcept { return _ptr; }
 		T	*operator->() const noexcept { return _ptr; }
@@ -108,9 +132,15 @@ class	Ref {
 		T	*_ptr = nullptr;
 };
 
-template <typename T, typename... Args>
-Ref<T>	makeRef(Args&&... args) {
-	return Ref<T>(new T(std::forward<Args>(args)...));
 }
+
+namespace	std {
+
+template <typename T>
+struct	hash<hel::Ref<T>> {
+	size_t	operator()(const hel::Ref<T>& r) const noexcept {
+		return std::hash<T*>()(r.get());
+	}
+};
 
 }

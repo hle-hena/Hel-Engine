@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/09 17:10:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/16 11:01:57                                        */
+/*  Last Modified: 2026/07/23 15:14:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -41,7 +41,7 @@ void	loadPrimaryScene(Registry *registry, Window *window) {
 
 	Entity::id	sponzaHandle = registry->createEntity();
 	if (auto mesh = registry->addComponent<comp::Model>(sponzaHandle).modify()) {
-		mesh->modelName = "cube";
+		mesh->modelName = "sponza";
 	}
 	if (auto transform = registry->addComponent<comp::Transform>(sponzaHandle).modify()) {
 		transform->position = {0.f, -80.f, 0.f};
@@ -110,15 +110,12 @@ expected<void>	init(Engine &engine, EngineConfig &config) {
 	return engine.init(config)
 		.and_then([&](void) -> expected<void>{
 			globalUBO = std::make_shared<GlobalUBO>();
-			auto	res = Buffer::create<GlobalUBO>(engine.device(),
+			globalUBOBuffer = Buffer::create<GlobalUBO>(engine.device(),
 						BufferConfig().dynamicAccess(true)
 						.usage(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT)
 						.allocFlags(VMA_ALLOCATION_CREATE_MAPPED_BIT |
 							VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT)
 						.fixedCount(Frame::MAX_PASS_COUNT * Swapchain::MAX_FRAMES_IN_FLIGHT));
-			if (!res)
-				return unexpected(res.error());
-			globalUBOBuffer = *res;
 			return {};
 		}).and_then([&](void) -> expected<void>{
 			globals->addData("delta_t", delta_t)

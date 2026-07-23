@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:19:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:37:42                                        */
+/*  Last Modified: 2026/07/23 10:17:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,14 +20,7 @@
 #include <ui/ImGui/imgui.h>
 
 #include "HelExpected.hpp"
-
-namespace	hel {
-
-class	Window;
-class	Registry;
-class	ImagePool;
-
-}
+#include "HelSystem.hpp"
 
 namespace	hel::sys {
 
@@ -52,7 +45,7 @@ class	IPanel {
 
 		virtual const char	*getLabel(void) const = 0;
 		virtual Dock		*getOwner(void) const final { return (_owner); }
-		virtual void		render(Window *window, const ImVec2 &size) = 0;
+		virtual void	render(const FrameContext &ctx, const ImVec2 &size) = 0;
 
 	protected:
 		Registry	*_registry;

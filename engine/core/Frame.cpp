@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:35 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/16 10:59:58                                        */
+/*  Last Modified: 2026/07/22 14:26:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -257,9 +257,7 @@ void	Frame::writeToUBO(void *data, uint32_t bindingIndex,
 	uint32_t	offset = bind.dynamicBinding
 							? (frameIndex * Frame::MAX_PASS_COUNT + passIndex)
 							: (frameIndex);
-	if (auto res = bind.buffer->writeToBuffer(data, 1, offset); !res) {
-		std::cerr << "Error on write on UBO: " << res.error() << std::endl; 
-	}
+	bind.buffer->writeToBuffer(data, 1, offset);
 }
 
 }
