@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 17:52:36 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 11:53:36                                        */
+/*  Last Modified: 2026/07/23 12:30:33                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -36,9 +36,10 @@ expected<void>	Image::init(Device *device, VkImage image, VkExtent2D extent) {
 	_device = device;
 	_config = ImageConfig2D()
 				.formats<Format>()
-				.extent().width(extent.width)
-				.extent().height(extent.height);
+				.extent2D(extent.width, extent.height);
 	_config._owning = false;
+
+	_aspect = getFormatAspect(Format);
 
 	_image = image;
 	_extent = _config._extent;

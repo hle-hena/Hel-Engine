@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 18:05:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 12:06:57                                        */
+/*  Last Modified: 2026/07/23 12:42:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,8 @@
 #include <vector>
 #include <cstdint>
 #include <algorithm>
+#include <string>
+#include <iostream>
 
 #include "utils/Setters.hpp"
 #include "utils/mathUtils.hpp"
@@ -70,8 +72,12 @@ struct	ImageInfo {
 	protected:
 		// ImageInfo cannot be constructed directly.
 		// Use ImageConfig1D / ImageConfig2D / ImageConfig3D / ImageConfigCube instead.
-		ImageInfo(VkImageType type) : _type(type) {}
-		ImageInfo(void) : _type(VK_IMAGE_TYPE_2D) {}
+		ImageInfo(VkImageType type, const std::string &imageName)
+			:	_type(type),
+				_imageName(imageName) {}
+
+		// Default constructor here to allow ImageInfo to be a class member
+		ImageInfo(void) {}
 
 		VkImageUsageFlags			_usage{0};
 		VmaAllocationCreateFlags	_allocFlags{0};
@@ -82,6 +88,7 @@ struct	ImageInfo {
 		VkImageType					_type;
 		VkImageAspectFlags			_aspect;
 
+		std::string					_imageName;
 		bool						_owning{true};
 
 
@@ -163,7 +170,7 @@ struct	ImageConfig: public ImageInfo {
 		}
 
 	public:
-		ImageConfig(void) : ImageInfo(T::imageType) {
+		ImageConfig(const std::string &imageName = "Unname image") : ImageInfo(T::imageType, imageName) {
 			if constexpr (std::is_same_v<T, ImageTypeCube>) {
 				_layers = 6;
 				_usage |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;

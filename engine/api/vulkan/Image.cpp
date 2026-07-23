@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 15:33:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 11:53:58                                        */
+/*  Last Modified: 2026/07/23 14:27:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,10 +20,15 @@
 #include "platform/ui/UiContext.hpp"
 #include "api/vulkan/Sampler.hpp"
 
+#include <iostream>
+
 namespace	hel {
 
 Image::~Image(void) {
 	deallocateImage();
+	for (auto &[config, view]: _views) {
+		vkDestroyImageView(_device->getLogical(), view, nullptr);
+	}
 }
 
 Ref<Image>	Image::create(Device *device,
@@ -46,6 +51,12 @@ expected<void>	Image::init(Device *device, const ImageInfo &config) {
 						{return allocateImage();}); !res)
 		return unexpected(res.error());
 	_extent = _config._extent;
+	_aspect = getFormatAspect(config._formats[0]);
+
+	std::cout << "Initialisation of the image " << _config._imageName
+		<< " of size: {" << _extent.width << ", " << _extent.height
+		<< ", " << _extent.depth << "}\n";
+
 	return {};
 }
 
@@ -133,7 +144,7 @@ expected<VkImageView>	Image::createView(const ViewConfig &conf) {
 	viewCreateInfo.components.g = conf._components.g;
 	viewCreateInfo.components.b = conf._components.b;
 	viewCreateInfo.components.a = conf._components.a;
-	viewCreateInfo.subresourceRange.aspectMask = _aspect;
+	viewCreateInfo.subresourceRange.aspectMask = conf._aspect;
 	viewCreateInfo.subresourceRange.baseMipLevel = 0;
 	viewCreateInfo.subresourceRange.levelCount = 1; //TODO -> support mipmaps
 	viewCreateInfo.subresourceRange.baseArrayLayer = 0;
@@ -221,10 +232,10 @@ void	Image::transitionLayout(VkCommandBuffer commandBuffer,
 							| VK_ACCESS_2_MEMORY_READ_BIT;
 	barrier.oldLayout = _currentLayout;
 
-	VkDependencyInfo	dep;
+	VkDependencyInfo	dep{};
 	dep.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
-	dep.imageMemoryBarrierCount = 1;
 	dep.pImageMemoryBarriers = &barrier;
+	dep.imageMemoryBarrierCount = 1;
 	vkCmdPipelineBarrier2(commandBuffer, &dep);
 	_currentLayout = newlayout;
 }
@@ -259,8 +270,8 @@ void	Image::setData(VkCommandBuffer commandBuffer,
 	VkBufferImageCopy	region{};
 	region.imageSubresource.aspectMask = _aspect;
 	region.imageSubresource.baseArrayLayer = 0;
-	region.imageSubresource.layerCount = 1;
-	region.imageSubresource.mipLevel = 1;
+	region.imageSubresource.layerCount = _config._layers;
+	region.imageSubresource.mipLevel = 0;
 	region.imageExtent = _config._extent;
 	vkCmdCopyBufferToImage(commandBuffer, stagingBuffer->getBuffer(), _image,
 						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);

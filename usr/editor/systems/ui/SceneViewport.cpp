@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 10:24:16                                        */
+/*  Last Modified: 2026/07/23 12:41:46                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -55,17 +55,17 @@ void	SceneViewport::render(const FrameContext &ctx, const ImVec2 &) {
 
 	ImVec2	size = ImGui::GetContentRegionAvail();
 
-	auto	mainImg = _imagePool->acquire(ctx.frameIndex, ImageConfig2D()
+	auto	mainImg = _imagePool->acquire(ctx.frameIndex, ImageConfig2D("main color image")
 			.extent2D(size.x, size.y)
 			.formats<VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM>()
 			.usage<VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
 				| VK_IMAGE_USAGE_SAMPLED_BIT>());
-	auto	depthImg = _imagePool->acquire(ctx.frameIndex, ImageConfig2D()
+	auto	depthImg = _imagePool->acquire(ctx.frameIndex, ImageConfig2D("depth image")
 			.extent2D(size.x, size.y)
 			.formats<VK_FORMAT_D32_SFLOAT_S8_UINT>()
 			.usage<VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
 				| VK_IMAGE_USAGE_SAMPLED_BIT>());
-	auto	entityImg = _imagePool->acquire(ctx.frameIndex, ImageConfig2D()
+	auto	entityImg = _imagePool->acquire(ctx.frameIndex, ImageConfig2D("entity id image")
 			.extent2D(size.x, size.y)
 			.formats<VK_FORMAT_R32_UINT, VK_FORMAT_R32_SFLOAT>()
 			.usage<VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT

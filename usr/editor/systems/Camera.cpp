@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 11:57:34                                        */
+/*  Last Modified: 2026/07/23 12:41:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -38,7 +38,7 @@ void	Camera::init(void) {
 		->startWrite<Color>("entity layer", VK_FORMAT_R32_UINT, 1)
 			.addDep()
 		->startWrite<DepthStencil>("gizmo depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
-			.config(ImageConfig2D()
+			.config(ImageConfig2D("gizmo depth layer")
 				.formats<VK_FORMAT_D32_SFLOAT_S8_UINT>()
 				.usage<VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT>()
 				.extent2D(4000, 4000))

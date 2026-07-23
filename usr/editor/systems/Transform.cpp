@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 11:57:19                                        */
+/*  Last Modified: 2026/07/23 12:41:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,7 +48,7 @@ void	Transform::init(void) {
 			->startWrite<Color>("entity layer", VK_FORMAT_R32_UINT, 1)
 				.addDep()
 			->startWrite<DepthStencil>("gizmo depth layer", VK_FORMAT_D32_SFLOAT_S8_UINT)
-				.config(ImageConfig2D()
+				.config(ImageConfig2D("gizmo depth layer")
 					.formats<VK_FORMAT_D32_SFLOAT_S8_UINT>()
 					.usage<VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT>()
 					.extent2D(4000, 4000))
