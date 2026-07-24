@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:39 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 10:20:38                                        */
+/*  Last Modified: 2026/07/24 15:26:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,7 +20,7 @@
 #include <string>
 
 #include "systems/ui/Panel.hpp"
-#include "ecs/Entity.hpp"
+#include "core/ecs/Entity.hpp"
 
 namespace	hel {
 

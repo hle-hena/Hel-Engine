@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/03 11:26:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/03 11:27:51                                        */
+/*  Last Modified: 2026/07/24 15:26:47                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "ecs/IComponent.hpp"
+#include "core/ecs/IComponent.hpp"
 
 namespace	hel::comp {
 

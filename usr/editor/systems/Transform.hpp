@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:59:12                                        */
+/*  Last Modified: 2026/07/24 15:31:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "HelSystem.hpp"
+#include "core/HelSystem.hpp"
 #include "components/Transform.hpp"
 #include "components/Model.hpp"
 #include "components/Texture.hpp"

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 10:11:50                                        */
+/*  Last Modified: 2026/07/24 15:31:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,7 +20,7 @@
 #include <functional>
 #include <ui/ImGui/imgui.h>
 
-#include "HelSystem.hpp"
+#include "core/HelSystem.hpp"
 
 #define PanelFactoryMacro(panelType)							\
 	[](UI *ui, Dock *dock){ ui->addNewPanel<panelType>(dock); }

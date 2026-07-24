@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/03 11:12:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/03 11:50:30                                        */
+/*  Last Modified: 2026/07/24 15:26:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,7 +24,7 @@
 #include "components/Tint.hpp"
 #include "components/Camera.hpp"
 
-#include "ecs/ComponentManager.hpp"
+#include "core/ecs/ComponentManager.hpp"
 
 namespace hel {
 

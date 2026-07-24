@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 10:18:26                                        */
+/*  Last Modified: 2026/07/24 15:32:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,8 +22,8 @@
 #include <ui/ImGui/imgui.h>
 
 #include "systems/ui/Panel.hpp"
-#include "ecs/Entity.hpp"
-#include "HelExpected.hpp"
+#include "core/ecs/Entity.hpp"
+#include "utils/Expected.hpp"
 
 namespace	hel {
 

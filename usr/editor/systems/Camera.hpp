@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:50:57                                        */
+/*  Last Modified: 2026/07/24 15:31:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,7 +19,7 @@
 #include <cstdint>
 #include <glm/glm.hpp>
 
-#include "HelSystem.hpp"
+#include "core/HelSystem.hpp"
 
 namespace	hel::sys {
 
