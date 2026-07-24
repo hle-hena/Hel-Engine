@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 12:41:46                                        */
+/*  Last Modified: 2026/07/24 15:34:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,12 +15,12 @@
 /* *************************************************************************  */
 
 #include "systems/ui/SceneViewport.hpp"
-#include "api/vulkan/Image.hpp"
-#include "api/vulkan/Swapchain.hpp"
-#include "platform/window/Window.hpp"
-#include "api/vulkan/ImagePool.hpp"
+#include "rhi/resources/Image.hpp"
+#include "rhi/resources/ImagePool.hpp"
+#include "rhi/context/Swapchain.hpp"
+#include "rhi/window/Window.hpp"
 #include "systems/ui/UIHelper.hpp"
-#include "core/RenderQueue.hpp"
+#include "core/scheduler/RenderQueue.hpp"
 
 namespace	hel::sys {
 

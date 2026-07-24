@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 10:22:02                                        */
+/*  Last Modified: 2026/07/24 15:32:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,7 +18,7 @@
 #include "components/HideTag.hpp"
 #include "components/Name.hpp"
 #include "systems/ui/UIHelper.hpp"
-#include "platform/window/Window.hpp"
+#include "rhi/window/Window.hpp"
 
 namespace	hel::sys {
 

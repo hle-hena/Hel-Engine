@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:19:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 10:17:54                                        */
+/*  Last Modified: 2026/07/24 15:31:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,8 +19,8 @@
 #include <limits>
 #include <ui/ImGui/imgui.h>
 
-#include "HelExpected.hpp"
-#include "HelSystem.hpp"
+#include "utils/Expected.hpp"
+#include "core/HelSystem.hpp"
 
 namespace	hel::sys {
 

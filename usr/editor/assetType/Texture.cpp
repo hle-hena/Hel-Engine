@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/24 15:13:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 14:47:40                                        */
+/*  Last Modified: 2026/07/24 15:26:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,9 +16,9 @@
 
 #include "assetType/Texture.hpp"
 #include "utils/VFS.hpp"
-#include "api/vulkan/Image.hpp"
-#include "api/vulkan/Device.hpp"
-#include "api/vulkan/Buffer.hpp"
+#include "rhi/context/Device.hpp"
+#include "rhi/resources/Image.hpp"
+#include "rhi/resources/Buffer.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <assetLoader/stb_image.h>

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/09 17:10:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 15:14:19                                        */
+/*  Last Modified: 2026/07/24 15:36:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,17 +15,17 @@
 /* *************************************************************************  */
 
 #include "core/Engine.hpp"
-#include "ecs/Entity.hpp"
-#include "platform/window/Window.hpp"
+#include "core/ecs/Entity.hpp"
+#include "rhi/window/Window.hpp"
 #include "components/Controllers.hpp"
 #include "components/Camera.hpp"
 #include "components/Transform.hpp"
 #include "components/Name.hpp"
 #include "components/Model.hpp"
 #include "GlobalData.hpp"
-#include "core/RenderQueue.hpp"
+#include "core/scheduler/RenderQueue.hpp"
 #include "utils/Timer.hpp"
-#include "api/vulkan/Image.hpp"
+#include "rhi/resources/Image.hpp"
 
 namespace	hel {
 
