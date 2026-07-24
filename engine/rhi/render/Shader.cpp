@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/21 16:58:44 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 10:43:41                                        */
+/*  Last Modified: 2026/07/24 17:07:57                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,8 +16,7 @@
 
 #include "rhi/render/Shader.hpp"
 #include "rhi/context/Device.hpp"
-
-#include "core/ecs/AssetManager.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+#include "utils/str_utils.hpp"
 
 #include <vector>
 
@@ -34,7 +33,7 @@ VkPipelineShaderStageCreateInfo		Shader::getStageInfo(void) const {
 
 std::shared_ptr<Shader>	Shader::load(Device *device, const std::string &shaderName) {
 	std::string	path = "shaders/" + shaderName + ".spv";
-	std::vector<char>	code = AssetManager::readFile(path);
+	std::vector<char>	code = readFile(path);
 	if (code.size() == 0)
 		return (nullptr);//TODO -> give a fallback asset.
 	VkShaderStageFlagBits	stage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
