@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:32:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 10:28:11                                        */
+/*  Last Modified: 2026/07/24 17:29:28                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,11 +16,14 @@
 
 #include "rhi/context/VulkanContext.hpp"
 #include "rhi/window/Window.hpp"
+#include "rhi/render/Shader.hpp"
 
 namespace	hel {
 
-VulkanContext::VulkanContext()
-{}
+VulkanContext::VulkanContext() {}
+VulkanContext::~VulkanContext() {
+	ShaderCache::clear();
+}
 
 expected<void>	VulkanContext::initiateVulkan(void) {
 	{
@@ -38,6 +41,7 @@ expected<void>	VulkanContext::initiateVulkan(void) {
 	if (!res)
 		return unexpected(res.error());
 	}
+	ShaderCache::init(&_device);
 	return {};
 }
 

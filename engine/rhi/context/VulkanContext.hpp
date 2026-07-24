@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:31:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 10:33:23                                        */
+/*  Last Modified: 2026/07/24 17:29:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -25,7 +25,7 @@ namespace	hel {
 class	VulkanContext {
 	public:
 		VulkanContext(void);
-		~VulkanContext(void) = default;
+		~VulkanContext(void);
 		VulkanContext(const VulkanContext &other) = delete;
 		VulkanContext	&operator=(const VulkanContext &other) = delete;
 		VulkanContext(VulkanContext &&other) = default;

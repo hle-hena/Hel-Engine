@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/21 16:58:44 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 17:07:57                                        */
+/*  Last Modified: 2026/07/24 17:25:18                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,6 +21,12 @@
 #include <vector>
 
 namespace	hel {
+
+Device								*ShaderCache::_device = nullptr;
+std::unordered_map<std::string,
+	std::shared_ptr<Shader>>		ShaderCache::_shaders = {};
+
+
 
 VkPipelineShaderStageCreateInfo		Shader::getStageInfo(void) const {
 	VkPipelineShaderStageCreateInfo	info{};
