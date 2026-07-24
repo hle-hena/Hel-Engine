@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/16 11:00:33                                        */
+/*  Last Modified: 2026/07/24 11:18:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,10 +23,10 @@
 #include <unordered_map>
 #include <memory>
 
-#include "HelExpected.hpp"
+#include "rhi/context/Swapchain.hpp"
+#include "rhi/resources/Buffer.hpp"
+#include "utils/Expected.hpp"
 #include "utils/Setters.hpp"
-#include "api/vulkan/Swapchain.hpp"
-#include "api/vulkan/Buffer.hpp"
 #include "utils/Ref.hpp"
 
 namespace	hel {
