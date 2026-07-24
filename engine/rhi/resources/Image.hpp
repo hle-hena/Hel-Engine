@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 15:33:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 14:45:38                                        */
+/*  Last Modified: 2026/07/24 10:36:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,9 +20,9 @@
 #include <vma/vk_mem_alloc.h>
 
 #include "utils/Ref.hpp"
-#include "HelExpected.hpp"
-#include "api/vulkan/ImageConfig.hpp"
-#include "api/vulkan/ImageViewConfig.hpp"
+#include "utils/Expected.hpp"
+#include "rhi/resources/ImageConfig.hpp"
+#include "rhi/resources/ImageViewConfig.hpp"
 
 namespace	hel {
 
@@ -116,4 +116,4 @@ class	Image: public RefCounted {
 
 }
 
-#include "api/vulkan/Image.tpp"
+#include "rhi/resources/Image.tpp"

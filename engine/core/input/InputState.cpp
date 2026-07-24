@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 15:02:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/02 20:01:31                                        */
+/*  Last Modified: 2026/07/24 11:23:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,7 +14,7 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "platform/input/InputState.hpp"
+#include "core/input/InputState.hpp"
 
 namespace	hel {
 

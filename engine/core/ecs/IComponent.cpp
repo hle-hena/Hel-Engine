@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/02 17:02:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 11:04:38                                        */
+/*  Last Modified: 2026/07/24 14:30:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,7 +14,7 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "IComponent.hpp"
+#include "core/ecs/IComponent.hpp"
 
 namespace	hel {
 

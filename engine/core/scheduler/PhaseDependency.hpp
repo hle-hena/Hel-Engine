@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/05 15:14:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/22 14:47:01                                        */
+/*  Last Modified: 2026/07/24 14:32:07                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,7 +17,7 @@
 #pragma once
 
 #include "utils/Setters.hpp"
-#include "api/vulkan/Image.hpp"
+#include "rhi/resources/Image.hpp"
 
 #include <vulkan/vulkan.h>
 #include <vector>

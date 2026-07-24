@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: RenderQueue.hpp                                                     */
+/*  File: CycleEntry.hpp                                                      */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/07/05 18:24:46 by hle-hena                                  */
+/*  Created: 2026/07/05 16:09:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 10:23:50                                        */
+/*  Last Modified: 2026/07/24 14:31:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,41 +16,46 @@
 
 #pragma once
 
-#include <string>
-#include <glm/glm.hpp>
+#include <variant>
 
-#include "ecs/Entity.hpp"
-#include "utils/Ref.hpp"
+#include "core/scheduler/PhaseDependency.hpp"
 
 namespace	hel {
 
-class	Image;
+struct	FrameContext;
+class	Renderer;
 
-struct	RenderRequest {
-	std::string									requestType;
-	Entity::id									handle;
-	glm::vec2									origin{0.f, 0.f};
-	std::unordered_map<std::string, Ref<Image>>	images{};
+}
 
-	bool	operator==(const RenderRequest &other) const;
-	struct	Hasher {
-		size_t	operator()(const RenderRequest &request) const;
-	};
-};
+namespace	hel::sys {
 
+class	ISystem;
 
-class	RenderQueue {
-	public:
-		static void		push(const RenderRequest &request) {
-			if (!request.images.empty() && request.images.contains("mainColor"))
-				_requests.push_back(request);
-		}
-		static std::vector<RenderRequest>	flush(void) {
-			return (std::move(_requests));
-		}
-
+struct	CycleEntry {
 	private:
-		static std::vector<RenderRequest>	_requests;
+		using UpdateFn = void (ISystem::*)(const FrameContext &);
+		using RenderFn = void (ISystem::*)(const Renderer &);
+
+		using AnyFn = std::variant<RenderFn, UpdateFn>;
+
+		sys::ISystem		*_system;
+		PhaseDependencies	_dep{};
+		AnyFn				_func;
+
+	public:
+		CycleEntry(sys::ISystem *system, AnyFn func)
+			:	_system(system), _func(func)	{}
+
+		PhaseDependencies	*getDep(void)	{ return &_dep; }
+
+		template <typename T>
+		void	execute(const T &arg) {
+			std::visit([&](auto fn){
+				if constexpr (std::is_invocable_v<decltype(fn), sys::ISystem *, const T&>) {
+					(_system->*fn)(arg);
+				}
+			}, _func);
+		}
 };
 
 }

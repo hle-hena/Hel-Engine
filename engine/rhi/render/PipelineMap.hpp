@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 14:54:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 15:58:32                                        */
+/*  Last Modified: 2026/07/24 10:39:18                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,7 +23,7 @@
 #include <optional>
 #include <string>
 
-#include "api/vulkan/Pipeline.hpp"
+#include "rhi/render/Pipeline.hpp"
 
 namespace	hel {
 

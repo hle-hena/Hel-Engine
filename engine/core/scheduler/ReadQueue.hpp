@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/05 18:30:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 11:08:01                                        */
+/*  Last Modified: 2026/07/24 14:38:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,8 +20,8 @@
 #include <vector>
 
 #include "utils/Setters.hpp"
-#include "api/vulkan/Buffer.hpp"
-#include "HelExpected.hpp"
+#include "rhi/resources/Buffer.hpp"
+#include "utils/Expected.hpp"
 
 namespace	hel {
 
@@ -86,4 +86,4 @@ class	Read::Queue {
 
 }
 
-#include "core/ReadQueue.tpp"
+#include "core/scheduler/ReadQueue.tpp"

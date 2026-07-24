@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:53 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/16 10:58:33                                        */
+/*  Last Modified: 2026/07/24 10:34:48                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,7 +22,7 @@
 #include <unordered_map>
 #include <vulkan/vulkan.h>
 
-#include "api/vulkan/Buffer.hpp"
+#include "rhi/resources/Buffer.hpp"
 
 namespace	hel {
 

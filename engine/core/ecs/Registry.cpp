@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 12:07:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/16 11:01:35                                        */
+/*  Last Modified: 2026/07/24 14:33:43                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,8 +14,8 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/Registry.hpp"
-#include "ecs/Hierarchy.hpp"
+#include "core/ecs/Registry.hpp"
+#include "core/ecs/Hierarchy.hpp"
 
 namespace	hel {
 

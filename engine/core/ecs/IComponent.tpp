@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 18:33:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/08 13:12:19                                        */
+/*  Last Modified: 2026/07/24 14:30:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,8 +14,8 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/IComponent.hpp"
-#include "ecs/Pool.hpp"
+#include "core/ecs/IComponent.hpp"
+#include "core/ecs/Pool.hpp"
 
 namespace	hel {
 

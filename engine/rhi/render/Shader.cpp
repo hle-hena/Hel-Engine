@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/21 16:58:44 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 16:31:36                                        */
+/*  Last Modified: 2026/07/24 10:43:41                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,9 +14,10 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "api/vulkan/Shader.hpp"
-#include "api/vulkan/Device.hpp"
-#include "ecs/AssetManager.hpp"
+#include "rhi/render/Shader.hpp"
+#include "rhi/context/Device.hpp"
+
+#include "core/ecs/AssetManager.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 #include <vector>
 

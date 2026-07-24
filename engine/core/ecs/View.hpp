@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/22 16:04:26 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:24:13                                        */
+/*  Last Modified: 2026/07/24 14:33:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,8 +18,8 @@
 
 #include <vector>
 #include <tuple>
-#include "ecs/ValidComponent.hpp"
-#include "ecs/Registry.hpp"
+#include "core/ecs/ValidComponent.hpp"
+#include "core/ecs/Registry.hpp"
 
 namespace	hel {
 
@@ -64,4 +64,4 @@ class	View<include<Include...>, exclude<Exclude...>> {
 
 }
 
-#include "ecs/View.tpp"
+#include "core/ecs/View.tpp"

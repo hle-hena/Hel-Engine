@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/15 19:04:55 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 11:00:12                                        */
+/*  Last Modified: 2026/07/24 15:29:14                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,28 +24,28 @@
 
 #include "utils/mathUtils.hpp"
 
-#include "ecs/ISystem.hpp"
-#include "ecs/Entity.hpp"
-#include "ecs/Registry.hpp"
-#include "platform/input/InputState.hpp"
-#include "platform/window/Window.hpp"
+#include "core/ecs/ISystem.hpp"
+#include "core/ecs/Entity.hpp"
+#include "core/ecs/Registry.hpp"
+#include "core/input/InputState.hpp"
+#include "rhi/window/Window.hpp"
 
 #include "core/Frame.hpp"
-#include "core/PhaseDependency.hpp"
-#include "core/SystemManager.hpp"
 
-#include "core/DrawQueue.hpp"
-#include "core/ReadQueue.hpp"
-#include "core/RenderQueue.hpp"
+#include "core/scheduler/PhaseDependency.hpp"
+#include "core/scheduler/SystemManager.hpp"
+#include "core/scheduler/DrawQueue.hpp"
+#include "core/scheduler/ReadQueue.hpp"
+#include "core/scheduler/RenderQueue.hpp"
 
-#include "api/vulkan/Device.hpp"
-#include "api/vulkan/Descriptors.hpp"
-#include "api/vulkan/Renderer.hpp"
-#include "api/vulkan/PipelineMap.hpp"
-#include "api/vulkan/Shader.hpp"
-#include "api/vulkan/Sampler.hpp"
-#include "api/vulkan/Buffer.hpp"
-#include "api/vulkan/Image.hpp"
+#include "rhi/context/Device.hpp"
+#include "rhi/render/Renderer.hpp"
+#include "rhi/render/PipelineMap.hpp"
+#include "rhi/render/Shader.hpp"
+#include "rhi/resources/Descriptors.hpp"
+#include "rhi/resources/Sampler.hpp"
+#include "rhi/resources/Buffer.hpp"
+#include "rhi/resources/Image.hpp"
 
 using enum hel::ImageDep::Usage;
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 11:52:10                                        */
+/*  Last Modified: 2026/07/24 10:37:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,8 +21,8 @@
 #include <unordered_map>
 #include <chrono>
 
-#include "api/vulkan/Image.hpp"
-#include "api/vulkan/Swapchain.hpp"
+#include "rhi/resources/Image.hpp"
+#include "rhi/context/Swapchain.hpp"
 
 namespace	hel {
 

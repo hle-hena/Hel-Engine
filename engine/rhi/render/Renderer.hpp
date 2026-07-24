@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 16:02:43                                        */
+/*  Last Modified: 2026/07/24 10:41:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,7 +19,7 @@
 #include <vulkan/vulkan.h>
 
 #include "utils/Setters.hpp"
-#include "api/vulkan/RenderPass.hpp"
+#include "rhi/render/RenderPass.hpp"
 
 namespace	hel {
 
@@ -108,4 +108,4 @@ struct	DrawCall {
 
 }
 
-#include "api/vulkan/Renderer.tpp"
+#include "rhi/render/Renderer.tpp"

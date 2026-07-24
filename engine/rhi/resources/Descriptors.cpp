@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 18:47:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/16 10:58:13                                        */
+/*  Last Modified: 2026/07/24 10:35:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,9 +14,9 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "api/vulkan/Descriptors.hpp"
-#include "api/vulkan/Device.hpp"
-#include "api/vulkan/Buffer.hpp"
+#include "rhi/resources/Descriptors.hpp"
+#include "rhi/resources/Buffer.hpp"
+#include "rhi/context/Device.hpp"
 #include "utils/mathUtils.hpp"
 
 #include <algorithm>

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/07 16:55:29                                        */
+/*  Last Modified: 2026/07/24 14:37:51                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,10 +14,10 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "core/SystemManager.hpp"
-#include "core/PhaseDependency.hpp"
-#include "ecs/CycleEntry.hpp"
-#include "ecs/ISystem.hpp"
+#include "core/scheduler/SystemManager.hpp"
+#include "core/scheduler/PhaseDependency.hpp"
+#include "core/scheduler/CycleEntry.hpp"
+#include "core/ecs/ISystem.hpp"
 #include "utils/match.hpp"
 
 #include <optional>

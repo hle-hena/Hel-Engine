@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 10:44:13 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:09:56                                        */
+/*  Last Modified: 2026/07/24 14:30:19                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "ecs/ValidComponent.hpp"
+#include "core/ecs/ValidComponent.hpp"
 
 #include <string_view>
 #include <optional>
@@ -95,4 +95,4 @@ struct	ComponentHandle<Component>::ModificationProxy: ComponentHandle<Component>
 
 }
 
-#include "ecs/IComponent.tpp"
+#include "core/ecs/IComponent.tpp"

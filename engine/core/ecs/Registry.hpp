@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/21 12:24:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 11:02:23                                        */
+/*  Last Modified: 2026/07/24 14:32:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,9 +22,9 @@
 #include <vector>
 #include <memory>
 
-#include "ecs/Entity.hpp"
-#include "ecs/AssetManager.hpp"
-#include "ecs/Pool.hpp"
+#include "core/ecs/Entity.hpp"
+#include "core/ecs/AssetManager.hpp"
+#include "core/ecs/Pool.hpp"
 
 namespace	hel {
 
@@ -106,4 +106,4 @@ class	Registry {
 
 }
 
-#include "ecs/Registry.tpp"
+#include "core/ecs/Registry.tpp"

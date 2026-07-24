@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 16:53:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 11:49:30                                        */
+/*  Last Modified: 2026/07/24 14:29:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,9 +14,9 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/Pool.hpp"
-#include "ecs/IComponent.hpp"
-#include "api/vulkan/Swapchain.hpp"
+#include "core/ecs/Pool.hpp"
+#include "core/ecs/IComponent.hpp"
+#include "rhi/context/Swapchain.hpp"
 
 namespace	hel {
 

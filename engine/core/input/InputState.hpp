@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 15:01:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:25:47                                        */
+/*  Last Modified: 2026/07/24 11:23:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -99,4 +99,4 @@ class	InputState {
 
 }
 
-#include "platform/input/InputState.tpp"
+#include "core/input/InputState.tpp"

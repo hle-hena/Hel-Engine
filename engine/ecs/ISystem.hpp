@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 14:31:28                                        */
+/*  Last Modified: 2026/07/24 15:27:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,8 +21,8 @@
 #include <memory>
 #include <unordered_map>
 
-#include "core/scheduler/CycleEntry.hpp"
-#include "rhi/render/PipelineMap.hpp"
+#include "core/ecs/CycleEntry.hpp"
+#include "api/vulkan/PipelineMap.hpp"
 
 namespace	hel {
 

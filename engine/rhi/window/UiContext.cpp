@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 14:42:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 14:32:41                                        */
+/*  Last Modified: 2026/07/24 10:23:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,10 +14,10 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "platform/ui/UiContext.hpp"
-#include "platform/window/Window.hpp"
-#include "api/vulkan/Descriptors.hpp"
-#include "api/vulkan/VulkanContext.hpp"
+#include "rhi/window/UiContext.hpp"
+#include "rhi/window/Window.hpp"
+#include "rhi/resources/Descriptors.hpp"
+#include "rhi/context/VulkanContext.hpp"
 
 #include <ui/ImGui/imgui_impl_vulkan.h>
 #include <ui/ImGui/imgui_impl_glfw.h>

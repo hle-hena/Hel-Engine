@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:48 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 11:56:18                                        */
+/*  Last Modified: 2026/07/24 15:37:01                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,14 +14,15 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "api/vulkan/RenderPass.hpp"
-#include "core/PhaseDependency.hpp"
-#include "api/vulkan/Renderer.hpp"
-#include "api/vulkan/ImagePool.hpp"
-#include "core/Frame.hpp"
-#include "core/RenderQueue.hpp"
-#include "ecs/CycleEntry.hpp"
+#include "rhi/render/RenderPass.hpp"
+#include "rhi/render/Renderer.hpp"
+#include "rhi/resources/ImagePool.hpp"
 #include "utils/match.hpp"
+
+#include "core/scheduler/PhaseDependency.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+#include "core/Frame.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+#include "core/scheduler/RenderQueue.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+#include "core/scheduler/CycleEntry.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 #include <iostream>
 

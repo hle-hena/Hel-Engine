@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 17:10:55 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/06/30 17:13:57                                        */
+/*  Last Modified: 2026/07/24 15:28:13                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,7 +17,7 @@
 #pragma once
 
 // IWYU pragma: begin_exports
-#include "ecs/IComponent.hpp"
-#include "ecs/ComponentManager.hpp"
+#include "core/ecs/IComponent.hpp"
+#include "core/ecs/ComponentManager.hpp"
 // IWYU pragma: end_exports
 

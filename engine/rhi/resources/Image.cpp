@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 15:33:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 15:21:32                                        */
+/*  Last Modified: 2026/07/24 10:37:14                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,13 +14,11 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "api/vulkan/Image.hpp"
-#include "api/vulkan/Device.hpp"
-#include "api/vulkan/Buffer.hpp"
-#include "platform/ui/UiContext.hpp"
-#include "api/vulkan/Sampler.hpp"
-
-#include <iostream>
+#include "rhi/resources/Image.hpp"
+#include "rhi/resources/Buffer.hpp"
+#include "rhi/resources/Sampler.hpp"
+#include "rhi/context/Device.hpp"
+#include "rhi/window/UiContext.hpp"
 
 namespace	hel {
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/26 14:40:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/04/08 17:31:58                                        */
+/*  Last Modified: 2026/07/24 10:44:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,7 +14,7 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "ecs/AssetManager.hpp"
+#include "core/ecs/AssetManager.hpp"
 
 namespace	hel {
 

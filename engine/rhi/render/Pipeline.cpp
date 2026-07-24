@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/13 19:39:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 15:55:24                                        */
+/*  Last Modified: 2026/07/24 10:39:01                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,8 +14,8 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "api/vulkan/Pipeline.hpp"
-#include "api/vulkan/Device.hpp"
+#include "rhi/render/Pipeline.hpp"
+#include "rhi/context/Device.hpp"
 
 namespace hel {
 

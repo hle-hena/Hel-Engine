@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:31:51 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 17:30:39                                        */
+/*  Last Modified: 2026/07/24 10:33:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,9 +16,9 @@
 
 #pragma once
 
-#include "api/vulkan/VulkanInstance.hpp"
-#include "api/vulkan/Device.hpp"
-#include "HelExpected.hpp"
+#include "rhi/context/VulkanInstance.hpp"
+#include "rhi/context/Device.hpp"
+#include "utils/Expected.hpp"
 
 namespace	hel {
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:27 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 16:20:48                                        */
+/*  Last Modified: 2026/07/24 10:40:19                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,7 +23,7 @@
 #include <string>
 #include <optional>
 
-#include "api/vulkan/PipelineMap.hpp"
+#include "rhi/render/PipelineMap.hpp"
 
 namespace	hel::sys {
 

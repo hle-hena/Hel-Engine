@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/05 18:33:38 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 11:47:00                                        */
+/*  Last Modified: 2026/07/24 14:38:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,8 +14,8 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "core/ReadQueue.hpp"
-#include "api/vulkan/Buffer.hpp"
+#include "core/scheduler/ReadQueue.hpp"
+#include "rhi/resources/Buffer.hpp"
 
 namespace	hel {
 

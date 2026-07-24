@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/30 15:55:18 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/22 14:25:19                                        */
+/*  Last Modified: 2026/07/24 14:29:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,9 +16,9 @@
 
 #pragma once
 
-#include "ecs/ValidComponent.hpp"
-#include "ecs/Entity.hpp"
-#include "api/vulkan/Buffer.hpp"
+#include "core/ecs/ValidComponent.hpp"
+#include "core/ecs/Entity.hpp"
+#include "rhi/resources/Buffer.hpp"
 
 #include <vector>
 #include <cstdint>

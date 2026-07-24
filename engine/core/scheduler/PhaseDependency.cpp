@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: DrawQueue.cpp                                                       */
+/*  File: PhaseDependency.cpp                                                 */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/07/05 18:37:54 by hle-hena                                  */
+/*  Created: 2026/07/05 15:14:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:50:13                                        */
+/*  Last Modified: 2026/07/24 14:39:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,26 +14,34 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "core/DrawQueue.hpp"
+#include "core/scheduler/PhaseDependency.hpp"
+#include "utils/mathUtils.hpp"
 
-namespace	hel {
+namespace hel {
 
-DrawQueue::RequestMap		DrawQueue::_requests = {};
-
-DrawQueue::RequestVector	*DrawQueue::RequestMap::at(const uint32_t levelAsked, const PhaseDependencies &depAsked) {
-	auto	&data = _data[levelAsked];
-	for (auto &vector: data) {
-		if (vector.dep == depAsked)
-			return &vector;
-	}
-	auto	&newVec = data.emplace_back();
-	newVec.dep = depAsked;
-	return &newVec;
+PhaseDependencies	*ImageDep::addDep(void) {
+	_parent->write.push_back(*this);
+	return _parent;
 }
 
-void	DrawQueue::requestDraw(uint32_t level, DrawCall &&drawCommand,
-							PhaseDependencies &dep) {
-	_requests.at(level, dep)->draws.emplace_back(std::move(drawCommand));
+size_t	DepHasher::operator()(const PhaseDependencies &dep) const {
+	size_t	seed = 0;
+	for (auto &write: dep.write)
+		mathUtils::hashCombine(seed, write._imageName,
+							write._usage, write._format);
+	for (auto &readName: dep.read)
+		mathUtils::hashCombine(seed, readName);
+	return seed;
+}
+
+bool	ImageDep::operator==(const ImageDep &o) const {
+	return (_imageName == o._imageName
+			&& _usage == o._usage
+			&& _format == o._format);
+}
+
+bool	PhaseDependencies::operator==(const PhaseDependencies &o) const {
+	return write == o.write && read == o.read;
 }
 
 }

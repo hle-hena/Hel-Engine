@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/11 17:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/21 19:45:00                                        */
+/*  Last Modified: 2026/07/24 10:34:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,7 +20,7 @@
 #include <vulkan/vulkan.h>
 #include <vma/vk_mem_alloc.h>
 
-#include "HelExpected.hpp"
+#include "utils/Expected.hpp"
 #include "utils/Setters.hpp"
 #include "utils/Ref.hpp"
 
@@ -114,4 +114,4 @@ class	Buffer : public RefCounted {
 
 }
 
-#include "api/vulkan/Buffer.tpp"
+#include "rhi/resources/Buffer.tpp"

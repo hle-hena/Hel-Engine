@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 12:20:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:32:29                                        */
+/*  Last Modified: 2026/07/24 10:30:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,11 +14,12 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "platform/window/Window.hpp"
-#include "platform/ui/UiContext.hpp"
-#include "platform/window/GLFW.hpp"
-#include "api/vulkan/VulkanContext.hpp"
-#include "platform/input/InputState.hpp"
+#include "rhi/window/Window.hpp"
+#include "rhi/window/UiContext.hpp"
+#include "rhi/window/GLFW.hpp"
+#include "rhi/context/VulkanContext.hpp"
+
+#include "core/input/InputState.hpp"//remove. aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 namespace	hel {
 

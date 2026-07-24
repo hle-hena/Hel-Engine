@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/26 14:31:25 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:01:36                                        */
+/*  Last Modified: 2026/07/24 10:44:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,4 +48,4 @@ class	AssetManager {
 
 }
 
-#include "ecs/AssetManager.tpp"
+#include "core/ecs/AssetManager.tpp"

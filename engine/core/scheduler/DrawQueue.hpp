@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/05 18:30:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 18:37:30                                        */
+/*  Last Modified: 2026/07/24 14:39:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,8 +20,8 @@
 #include <vector>
 #include <map>
 
-#include "core/PhaseDependency.hpp"
-#include "api/vulkan/Renderer.hpp"
+#include "core/scheduler/PhaseDependency.hpp"
+#include "rhi/render/Renderer.hpp"
 
 namespace	hel {
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 15:07:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 15:59:14                                        */
+/*  Last Modified: 2026/07/24 10:39:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,11 +14,12 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "api/vulkan/PipelineMap.hpp"
-#include "api/vulkan/Device.hpp"
-#include "api/vulkan/Shader.hpp"
-#include "ecs/AssetManager.hpp"
+#include "rhi/render/PipelineMap.hpp"
+#include "rhi/render/Shader.hpp"
+#include "rhi/context/Device.hpp"
 #include "utils/mathUtils.hpp"
+
+#include "core/ecs/AssetManager.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 #include <iostream>
 

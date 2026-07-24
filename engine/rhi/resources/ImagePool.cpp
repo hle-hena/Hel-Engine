@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/11 10:59:47 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 15:59:06                                        */
+/*  Last Modified: 2026/07/24 10:37:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,7 +14,7 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "api/vulkan/ImagePool.hpp"
+#include "rhi/resources/ImagePool.hpp"
 
 #include <algorithm>
 

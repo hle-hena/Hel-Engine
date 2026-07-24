@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/15 10:35:15 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 15:26:17                                        */
+/*  Last Modified: 2026/07/24 10:21:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,10 +14,10 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "api/vulkan/Device.hpp"
-#include "api/vulkan/vulkanHelper.hpp"
-#include "api/vulkan/VulkanInstance.hpp"
-#include "platform/window/Window.hpp"
+#include "rhi/context/Device.hpp"
+#include "rhi/context/VulkanInstance.hpp"
+#include "rhi/context/vulkanHelper.hpp"
+#include "rhi/window/Window.hpp"
 
 #include <set>
 #include <iostream>

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/23 10:01:59 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/06 10:35:50                                        */
+/*  Last Modified: 2026/07/24 10:45:23                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,9 +16,9 @@
 
 #pragma once
 
-#include "ecs/ValidComponent.hpp"
-#include "ecs/Entity.hpp"
-#include "ecs/Registry.hpp"
+#include "core/ecs/ValidComponent.hpp"
+#include "core/ecs/Entity.hpp"
+#include "core/ecs/Registry.hpp"
 
 #include <functional>
 #include <vector>

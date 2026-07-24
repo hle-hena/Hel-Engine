@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/05 18:26:37 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 10:40:48                                        */
+/*  Last Modified: 2026/07/24 14:37:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,9 +14,9 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "core/RenderQueue.hpp"
+#include "core/scheduler/RenderQueue.hpp"
 #include "utils/mathUtils.hpp"
-#include "api/vulkan/Image.hpp"
+#include "rhi/resources/Image.hpp"
 
 namespace	hel {
 

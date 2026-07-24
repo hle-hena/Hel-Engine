@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:39:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 15:20:32                                        */
+/*  Last Modified: 2026/07/24 14:36:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,17 +18,18 @@
 #include <GLFW/glfw3.h>
 
 #include "core/Engine.hpp"
-#include "platform/window/Window.hpp"
-#include "platform/ui/UiContext.hpp"
-#include "api/vulkan/ImagePool.hpp"
-#include "core/RenderQueue.hpp"
-#include "core/ReadQueue.hpp"
-#include "core/DrawQueue.hpp"
-#include "api/vulkan/Renderer.hpp"
-#include "platform/window/GLFW.hpp"
-#include "api/vulkan/Sampler.hpp"
-#include "ecs/CycleEntry.hpp"
-#include "ecs/ISystem.hpp"
+#include "core/scheduler/RenderQueue.hpp"
+#include "core/scheduler/ReadQueue.hpp"
+#include "core/scheduler/DrawQueue.hpp"
+#include "core/scheduler/CycleEntry.hpp"
+#include "core/ecs/ISystem.hpp"
+
+#include "rhi/window/Window.hpp"
+#include "rhi/window/UiContext.hpp"
+#include "rhi/resources/ImagePool.hpp"
+#include "rhi/render/Renderer.hpp"
+#include "rhi/window/GLFW.hpp"
+#include "rhi/resources/Sampler.hpp"
 
 namespace	hel {
 

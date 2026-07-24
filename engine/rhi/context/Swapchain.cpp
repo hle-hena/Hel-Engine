@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/06 09:27:24 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/22 14:49:20                                        */
+/*  Last Modified: 2026/07/24 15:37:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,10 +14,10 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "api/vulkan/Swapchain.hpp"
-#include "platform/window/Window.hpp"
-#include "api/vulkan/Device.hpp"
-#include "api/vulkan/Image.hpp"
+#include "rhi/context/Swapchain.hpp"
+#include "rhi/context/Device.hpp"
+#include "rhi/window/Window.hpp"
+#include "rhi/resources/Image.hpp"
 
 #include <limits>
 #include <iostream>

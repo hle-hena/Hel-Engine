@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:34:45 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 11:04:02                                        */
+/*  Last Modified: 2026/07/24 11:21:47                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,12 +18,12 @@
 
 #include <string>
 
-#include "api/vulkan/VulkanContext.hpp"
-#include "ecs/Registry.hpp"
-#include "core/SystemManager.hpp"
+#include "rhi/context/VulkanContext.hpp"
+#include "core/input/InputState.hpp"
+#include "core/ecs/Registry.hpp"
+#include "core/scheduler/SystemManager.hpp"
 #include "core/Frame.hpp"
-#include "platform/input/InputState.hpp"
-#include "HelExpected.hpp"
+#include "utils/Expected.hpp"
 
 namespace	hel {
 
