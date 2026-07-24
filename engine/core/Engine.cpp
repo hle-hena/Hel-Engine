@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:39:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 14:36:25                                        */
+/*  Last Modified: 2026/07/24 18:21:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -77,7 +77,7 @@ expected<void>	Engine::createWindow(int width, int height,
 {
 	Window::windowPtr window = Window::createWindow(static_cast<uint32_t>(width),
 								static_cast<uint32_t>(height), windowName,
-								&_vkContext, &_inputState);
+								&_vkContext);
 	if (!window)
 		return tl::unexpected("Failed to create the window.");
 	if (!_vkContext.getDevice()->supportSurface(window.get()))
@@ -104,8 +104,7 @@ void	Engine::run(void) {
 	uint32_t	currentFrame = 0;
 
 	while (_appWindow) {
-		_inputState.newFrame();
-		_appWindow->pollEvents();
+		_inputState.newFrame(_appWindow->pollEvents());
 
 		if (_appWindow->shouldClose())
 			break ;

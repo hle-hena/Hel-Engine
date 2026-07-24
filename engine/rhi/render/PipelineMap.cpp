@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/22 15:07:32 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 17:25:44                                        */
+/*  Last Modified: 2026/07/24 17:31:24                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,8 +18,6 @@
 #include "rhi/render/Shader.hpp"
 #include "rhi/context/Device.hpp"
 #include "utils/mathUtils.hpp"
-
-// #include "core/ecs/AssetManager.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 #include <iostream>
 

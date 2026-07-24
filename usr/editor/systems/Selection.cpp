@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 12:41:09                                        */
+/*  Last Modified: 2026/07/24 19:06:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,6 +22,8 @@
 namespace	hel::sys {
 
 SystemRegistrar<Selection>	reg_SelectionSystem;
+Entity::id					Selection::_selectedEntity{Entity::NOT_REGISTERED};
+std::optional<Entity::id>	Selection::_newSelected;
 
 void	Selection::init(void) {
 	addUpdateDep("input/logic/selection", &Selection::update);
@@ -102,21 +104,23 @@ void	Selection::update(const FrameContext &ctx) {
 
 			Entity::id	handle = data[0];
 			if (handle == Entity::NOT_REGISTERED)
-				ctx.window->setEntityFocus(handle);
+				this->setSelected(handle);
 			else if (!_registry->getComponent<comp::NonSelectableTag>(handle))
-				ctx.window->setEntityFocus(handle);
+				this->setSelected(handle);
 			return (true);
 		}
 		return (false);
 	});
 
-	if (ctx.window->focusChanged()) {
+	if (_newSelected) {
 		if (_selectedEntity != Entity::NOT_REGISTERED)
 			_registry->removeComponent<comp::SelectedTag>(_selectedEntity);
-		_selectedEntity = ctx.window->getEntityFocus();
+		_selectedEntity = *_newSelected;
 		if (_selectedEntity != Entity::NOT_REGISTERED)
 			_registry->addComponent<comp::SelectedTag>(_selectedEntity);
+		_newSelected.reset();
 	}
+
 }
 
 void	Selection::renderInteraction(const Renderer &renderer) {

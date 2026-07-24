@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/10 13:23:29 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 10:26:12                                        */
+/*  Last Modified: 2026/07/24 19:19:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,12 +23,51 @@
 #include <optional>
 
 #include "rhi/context/Swapchain.hpp"
-#include "core/ecs/Entity.hpp"
 
 namespace	hel {
 
-class	InputState;
 class	VulkanContext;
+
+enum class	InputEventType { Key, MouseButton, MouseMove, Focus };
+
+struct	InputEvent {
+	static InputEvent	mouseButton(int index, int action, int mods) {
+		InputEvent	ret{};
+		ret.type = InputEventType::MouseButton;
+		ret.index = index;
+		ret.action = action;
+		ret.mods = mods;
+		return ret;
+	}
+	static InputEvent	mouseMove(double xpos, double ypos) {
+		InputEvent	ret{};
+		ret.type = InputEventType::MouseMove;
+		ret.x = xpos;
+		ret.y = ypos;
+		return ret;
+	}
+	static InputEvent	keyPressed(int key, int action, int mods) {
+		InputEvent	ret{};
+		ret.type = InputEventType::Key;
+		ret.index = key;
+		ret.action = action;
+		ret.mods = mods;
+		return ret;
+	}
+	static InputEvent	focus(bool focused) {
+		InputEvent	ret{};
+		ret.type = InputEventType::Focus;
+		ret.focused = focused;
+		return ret;
+	}
+
+	InputEventType	type;
+	int				index{0};
+	int				action{0};
+	int				mods{0};
+	double			x{0.f}, y{0.f};
+	bool			focused{false};
+};
 
 class	Window {
 	public:
@@ -42,8 +81,7 @@ class	Window {
 
 		static windowPtr	createWindow(uint32_t width, uint32_t height,
 										const std::string &windowName,
-										VulkanContext *context,
-										InputState *inputState) noexcept;
+										VulkanContext *context) noexcept;
 		static windowPtr	createBootstrap(uint32_t width, uint32_t height,
 										const std::string &windowName,
 										VulkanContext *context) noexcept;
@@ -61,27 +99,16 @@ class	Window {
 		std::string		getWindowName(void) const {
 			return (_windowName);
 		}
-		void			setEntityReference(Entity::id handle);
-		Entity::id		getEntityReference(void) const {
-			return (_entityHandle.value_or(Entity::NOT_REGISTERED));
-		}
-		void			setEntityFocus(Entity::id handle);
-		Entity::id		getEntityFocus(void) const {
-			return (_focusHandle.value_or(Entity::NOT_REGISTERED));
-		}
-		bool			focusChanged(void) const {
-			return (_focusChanged != 0);
-		}
 		VkExtent2D		getExtent(void) const {
 			return {_width, _height};
 		}
 
-		void	pollEvents(void);
+		std::vector<InputEvent>	pollEvents(void);
 
 
 	private:
 		Window(uint32_t width, uint32_t height, const std::string &windowName,
-			VulkanContext *context, InputState *inputState = nullptr);
+			VulkanContext *context);
 		Window(const Window &other) = delete;
 		Window	&operator=(const Window &other) = delete;
 
@@ -96,10 +123,8 @@ class	Window {
 		static void	focusCallback(GLFWwindow *window, int focused);
 		static void cursorPositionCallback(GLFWwindow* window, double xpos,
 										double ypos);
-		static void	cursorEnterCallback(GLFWwindow *window, int entered);
 
 		VulkanContext				*_vkCtx{nullptr};
-		InputState					*_inputState{nullptr};
 		uint32_t					_width;
 		uint32_t					_height;
 		bool						_frameBufferResized{false};
@@ -107,9 +132,8 @@ class	Window {
 		GLFWwindow					*_windowPtr;
 		VkSurfaceKHR				_surface{VK_NULL_HANDLE};
 		Swapchain					_swapchain;
-		std::optional<Entity::id>	_entityHandle;
-		std::optional<Entity::id>	_focusHandle;
-		int							_focusChanged{0};
+
+		std::vector<InputEvent>		_pendingEvents;
 
 	friend class UiContext;
 };

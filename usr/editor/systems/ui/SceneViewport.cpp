@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 15:34:07                                        */
+/*  Last Modified: 2026/07/24 19:18:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "systems/ui/SceneViewport.hpp"
+#include "systems/EntityReference.hpp"
 #include "rhi/resources/Image.hpp"
 #include "rhi/resources/ImagePool.hpp"
 #include "rhi/context/Swapchain.hpp"
@@ -33,7 +34,7 @@ void	SceneViewport::render(const FrameContext &ctx, const ImVec2 &) {
 		return ;
 
 	auto	window = ctx.window;
-	auto	windowEntityHandle = window->getEntityReference();
+	auto	windowEntityHandle = EntityReference::getReferenced();
 	auto	rectMin = ImGui::GetCursorScreenPos() - ImGui::GetStyle().WindowPadding;
 	rectMin.y += 1.1f;
 	auto	rectMax = rectMin + ImGui::GetContentRegionAvail()
@@ -74,7 +75,7 @@ void	SceneViewport::render(const FrameContext &ctx, const ImVec2 &) {
 	if (!mainImg || !depthImg || !entityImg)
 		return ;
 	if (_handle == Entity::NOT_REGISTERED)
-		_handle = window->getEntityReference();
+		_handle = EntityReference::getReferenced();
 
 	auto	cursorPos = ImGui::GetCursorScreenPos();
 	RenderRequest	viewportRequest{
@@ -131,7 +132,7 @@ void	SceneViewport::render(const FrameContext &ctx, const ImVec2 &) {
 			GLFW_CURSOR_DISABLED || ImGui::IsItemHovered()))
 		ImGui::SetNextFrameWantCaptureMouse(false);
 	if (ImGui::IsItemClicked())
-		window->setEntityReference(_handle);
+		EntityReference::setReferenced(_handle);
 
 	DropTarget("ENTITY")
 		.setPos(rectMin)

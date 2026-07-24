@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 12:41:25                                        */
+/*  Last Modified: 2026/07/24 19:04:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "systems/Transform.hpp"
+#include "systems/Selection.hpp"
 #include "components/Camera.hpp"
 #include "assetType/Geometry.hpp"
 #include "assetType/Texture.hpp"
@@ -211,7 +212,7 @@ void	Transform::updateEntity(Entity::id handle) {
 void	Transform::renderGizmo(const Renderer &renderer, GizmoContext &gizmo) {
 	if (!gizmo)	{ return ; }
 	gizmo._life++;
-	auto	focusedTransform = _registry->getComponent<comp::Transform>(gizmo._window->getEntityFocus());
+	auto	focusedTransform = _registry->getComponent<comp::Transform>(Selection::getSelected());
 	auto	requestTransform = _registry->getComponent<comp::Transform>(gizmo._requestHandle);
 	if (!focusedTransform || !requestTransform)	{ return ; }
 
@@ -303,7 +304,7 @@ void	Transform::renderUI(const Renderer &renderer, GizmoContext &gizmo) {
 
 void	Transform::renderInteraction(const Renderer &renderer) {
 	auto	ctx = renderer.frameContext();
-	if (ctx.window->getEntityFocus() == Entity::NOT_REGISTERED
+	if (Selection::getSelected() == Entity::NOT_REGISTERED
 		|| !_registry->isValidHandle(ctx.request->handle))
 		return	;
 	auto	[it, inserted] = _gizmoContexts.try_emplace(*renderer.frameContext().request,
@@ -312,7 +313,7 @@ void	Transform::renderInteraction(const Renderer &renderer) {
 								renderer.frameContext().request->handle);
 	auto	&gizmo = it->second;
 
-	if (!gizmo || ctx.window->focusChanged())
+	if (!gizmo || it->first.handle != Selection::getSelected())
 		gizmo.initAction();
 	if (!gizmo)
 		return ;
@@ -427,7 +428,7 @@ void	Transform::GizmoContext::dragMove(const FrameContext &ctx) {
 		return ;
 
 	auto	focusedTransform = _registry->getComponent<comp::Transform>
-											(_window->getEntityFocus());
+											(Selection::getSelected());
 	auto	requestTransform = _registry->getComponent<comp::Transform>
 											(_requestHandle);
 	auto	requestCamera = _registry->getComponent<comp::Camera>
@@ -475,7 +476,7 @@ void	Transform::GizmoContext::dragMove(const FrameContext &ctx) {
 	}
 
 	focusedTransform.modify()->position += finalOffset;
-	_baseSystem->updateEntity(_window->getEntityFocus());
+	_baseSystem->updateEntity(Selection::getSelected());
 }
 
 void	Transform::GizmoContext::dragScale(const FrameContext &ctx) {
@@ -484,7 +485,7 @@ void	Transform::GizmoContext::dragScale(const FrameContext &ctx) {
 	if (teleportMouse(ctx))
 		return ;
 
-	auto	focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus());
+	auto	focusedTransform = _registry->getComponent<comp::Transform>(Selection::getSelected());
 	auto	requestTransform = _registry->getComponent<comp::Transform>(_requestHandle);
 	auto	requestCamera = _registry->getComponent<comp::Camera>(_requestHandle);
 
@@ -517,7 +518,7 @@ void	Transform::GizmoContext::dragScale(const FrameContext &ctx) {
 	}
 
 	focusedTransform.modify()->scale += finalOffset;
-	_baseSystem->updateEntity(ctx.window->getEntityFocus());
+	_baseSystem->updateEntity(Selection::getSelected());
 }
 
 void	Transform::GizmoContext::dragRotate(const FrameContext &ctx) {
@@ -525,7 +526,7 @@ void	Transform::GizmoContext::dragRotate(const FrameContext &ctx) {
 	static glm::vec2	initialMousePos;
 	static glm::vec2	rotationCenter;
 
-	auto		focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus()).modify();
+	auto		focusedTransform = _registry->getComponent<comp::Transform>(Selection::getSelected()).modify();
 	auto		renderCamera = _registry->getComponent<comp::Camera>(_requestHandle);
 	if (_startDrag) {
 		initialRot = focusedTransform->rotation;
@@ -555,14 +556,14 @@ void	Transform::GizmoContext::dragRotate(const FrameContext &ctx) {
 		rotationAmount = -rotationAmount;
 	glm::quat	addedRotation = glm::angleAxis(rotationAmount, axis);
 	focusedTransform->rotation = glm::normalize(addedRotation * initialRot);
-	_baseSystem->updateEntity(ctx.window->getEntityFocus());
+	_baseSystem->updateEntity(Selection::getSelected());
 
 	initialMousePos = mousePos;
 	initialRot = focusedTransform->rotation;
 }
 
 void	Transform::GizmoContext::initMove(void) {
-	auto	focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus());
+	auto	focusedTransform = _registry->getComponent<comp::Transform>(Selection::getSelected());
 	auto	requestTransform = _registry->getComponent<comp::Transform>(_requestHandle);
 	if (!focusedTransform || !requestTransform)
 		return ;
@@ -597,7 +598,7 @@ void	Transform::GizmoContext::initMove(void) {
 }
 
 void	Transform::GizmoContext::initScale(void) {
-	auto	focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus());
+	auto	focusedTransform = _registry->getComponent<comp::Transform>(Selection::getSelected());
 	auto	requestTransform = _registry->getComponent<comp::Transform>(_requestHandle);
 	if (!focusedTransform || !requestTransform)
 		return ;
@@ -620,7 +621,7 @@ void	Transform::GizmoContext::initScale(void) {
 }
 
 void	Transform::GizmoContext::initRotate(void) {
-	auto	focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus());
+	auto	focusedTransform = _registry->getComponent<comp::Transform>(Selection::getSelected());
 	auto	requestTransform = _registry->getComponent<comp::Transform>(_requestHandle);
 	if (!focusedTransform || !requestTransform)
 		return ;

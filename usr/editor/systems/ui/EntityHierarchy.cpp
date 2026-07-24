@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 15:32:26                                        */
+/*  Last Modified: 2026/07/24 19:15:49                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "systems/ui/EntityHierarchy.hpp"
+#include "systems/Selection.hpp"
 #include "components/HideTag.hpp"
 #include "components/Name.hpp"
 #include "systems/ui/UIHelper.hpp"
@@ -61,8 +62,8 @@ void	EntityHierarchy::showEntity(Window *window, View<include<comp::Hierarchy>> 
 
 	bool	nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)handle, nodeFlags, "%s", "");
 	ImGui::SameLine();
-	if (ImGui::Selectable(name.c_str(), window->getEntityFocus() == handle))
-		window->setEntityFocus(handle);
+	if (ImGui::Selectable(name.c_str(), Selection::getSelected() == handle))
+		Selection::setSelected(handle);
 	if (ImGui::BeginDragDropSource()) {
 		Entity::id	payload = handle;
 		ImGui::SetDragDropPayload("ENTITY",
@@ -110,7 +111,7 @@ void	EntityHierarchy::render(const FrameContext &ctx, const ImVec2 &) {
 			showEntity(ctx.window, view, handle);
 	}
 	if (ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered() && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
-		ctx.window->setEntityFocus(Entity::NOT_REGISTERED);
+		Selection::setSelected(Entity::NOT_REGISTERED);
 }
 
 }

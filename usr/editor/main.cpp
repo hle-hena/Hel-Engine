@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/09 17:10:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 15:36:35                                        */
+/*  Last Modified: 2026/07/24 19:11:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,7 @@
 #include "core/Engine.hpp"
 #include "core/ecs/Entity.hpp"
 #include "rhi/window/Window.hpp"
+#include "systems/EntityReference.hpp"
 #include "components/Controllers.hpp"
 #include "components/Camera.hpp"
 #include "components/Transform.hpp"
@@ -37,7 +38,7 @@ void	loadPrimaryScene(Registry *registry, Window *window) {
 	registry->addComponent<comp::EditorControllerTag>(cameraHandle);
 	registry->addComponent<comp::Camera>(cameraHandle);
 	registry->addComponent<comp::Name>(cameraHandle).modify()->name = "Editor Camera";
-	window->setEntityReference(cameraHandle);
+	sys::EntityReference::setReferenced(cameraHandle);
 
 	Entity::id	sponzaHandle = registry->createEntity();
 	if (auto mesh = registry->addComponent<comp::Model>(sponzaHandle).modify()) {
