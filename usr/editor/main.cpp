@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/09 17:10:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 19:11:55                                        */
+/*  Last Modified: 2026/07/25 17:31:51                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -75,7 +75,7 @@ GlobalSetBindings	defineGlobalSet(void) {
 					VK_SHADER_STAGE_ALL_GRAPHICS);
 }
 
-void	updateGlobalData(Registry *registry, FrameContext &ctx) {
+void	updateGlobalData(Registry *registry, ExecutionContext &ctx) {
 	auto	handle = ctx.request->handle;
 	auto	data = ctx.globals->get<GlobalUBO>("main UBO");
 	data->viewProjection = glm::mat4{1.f};
@@ -91,7 +91,7 @@ void	updateGlobalData(Registry *registry, FrameContext &ctx) {
 
 Timer	globalTimer;
 
-void	tickCallback(Registry *, FrameContext &ctx) {
+void	tickCallback(Registry *, ExecutionContext &ctx) {
 	{
 	auto	data = ctx.globals->get<GlobalUBO>("main UBO");
 	data->elapsedTime = globalTimer.elapsedTime();

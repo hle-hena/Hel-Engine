@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:14:10 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 15:31:24                                        */
+/*  Last Modified: 2026/07/25 17:31:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,7 +27,7 @@ class	BaseController : public ISystem {
 
 		void	init(void) override;
 
-		void	handleInput(const FrameContext &ctx);
+		void	handleInput(const ExecutionContext &ctx);
 
 	private:
 		void	handleKeyboardInput(Entity::id handle, float deltaTime);

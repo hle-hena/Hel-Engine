@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/07 18:05:20                                        */
+/*  Last Modified: 2026/07/25 17:33:34                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -115,7 +115,7 @@ void	Render::configureSelectedPipeline(PipelineConfig &config) {
 }
 
 void	Render::render(const Renderer &renderer) {
-	auto	ctx = renderer.frameContext();
+	auto	ctx = renderer.executionContext();
 	if (!ctx.commandBuffer)
 		return ;
 

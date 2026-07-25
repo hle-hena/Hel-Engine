@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 15:31:28                                        */
+/*  Last Modified: 2026/07/25 17:32:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,8 +45,8 @@ class	Transform : public ISystem {
 
 		void	init(void) override;
 
-		void	update(const FrameContext &ctx);
-		void	gizmoAction(const FrameContext &ctx);
+		void	update(const ExecutionContext &ctx);
+		void	gizmoAction(const ExecutionContext &ctx);
 
 		void	renderInteraction(const Renderer &renderer);
 
@@ -75,10 +75,10 @@ class	Transform : public ISystem {
 
 			void	freeHandles(void);
 
-			bool	teleportMouse(const FrameContext &ctx);
-			void	dragMove(const FrameContext &ctx);
-			void	dragScale(const FrameContext &ctx);
-			void	dragRotate(const FrameContext &ctx);
+			bool	teleportMouse(const ExecutionContext &ctx);
+			void	dragMove(const ExecutionContext &ctx);
+			void	dragScale(const ExecutionContext &ctx);
+			void	dragRotate(const ExecutionContext &ctx);
 
 			struct	EntityFactory;
 			void	initMove(void);
@@ -105,8 +105,8 @@ class	Transform : public ISystem {
 			friend class	Transform;
 		};
 
-		void	registerDrag(const FrameContext &ctx, GizmoContext &gizmo);
-		void	registerClick(const FrameContext &ctx, GizmoContext &gizmo);
+		void	registerDrag(const ExecutionContext &ctx, GizmoContext &gizmo);
+		void	registerClick(const ExecutionContext &ctx, GizmoContext &gizmo);
 		void	renderGizmo(const Renderer &renderer, GizmoContext &gizmoContext);
 		void	renderUI(const Renderer &renderer, GizmoContext &gizmoContext);
 

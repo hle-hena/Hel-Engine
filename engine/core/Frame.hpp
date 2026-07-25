@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 11:18:32                                        */
+/*  Last Modified: 2026/07/25 17:24:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -23,6 +23,7 @@
 #include <unordered_map>
 #include <memory>
 
+#include "rhi/render/ExecutionContext.hpp"
 #include "rhi/context/Swapchain.hpp"
 #include "rhi/resources/Buffer.hpp"
 #include "utils/Expected.hpp"
@@ -75,29 +76,6 @@ struct	GlobalData {
 		expected<void>	lock(EngineKey);
 };
 
-struct	FrameContext {
-	FrameContext(uint32_t frameIndex, GlobalData *globalData)
-		:	globals(globalData) {
-		this->frameIndex = frameIndex;
-	};
-
-	Window					*window{nullptr};
-	RenderRequest			*request{nullptr};
-
-	VkCommandBuffer			commandBuffer{VK_NULL_HANDLE};
-
-	GlobalData				*globals;
-	VkDescriptorSet			globalSet{VK_NULL_HANDLE};
-	uint32_t				setStride{0};
-	VkDescriptorSetLayout	globalLayout{VK_NULL_HANDLE};
-
-	DescriptorPool			*descriptorPool{nullptr};
-
-	uint32_t				passIndex{0};
-	uint32_t				frameIndex{0};
-	uint32_t				swapIndex{0};
-};
-
 
 
 struct	GlobalSetBindings {
@@ -133,8 +111,8 @@ class	Frame {
 		expected<void>	bindBuffers(GlobalData *globalData);
 		expected<void>	validateGlobalSet(void);
 
-		void	fillContext(FrameContext &frameContext, Window *window);
-		void	writeGlobalData(FrameContext &frameContext);
+		void	fillContext(ExecutionContext &execCtx, Window *window);
+		void	writeGlobalData(ExecutionContext &execCtx);
 
 		static VkDescriptorSetLayout	getGlobalLayout(void)
 			{ return _globalLayout; }

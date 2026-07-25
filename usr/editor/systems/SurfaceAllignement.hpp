@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:20:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 15:31:28                                        */
+/*  Last Modified: 2026/07/25 17:31:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,7 +27,7 @@ class	SurfaceAllignement : public ISystem {
 
 		void	init(void) override;
 
-		void	align(const FrameContext &ctx);
+		void	align(const ExecutionContext &ctx);
 
 	private:
 };

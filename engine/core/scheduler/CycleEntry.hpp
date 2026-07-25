@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/05 16:09:59 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 14:31:59                                        */
+/*  Last Modified: 2026/07/25 17:25:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,11 +18,11 @@
 
 #include <variant>
 
+#include "rhi/render/ExecutionContext.hpp"
 #include "core/scheduler/PhaseDependency.hpp"
 
 namespace	hel {
 
-struct	FrameContext;
 class	Renderer;
 
 }
@@ -33,7 +33,7 @@ class	ISystem;
 
 struct	CycleEntry {
 	private:
-		using UpdateFn = void (ISystem::*)(const FrameContext &);
+		using UpdateFn = void (ISystem::*)(const ExecutionContext &);
 		using RenderFn = void (ISystem::*)(const Renderer &);
 
 		using AnyFn = std::variant<RenderFn, UpdateFn>;

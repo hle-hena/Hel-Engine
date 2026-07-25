@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 19:04:08                                        */
+/*  Last Modified: 2026/07/25 17:33:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -144,7 +144,7 @@ void	Transform::configureNDCPipeline(PipelineConfig &config) {
 	Pipeline::setBlendAttachment(config, 1, attachment);
 }
 
-void	Transform::update(const FrameContext &) {
+void	Transform::update(const ExecutionContext &) {
 	auto	entities = _registry->view<include<comp::Transform>>();
 
 	for (auto entity: entities) {
@@ -161,7 +161,7 @@ void	Transform::update(const FrameContext &) {
 	}
 }
 
-void	Transform::gizmoAction(const FrameContext &ctx) {
+void	Transform::gizmoAction(const ExecutionContext &ctx) {
 	std::erase_if(_gizmoContexts, [&](auto &gizmoIt){
 		auto	&[key, gizmo] = gizmoIt;
 		if (--gizmo._life == 0)
@@ -230,7 +230,7 @@ void	Transform::renderGizmo(const Renderer &renderer, GizmoContext &gizmo) {
 		}
 	}
 
-	auto	ctx = renderer.frameContext();
+	auto	ctx = renderer.executionContext();
 	auto	set = _registry->buildComponentSet<comp::Transform, comp::Tint>(*_device, ctx.descriptorPool);
 	if (!set)
 		return ;
@@ -267,7 +267,7 @@ void	Transform::renderUI(const Renderer &renderer, GizmoContext &gizmo) {
 		rotateTint->tint = (gizmo.action == Action::Rotate ? activeCol : nonActiveCol);
 	}
 
-	auto	ctx = renderer.frameContext();
+	auto	ctx = renderer.executionContext();
 	auto	SSBO_d = _registry->buildComponentSet<comp::Transform, comp::Tint>(*_device, ctx.descriptorPool);
 	if (!SSBO_d)
 		return ;
@@ -303,14 +303,14 @@ void	Transform::renderUI(const Renderer &renderer, GizmoContext &gizmo) {
 }
 
 void	Transform::renderInteraction(const Renderer &renderer) {
-	auto	ctx = renderer.frameContext();
+	auto	ctx = renderer.executionContext();
 	if (Selection::getSelected() == Entity::NOT_REGISTERED
 		|| !_registry->isValidHandle(ctx.request->handle))
 		return	;
-	auto	[it, inserted] = _gizmoContexts.try_emplace(*renderer.frameContext().request,
+	auto	[it, inserted] = _gizmoContexts.try_emplace(*renderer.executionContext().request,
 								this,
-								renderer.frameContext().window,
-								renderer.frameContext().request->handle);
+								renderer.executionContext().window,
+								renderer.executionContext().request->handle);
 	auto	&gizmo = it->second;
 
 	if (!gizmo || it->first.handle != Selection::getSelected())
@@ -324,7 +324,7 @@ void	Transform::renderInteraction(const Renderer &renderer) {
 	renderUI(renderer, gizmo);
 }
 
-void	Transform::registerClick(const FrameContext &ctx, GizmoContext &gizmo) {
+void	Transform::registerClick(const ExecutionContext &ctx, GizmoContext &gizmo) {
 	auto	entityImg = ctx.request->images["entity layer"];
 	auto	camera = _registry->getComponent<comp::Camera>(ctx.request->handle);
 	auto	transform = _registry->getComponent<comp::Transform>(ctx.request->handle);
@@ -350,7 +350,7 @@ void	Transform::registerClick(const FrameContext &ctx, GizmoContext &gizmo) {
 	gizmo._read = *newRead;
 }
 
-void	Transform::registerDrag(const FrameContext &ctx, GizmoContext &gizmo) {
+void	Transform::registerDrag(const ExecutionContext &ctx, GizmoContext &gizmo) {
 	if (!gizmo._dragName.has_value())
 		return ;
 	if (_inputState->isReleased<input::Mouse>(0)) {
@@ -393,7 +393,7 @@ void	Transform::GizmoContext::freeHandles(void) {
 	handles.clear();
 }
 
-bool Transform::GizmoContext::teleportMouse(const FrameContext &ctx) {
+bool Transform::GizmoContext::teleportMouse(const ExecutionContext &ctx) {
 	bool		changed = false;
 	glm::vec2	renderOrigin = {ctx.request->origin.x, ctx.request->origin.y};
 	auto		imgExtent = ctx.request->images["mainColor"]->getExtent();
@@ -421,7 +421,7 @@ bool Transform::GizmoContext::teleportMouse(const FrameContext &ctx) {
 	return (changed);
 }
 
-void	Transform::GizmoContext::dragMove(const FrameContext &ctx) {
+void	Transform::GizmoContext::dragMove(const ExecutionContext &ctx) {
 	if (_startDrag)
 		_startDrag = false;
 	if (teleportMouse(ctx))
@@ -479,7 +479,7 @@ void	Transform::GizmoContext::dragMove(const FrameContext &ctx) {
 	_baseSystem->updateEntity(Selection::getSelected());
 }
 
-void	Transform::GizmoContext::dragScale(const FrameContext &ctx) {
+void	Transform::GizmoContext::dragScale(const ExecutionContext &ctx) {
 	if (_startDrag)
 		_startDrag = false;
 	if (teleportMouse(ctx))
@@ -521,7 +521,7 @@ void	Transform::GizmoContext::dragScale(const FrameContext &ctx) {
 	_baseSystem->updateEntity(Selection::getSelected());
 }
 
-void	Transform::GizmoContext::dragRotate(const FrameContext &ctx) {
+void	Transform::GizmoContext::dragRotate(const ExecutionContext &ctx) {
 	static glm::quat	initialRot;
 	static glm::vec2	initialMousePos;
 	static glm::vec2	rotationCenter;

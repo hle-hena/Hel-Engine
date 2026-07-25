@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:39:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 18:21:52                                        */
+/*  Last Modified: 2026/07/25 17:24:39                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -120,7 +120,7 @@ void	Engine::run(void) {
 void	Engine::tick(uint32_t frameIndex) {
 	_appWindow->getSwapchain().waitForFrameFence(frameIndex);
 
-	FrameContext	ctx(frameIndex, _userData.get());
+	ExecutionContext	ctx(frameIndex, _userData.get());
 	_frame.fillContext(ctx, _appWindow.get());
 	if (_appWindow->getSwapchain().acquireNextImage(*_appWindow.get(), frameIndex, &ctx.swapIndex))
 		return ;
@@ -133,40 +133,40 @@ void	Engine::tick(uint32_t frameIndex) {
 	renderTick(_appWindow.get(), ctx);
 }
 
-void	Engine::updateTick(FrameContext &frameCtx) {
+void	Engine::updateTick(ExecutionContext &execCtx) {
 	UiContext::newFrame();
 	for (auto &func: _systems.getUpdates())
-		func->execute(frameCtx);
+		func->execute(execCtx);
 	UiContext::endFrame();
 }
 
-void	Engine::renderTick(Window *window, FrameContext &ctx) {
+void	Engine::renderTick(Window *window, ExecutionContext &execCtx) {
 	Swapchain	&swapchain = window->getSwapchain();
 
 	RenderPass::newFrame();
 
-	auto	swapImage = swapchain.getSwapImage(ctx.swapIndex);
-	vkResetCommandBuffer(ctx.commandBuffer, 0);
-	ctx.descriptorPool->resetPools();
+	auto	swapImage = swapchain.getSwapImage(execCtx.swapIndex);
+	vkResetCommandBuffer(execCtx.commandBuffer, 0);
+	execCtx.descriptorPool->resetPools();
 
 	VkCommandBufferBeginInfo	beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	if (vkBeginCommandBuffer(ctx.commandBuffer, &beginInfo))
+	if (vkBeginCommandBuffer(execCtx.commandBuffer, &beginInfo))
 		return ;
 
 	for (auto &renderRequest: RenderQueue::flush()) {
-		ctx.request = &renderRequest;
-		_config.updateGlobalData(&_registry, ctx);
+		execCtx.request = &renderRequest;
+		_config.updateGlobalData(&_registry, execCtx);
 
 		for (auto &funcList: _systems.getRenders(renderRequest.requestType))
-			executePass(ctx, funcList);
+			executePass(execCtx, funcList);
 
 		for (auto &level: DrawQueue::flush()) {
 			for (auto &pass: level.second) {
-				if (auto renderer = RenderPass(*_device, ctx, _imagePool.get(),
+				if (auto renderer = RenderPass(*_device, execCtx, _imagePool.get(),
 										pass.dep)
 									.beginPass()) {
-					_frame.writeGlobalData(renderer.frameContext());
+					_frame.writeGlobalData(renderer.executionContext());
 					for (auto &drawCommand: pass.draws)
 						drawCommand.submit();
 				}
@@ -174,21 +174,21 @@ void	Engine::renderTick(Window *window, FrameContext &ctx) {
 		}
 	}
 
-	swapImage->transitionLayout(ctx.commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-	Read::Queue::execute(ctx.commandBuffer);
+	swapImage->transitionLayout(execCtx.commandBuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	Read::Queue::execute(execCtx.commandBuffer);
 
-	vkEndCommandBuffer(ctx.commandBuffer);
+	vkEndCommandBuffer(execCtx.commandBuffer);
 
-	swapchain.submitCommandBuffer(ctx.commandBuffer, ctx.swapIndex, ctx.frameIndex);
-	swapchain.present(*window, ctx.swapIndex);
+	swapchain.submitCommandBuffer(execCtx.commandBuffer, execCtx.swapIndex, execCtx.frameIndex);
+	swapchain.present(*window, execCtx.swapIndex);
 }
 
-void	Engine::executePass(FrameContext &ctx, const SystemManager::EntryVec &funcs) {
+void	Engine::executePass(ExecutionContext &ctx, const SystemManager::EntryVec &funcs) {
 	if (funcs.empty())
 		return ;
 	if (auto renderer = RenderPass(*_device, ctx, _imagePool.get(), funcs)
 						.beginPass()) {
-		_frame.writeGlobalData(renderer.frameContext());
+		_frame.writeGlobalData(renderer.executionContext());
 		for (auto &func: funcs)
 			func->execute(renderer);
 	}

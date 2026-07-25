@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 19:18:00                                        */
+/*  Last Modified: 2026/07/25 17:32:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,7 +29,7 @@ expected<void>	SceneViewport::onInit(void) {
 	return {};
 }
 
-void	SceneViewport::render(const FrameContext &ctx, const ImVec2 &) {
+void	SceneViewport::render(const ExecutionContext &ctx, const ImVec2 &) {
 	if (!mainRequest)
 		return ;
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:14:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 19:14:19                                        */
+/*  Last Modified: 2026/07/25 17:31:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -89,7 +89,7 @@ void	BaseController::handleMouseMove(Entity::id handle) {
 	transform->rotation = glm::normalize(qYaw * qPitch * transform->rotation);
 }
 
-void	BaseController::handleInput(const FrameContext &ctx) {
+void	BaseController::handleInput(const ExecutionContext &ctx) {
 	if (!_inputState->isFocused())	{ return ; }
 
 	Entity::id	handle = EntityReference::getReferenced();

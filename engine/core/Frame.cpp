@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:35 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 11:19:01                                        */
+/*  Last Modified: 2026/07/25 17:22:16                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -232,7 +232,7 @@ expected<void>	Frame::validateGlobalSet(void) {
 	return {};
 }
 
-void	Frame::fillContext(FrameContext &context, Window *window) {
+void	Frame::fillContext(ExecutionContext &context, Window *window) {
 	auto	frameIndex = context.frameIndex;
 	context.window = window;
 	context.commandBuffer = _commandBuffers[frameIndex];
@@ -243,7 +243,7 @@ void	Frame::fillContext(FrameContext &context, Window *window) {
 	context.frameIndex = frameIndex;
 }
 
-void	Frame::writeGlobalData(FrameContext &ctx) {
+void	Frame::writeGlobalData(ExecutionContext &ctx) {
 	for (auto &[key, write]: ctx.globals->list({}))
 		writeToUBO(write.data.get(), write.bindingIndex,
 					ctx.passIndex, ctx.frameIndex);

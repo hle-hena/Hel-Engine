@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 16:52:09                                        */
+/*  Last Modified: 2026/07/25 17:30:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,7 +29,6 @@ namespace	hel {
 class	Device;
 class	Registry;
 class	ImagePool;
-struct	FrameContext;
 struct	DrawCall;
 class	Renderer;
 class	InputState;
@@ -49,7 +48,7 @@ class	ISystem {
 		virtual void	init(Device *device, Registry *registry,
 							ImagePool *imagePool, InputState *input) final;
 
-		using UpdateFn = void (ISystem::*)(const FrameContext &);
+		using UpdateFn = void (ISystem::*)(const ExecutionContext &);
 		using RenderFn = void (ISystem::*)(const Renderer &);
 		std::unordered_map<std::string_view, CycleEntry>	updateCycleDep;
 		std::unordered_map<std::string_view, CycleEntry>	renderCycleDep;
@@ -59,7 +58,7 @@ class	ISystem {
 
 		template <typename T>
 		CycleEntry	*addUpdateDep(std::string_view depName,
-							void (T::*fn)(const FrameContext&)) {
+							void (T::*fn)(const ExecutionContext&)) {
 			auto	[it, _] = updateCycleDep.emplace(depName,
 								CycleEntry(this, static_cast<UpdateFn>(fn)));
 			return &it->second;

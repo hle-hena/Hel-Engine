@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 15:34:46                                        */
+/*  Last Modified: 2026/07/25 17:34:05                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -93,7 +93,7 @@ bool	UI::loadFromFile(const std::string &path) {
 	return (true);
 }
 
-void	UI::addDock(const FrameContext &ctx, const ImVec2 &size) {
+void	UI::addDock(const ExecutionContext &ctx, const ImVec2 &size) {
 	ImGuiWindowFlags	hostFlags =
 		ImGuiWindowFlags_NoTitleBar				|
 		ImGuiWindowFlags_NoCollapse				|
@@ -129,7 +129,7 @@ void	UI::addDock(const FrameContext &ctx, const ImVec2 &size) {
 	ImGui::PopStyleVar(2);
 }
 
-void	UI::updateUI(const FrameContext &ctx) {
+void	UI::updateUI(const ExecutionContext &ctx) {
 	auto	windowExtent = ctx.window->getExtent();
 	float	windowWidth = static_cast<float>(windowExtent.width);
 	float	windowHeight = static_cast<float>(windowExtent.height);
@@ -144,7 +144,7 @@ void	UI::updateUI(const FrameContext &ctx) {
 }
 
 void	UI::render(const Renderer &renderer) {
-	auto	ctx = renderer.frameContext();
+	auto	ctx = renderer.executionContext();
 	UiContext::renderFrame(ctx.commandBuffer);
 }
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 19:09:38                                        */
+/*  Last Modified: 2026/07/25 17:31:58                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,7 +27,7 @@ class	Selection : public ISystem {
 
 		void	init(void) override;
 
-		void	update(const FrameContext &ctx);
+		void	update(const ExecutionContext &ctx);
 		void	postProcessing(const Renderer &renderer);
 		void	renderInteraction(const Renderer &renderer);
 

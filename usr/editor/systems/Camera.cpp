@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 12:41:19                                        */
+/*  Last Modified: 2026/07/25 17:33:27                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -115,7 +115,7 @@ void	Camera::configureSpritePipeline(PipelineConfig &config) {
 	Pipeline::setBlendAttachment(config, 1, attachment);
 }
 
-void	Camera::update(const FrameContext &) {
+void	Camera::update(const ExecutionContext &) {
 	auto	entities = _registry->view<include<comp::Transform, comp::Camera>>();
 
 	for (auto entity: entities) {
@@ -135,7 +135,7 @@ void	Camera::update(const FrameContext &) {
 }
 
 void	Camera::renderInteraction(const Renderer &renderer) {
-	auto	&ctx = renderer.frameContext();
+	auto	&ctx = renderer.executionContext();
 	auto	selfHandle = ctx.request->handle;
 	auto	selfCam = _registry->getComponent<comp::Camera>(selfHandle);
 	auto	selfTransform = _registry->getComponent<comp::Transform>(selfHandle);

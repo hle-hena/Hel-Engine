@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 19:06:03                                        */
+/*  Last Modified: 2026/07/25 17:33:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -96,7 +96,7 @@ void	Selection::configurePipeline(PipelineConfig &config) {
 	Pipeline::setBlendAttachment(config, 0, attachment);
 }
 
-void	Selection::update(const FrameContext &ctx) {
+void	Selection::update(const ExecutionContext &ctx) {
 	std::erase_if(_requests, [&](auto &item){
 		auto	&[key, req] = item;
 		if (req.frameIndex == ctx.frameIndex) {
@@ -124,7 +124,7 @@ void	Selection::update(const FrameContext &ctx) {
 }
 
 void	Selection::renderInteraction(const Renderer &renderer) {
-	auto	ctx = renderer.frameContext();
+	auto	ctx = renderer.executionContext();
 	if (!_inputState->isPressed<input::Mouse>(0))
 		return ;
 	auto	camera = _registry->getComponent<comp::Camera>(ctx.request->handle);

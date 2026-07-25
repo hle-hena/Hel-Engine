@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:48 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 17:07:39                                        */
+/*  Last Modified: 2026/07/25 17:19:31                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,7 +20,6 @@
 #include "utils/str_utils.hpp"
 
 #include "core/scheduler/PhaseDependency.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-#include "core/Frame.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 #include "core/scheduler/RenderQueue.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 #include "core/scheduler/CycleEntry.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
@@ -30,7 +29,7 @@ namespace	hel {
 
 uint32_t	RenderPass::_passIndex = 0;
 
-RenderPass::RenderPass(Device &device, FrameContext &ctx, ImagePool *imagePool,
+RenderPass::RenderPass(Device &device, ExecutionContext &ctx, ImagePool *imagePool,
 			const std::vector<sys::CycleEntry *> &funcs)
 	:	_device{device},
 		_ctx{ctx},
@@ -45,7 +44,7 @@ RenderPass::RenderPass(Device &device, FrameContext &ctx, ImagePool *imagePool,
 	}
 }
 
-RenderPass::RenderPass(Device &device, FrameContext &ctx, ImagePool *imagePool,
+RenderPass::RenderPass(Device &device, ExecutionContext &ctx, ImagePool *imagePool,
 	PhaseDependencies deps)
 	:	_device{device},
 		_ctx{ctx},

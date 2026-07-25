@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: SceneViewport.hpp                                                   */
+/*  File: ExecutionContext.hpp                                                */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/03/09 11:38:39 by hle-hena                                  */
+/*  Created: 2026/07/25 17:04:20 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/25 17:32:26                                        */
+/*  Last Modified: 2026/07/25 17:09:02                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,37 +16,38 @@
 
 #pragma once
 
-#include <ui/ImGui/imgui.h>
-#include <string>
+#include <cstdint>
+#include <vulkan/vulkan.h>
 
-#include "systems/ui/Panel.hpp"
-#include "core/ecs/Entity.hpp"
+#include "rhi/window/Window.hpp"
+#include "rhi/resources/Descriptors.hpp"
 
 namespace	hel {
 
-class	Window;
+struct	GlobalData;
 struct	RenderRequest;
 
-}
+struct	ExecutionContext {
+	ExecutionContext(uint32_t frameIndex, GlobalData *globalData)
+		:	globals(globalData) {
+		this->frameIndex = frameIndex;
+	};
 
-namespace	hel::sys {
+	Window					*window{nullptr};
+	RenderRequest			*request{nullptr};
 
-class	SceneViewport : public Panel<SceneViewport> {
-	public:
-		static constexpr const char	*label = "Viewport";
-		SceneViewport(void) = default;
-		~SceneViewport(void) = default;
+	VkCommandBuffer			commandBuffer{VK_NULL_HANDLE};
 
-		expected<void>	onInit(void) override;
+	GlobalData				*globals;
+	VkDescriptorSet			globalSet{VK_NULL_HANDLE};
+	uint32_t				setStride{0};
+	VkDescriptorSetLayout	globalLayout{VK_NULL_HANDLE};
 
-		void	render(const ExecutionContext &ctx, const ImVec2 &size) override;
+	DescriptorPool			*descriptorPool{nullptr};
 
-		RenderRequest	*mainRequest{nullptr};
-
-	private:
-		bool		_captured;
-		Entity::id	_handle{Entity::NOT_REGISTERED};
-		std::string	_showImage{"Color Image"};
+	uint32_t				passIndex{0};
+	uint32_t				frameIndex{0};
+	uint32_t				swapIndex{0};
 };
 
 }
