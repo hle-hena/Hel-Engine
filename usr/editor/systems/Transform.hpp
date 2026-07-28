@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/25 17:32:12                                        */
+/*  Last Modified: 2026/07/28 19:16:32                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -114,7 +114,7 @@ class	Transform : public ISystem {
 		PipelineMap				*_simplePipeline;
 		PipelineMap				*_NDCPipeline;
 
-		std::unordered_map<RenderRequest, GizmoContext, RenderRequest::Hasher>	_gizmoContexts;
+		std::unordered_map<RenderRequest, GizmoContext>	_gizmoContexts;
 
 	friend struct	GizmoContext;
 	friend struct	GizmoContext::EntityFactory;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/25 17:33:40                                        */
+/*  Last Modified: 2026/07/28 19:46:37                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -127,19 +127,21 @@ void	Selection::renderInteraction(const Renderer &renderer) {
 	auto	ctx = renderer.executionContext();
 	if (!_inputState->isPressed<input::Mouse>(0))
 		return ;
-	auto	camera = _registry->getComponent<comp::Camera>(ctx.request->handle);
-	auto	transform = _registry->getComponent<comp::Transform>(ctx.request->handle);
+	auto	handle = *ctx.request->tag<Entity::id>();
+	auto	camera = _registry->getComponent<comp::Camera>(handle);
+	auto	transform = _registry->getComponent<comp::Transform>(handle);
 	if (!camera || !transform)
 		return ;
-	glm::vec2	viewportOrigin(ctx.request->origin.x, ctx.request->origin.y);
-	VkExtent2D	imgExtent = ctx.request->images["mainColor"]->getExtent2D();
-	glm::vec2	viewportSize(imgExtent.width, imgExtent.height);
+	VkExtent2D	renderOrigin = ctx.request->origin_v();
+	glm::vec2	viewportOrigin(renderOrigin.width, renderOrigin.height);
+	VkExtent2D	renderExtent = ctx.request->extent_v();
+	glm::vec2	viewportSize(renderExtent.width, renderExtent.height);
 	auto	pos = glm::vec2(_inputState->getMousePos() - viewportOrigin);
 	glm::vec4	viewport(viewportOrigin, viewportSize);
 	if (pos.x < 0 || pos.y < 0 || pos.x > viewportSize.x || pos.y > viewportSize.y)
 		return ;
 
-	auto	entityImg = ctx.request->images["entity layer"];
+	auto	entityImg = ctx.request->image("entity layer");
 	if (!entityImg)
 		return ;
 

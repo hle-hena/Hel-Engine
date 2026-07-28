@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:48 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/25 17:19:31                                        */
+/*  Last Modified: 2026/07/28 18:46:25                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,7 +20,6 @@
 #include "utils/str_utils.hpp"
 
 #include "core/scheduler/PhaseDependency.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-#include "core/scheduler/RenderQueue.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 #include "core/scheduler/CycleEntry.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 #include <iostream>
@@ -35,7 +34,7 @@ RenderPass::RenderPass(Device &device, ExecutionContext &ctx, ImagePool *imagePo
 		_ctx{ctx},
 		_req{ctx.request},
 		_commandBuffer{ctx.commandBuffer},
-		_extent{ctx.request->images["mainColor"]->getExtent2D()} {
+		_extent(ctx.request->extent_v()) {
 	for (auto &func: funcs) {
 		for (auto &dep: func->getDep()->write)
 			_invalidDep |= addWrite(dep, imagePool);
@@ -50,7 +49,7 @@ RenderPass::RenderPass(Device &device, ExecutionContext &ctx, ImagePool *imagePo
 		_ctx{ctx},
 		_req{ctx.request},
 		_commandBuffer{ctx.commandBuffer},
-		_extent{ctx.request->images["mainColor"]->getExtent2D()} {
+		_extent{ctx.request->extent_v()} {
 	for (auto &dep: deps.write)
 		_invalidDep |= addWrite(dep, imagePool);
 	for (auto &dep: deps.read)
@@ -77,11 +76,11 @@ bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
 		return false;
 
 	Ref<Image>	img = nullptr;
-	if (_req->images.contains(dep._imageName))
-		img = _req->images[dep._imageName];
+	if (_req->_images.contains(dep._imageName))
+		img = _req->_images[dep._imageName];
 	else if (dep._config.has_value()) {
 		img = imagePool->acquire(_ctx.frameIndex, dep._config.value());
-		_req->images[dep._imageName] = img;
+		_req->_images[dep._imageName] = img;
 	} else {
 		std::cerr << "Error for image \"" << dep._imageName << "\". Image"
 			<< " doesn't exists, and no config has "
@@ -140,7 +139,7 @@ void	RenderPass::addWriteImage(Image *img, ImageDep &dep){
 
 bool	RenderPass::addRead(const std::string_view &readName) {
 	bool	notFound = true;
-	for (auto &[imageName, image]: _req->images) {
+	for (auto &[imageName, image]: _req->_images) {
 		if (match(readName, imageName)) {
 			if (_reads.contains(imageName))
 				continue ;

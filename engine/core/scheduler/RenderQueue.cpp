@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/05 18:26:37 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 14:37:21                                        */
+/*  Last Modified: 2026/07/28 18:37:08                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,50 +15,18 @@
 /* *************************************************************************  */
 
 #include "core/scheduler/RenderQueue.hpp"
-#include "utils/mathUtils.hpp"
-#include "rhi/resources/Image.hpp"
+#include "rhi/render/RenderRequest.hpp"
 
 namespace	hel {
 
 std::vector<RenderRequest>	RenderQueue::_requests = {};
 
-bool	RenderRequest::operator==(const RenderRequest &other) const {
-	bool	sameHandle = (other.handle == this->handle);
-	bool	sameOrigin = (other.origin.x == this->origin.x &&
-						other.origin.y == this->origin.y);
-
-	auto	compImages = [&](const Ref<Image> l, const Ref<Image> r) -> bool {
-		bool	sameSize = (l->getExtent().width == r->getExtent().width &&
-							l->getExtent().height == r->getExtent().height);
-		return (sameSize);
-	};
-	bool	sameImages = false;
-	if (this->images.size() == other.images.size()) {
-		sameImages = std::equal(
-			this->images.begin(),
-			this->images.end(),
-			other.images.begin(),
-			[&](const auto &l, const auto &r){
-				return (compImages(l.second, r.second));
-			}
-		);
-	} else
-		sameImages = false;
-
-	return (sameHandle && sameOrigin && sameImages);
+void	RenderQueue::push(RenderRequest &&request) {
+	_requests.push_back(std::move(request));
 }
 
-size_t	RenderRequest::Hasher::operator()(const RenderRequest &request) const {
-	size_t	seed = 0;
-	hel::mathUtils::hashCombine(seed, request.handle, request.origin.x, request.origin.y);
-	auto	hashImage = [&](size_t &seed, Ref<Image> img){
-		auto	extent = img->getExtent();
-		hel::mathUtils::hashCombine(seed, extent.width, extent.height);
-	};
-	for (auto it = request.images.begin();
-		it != request.images.end(); it++)
-		hashImage(seed, it->second);
-	return (seed);
+std::vector<RenderRequest>	RenderQueue::flush(void) {
+	return (std::move(_requests));
 }
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/25 17:32:31                                        */
+/*  Last Modified: 2026/07/28 19:28:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -61,7 +61,7 @@ class	UI : public ISystem {
 		std::optional<ImVec2>	_lastSize;
 
 		std::vector<std::unique_ptr<IPanel>>	_panels;
-		RenderRequest							_request;
+		std::optional<RenderRequest::Builder>	_request;
 
 		std::vector<std::pair<
 			std::string, PanelFactory>>			_panelRegistry;

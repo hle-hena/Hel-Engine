@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/25 17:24:58                                        */
+/*  Last Modified: 2026/07/28 18:39:30                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,7 +35,6 @@ namespace	hel {
 class	Window;
 class	DescriptorPool;
 class	DescriptorWriter;
-struct	RenderRequest;
 struct	DescriptorSet;
 
 struct	GlobalData {

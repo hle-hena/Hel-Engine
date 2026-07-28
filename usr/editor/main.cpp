@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/09 17:10:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/25 17:31:51                                        */
+/*  Last Modified: 2026/07/28 19:52:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -76,11 +76,11 @@ GlobalSetBindings	defineGlobalSet(void) {
 }
 
 void	updateGlobalData(Registry *registry, ExecutionContext &ctx) {
-	auto	handle = ctx.request->handle;
+	auto	handle = *ctx.request->tag<Entity::id>();
 	auto	data = ctx.globals->get<GlobalUBO>("main UBO");
 	data->viewProjection = glm::mat4{1.f};
 	if (auto camera = registry->getComponent<comp::Camera>(handle)) {
-		auto	extent = ctx.request->images["mainColor"]->getExtent();
+		auto	extent = ctx.request->extent_v();
 		float	aspect = static_cast<float>(extent.width) /
 						static_cast<float>(extent.height);
 		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), aspect, camera->near, camera->far);

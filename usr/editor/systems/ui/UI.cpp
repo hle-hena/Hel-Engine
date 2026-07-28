@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:43 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/25 17:34:05                                        */
+/*  Last Modified: 2026/07/28 19:29:22                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -119,11 +119,11 @@ void	UI::addDock(const ExecutionContext &ctx, const ImVec2 &size) {
 		_lastSize = size;
 	if (size.x > 0.f && size.y > 0.f &&
 			((*_lastSize).x != size.x || (*_lastSize).y != size.y)) {
-		_dock->render(&_request, ctx, size, {size.x / (*_lastSize).x, size.y / (*_lastSize).y});
+		_dock->render(&*_request, ctx, size, {size.x / (*_lastSize).x, size.y / (*_lastSize).y});
 		_lastSize = size;
 	}
 	else
-		_dock->render(&_request, ctx, size);
+		_dock->render(&*_request, ctx, size);
 	ImGui::End();
 
 	ImGui::PopStyleVar(2);
@@ -134,13 +134,15 @@ void	UI::updateUI(const ExecutionContext &ctx) {
 	float	windowWidth = static_cast<float>(windowExtent.width);
 	float	windowHeight = static_cast<float>(windowExtent.height);
 
-	_request.requestType = "RenderUI";
-	_request.handle = Entity::NOT_REGISTERED;
-	_request.origin = {0, 0};
-	_request.images = {{"mainColor", ctx.window->getSwapchain()
-									.getSwapImage(ctx.swapIndex)}};
+	_request = RenderRequest::Builder("RenderUI", windowWidth, windowHeight)
+				.origin(0, 0)
+				.tag(Entity::NOT_REGISTERED)
+				.addImage("mainColor", ctx.window->getSwapchain()
+					.getSwapImage(ctx.swapIndex));
+
 	addDock(ctx, {windowWidth, windowHeight});
-	RenderQueue::push(_request);
+	RenderQueue::push(std::move(*_request).build());
+	_request.reset();
 }
 
 void	UI::render(const Renderer &renderer) {

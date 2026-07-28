@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/25 17:31:58                                        */
+/*  Last Modified: 2026/07/28 18:46:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -49,7 +49,7 @@ class	Selection : public ISystem {
 		static Entity::id					_selectedEntity;
 		static std::optional<Entity::id>	_newSelected;
 
-		std::unordered_map<RenderRequest, Read::Context, RenderRequest::Hasher>	_requests;
+		std::unordered_map<RenderRequest, Read::Context>	_requests;
 };
 
 }

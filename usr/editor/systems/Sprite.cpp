@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/04/16 18:25:21 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/25 17:33:43                                        */
+/*  Last Modified: 2026/07/28 19:46:42                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -89,7 +89,7 @@ void	Sprite::configurePipeline(PipelineConfig &config) {
 void	Sprite::render(const Renderer &renderer) {
 	auto	ctx = renderer.executionContext();
 
-	auto	renderHandle = ctx.request->handle;
+	auto	renderHandle = *ctx.request->tag<Entity::id>();
 	auto	renderCam = _registry->getComponent<comp::Camera>(renderHandle);
 	auto	renderTransform = _registry->getComponent<comp::Transform>(renderHandle);
 	if (!renderCam || !renderTransform)

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/15 17:42:18 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 17:07:47                                        */
+/*  Last Modified: 2026/07/28 14:09:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -19,6 +19,8 @@
 #include <string_view>
 #include <vector>
 #include <fstream>
+#include <memory>
+#include <cxxabi.h>
 
 namespace	hel {
 
@@ -86,6 +88,16 @@ inline bool	matchPath(std::string_view pattern, std::string_view string) {
 	while (p < pattern.size() && pattern[p] == '*')
 		p++;
 	return p == pattern.size();
+}
+
+inline std::string	getTypeName(const char *mangledName) {
+	int	status = 0;
+	std::unique_ptr<char, void(*)(void*)> res {
+		abi::__cxa_demangle(mangledName, nullptr, nullptr, &status),
+		std::free
+	};
+
+	return (status == 0) ? res.get() : mangledName;
 }
 
 }

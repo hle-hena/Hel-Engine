@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:27 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/25 17:15:37                                        */
+/*  Last Modified: 2026/07/28 18:40:57                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,6 +24,7 @@
 #include <optional>
 
 #include "rhi/render/PipelineMap.hpp"
+#include "rhi/render/RenderRequest.hpp"
 #include "rhi/render/ExecutionContext.hpp"
 
 namespace	hel::sys {
@@ -39,7 +40,6 @@ class	Device;
 class	Renderer;
 class	ImagePool;
 struct	ImageDep;
-struct	RenderRequest;
 struct	PhaseDependencies;
 
 class	RenderPass {

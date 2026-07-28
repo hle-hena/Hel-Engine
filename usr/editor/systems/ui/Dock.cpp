@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:31:03 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/25 17:32:17                                        */
+/*  Last Modified: 2026/07/28 19:06:03                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -151,7 +151,7 @@ void	Dock::merge(void) {
 	}
 }
 
-void	Dock::render(RenderRequest *uiRequest, const ExecutionContext &ctx,
+void	Dock::render(RenderRequest::Builder *uiRequest, const ExecutionContext &ctx,
 					const ImVec2 &size, const ImVec2 &rescale)
 {
 	if (_type == Type::Split &&
@@ -172,7 +172,7 @@ void	Dock::render(RenderRequest *uiRequest, const ExecutionContext &ctx,
 	}
 }
 
-void	Dock::renderSplits(RenderRequest *uiRequest, const ExecutionContext &ctx, const ImVec2 &size, const ImVec2 &rescale) {
+void	Dock::renderSplits(RenderRequest::Builder *uiRequest, const ExecutionContext &ctx, const ImVec2 &size, const ImVec2 &rescale) {
 	ImVec2	origin = ImGui::GetCursorScreenPos();
 	bool	isVertical = (_splitDir == Splitter::Dir::Right);
 
@@ -297,7 +297,7 @@ void	Dock::newPanelPopup(void) {
 	ImGui::PopStyleVar();
 }
 
-void	Dock::renderPanels(RenderRequest *uiRequest, const ExecutionContext &ctx,
+void	Dock::renderPanels(RenderRequest::Builder *uiRequest, const ExecutionContext &ctx,
 						const ImVec2 &)
 {
 	auto	prev = ImGui::GetStyle().ItemInnerSpacing;

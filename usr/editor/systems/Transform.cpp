@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/25 17:33:58                                        */
+/*  Last Modified: 2026/07/28 19:46:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -304,16 +304,15 @@ void	Transform::renderUI(const Renderer &renderer, GizmoContext &gizmo) {
 
 void	Transform::renderInteraction(const Renderer &renderer) {
 	auto	ctx = renderer.executionContext();
+	auto	renderedHandle = *ctx.request->tag<Entity::id>();
 	if (Selection::getSelected() == Entity::NOT_REGISTERED
-		|| !_registry->isValidHandle(ctx.request->handle))
+		|| !_registry->isValidHandle(renderedHandle))
 		return	;
-	auto	[it, inserted] = _gizmoContexts.try_emplace(*renderer.executionContext().request,
-								this,
-								renderer.executionContext().window,
-								renderer.executionContext().request->handle);
+	auto	[it, inserted] = _gizmoContexts.try_emplace(*ctx.request, this,
+								ctx.window, renderedHandle);
 	auto	&gizmo = it->second;
 
-	if (!gizmo || it->first.handle != Selection::getSelected())
+	if (!gizmo || *it->first.tag<Entity::id>() != Selection::getSelected())
 		gizmo.initAction();
 	if (!gizmo)
 		return ;
@@ -325,14 +324,16 @@ void	Transform::renderInteraction(const Renderer &renderer) {
 }
 
 void	Transform::registerClick(const ExecutionContext &ctx, GizmoContext &gizmo) {
-	auto	entityImg = ctx.request->images["entity layer"];
-	auto	camera = _registry->getComponent<comp::Camera>(ctx.request->handle);
-	auto	transform = _registry->getComponent<comp::Transform>(ctx.request->handle);
+	auto	renderedHandle = *ctx.request->tag<Entity::id>();
+	auto	entityImg = ctx.request->image("entity layer");
+	auto	camera = _registry->getComponent<comp::Camera>(renderedHandle);
+	auto	transform = _registry->getComponent<comp::Transform>(renderedHandle);
 	if (!_inputState->isPressed<input::Mouse>(0) || !entityImg || !camera || !transform)
 		return ;
-	glm::vec2	viewportOrigin(ctx.request->origin.x, ctx.request->origin.y);
-	VkExtent2D	imgExtent = ctx.request->images["mainColor"]->getExtent2D();
-	glm::vec2	viewportSize(imgExtent.width, imgExtent.height);
+	VkExtent2D	renderOrigin = ctx.request->origin_v();
+	glm::vec2	viewportOrigin(renderOrigin.width, renderOrigin.height);
+	VkExtent2D	renderExtent = ctx.request->extent_v();
+	glm::vec2	viewportSize(renderExtent.width, renderExtent.height);
 	auto	pos = glm::vec2(_inputState->getMousePos() - viewportOrigin);
 	if (pos.x < 0 || pos.y < 0 || pos.x > viewportSize.x || pos.y > viewportSize.y)
 		return ;
@@ -395,26 +396,27 @@ void	Transform::GizmoContext::freeHandles(void) {
 
 bool Transform::GizmoContext::teleportMouse(const ExecutionContext &ctx) {
 	bool		changed = false;
-	glm::vec2	renderOrigin = {ctx.request->origin.x, ctx.request->origin.y};
-	auto		imgExtent = ctx.request->images["mainColor"]->getExtent();
-	glm::vec2	renderExtent = {imgExtent.width, imgExtent.height};
-	auto		mousePos = _baseSystem->_inputState->getMousePos() - renderOrigin;
+	VkExtent2D	renderOrigin = ctx.request->origin_v();
+	glm::vec2	viewportOrigin(renderOrigin.width, renderOrigin.height);
+	VkExtent2D	renderExtent = ctx.request->extent_v();
+	glm::vec2	viewportSize(renderExtent.width, renderExtent.height);
+	auto		mousePos = _baseSystem->_inputState->getMousePos() - viewportOrigin;
 	float		padding = 3.f;
 	glm::vec2	newPos = mousePos;
 
 	if (mousePos.x <= 0)
-		newPos.x = renderExtent.x - padding;
-	else if (mousePos.x >= renderExtent.x)
+		newPos.x = viewportSize.x - padding;
+	else if (mousePos.x >= viewportSize.x)
 		newPos.x = padding;
 
 	if (mousePos.y <= 0)
-		newPos.y = renderExtent.y - padding;
-	else if (mousePos.y >= renderExtent.y)
+		newPos.y = viewportSize.y - padding;
+	else if (mousePos.y >= viewportSize.y)
 		newPos.y = padding;
 
 	if (newPos != mousePos) {
 		changed = true;
-		newPos += renderOrigin;
+		newPos += viewportOrigin;
 		glfwSetCursorPos(ctx.window->getWindow(), newPos.x, newPos.y);
 		_baseSystem->_inputState->resetMousePos(newPos);
 	}
@@ -531,15 +533,17 @@ void	Transform::GizmoContext::dragRotate(const ExecutionContext &ctx) {
 	if (_startDrag) {
 		initialRot = focusedTransform->rotation;
 		initialMousePos = _baseSystem->_inputState->getMousePos();
-		auto		renderExtent = ctx.request->images["mainColor"]->getExtent();
-		glm::vec2	renderSize  = {renderExtent.width, renderExtent.height};
-		glm::vec2	renderOrigin = {ctx.request->origin.x, ctx.request->origin.y};
+
+		VkExtent2D	renderOrigin = ctx.request->origin_v();
+		glm::vec2	viewportOrigin(renderOrigin.width, renderOrigin.height);
+		VkExtent2D	renderExtent = ctx.request->extent_v();
+		glm::vec2	viewportSize(renderExtent.width, renderExtent.height);
 
 		GlobalUBO	*data = ctx.globals->get<GlobalUBO>("main UBO");
 		glm::vec4	clip = data->viewProjection * glm::vec4(focusedTransform->position, 1.0f);
 		glm::vec2	screenSpaceRotationCenter  = (glm::vec2(clip) / clip.w) * 0.5f + 0.5f;
 
-		rotationCenter = renderOrigin + screenSpaceRotationCenter * renderSize;
+		rotationCenter = viewportOrigin + screenSpaceRotationCenter * viewportSize;
 		_startDrag = false;
 	}
 	int	axisIndex = 0;

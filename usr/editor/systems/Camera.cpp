@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 15:31:50 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/25 17:33:27                                        */
+/*  Last Modified: 2026/07/28 19:46:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -136,7 +136,7 @@ void	Camera::update(const ExecutionContext &) {
 
 void	Camera::renderInteraction(const Renderer &renderer) {
 	auto	&ctx = renderer.executionContext();
-	auto	selfHandle = ctx.request->handle;
+	auto	selfHandle = *ctx.request->tag<Entity::id>();
 	auto	selfCam = _registry->getComponent<comp::Camera>(selfHandle);
 	auto	selfTransform = _registry->getComponent<comp::Transform>(selfHandle);
 	if (!selfCam || !selfTransform)

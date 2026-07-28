@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:39:01 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/25 17:24:39                                        */
+/*  Last Modified: 2026/07/28 18:45:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,6 +30,7 @@
 #include "rhi/render/Renderer.hpp"
 #include "rhi/window/GLFW.hpp"
 #include "rhi/resources/Sampler.hpp"
+#include "rhi/render/RenderRequest.hpp"
 
 namespace	hel {
 
@@ -158,7 +159,7 @@ void	Engine::renderTick(Window *window, ExecutionContext &execCtx) {
 		execCtx.request = &renderRequest;
 		_config.updateGlobalData(&_registry, execCtx);
 
-		for (auto &funcList: _systems.getRenders(renderRequest.requestType))
+		for (auto &funcList: _systems.getRenders(renderRequest.requestType_v()))
 			executePass(execCtx, funcList);
 
 		for (auto &level: DrawQueue::flush()) {
