@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 10:54:23 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 12:41:25                                        */
+/*  Last Modified: 2026/07/28 19:46:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "systems/Transform.hpp"
+#include "systems/Selection.hpp"
 #include "components/Camera.hpp"
 #include "assetType/Geometry.hpp"
 #include "assetType/Texture.hpp"
@@ -143,7 +144,7 @@ void	Transform::configureNDCPipeline(PipelineConfig &config) {
 	Pipeline::setBlendAttachment(config, 1, attachment);
 }
 
-void	Transform::update(const FrameContext &) {
+void	Transform::update(const ExecutionContext &) {
 	auto	entities = _registry->view<include<comp::Transform>>();
 
 	for (auto entity: entities) {
@@ -160,7 +161,7 @@ void	Transform::update(const FrameContext &) {
 	}
 }
 
-void	Transform::gizmoAction(const FrameContext &ctx) {
+void	Transform::gizmoAction(const ExecutionContext &ctx) {
 	std::erase_if(_gizmoContexts, [&](auto &gizmoIt){
 		auto	&[key, gizmo] = gizmoIt;
 		if (--gizmo._life == 0)
@@ -211,7 +212,7 @@ void	Transform::updateEntity(Entity::id handle) {
 void	Transform::renderGizmo(const Renderer &renderer, GizmoContext &gizmo) {
 	if (!gizmo)	{ return ; }
 	gizmo._life++;
-	auto	focusedTransform = _registry->getComponent<comp::Transform>(gizmo._window->getEntityFocus());
+	auto	focusedTransform = _registry->getComponent<comp::Transform>(Selection::getSelected());
 	auto	requestTransform = _registry->getComponent<comp::Transform>(gizmo._requestHandle);
 	if (!focusedTransform || !requestTransform)	{ return ; }
 
@@ -229,7 +230,7 @@ void	Transform::renderGizmo(const Renderer &renderer, GizmoContext &gizmo) {
 		}
 	}
 
-	auto	ctx = renderer.frameContext();
+	auto	ctx = renderer.executionContext();
 	auto	set = _registry->buildComponentSet<comp::Transform, comp::Tint>(*_device, ctx.descriptorPool);
 	if (!set)
 		return ;
@@ -266,7 +267,7 @@ void	Transform::renderUI(const Renderer &renderer, GizmoContext &gizmo) {
 		rotateTint->tint = (gizmo.action == Action::Rotate ? activeCol : nonActiveCol);
 	}
 
-	auto	ctx = renderer.frameContext();
+	auto	ctx = renderer.executionContext();
 	auto	SSBO_d = _registry->buildComponentSet<comp::Transform, comp::Tint>(*_device, ctx.descriptorPool);
 	if (!SSBO_d)
 		return ;
@@ -302,17 +303,16 @@ void	Transform::renderUI(const Renderer &renderer, GizmoContext &gizmo) {
 }
 
 void	Transform::renderInteraction(const Renderer &renderer) {
-	auto	ctx = renderer.frameContext();
-	if (ctx.window->getEntityFocus() == Entity::NOT_REGISTERED
-		|| !_registry->isValidHandle(ctx.request->handle))
+	auto	ctx = renderer.executionContext();
+	auto	renderedHandle = *ctx.request->tag<Entity::id>();
+	if (Selection::getSelected() == Entity::NOT_REGISTERED
+		|| !_registry->isValidHandle(renderedHandle))
 		return	;
-	auto	[it, inserted] = _gizmoContexts.try_emplace(*renderer.frameContext().request,
-								this,
-								renderer.frameContext().window,
-								renderer.frameContext().request->handle);
+	auto	[it, inserted] = _gizmoContexts.try_emplace(*ctx.request, this,
+								ctx.window, renderedHandle);
 	auto	&gizmo = it->second;
 
-	if (!gizmo || ctx.window->focusChanged())
+	if (!gizmo || *it->first.tag<Entity::id>() != Selection::getSelected())
 		gizmo.initAction();
 	if (!gizmo)
 		return ;
@@ -323,15 +323,17 @@ void	Transform::renderInteraction(const Renderer &renderer) {
 	renderUI(renderer, gizmo);
 }
 
-void	Transform::registerClick(const FrameContext &ctx, GizmoContext &gizmo) {
-	auto	entityImg = ctx.request->images["entity layer"];
-	auto	camera = _registry->getComponent<comp::Camera>(ctx.request->handle);
-	auto	transform = _registry->getComponent<comp::Transform>(ctx.request->handle);
+void	Transform::registerClick(const ExecutionContext &ctx, GizmoContext &gizmo) {
+	auto	renderedHandle = *ctx.request->tag<Entity::id>();
+	auto	entityImg = ctx.request->image("entity layer");
+	auto	camera = _registry->getComponent<comp::Camera>(renderedHandle);
+	auto	transform = _registry->getComponent<comp::Transform>(renderedHandle);
 	if (!_inputState->isPressed<input::Mouse>(0) || !entityImg || !camera || !transform)
 		return ;
-	glm::vec2	viewportOrigin(ctx.request->origin.x, ctx.request->origin.y);
-	VkExtent2D	imgExtent = ctx.request->images["mainColor"]->getExtent2D();
-	glm::vec2	viewportSize(imgExtent.width, imgExtent.height);
+	VkExtent2D	renderOrigin = ctx.request->origin_v();
+	glm::vec2	viewportOrigin(renderOrigin.width, renderOrigin.height);
+	VkExtent2D	renderExtent = ctx.request->extent_v();
+	glm::vec2	viewportSize(renderExtent.width, renderExtent.height);
 	auto	pos = glm::vec2(_inputState->getMousePos() - viewportOrigin);
 	if (pos.x < 0 || pos.y < 0 || pos.x > viewportSize.x || pos.y > viewportSize.y)
 		return ;
@@ -349,7 +351,7 @@ void	Transform::registerClick(const FrameContext &ctx, GizmoContext &gizmo) {
 	gizmo._read = *newRead;
 }
 
-void	Transform::registerDrag(const FrameContext &ctx, GizmoContext &gizmo) {
+void	Transform::registerDrag(const ExecutionContext &ctx, GizmoContext &gizmo) {
 	if (!gizmo._dragName.has_value())
 		return ;
 	if (_inputState->isReleased<input::Mouse>(0)) {
@@ -392,42 +394,43 @@ void	Transform::GizmoContext::freeHandles(void) {
 	handles.clear();
 }
 
-bool Transform::GizmoContext::teleportMouse(const FrameContext &ctx) {
+bool Transform::GizmoContext::teleportMouse(const ExecutionContext &ctx) {
 	bool		changed = false;
-	glm::vec2	renderOrigin = {ctx.request->origin.x, ctx.request->origin.y};
-	auto		imgExtent = ctx.request->images["mainColor"]->getExtent();
-	glm::vec2	renderExtent = {imgExtent.width, imgExtent.height};
-	auto		mousePos = _baseSystem->_inputState->getMousePos() - renderOrigin;
+	VkExtent2D	renderOrigin = ctx.request->origin_v();
+	glm::vec2	viewportOrigin(renderOrigin.width, renderOrigin.height);
+	VkExtent2D	renderExtent = ctx.request->extent_v();
+	glm::vec2	viewportSize(renderExtent.width, renderExtent.height);
+	auto		mousePos = _baseSystem->_inputState->getMousePos() - viewportOrigin;
 	float		padding = 3.f;
 	glm::vec2	newPos = mousePos;
 
 	if (mousePos.x <= 0)
-		newPos.x = renderExtent.x - padding;
-	else if (mousePos.x >= renderExtent.x)
+		newPos.x = viewportSize.x - padding;
+	else if (mousePos.x >= viewportSize.x)
 		newPos.x = padding;
 
 	if (mousePos.y <= 0)
-		newPos.y = renderExtent.y - padding;
-	else if (mousePos.y >= renderExtent.y)
+		newPos.y = viewportSize.y - padding;
+	else if (mousePos.y >= viewportSize.y)
 		newPos.y = padding;
 
 	if (newPos != mousePos) {
 		changed = true;
-		newPos += renderOrigin;
+		newPos += viewportOrigin;
 		glfwSetCursorPos(ctx.window->getWindow(), newPos.x, newPos.y);
 		_baseSystem->_inputState->resetMousePos(newPos);
 	}
 	return (changed);
 }
 
-void	Transform::GizmoContext::dragMove(const FrameContext &ctx) {
+void	Transform::GizmoContext::dragMove(const ExecutionContext &ctx) {
 	if (_startDrag)
 		_startDrag = false;
 	if (teleportMouse(ctx))
 		return ;
 
 	auto	focusedTransform = _registry->getComponent<comp::Transform>
-											(_window->getEntityFocus());
+											(Selection::getSelected());
 	auto	requestTransform = _registry->getComponent<comp::Transform>
 											(_requestHandle);
 	auto	requestCamera = _registry->getComponent<comp::Camera>
@@ -475,16 +478,16 @@ void	Transform::GizmoContext::dragMove(const FrameContext &ctx) {
 	}
 
 	focusedTransform.modify()->position += finalOffset;
-	_baseSystem->updateEntity(_window->getEntityFocus());
+	_baseSystem->updateEntity(Selection::getSelected());
 }
 
-void	Transform::GizmoContext::dragScale(const FrameContext &ctx) {
+void	Transform::GizmoContext::dragScale(const ExecutionContext &ctx) {
 	if (_startDrag)
 		_startDrag = false;
 	if (teleportMouse(ctx))
 		return ;
 
-	auto	focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus());
+	auto	focusedTransform = _registry->getComponent<comp::Transform>(Selection::getSelected());
 	auto	requestTransform = _registry->getComponent<comp::Transform>(_requestHandle);
 	auto	requestCamera = _registry->getComponent<comp::Camera>(_requestHandle);
 
@@ -517,28 +520,30 @@ void	Transform::GizmoContext::dragScale(const FrameContext &ctx) {
 	}
 
 	focusedTransform.modify()->scale += finalOffset;
-	_baseSystem->updateEntity(ctx.window->getEntityFocus());
+	_baseSystem->updateEntity(Selection::getSelected());
 }
 
-void	Transform::GizmoContext::dragRotate(const FrameContext &ctx) {
+void	Transform::GizmoContext::dragRotate(const ExecutionContext &ctx) {
 	static glm::quat	initialRot;
 	static glm::vec2	initialMousePos;
 	static glm::vec2	rotationCenter;
 
-	auto		focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus()).modify();
+	auto		focusedTransform = _registry->getComponent<comp::Transform>(Selection::getSelected()).modify();
 	auto		renderCamera = _registry->getComponent<comp::Camera>(_requestHandle);
 	if (_startDrag) {
 		initialRot = focusedTransform->rotation;
 		initialMousePos = _baseSystem->_inputState->getMousePos();
-		auto		renderExtent = ctx.request->images["mainColor"]->getExtent();
-		glm::vec2	renderSize  = {renderExtent.width, renderExtent.height};
-		glm::vec2	renderOrigin = {ctx.request->origin.x, ctx.request->origin.y};
+
+		VkExtent2D	renderOrigin = ctx.request->origin_v();
+		glm::vec2	viewportOrigin(renderOrigin.width, renderOrigin.height);
+		VkExtent2D	renderExtent = ctx.request->extent_v();
+		glm::vec2	viewportSize(renderExtent.width, renderExtent.height);
 
 		GlobalUBO	*data = ctx.globals->get<GlobalUBO>("main UBO");
 		glm::vec4	clip = data->viewProjection * glm::vec4(focusedTransform->position, 1.0f);
 		glm::vec2	screenSpaceRotationCenter  = (glm::vec2(clip) / clip.w) * 0.5f + 0.5f;
 
-		rotationCenter = renderOrigin + screenSpaceRotationCenter * renderSize;
+		rotationCenter = viewportOrigin + screenSpaceRotationCenter * viewportSize;
 		_startDrag = false;
 	}
 	int	axisIndex = 0;
@@ -555,14 +560,14 @@ void	Transform::GizmoContext::dragRotate(const FrameContext &ctx) {
 		rotationAmount = -rotationAmount;
 	glm::quat	addedRotation = glm::angleAxis(rotationAmount, axis);
 	focusedTransform->rotation = glm::normalize(addedRotation * initialRot);
-	_baseSystem->updateEntity(ctx.window->getEntityFocus());
+	_baseSystem->updateEntity(Selection::getSelected());
 
 	initialMousePos = mousePos;
 	initialRot = focusedTransform->rotation;
 }
 
 void	Transform::GizmoContext::initMove(void) {
-	auto	focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus());
+	auto	focusedTransform = _registry->getComponent<comp::Transform>(Selection::getSelected());
 	auto	requestTransform = _registry->getComponent<comp::Transform>(_requestHandle);
 	if (!focusedTransform || !requestTransform)
 		return ;
@@ -597,7 +602,7 @@ void	Transform::GizmoContext::initMove(void) {
 }
 
 void	Transform::GizmoContext::initScale(void) {
-	auto	focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus());
+	auto	focusedTransform = _registry->getComponent<comp::Transform>(Selection::getSelected());
 	auto	requestTransform = _registry->getComponent<comp::Transform>(_requestHandle);
 	if (!focusedTransform || !requestTransform)
 		return ;
@@ -620,7 +625,7 @@ void	Transform::GizmoContext::initScale(void) {
 }
 
 void	Transform::GizmoContext::initRotate(void) {
-	auto	focusedTransform = _registry->getComponent<comp::Transform>(_window->getEntityFocus());
+	auto	focusedTransform = _registry->getComponent<comp::Transform>(Selection::getSelected());
 	auto	requestTransform = _registry->getComponent<comp::Transform>(_requestHandle);
 	if (!focusedTransform || !requestTransform)
 		return ;

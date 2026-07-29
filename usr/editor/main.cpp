@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2025/12/09 17:10:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 15:36:35                                        */
+/*  Last Modified: 2026/07/28 19:52:55                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,6 +17,7 @@
 #include "core/Engine.hpp"
 #include "core/ecs/Entity.hpp"
 #include "rhi/window/Window.hpp"
+#include "systems/EntityReference.hpp"
 #include "components/Controllers.hpp"
 #include "components/Camera.hpp"
 #include "components/Transform.hpp"
@@ -37,7 +38,7 @@ void	loadPrimaryScene(Registry *registry, Window *window) {
 	registry->addComponent<comp::EditorControllerTag>(cameraHandle);
 	registry->addComponent<comp::Camera>(cameraHandle);
 	registry->addComponent<comp::Name>(cameraHandle).modify()->name = "Editor Camera";
-	window->setEntityReference(cameraHandle);
+	sys::EntityReference::setReferenced(cameraHandle);
 
 	Entity::id	sponzaHandle = registry->createEntity();
 	if (auto mesh = registry->addComponent<comp::Model>(sponzaHandle).modify()) {
@@ -74,12 +75,12 @@ GlobalSetBindings	defineGlobalSet(void) {
 					VK_SHADER_STAGE_ALL_GRAPHICS);
 }
 
-void	updateGlobalData(Registry *registry, FrameContext &ctx) {
-	auto	handle = ctx.request->handle;
+void	updateGlobalData(Registry *registry, ExecutionContext &ctx) {
+	auto	handle = *ctx.request->tag<Entity::id>();
 	auto	data = ctx.globals->get<GlobalUBO>("main UBO");
 	data->viewProjection = glm::mat4{1.f};
 	if (auto camera = registry->getComponent<comp::Camera>(handle)) {
-		auto	extent = ctx.request->images["mainColor"]->getExtent();
+		auto	extent = ctx.request->extent_v();
 		float	aspect = static_cast<float>(extent.width) /
 						static_cast<float>(extent.height);
 		glm::mat4 projection = glm::perspective(glm::radians(camera->fov), aspect, camera->near, camera->far);
@@ -90,7 +91,7 @@ void	updateGlobalData(Registry *registry, FrameContext &ctx) {
 
 Timer	globalTimer;
 
-void	tickCallback(Registry *, FrameContext &ctx) {
+void	tickCallback(Registry *, ExecutionContext &ctx) {
 	{
 	auto	data = ctx.globals->get<GlobalUBO>("main UBO");
 	data->elapsedTime = globalTimer.elapsedTime();

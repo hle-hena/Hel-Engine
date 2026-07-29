@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/14 19:23:16 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 15:33:19                                        */
+/*  Last Modified: 2026/07/25 17:32:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,8 @@
 /* *************************************************************************  */
 
 #include "systems/ui/Inspector.hpp"
+#include "systems/Selection.hpp"
+#include "systems/EntityReference.hpp"
 #include "core/ecs/Registry.hpp"
 #include "rhi/window/Window.hpp"
 #include "systems/ui/UIHelper.hpp"
@@ -37,9 +39,9 @@ expected<void>	Inspector::onInit(void) {
 	return {};
 }
 
-void	Inspector::render(const FrameContext &ctx, const ImVec2 &) {
+void	Inspector::render(const ExecutionContext &ctx, const ImVec2 &) {
 	auto	window = ctx.window;
-	auto	handle = window->getEntityFocus();
+	auto	handle = Selection::getSelected();
 	if (handle == Entity::NOT_REGISTERED)
 		return ;
 	if (ImGui::Button("Remove entity")) {
@@ -47,12 +49,12 @@ void	Inspector::render(const FrameContext &ctx, const ImVec2 &) {
 		return ;
 	}
 	ImGui::SameLine();
-	if (handle == window->getEntityReference()) {
+	if (handle == EntityReference::getReferenced()) {
 		if (ImGui::Button("Unlink window from entity"))
-			window->setEntityReference(Entity::NOT_REGISTERED);
+			EntityReference::setReferenced(Entity::NOT_REGISTERED);
 	} else {
 		if (ImGui::Button("Link window to entity")) {
-			window->setEntityReference(handle);
+			EntityReference::setReferenced(handle);
 		}
 	}
 	ImGui::Separator();
@@ -94,10 +96,10 @@ void	Inspector::removeEntity(Window *window, Entity::id handle) {
 	for (auto childHandle: hierarchy->childrenId)
 		removeEntity(window, childHandle);
 	_registry->removeEntity(handle);
-	if (window->getEntityFocus() == handle)
-		window->setEntityFocus(Entity::NOT_REGISTERED);
-	if (window->getEntityReference() == handle)
-		window->setEntityReference(Entity::NOT_REGISTERED);
+	if (Selection::getSelected() == handle)
+		Selection::setSelected(Entity::NOT_REGISTERED);
+	if (EntityReference::getReferenced() == handle)
+		EntityReference::setReferenced(Entity::NOT_REGISTERED);
 }
 
 void	Inspector::addNewComponentPopup(Entity::id handle) {

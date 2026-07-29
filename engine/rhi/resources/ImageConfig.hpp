@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 18:05:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 10:36:01                                        */
+/*  Last Modified: 2026/07/28 15:17:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -26,6 +26,7 @@
 #include "utils/Setters.hpp"
 #include "utils/mathUtils.hpp"
 #include "rhi/generated/HelFormatUtils.hpp"
+#include "utils/typeHelper.hpp"
 
 namespace	hel {
 
@@ -56,9 +57,6 @@ struct	ImageTypeCube {
 	static constexpr bool	has_height = true;
 	static constexpr bool	has_depth = false;
 };
-
-template <typename A>
-concept ToU32 = std::convertible_to<A, uint32_t>;
 
 template <typename T>
 concept	ImageType =
@@ -164,10 +162,6 @@ struct	ImageConfig: public ImageInfo {
 			return true;
 		}
 
-		uint32_t	castToU32(ToU32 auto val) {
-			return std::max(static_cast<uint32_t>(val), 1u);
-		}
-
 	public:
 		ImageConfig(const std::string &imageName = "Unname image") : ImageInfo(T::imageType, imageName) {
 			if constexpr (std::is_same_v<T, ImageTypeCube>) {
@@ -219,19 +213,19 @@ struct	ImageConfig: public ImageInfo {
 		Extent	extent(void) {
 			return {*this};
 		}
-		auto	extent2D(ToU32 auto width) {
-			_extent.width = castToU32(width);
+		auto	extent2D(ToU32_v auto width) {
+			_extent.width = max<uint32_t>(width, 1);
 			return *this;
 		}
-		auto	extent2D(ToU32 auto width, ToU32 auto height) {
-			_extent.width = castToU32(width);
-			_extent.height = castToU32(height);
+		auto	extent2D(ToU32_v auto width, ToU32_v auto height) {
+			_extent.width = max<uint32_t>(width, 1);
+			_extent.height = max<uint32_t>(height, 1);
 			return *this;
 		}
-		auto	extent3D(ToU32 auto width, ToU32 auto height, ToU32 auto depth) {
-			_extent.width = castToU32(width);
-			_extent.height = castToU32(height);
-			_extent.depth = castToU32(depth);
+		auto	extent3D(ToU32_v auto width, ToU32_v auto height, ToU32_v auto depth) {
+			_extent.width = max<uint32_t>(width, 1);
+			_extent.height = max<uint32_t>(height, 1);
+			_extent.depth = max<uint32_t>(depth, 1);
 			return *this;
 		}
 };

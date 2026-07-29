@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/01/26 14:31:25 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 10:44:32                                        */
+/*  Last Modified: 2026/07/24 17:07:15                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,7 +20,6 @@
 #include <string>
 #include <typeindex>
 #include <unordered_map>
-#include <vector>
 
 namespace	hel {
 
@@ -28,12 +27,10 @@ class	Device;
 
 class	AssetManager {
 	public:
-		void	init(Device *device);
+		void	init(Device *device) { _device = device; };
 
 		template <typename Asset>
 		std::shared_ptr<Asset>	get(const std::string &path);
-
-		static std::vector<char>	readFile(const std::string &path);
 
 	private:
 		using assetGroup = std::unordered_map<std::string, std::shared_ptr<void>>;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/16 10:19:48 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 15:31:54                                        */
+/*  Last Modified: 2026/07/25 17:32:25                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -45,7 +45,7 @@ class	IPanel {
 
 		virtual const char	*getLabel(void) const = 0;
 		virtual Dock		*getOwner(void) const final { return (_owner); }
-		virtual void	render(const FrameContext &ctx, const ImVec2 &size) = 0;
+		virtual void	render(const ExecutionContext &ctx, const ImVec2 &size) = 0;
 
 	protected:
 		Registry	*_registry;

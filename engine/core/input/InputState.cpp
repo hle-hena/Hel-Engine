@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/02 15:02:07 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 11:23:59                                        */
+/*  Last Modified: 2026/07/24 18:26:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -18,13 +18,6 @@
 
 namespace	hel {
 
-void	InputState::setFocus(Window *window, bool focused) {
-	if (focused)
-		_windowFocused = window;
-	else if (_windowFocused == window)
-		_windowFocused = nullptr;
-}
-
 void	InputState::setMouseMove(double newX, double newY) {
 	if (_mousePos.has_value()) {
 		_mouseDelta = {
@@ -35,9 +28,28 @@ void	InputState::setMouseMove(double newX, double newY) {
 	_mousePos = {newX, newY};
 }
 
-void	InputState::newFrame(void) {
+void	InputState::setFocused(bool focused) {
+	_focused = focused;
+}
+
+void	InputState::newFrame(std::vector<InputEvent> events) {
 	_previous = _current;
 	_mouseDelta.reset();
+
+	for (auto &event: events) {
+		switch (event.type) {
+			case InputEventType::Key:
+				setState<input::Key>((size_t)event.index,
+					event.action, event.mods); break;
+			case InputEventType::MouseButton:
+				setState<input::Mouse>((size_t)event.index,
+					event.action, event.mods); break;
+			case InputEventType::MouseMove:
+				setMouseMove(event.x, event.y); break;
+			case InputEventType::Focus:
+				setFocused(event.focused); break;
+		}
+	}
 }
 
 bool	InputState::hasMod(int mod) {

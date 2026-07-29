@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/11 14:41:39 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:33:23                                        */
+/*  Last Modified: 2026/07/28 18:16:21                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -30,6 +30,21 @@ void	hashCombine(std::size_t &seed, const T &v, const Rest&... rest)
 	seed ^= std::hash<T>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 	(hashCombine(seed, rest), ...);
 };
+
+inline std::size_t	murmurMix(std::size_t h) {
+	h ^= h >> 33;
+	h *= 0xff51afd7ed558ccdULL;
+	h ^= h >> 33;
+	h *= 0xc4ceb9fe1a85ec53ULL;
+	h ^= h >> 33;
+	return h;
+}
+
+template <typename T, typename... Rest>
+void	hashCombineMurmur(std::size_t &seed, const T &v, const Rest&... rest) {
+	seed = murmurMix(seed ^ (std::hash<T>{}(v) + 0x9e3779b97f4a7c15ULL));
+	(hashCombineMurmur(seed, rest), ...);
+}
 
 struct	EnumHash {
 	template<typename T>

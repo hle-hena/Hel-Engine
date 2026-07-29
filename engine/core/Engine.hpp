@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/24 17:34:45 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 11:21:47                                        */
+/*  Last Modified: 2026/07/25 17:24:18                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -31,10 +31,10 @@ class	ImagePool;
 class	Window;
 
 struct	EngineConfig {
-	std::function<GlobalSetBindings(void)>			defineGlobalSet;
-	std::function<void(Registry*, Window*)>			loadPrimaryScene;
-	std::function<void(Registry*, FrameContext&)>	updateGlobalData;
-	std::function<void(Registry*, FrameContext&)>	tickCallback;
+	std::function<GlobalSetBindings(void)>				defineGlobalSet;
+	std::function<void(Registry*, Window*)>				loadPrimaryScene;
+	std::function<void(Registry*, ExecutionContext&)>	updateGlobalData;
+	std::function<void(Registry*, ExecutionContext&)>	tickCallback;
 };
 
 class	Engine {
@@ -54,9 +54,9 @@ class	Engine {
 		expected<void>	createImagePool(void);
 
 		void	tick(uint32_t frameIndex);
-		void	updateTick(FrameContext &frameCtx);
-		void	renderTick(Window *window, FrameContext &ctx);
-		void	executePass(FrameContext &ctx,
+		void	updateTick(ExecutionContext &frameCtx);
+		void	renderTick(Window *window, ExecutionContext &ctx);
+		void	executePass(ExecutionContext &ctx,
 							const SystemManager::EntryVec &funcs);
 
 		EngineConfig				_config;

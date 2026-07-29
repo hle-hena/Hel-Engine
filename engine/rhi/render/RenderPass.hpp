@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:27 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 10:40:19                                        */
+/*  Last Modified: 2026/07/28 18:40:57                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -24,6 +24,8 @@
 #include <optional>
 
 #include "rhi/render/PipelineMap.hpp"
+#include "rhi/render/RenderRequest.hpp"
+#include "rhi/render/ExecutionContext.hpp"
 
 namespace	hel::sys {
 
@@ -38,15 +40,13 @@ class	Device;
 class	Renderer;
 class	ImagePool;
 struct	ImageDep;
-struct	FrameContext;
-struct	RenderRequest;
 struct	PhaseDependencies;
 
 class	RenderPass {
 	public:
-		RenderPass(Device &device, FrameContext &context, ImagePool *imagePool,
+		RenderPass(Device &device, ExecutionContext &context, ImagePool *imagePool,
 			const std::vector<sys::CycleEntry *> &systems);
-		RenderPass(Device &device, FrameContext &context, ImagePool *imagePool,
+		RenderPass(Device &device, ExecutionContext &context, ImagePool *imagePool,
 			PhaseDependencies dep);
 		RenderPass(RenderPass &&other);
 		~RenderPass(void);
@@ -66,7 +66,7 @@ class	RenderPass {
 		void	endPass(void);
 
 		Device				&_device;
-		FrameContext		&_ctx;
+		ExecutionContext	&_ctx;
 		RenderRequest		*_req;
 		VkCommandBuffer		_commandBuffer;
 		VkExtent2D			_extent;

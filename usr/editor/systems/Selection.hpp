@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/25 10:31:27 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 15:31:27                                        */
+/*  Last Modified: 2026/07/28 18:46:41                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -27,9 +27,14 @@ class	Selection : public ISystem {
 
 		void	init(void) override;
 
-		void	update(const FrameContext &ctx);
+		void	update(const ExecutionContext &ctx);
 		void	postProcessing(const Renderer &renderer);
 		void	renderInteraction(const Renderer &renderer);
+
+		static void			setSelected(Entity::id handle)
+			{ _newSelected = handle; }
+		static Entity::id	getSelected()
+			{ return _selectedEntity; }
 
 	private:
 		struct	EntityData {
@@ -39,11 +44,12 @@ class	Selection : public ISystem {
 
 		static void	configurePipeline(PipelineConfig &config);
 
-		AssetManager				*_assetManager;
-		PipelineMap					*_tintPipeline{nullptr};
-		Entity::id					_selectedEntity;
+		AssetManager						*_assetManager;
+		PipelineMap							*_tintPipeline{nullptr};
+		static Entity::id					_selectedEntity;
+		static std::optional<Entity::id>	_newSelected;
 
-		std::unordered_map<RenderRequest, Read::Context, RenderRequest::Hasher>	_requests;
+		std::unordered_map<RenderRequest, Read::Context>	_requests;
 };
 
 }

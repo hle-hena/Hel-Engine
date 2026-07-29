@@ -1,11 +1,11 @@
 /* *************************************************************************  */
 /*                                                                            */
 /*                                                                            */
-/*  File: AssetManager.cpp                                                    */
+/*  File: EntityReference.hpp                                                 */
 /*  Project: Hel Engine                                                       */
-/*  Created: 2026/01/26 15:19:53 by hle-hena                                  */
+/*  Created: 2026/07/24 18:44:55 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 10:44:38                                        */
+/*  Last Modified: 2026/07/24 19:10:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -14,30 +14,21 @@
 /*                                                                            */
 /* *************************************************************************  */
 
-#include "core/ecs/AssetManager.hpp"
+#pragma once
 
-#include <fstream>
+#include "core/HelSystem.hpp"
 
-namespace	hel {
+namespace	hel::sys {
+	
+class EntityReference {
+	public:
+		static void			setReferenced(Entity::id id)
+			{ _reference = id; }
+		static Entity::id	getReferenced()
+			{ return _reference; }
 
-void	AssetManager::init(Device *device) {
-	_device = device;
-}
-
-std::vector<char>	AssetManager::readFile(const std::string& filepath) {
-	std::ifstream	file(filepath, std::ios::ate | std::ios::binary);
-
-	if (!file.is_open())
-		return (std::vector<char>(0));
-
-	size_t				fileSize = static_cast<size_t>(file.tellg());
-	std::vector<char>	buffer(fileSize);
-
-	file.seekg(0);
-	file.read(buffer.data(), static_cast<std::streamsize>(fileSize));
-	file.close();
-
-	return (buffer);
-}
+	private:
+		static Entity::id	_reference;
+};
 
 }

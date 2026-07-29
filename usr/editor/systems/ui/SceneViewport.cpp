@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/09 11:38:46 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 15:34:07                                        */
+/*  Last Modified: 2026/07/28 18:59:31                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -15,6 +15,7 @@
 /* *************************************************************************  */
 
 #include "systems/ui/SceneViewport.hpp"
+#include "systems/EntityReference.hpp"
 #include "rhi/resources/Image.hpp"
 #include "rhi/resources/ImagePool.hpp"
 #include "rhi/context/Swapchain.hpp"
@@ -28,12 +29,12 @@ expected<void>	SceneViewport::onInit(void) {
 	return {};
 }
 
-void	SceneViewport::render(const FrameContext &ctx, const ImVec2 &) {
+void	SceneViewport::render(const ExecutionContext &ctx, const ImVec2 &) {
 	if (!mainRequest)
 		return ;
 
 	auto	window = ctx.window;
-	auto	windowEntityHandle = window->getEntityReference();
+	auto	windowEntityHandle = EntityReference::getReferenced();
 	auto	rectMin = ImGui::GetCursorScreenPos() - ImGui::GetStyle().WindowPadding;
 	rectMin.y += 1.1f;
 	auto	rectMax = rectMin + ImGui::GetContentRegionAvail()
@@ -74,28 +75,24 @@ void	SceneViewport::render(const FrameContext &ctx, const ImVec2 &) {
 	if (!mainImg || !depthImg || !entityImg)
 		return ;
 	if (_handle == Entity::NOT_REGISTERED)
-		_handle = window->getEntityReference();
+		_handle = EntityReference::getReferenced();
 
 	auto	cursorPos = ImGui::GetCursorScreenPos();
-	RenderRequest	viewportRequest{
-		.requestType = "RenderScene",
-		.handle = _handle,
-		.origin = {cursorPos.x, cursorPos.y},
-		.images = {
-			{"mainColor", mainImg},
-			{"depth layer", depthImg},
-			{"entity layer", entityImg}
-		}
-	};
-	RenderQueue::push(viewportRequest);
+	RenderQueue::push(RenderRequest::Builder("RenderScene", size.x, size.y)
+							.origin(cursorPos.x, cursorPos.y)
+							.tag(_handle)
+							.addImage("mainColor", mainImg)
+							.addImage("depth layer", depthImg)
+							.addImage("entity layer", entityImg)
+							.build());
 	auto	addImage = [&](const std::string &name, Ref<Image> img) {
 		
 		int i = 0;
 		while (true) {
 			std::string	imageName = name + std::to_string(i++);
-			if (mainRequest->images.contains(imageName))
+			if (mainRequest->containsImageName(imageName))
 				continue ;
-			mainRequest->images[imageName] = img;
+			mainRequest->addImage(imageName, img);
 			break ;
 		}
 	};
@@ -131,7 +128,7 @@ void	SceneViewport::render(const FrameContext &ctx, const ImVec2 &) {
 			GLFW_CURSOR_DISABLED || ImGui::IsItemHovered()))
 		ImGui::SetNextFrameWantCaptureMouse(false);
 	if (ImGui::IsItemClicked())
-		window->setEntityReference(_handle);
+		EntityReference::setReferenced(_handle);
 
 	DropTarget("ENTITY")
 		.setPos(rectMin)

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/18 11:20:37 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/23 10:22:25                                        */
+/*  Last Modified: 2026/07/25 17:32:26                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -357,7 +357,7 @@ void	StyleEditor::baseColorEditor(void) {
 	ImGui::EndChild();
 }
 
-void	StyleEditor::render(const FrameContext &, const ImVec2 &) {
+void	StyleEditor::render(const ExecutionContext &, const ImVec2 &) {
 	baseColorEditor();
 	ImGui::Separator();
 

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/27 11:06:34 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 15:31:31                                        */
+/*  Last Modified: 2026/07/28 19:28:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -51,17 +51,17 @@ class	UI : public ISystem {
 		const auto	&getPanelRegistry(void) const
 					{ return (_panelRegistry); }
 
-		void	updateUI(const FrameContext &ctx);
+		void	updateUI(const ExecutionContext &ctx);
 		void	render(const Renderer &renderer);
 
 	private:
-		void	addDock(const FrameContext &ctx, const ImVec2 &size);
+		void	addDock(const ExecutionContext &ctx, const ImVec2 &size);
 
 		std::unique_ptr<Dock>	_dock;
 		std::optional<ImVec2>	_lastSize;
 
 		std::vector<std::unique_ptr<IPanel>>	_panels;
-		RenderRequest							_request;
+		std::optional<RenderRequest::Builder>	_request;
 
 		std::vector<std::pair<
 			std::string, PanelFactory>>			_panelRegistry;

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/18 18:20:42 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/07 17:11:07                                        */
+/*  Last Modified: 2026/07/25 17:31:59                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,7 +29,7 @@ void	SurfaceAllignement::init(void) {
 			->addBlock("input/controller");
 }
 
-void	SurfaceAllignement::align(const FrameContext &) {
+void	SurfaceAllignement::align(const ExecutionContext &) {
 	auto	entities = _registry->view<include<comp::Transform, comp::SurfaceAllignement>>();
 
 	for (auto entity: entities) {

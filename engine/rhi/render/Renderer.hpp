@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/06 19:48:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 10:41:23                                        */
+/*  Last Modified: 2026/07/25 17:18:23                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,21 +20,21 @@
 
 #include "utils/Setters.hpp"
 #include "rhi/render/RenderPass.hpp"
+#include "rhi/render/ExecutionContext.hpp"
 
 namespace	hel {
 
 class	Device;
 class	PipelineMap;
-struct	FrameContext;
 
 struct	DrawCall;
 
 class Renderer {
 	public:
-		explicit Renderer(FrameContext &frameContext, RenderPass &&pass);
+		explicit Renderer(ExecutionContext &execContext, RenderPass &&pass);
 		explicit operator	bool(void) const;
 
-		FrameContext		&frameContext(void) const;
+		ExecutionContext	&executionContext(void) const;
 		uint32_t			passIndex(void) const;
 
 		PASSKEY(ISystemKey, sys::ISystem)
@@ -42,7 +42,7 @@ class Renderer {
 
 	private:
 		Device				&_device;
-		FrameContext		&_frameContext;
+		ExecutionContext	&_execContext;
 		VkCommandBuffer		_commandBuffer;
 		RenderingConfig		_config;
 
@@ -87,7 +87,7 @@ struct	DrawCall {
 
 		PipelineMap						*_pipeline;
 		Device							*_device;
-		FrameContext					*_frameContext;
+		ExecutionContext				*_execContext;
 		VkCommandBuffer					_commandBuffer;
 		RenderingConfig					_config;
 		std::vector<VkDescriptorSet>	_sets{};
