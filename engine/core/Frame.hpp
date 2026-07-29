@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:41 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/28 18:39:30                                        */
+/*  Last Modified: 2026/07/29 14:30:00                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,14 +20,12 @@
 #include <array>
 #include <optional>
 #include <map>
-#include <unordered_map>
 #include <memory>
 
 #include "rhi/render/ExecutionContext.hpp"
 #include "rhi/context/Swapchain.hpp"
 #include "rhi/resources/Buffer.hpp"
 #include "utils/Expected.hpp"
-#include "utils/Setters.hpp"
 #include "utils/Ref.hpp"
 
 namespace	hel {
@@ -36,46 +34,6 @@ class	Window;
 class	DescriptorPool;
 class	DescriptorWriter;
 struct	DescriptorSet;
-
-struct	GlobalData {
-	private:
-		struct	EngineData {
-			std::shared_ptr<void>	data;
-		};
-		struct	ShaderData {
-			std::shared_ptr<void>	data;
-			Ref<Buffer>				buffer;
-			uint32_t				bindingIndex;
-		};
-
-		template <typename Key, typename Tp>
-		using u_map = std::unordered_map<Key, Tp>;
-		u_map<std::string, EngineData>	_engineGlobals;
-		u_map<std::string, ShaderData>	_shaderGlobals;
-		std::optional<std::string>		_error;
-		bool							_locked{false};
-
-	public:
-		GlobalData	*addData(const std::string &key, std::shared_ptr<void> data);
-		GlobalData	*addData(const std::string &key, std::shared_ptr<void> data,
-								Ref<Buffer> buffer, uint32_t bindingIndex);
-
-		template <typename T>
-		T	*get(const std::string &key) {
-			if (auto it = _engineGlobals.find(key); it != _engineGlobals.end())
-				return static_cast<T *>(it->second.data.get());
-			if (auto it = _shaderGlobals.find(key); it != _shaderGlobals.end())
-				return static_cast<T *>(it->second.data.get());
-			return nullptr;
-		}
-
-		PASSKEY(FrameKey, Frame);
-		u_map<std::string, ShaderData>	&list(FrameKey);
-		PASSKEY(EngineKey, Engine)
-		expected<void>	lock(EngineKey);
-};
-
-
 
 struct	GlobalSetBindings {
 	GlobalSetBindings	&addBinding(uint32_t bindingIndex,

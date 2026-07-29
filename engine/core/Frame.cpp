@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/03/13 15:47:35 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/25 17:22:16                                        */
+/*  Last Modified: 2026/07/29 14:29:06                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -21,74 +21,6 @@
 namespace	hel {
 
 VkDescriptorSetLayout	Frame::_globalLayout = VK_NULL_HANDLE;
-
-#define RETURN_ERROR(error) do {	\
-	_error = error;					\
-	return this;					\
-} while (0)
-
-GlobalData	*GlobalData::addData(const std::string &key,
-								std::shared_ptr<void> data)
-{
-	if (_error)
-		return this;
-	if (_locked)
-		RETURN_ERROR("Trying to call addData for key \"" + key
-					+ "\" when data have already been passed to the engine.");
-	if (_engineGlobals.contains(key) || _shaderGlobals.contains(key))
-		RETURN_ERROR("Trying to set two data with the key \""
-					+ key + "\".");
-	if (data == nullptr)
-		RETURN_ERROR("Trying to set data as nullptr for \""
-					+ key + "\"");
-	_engineGlobals.emplace(key, data);
-	return this;
-}
-
-GlobalData	*GlobalData::addData(const std::string &key,
-								std::shared_ptr<void> data,
-								Ref<Buffer> buffer, uint32_t bindingIndex)
-{
-	if (_error)
-		return this;
-	if (_locked)
-		RETURN_ERROR("Trying to call addData for key \"" + key
-					+ "\" when data have already been passed to the engine.");
-	if (_engineGlobals.contains(key) || _shaderGlobals.contains(key))
-		RETURN_ERROR("Trying to set two data with the key \""
-					+ key + "\".");
-	if (data == nullptr)
-		RETURN_ERROR("Trying to set data as nullptr for \""
-					+ key + "\"");
-	if (buffer == nullptr)
-		RETURN_ERROR("Trying to set buffer as nullptr for \""
-					+ key + "\"");
-	if (std::find_if(_shaderGlobals.begin(), _shaderGlobals.end(),
-				[bindingIndex](const std::pair<std::string, ShaderData> &pair) {
-					return pair.second.bindingIndex == bindingIndex;
-				}) != _shaderGlobals.end())
-	{
-		RETURN_ERROR("Trying to set the binding "
-					+ std::to_string(bindingIndex) + " two times.");
-	}
-	_shaderGlobals.emplace(key, ShaderData{data, buffer, bindingIndex});
-	return this;
-}
-
-std::unordered_map<std::string,
-				GlobalData::ShaderData>	&GlobalData::list(FrameKey) {
-	return _shaderGlobals;
-}
-
-expected<void>	GlobalData::lock(EngineKey) {
-	if (_locked)
-		return unexpected("Error: setUserData's engine function called twice.");
-	if (_error.has_value())
-		return unexpected(_error.value());
-	_locked = true;
-	return {};
-}
-
 
 GlobalSetBindings	&GlobalSetBindings::addBinding(uint32_t bindingIndex,
 												VkDescriptorType descriptorType,
@@ -192,7 +124,7 @@ expected<void>	Frame::createGlobalSets(void) {
 
 expected<void>	Frame::bindBuffers(GlobalData *globalData) {
 	_setStride = 0;
-	for (auto &[key, data]: globalData->list({})) {
+	for (auto &[key, data]: globalData->list()) {
 		if (!_bindingConfig.contains(data.bindingIndex))
 			return unexpected("Trying to bind on an undefined binding index ("
 							+ std::to_string(data.bindingIndex) + ")");
@@ -244,7 +176,7 @@ void	Frame::fillContext(ExecutionContext &context, Window *window) {
 }
 
 void	Frame::writeGlobalData(ExecutionContext &ctx) {
-	for (auto &[key, write]: ctx.globals->list({}))
+	for (auto &[key, write]: ctx.globals->list())
 		writeToUBO(write.data.get(), write.bindingIndex,
 					ctx.passIndex, ctx.frameIndex);
 }
