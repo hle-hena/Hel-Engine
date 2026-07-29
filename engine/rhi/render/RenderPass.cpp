@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:48 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/28 18:46:25                                        */
+/*  Last Modified: 2026/07/29 17:49:59                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -134,7 +134,7 @@ void	RenderPass::addWriteImage(Image *img, ImageDep &dep){
 						.format(dep._format).aspect(aspect)
 						.components().identity()));
 	if (hasDepth)	{ _depthInfo = Write{dep._imageName, dep._format, info}; }
-	if (hasDepth)	{ _stencilInfo = Write{dep._imageName, dep._format, info}; }
+	if (hasStenc)	{ _stencilInfo = Write{dep._imageName, dep._format, info}; }
 }
 
 bool	RenderPass::addRead(const std::string_view &readName) {

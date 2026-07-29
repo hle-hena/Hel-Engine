@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/28 15:32:12 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/28 19:49:18                                        */
+/*  Last Modified: 2026/07/29 14:41:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -65,10 +65,10 @@ bool	RenderRequest::operator==(const RenderRequest &other) const {
 				containsSameImages = false;
 				break ;
 			}
-			if (this->_images.at(imageName) != other._images.at(imageName)) {
-				containsSameImages = false;
-				break;
-			}
+			// if (this->_images.at(imageName) != other._images.at(imageName)) {
+			// 	containsSameImages = false;
+			// 	break;
+			// }
 		}
 	}
 

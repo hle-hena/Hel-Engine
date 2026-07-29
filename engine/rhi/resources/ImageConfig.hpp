@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 18:05:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/28 15:17:59                                        */
+/*  Last Modified: 2026/07/29 17:25:57                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -91,20 +91,23 @@ struct	ImageInfo {
 
 	public:
 		bool	operator==(const ImageInfo &other) const {
-			return (this->_type == other._type &&
-					this->_layers == other._layers &&
+			return (this->_imageName == other._imageName &&
 					this->_formats == other._formats &&
-					this->_usage == other._usage &&
 					this->_extent.width == other._extent.width &&
 					this->_extent.height == other._extent.height &&
-					this->_extent.depth == other._extent.depth);
+					this->_extent.depth == other._extent.depth &&
+					this->_usage == other._usage &&
+					this->_layers == other._layers &&
+					this->_type == other._type &&
+					this->_owning == other._owning);
 		}
 
 	friend class	Image;
 	friend class	ImagePool;
 	template <ImageType T>
 	friend struct	ImageConfig;
-	friend struct	ImageInfoHasher;
+	friend struct	ImageInfoHasher;//Remove this
+	friend struct	RenderDependency;
 };
 
 struct	ImageInfoHasher {
@@ -163,7 +166,7 @@ struct	ImageConfig: public ImageInfo {
 		}
 
 	public:
-		ImageConfig(const std::string &imageName = "Unname image") : ImageInfo(T::imageType, imageName) {
+		ImageConfig(const std::string &imageName = "Unnamed image") : ImageInfo(T::imageType, imageName) {
 			if constexpr (std::is_same_v<T, ImageTypeCube>) {
 				_layers = 6;
 				_usage |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;

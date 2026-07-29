@@ -35,6 +35,7 @@ HEADER_TEMPLATE = """/* ********************************************************
 
 #include <vulkan/vulkan.h>
 #include <cstdint>
+#include <string_view>
 
 #ifdef HEL_FORMAT_NOT_DEFINED
 #undef HEL_FORMAT_NOT_DEFINED
@@ -93,6 +94,14 @@ constexpr NumericType\tgetFormatNumericType(VkFormat format) {{
 \tswitch (format) {{
 {numeric_cases}
 \t\tdefault: return Unknown_N;
+\t}}
+}}
+
+// Returns a string_view corresponding to format.
+constexpr std::string_view\tgetFormatName(VkFormat format) {{
+\tswitch (format) {{
+{name_cases}
+\t\tdefault: return "Unknown_format";
 \t}}
 }}
 
@@ -210,6 +219,8 @@ def render_header(entries, version, undefined_formats=None):
 				lines.append(f"\t\tcase {name}: return {aspect};")
 			elif block_type == "numeric":
 				lines.append(f"\t\tcase {name}: return {num_fmt}_N;")
+			elif block_type == "name":
+				lines.append(f"\t\tcase {name}: return \"{name}\";")
 
 			next_is_undefined = False
 			if i + 1 < len(entries_list):
@@ -224,11 +235,13 @@ def render_header(entries, version, undefined_formats=None):
 	texel_cases = generate_switch_cases(unique_entries, "texel")
 	aspect_cases = generate_switch_cases(unique_entries, "aspect")
 	numeric_cases = generate_switch_cases(unique_entries, "numeric")
+	name_cases = generate_switch_cases(unique_entries, "name")
 
 	return HEADER_TEMPLATE.format(
 		texel_cases=texel_cases,
 		aspect_cases=aspect_cases,
 		numeric_cases=numeric_cases,
+		name_cases=name_cases,
 		header_version=version,
 	)
 
