@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/17 18:05:52 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/29 17:25:57                                        */
+/*  Last Modified: 2026/07/30 10:31:52                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -90,6 +90,14 @@ struct	ImageInfo {
 
 
 	public:
+		bool	hasFormat(VkFormat format) const {
+			auto	found = std::find(_formats.begin(), _formats.end(), format);
+			return found != _formats.end();
+		}
+		const std::string	&imageName(void) const {
+			return _imageName;
+		}
+
 		bool	operator==(const ImageInfo &other) const {
 			return (this->_imageName == other._imageName &&
 					this->_formats == other._formats &&
@@ -104,8 +112,6 @@ struct	ImageInfo {
 
 	friend class	Image;
 	friend class	ImagePool;
-	template <ImageType T>
-	friend struct	ImageConfig;
 	friend struct	ImageInfoHasher;//Remove this
 	friend struct	RenderDependency;
 };
@@ -138,6 +144,7 @@ struct	ImageConfig: public ImageInfo {
 		template <size_t N>
 		static constexpr bool sameAspect(const std::array<VkFormat, N> &formats) {
 			auto	a = getFormatAspect(formats[0]);
+			if (a == VK_IMAGE_ASPECT_NONE) return false;
 			for (auto f: formats) if (getFormatAspect(f) != a) return false;
 			return true;
 		}
