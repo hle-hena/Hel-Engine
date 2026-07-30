@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:27 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/28 18:40:57                                        */
+/*  Last Modified: 2026/07/30 15:07:57                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,7 +17,6 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
-#include <vector>
 #include <map>
 #include <unordered_map>
 #include <string>
@@ -26,6 +25,7 @@
 #include "rhi/render/PipelineMap.hpp"
 #include "rhi/render/RenderRequest.hpp"
 #include "rhi/render/ExecutionContext.hpp"
+#include "rhi/render/RenderDependency.hpp"
 
 namespace	hel::sys {
 
@@ -45,9 +45,7 @@ struct	PhaseDependencies;
 class	RenderPass {
 	public:
 		RenderPass(Device &device, ExecutionContext &context, ImagePool *imagePool,
-			const std::vector<sys::CycleEntry *> &systems);
-		RenderPass(Device &device, ExecutionContext &context, ImagePool *imagePool,
-			PhaseDependencies dep);
+			const RenderDependency &dep);
 		RenderPass(RenderPass &&other);
 		~RenderPass(void);
 
@@ -56,6 +54,12 @@ class	RenderPass {
 		static void	newFrame(void)	{ _passIndex = 0; }
 
 	private:
+		bool	addColor(const ImageAccess &dep, ImagePool *pool);
+		bool	addDepth(const ImageAccess &dep, ImagePool *pool);
+		bool	addStencil(const ImageAccess &dep, ImagePool *pool);
+		bool	addRead(const ImageAccess &dep);
+
+
 		bool	addWrite(ImageDep &dep, ImagePool *imagePool);
 		void	resolveOps(Image *img, ImageDep &dep);
 		void	addWriteImage(Image *img, ImageDep &dep);
@@ -72,6 +76,8 @@ class	RenderPass {
 		VkExtent2D			_extent;
 		bool				_invalidDep{false};
 		bool				_passStarted{false};
+
+		std::unordered_map<Ref<Image>, ImageAccess>	_colors;
 
 		std::unordered_map<std::string, Image *>	_writes{};
 		std::unordered_map<std::string, Image *>	_reads{};

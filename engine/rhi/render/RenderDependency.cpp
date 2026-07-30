@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/29 17:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/30 11:22:22                                        */
+/*  Last Modified: 2026/07/30 14:37:54                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -16,6 +16,7 @@
 
 #include "rhi/render/RenderDependency.hpp"
 #include "utils/Logger.hpp"
+#include "utils/vec_utils.hpp"
 
 namespace	hel {
 
@@ -25,6 +26,36 @@ do {																		\
 		" however, it was already defined as a " #definedAs ".",			\
 		image._info._imageName);												\
 } while (0)
+
+RenderDependency	RenderDependency::combineDependencies(
+						const std::vector<RenderDependency> &deps)
+{
+	RenderDependency	res;
+
+	for (auto &dep: deps) {
+		for (auto &color: dep._colorAttachments) {
+			auto	[alreadyExist, it] = contains(res._colorAttachments, color);
+			if (!alreadyExist)
+				res.addShaderRead(color);
+		}
+		if (!res._depthAttachment && dep._depthAttachment)
+			res.setDepthAttachment(*dep._depthAttachment);
+		if (!res._stencilAttachment && dep._stencilAttachment)
+			res.setStencilAttachment(*dep._stencilAttachment);
+		for (auto &read: dep._shaderReads) {
+			auto	[alreadyExist, it] = contains(res._shaderReads, read);
+			if (!alreadyExist)
+				res.addShaderRead(read);
+		}
+		for (auto &write: dep._shaderWrites) {
+			auto	[alreadyExist, it] = contains(res._shaderWrites, write);
+			if (!alreadyExist)
+				res.addShaderRead(write);
+		}
+	}
+
+	return res;	
+}
 
 bool	RenderDependency::alreadyContained(const ImageAccess &image) {
 	if (_depthAttachment.has_value() &&
@@ -43,17 +74,13 @@ bool	RenderDependency::alreadyContained(const ImageAccess &image) {
 	auto	compImages = [&image](const ImageAccess &acces) -> bool {
 		return acces._info == image._info;
 	};
-	auto	existsIn = [&compImages](auto cont) -> bool {
-		auto	it = std::find_if(cont.begin(), cont.end(), compImages);
-		return it != cont.end();
-	};
-	if (existsIn(_colorAttachments)) {
+	if (contains_if(_colorAttachments, compImages).first) {
 		ALREADY_DEFINED(color attachment);
 		return true;
-	} else if (existsIn(_shaderReads)) {
+	} else if (contains_if(_shaderReads, compImages).first) {
 		ALREADY_DEFINED(shader read);
 		return true;
-	} else if (existsIn(_shaderWrites)) {
+	} else if (contains_if(_shaderWrites, compImages).first) {
 		ALREADY_DEFINED(shader write);
 		return true;
 	}
@@ -85,15 +112,14 @@ void	RenderDependency::addColorAttachment(const ImageAccess &image) {
 			image._info._imageName, getFormatName(image._info._formats[0]));
 		return ;
 	}
-	auto	foundIndex = std::find_if(_colorAttachments.begin(),
-								_colorAttachments.end(),
-								[&](const ImageAccess &other){
-									return other._index == image._index;
-								});
-	if (foundIndex != _colorAttachments.end()) {
+	auto	[found, foundImage] = contains_if(_colorAttachments,
+									[&](const ImageAccess &other){
+										return other._index == image._index;
+									});
+	if (found) {
 		HEL_ERROR("Trying to add the image \"{}\" as color attachment but the "
 			"index {} was already set by image \"{}\".", image._info._imageName,
-			image._index, foundIndex->_info._imageName);
+			image._index, foundImage->_info._imageName);
 		return ;
 	}
 	_colorAttachments.push_back(image);

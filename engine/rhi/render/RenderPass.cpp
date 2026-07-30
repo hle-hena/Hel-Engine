@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:48 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/29 17:49:59                                        */
+/*  Last Modified: 2026/07/30 15:09:03                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -29,31 +29,22 @@ namespace	hel {
 uint32_t	RenderPass::_passIndex = 0;
 
 RenderPass::RenderPass(Device &device, ExecutionContext &ctx, ImagePool *imagePool,
-			const std::vector<sys::CycleEntry *> &funcs)
+	const RenderDependency &dep)
 	:	_device{device},
 		_ctx{ctx},
 		_req{ctx.request},
 		_commandBuffer{ctx.commandBuffer},
-		_extent(ctx.request->extent_v()) {
-	for (auto &func: funcs) {
-		for (auto &dep: func->getDep()->write)
-			_invalidDep |= addWrite(dep, imagePool);
-		for (auto &dep: func->getDep()->read)
-			_invalidDep |= addRead(dep);
-	}
-}
+		_extent{ctx.request->extent_v()}
+{
+	for (auto &color: dep._colorAttachments)
+		addColor(color, imagePool);
+	if (dep._depthAttachment)
+		addDepth(*dep._depthAttachment, imagePool);
+	if (dep._stencilAttachment)
+		addStencil(*dep._stencilAttachment, imagePool);
 
-RenderPass::RenderPass(Device &device, ExecutionContext &ctx, ImagePool *imagePool,
-	PhaseDependencies deps)
-	:	_device{device},
-		_ctx{ctx},
-		_req{ctx.request},
-		_commandBuffer{ctx.commandBuffer},
-		_extent{ctx.request->extent_v()} {
-	for (auto &dep: deps.write)
-		_invalidDep |= addWrite(dep, imagePool);
-	for (auto &dep: deps.read)
-		_invalidDep |= addRead(dep);
+	for (auto &read: dep._shaderReads)
+		addRead(read);
 }
 
 RenderPass::RenderPass(RenderPass &&other)
@@ -70,6 +61,18 @@ RenderPass::~RenderPass(void) {
 	if (_commandBuffer && _passStarted)
 		endPass();
 }
+
+bool	RenderPass::addColor(const ImageAccess &dep, ImagePool *pool) {
+
+}
+
+bool	RenderPass::addDepth(const ImageAccess &dep, ImagePool *pool) {
+	
+}
+bool	RenderPass::addStencil(const ImageAccess &dep, ImagePool *pool) {
+	
+}
+bool	addRead(const ImageAccess &dep);
 
 bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
 	if (_writes.contains(dep._imageName))

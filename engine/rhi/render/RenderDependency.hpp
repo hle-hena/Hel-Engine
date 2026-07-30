@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/29 14:09:19 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/30 11:16:30                                        */
+/*  Last Modified: 2026/07/30 14:45:12                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -180,6 +180,9 @@ struct	RenderDependency {
 		template <ImageAccessType T>
 		RenderDependency	&addDep(const ImageAccess_T<T> &image);
 
+		static RenderDependency
+			combineDependencies(const std::vector<RenderDependency> &deps);
+
 	private:
 		bool	alreadyContained(const ImageAccess &image);
 
@@ -191,11 +194,13 @@ struct	RenderDependency {
 		void	addShaderWrite(const ImageAccess &image);
 
 		std::vector<ImageAccess>		_colorAttachments;
-		std::optional<ImageAccess>	_depthAttachment;
-		std::optional<ImageAccess>	_stencilAttachment;
+		std::optional<ImageAccess>		_depthAttachment;
+		std::optional<ImageAccess>		_stencilAttachment;
 
 		std::vector<ImageAccess>		_shaderReads;
 		std::vector<ImageAccess>		_shaderWrites;
+
+	friend struct	RenderPass;
 };
 
 }
