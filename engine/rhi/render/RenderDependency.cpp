@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/29 17:27:33 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/30 14:37:54                                        */
+/*  Last Modified: 2026/07/31 15:17:53                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -35,8 +35,10 @@ RenderDependency	RenderDependency::combineDependencies(
 	for (auto &dep: deps) {
 		for (auto &color: dep._colorAttachments) {
 			auto	[alreadyExist, it] = contains(res._colorAttachments, color);
+			// Assume that if the image already exists, it's the same.
+			// To check during the spliting phase.
 			if (!alreadyExist)
-				res.addShaderRead(color);
+				res.addColorAttachment(color);
 		}
 		if (!res._depthAttachment && dep._depthAttachment)
 			res.setDepthAttachment(*dep._depthAttachment);
@@ -50,7 +52,7 @@ RenderDependency	RenderDependency::combineDependencies(
 		for (auto &write: dep._shaderWrites) {
 			auto	[alreadyExist, it] = contains(res._shaderWrites, write);
 			if (!alreadyExist)
-				res.addShaderRead(write);
+				res.addShaderWrite(write);
 		}
 	}
 
@@ -122,7 +124,11 @@ void	RenderDependency::addColorAttachment(const ImageAccess &image) {
 			image._index, foundImage->_info._imageName);
 		return ;
 	}
-	_colorAttachments.push_back(image);
+
+	insert_if(_colorAttachments, image,
+		[&image](const ImageAccess &other) -> bool {
+			return other._index >= image._index;
+		});
 }
 
 void	RenderDependency::setDepthAttachment(const ImageAccess &image) {
