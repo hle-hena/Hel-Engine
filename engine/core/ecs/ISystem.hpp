@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/25 17:30:02                                        */
+/*  Last Modified: 2026/07/31 17:39:35                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -87,7 +87,12 @@ class	ISystem {
 		ImagePool									*_imagePool;
 
 	private:
+		void	loadCycleEntry(std::string_view jsonFilepath,
+							const std::string &systemName);
+
 		std::vector<std::unique_ptr<PipelineMap>>	_pipelines;
+
+	friend struct SystemManager;
 };
 
 }

@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/05/29 16:22:26 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/05 19:48:39                                        */
+/*  Last Modified: 2026/07/31 17:39:50                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -22,6 +22,7 @@
 #include <string_view>
 
 #include "utils/Setters.hpp"
+#include "utils/str_utils.hpp"
 
 namespace hel::sys {
 
@@ -45,7 +46,9 @@ struct	SystemManager {
 
 
 	template <typename SysType>
-	static void	addSystem() {
+	static void	addSystem(std::string_view) {
+		auto	newSys = std::make_unique<SysType>();
+		newSys->loadCycleEntry("", getTypeName(typeid(SysType).name()));
 		_data.emplace_back(std::make_unique<SysType>());
 	}
 
@@ -66,8 +69,8 @@ struct	SystemManager {
 
 template <typename SysType>
 struct	SystemRegistrar {
-	SystemRegistrar() {
-		SystemManager::addSystem<SysType>();
+	SystemRegistrar(std::string_view jsonFilepath) {
+		SystemManager::addSystem<SysType>(jsonFilepath);
 	}
 };
 

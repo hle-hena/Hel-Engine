@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/26 18:12:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/24 14:31:48                                        */
+/*  Last Modified: 2026/07/31 17:39:40                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -28,6 +28,12 @@ void	ISystem::init(Device *device, Registry *registry,
 	_imagePool = imagePool;
 	_inputState = input;
 	init();
+}
+
+void	ISystem::loadCycleEntry(std::string_view jsonFilepath,
+					const std::string &systemName) {
+	std::cout << "Loading: " << jsonFilepath << "\n" << "System: "
+		<< systemName << "\n\n";
 }
 
 PipelineMap	*ISystem::createPipeline(const PipelineMap::Config &config) {
