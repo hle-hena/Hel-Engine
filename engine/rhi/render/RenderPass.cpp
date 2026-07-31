@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/06/12 18:36:48 by pop-os                                    */
 /*                                                                            */
-/*  Last Modified: 2026/07/30 15:09:03                                        */
+/*  Last Modified: 2026/07/31 12:29:20                                        */
 /*             By: pop-os                                                     */
 /*                                                                            */
 /*    -----                                                                   */
@@ -17,34 +17,26 @@
 #include "rhi/render/RenderPass.hpp"
 #include "rhi/render/Renderer.hpp"
 #include "rhi/resources/ImagePool.hpp"
-#include "utils/str_utils.hpp"
+// #include "utils/str_utils.hpp"
 
-#include "core/scheduler/PhaseDependency.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-#include "core/scheduler/CycleEntry.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+// #include "core/scheduler/PhaseDependency.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+// #include "core/scheduler/CycleEntry.hpp"//remove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
-#include <iostream>
+// #include <iostream>
 
 namespace	hel {
 
 uint32_t	RenderPass::_passIndex = 0;
 
-RenderPass::RenderPass(Device &device, ExecutionContext &ctx, ImagePool *imagePool,
-	const RenderDependency &dep)
+RenderPass::RenderPass(Device &device, ExecutionContext &ctx,
+					std::shared_ptr<PassDependencies> deps)
 	:	_device{device},
 		_ctx{ctx},
 		_req{ctx.request},
 		_commandBuffer{ctx.commandBuffer},
-		_extent{ctx.request->extent_v()}
+		_extent{ctx.request->extent_v()},
+		_deps(deps)
 {
-	for (auto &color: dep._colorAttachments)
-		addColor(color, imagePool);
-	if (dep._depthAttachment)
-		addDepth(*dep._depthAttachment, imagePool);
-	if (dep._stencilAttachment)
-		addStencil(*dep._stencilAttachment, imagePool);
-
-	for (auto &read: dep._shaderReads)
-		addRead(read);
 }
 
 RenderPass::RenderPass(RenderPass &&other)
@@ -62,138 +54,137 @@ RenderPass::~RenderPass(void) {
 		endPass();
 }
 
-bool	RenderPass::addColor(const ImageAccess &dep, ImagePool *pool) {
+// bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
+// 	if (_writes.contains(dep._imageName))
+// 		return false;
 
+// 	Ref<Image>	img = nullptr;
+// 	if (_req->_images.contains(dep._imageName))
+// 		img = _req->_images[dep._imageName];
+// 	else if (dep._config.has_value()) {
+// 		img = imagePool->acquire(_ctx.frameIndex, dep._config.value());
+// 		_req->_images[dep._imageName] = img;
+// 	} else {
+// 		std::cerr << "Error for image \"" << dep._imageName << "\". Image"
+// 			<< " doesn't exists, and no config has "
+// 			<< "been provided in the dependancy.\n";
+// 		return true;
+// 	}
+// 	if (dep._load == VK_ATTACHMENT_LOAD_OP_MAX_ENUM ||
+// 		dep._store == VK_ATTACHMENT_STORE_OP_MAX_ENUM)
+// 		resolveOps(img.get(), dep);
+// 	addWriteImage(img.get(), dep);
+// 	return (false);
+// }
+
+// void	RenderPass::resolveOps(Image *img, ImageDep &dep) {
+// 	if (dep._load == VK_ATTACHMENT_LOAD_OP_MAX_ENUM) {
+// 		if (img->wasWritten())
+// 			dep._load = VK_ATTACHMENT_LOAD_OP_LOAD;
+// 		else
+// 			dep._load = VK_ATTACHMENT_LOAD_OP_CLEAR;
+// 	}
+// 	if (dep._store == VK_ATTACHMENT_STORE_OP_MAX_ENUM)
+// 		dep._store = VK_ATTACHMENT_STORE_OP_STORE;
+// }
+
+// void	RenderPass::addWriteImage(Image *img, ImageDep &dep){
+// 	_writes[dep._imageName] = img;
+
+// 	if (dep._usage & ImageDep::Color) {
+// 		img->transitionLayout(_commandBuffer,
+// 								VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+// 		Write	write{.name = dep._imageName, .format = dep._format,
+// 			.info = img->getRenderingInfo(
+// 				dep._clearValue.value_or(VkClearValue{{{0.f, 0.f, 0.f, 1.f}}}),
+// 				dep._load, dep._store, img->getView(ViewConfig()
+// 					.format(dep._format).aspect(VK_IMAGE_ASPECT_COLOR_BIT)
+// 					.components().identity()))};
+// 		_colorInfos[dep._bindingIndex] = write;
+// 		return ;
+// 	}
+
+// 	bool				hasDepth = dep._usage & ImageDep::Depth;
+// 	bool				hasStenc = dep._usage & ImageDep::Stencil;
+// 	img->transitionLayout(_commandBuffer,
+// 								VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+// 	VkImageAspectFlags	aspect = 0;
+// 	if (hasDepth)		aspect |= VK_IMAGE_ASPECT_DEPTH_BIT;
+// 	if (hasStenc)		aspect |= VK_IMAGE_ASPECT_STENCIL_BIT;
+// 	auto	info = img->getRenderingInfo(
+// 					dep._clearValue.value_or(VkClearValue{.depthStencil = {1.f, 0}}),
+// 					dep._load, dep._store, img->getView(ViewConfig()
+// 						.format(dep._format).aspect(aspect)
+// 						.components().identity()));
+// 	if (hasDepth)	{ _depthInfo = Write{dep._imageName, dep._format, info}; }
+// 	if (hasStenc)	{ _stencilInfo = Write{dep._imageName, dep._format, info}; }
+// }
+
+// bool	RenderPass::addRead(const std::string_view &readName) {
+// 	bool	notFound = true;
+// 	for (auto &[imageName, image]: _req->_images) {
+// 		if (match(readName, imageName)) {
+// 			if (_reads.contains(imageName))
+// 				continue ;
+// 			if (!image->wasWritten()) {
+// 				std::cerr << "Trying to read the image \"" << imageName
+// 					<< "\" which was never written.\n";
+// 				return (true);
+// 			}
+
+// 			_reads[imageName] = image.get();
+// 			image->transitionLayout(_commandBuffer,
+// 				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+// 			notFound = false;
+// 		}
+// 	}
+// 	return (notFound);
+// }
+
+void	RenderPass::prepareWriteImage(const ResolvedAccess_Img &img) {
+	img.image->transitionLayout(_commandBuffer, img.requestedLayout);
+	img.image->setWrittenState({});
 }
 
-bool	RenderPass::addDepth(const ImageAccess &dep, ImagePool *pool) {
-	
-}
-bool	RenderPass::addStencil(const ImageAccess &dep, ImagePool *pool) {
-	
-}
-bool	addRead(const ImageAccess &dep);
-
-bool	RenderPass::addWrite(ImageDep &dep, ImagePool *imagePool) {
-	if (_writes.contains(dep._imageName))
-		return false;
-
-	Ref<Image>	img = nullptr;
-	if (_req->_images.contains(dep._imageName))
-		img = _req->_images[dep._imageName];
-	else if (dep._config.has_value()) {
-		img = imagePool->acquire(_ctx.frameIndex, dep._config.value());
-		_req->_images[dep._imageName] = img;
-	} else {
-		std::cerr << "Error for image \"" << dep._imageName << "\". Image"
-			<< " doesn't exists, and no config has "
-			<< "been provided in the dependancy.\n";
-		return true;
-	}
-	if (dep._load == VK_ATTACHMENT_LOAD_OP_MAX_ENUM ||
-		dep._store == VK_ATTACHMENT_STORE_OP_MAX_ENUM)
-		resolveOps(img.get(), dep);
-	addWriteImage(img.get(), dep);
-	return (false);
+void	RenderPass::prepareReadImage(const ResolvedAccess_Img &img) {
+	img.image->transitionLayout(_commandBuffer, img.requestedLayout);
 }
 
-void	RenderPass::resolveOps(Image *img, ImageDep &dep) {
-	if (dep._load == VK_ATTACHMENT_LOAD_OP_MAX_ENUM) {
-		if (img->wasWritten())
-			dep._load = VK_ATTACHMENT_LOAD_OP_LOAD;
-		else
-			dep._load = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	}
-	if (dep._store == VK_ATTACHMENT_STORE_OP_MAX_ENUM)
-		dep._store = VK_ATTACHMENT_STORE_OP_STORE;
-}
-
-void	RenderPass::addWriteImage(Image *img, ImageDep &dep){
-	_writes[dep._imageName] = img;
-
-	if (dep._usage & ImageDep::Color) {
-		img->transitionLayout(_commandBuffer,
-								VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-		Write	write{.name = dep._imageName, .format = dep._format,
-			.info = img->getRenderingInfo(
-				dep._clearValue.value_or(VkClearValue{{{0.f, 0.f, 0.f, 1.f}}}),
-				dep._load, dep._store, img->getView(ViewConfig()
-					.format(dep._format).aspect(VK_IMAGE_ASPECT_COLOR_BIT)
-					.components().identity()))};
-		_colorInfos[dep._bindingIndex] = write;
-		return ;
-	}
-
-	bool				hasDepth = dep._usage & ImageDep::Depth;
-	bool				hasStenc = dep._usage & ImageDep::Stencil;
-	img->transitionLayout(_commandBuffer,
-								VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-	VkImageAspectFlags	aspect = 0;
-	if (hasDepth)		aspect |= VK_IMAGE_ASPECT_DEPTH_BIT;
-	if (hasStenc)		aspect |= VK_IMAGE_ASPECT_STENCIL_BIT;
-	auto	info = img->getRenderingInfo(
-					dep._clearValue.value_or(VkClearValue{.depthStencil = {1.f, 0}}),
-					dep._load, dep._store, img->getView(ViewConfig()
-						.format(dep._format).aspect(aspect)
-						.components().identity()));
-	if (hasDepth)	{ _depthInfo = Write{dep._imageName, dep._format, info}; }
-	if (hasStenc)	{ _stencilInfo = Write{dep._imageName, dep._format, info}; }
-}
-
-bool	RenderPass::addRead(const std::string_view &readName) {
-	bool	notFound = true;
-	for (auto &[imageName, image]: _req->_images) {
-		if (match(readName, imageName)) {
-			if (_reads.contains(imageName))
-				continue ;
-			if (!image->wasWritten()) {
-				std::cerr << "Trying to read the image \"" << imageName
-					<< "\" which was never written.\n";
-				return (true);
-			}
-
-			_reads[imageName] = image.get();
-			image->transitionLayout(_commandBuffer,
-				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-			notFound = false;
-		}
-	}
-	return (notFound);
-}
 
 Renderer	RenderPass::beginPass(void) {
-	if (_invalidDep || _colorInfos.empty())
-		return (Renderer(_ctx, std::move(*this)));
-
 	VkRenderingInfo	renderingInfo{};
 	renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
 	renderingInfo.pNext = nullptr;
 	renderingInfo.renderArea = {{0, 0}, _extent};
 	renderingInfo.layerCount = 1;
 
-	std::vector<VkRenderingAttachmentInfo>	colors;
-	uint32_t	lastIndex = static_cast<uint32_t>(-1);
-	for (auto &[index, write]: _colorInfos) {
-		if (index != lastIndex + 1u) {
-			std::cerr << "There is a gap in the binding of images.\n";
-			return (Renderer(_ctx, std::move(*this)));
-		}
-		colors.push_back(write.info);
-		_config.colorFormats.push_back(write.format);
-		lastIndex = index;
-	}
+	auto	&colors = _deps->_colorAttachmentsInfo;
 	renderingInfo.colorAttachmentCount = static_cast<uint32_t>(colors.size());
 	renderingInfo.pColorAttachments = colors.data();
-	if (_depthInfo.has_value()) {
-		renderingInfo.pDepthAttachment = &_depthInfo->info;
-		_config.depthFormat = _depthInfo->format;
-	} if (_stencilInfo.has_value()) {
-		renderingInfo.pStencilAttachment = &_stencilInfo->info;
-		_config.stencilFormat = _stencilInfo->format;
+	if (_deps->_depthAttachment) {
+		renderingInfo.pDepthAttachment = &_deps->_depthAttachment->renderingInfo;
+		_config.depthFormat = _deps->_depthAttachment->format;
+	} if (_deps->_stencilAttachment) {
+		renderingInfo.pStencilAttachment = &_deps->_stencilAttachment->renderingInfo;
+		_config.stencilFormat = _deps->_stencilAttachment->format;
 	}
 
-	for (auto &[imgName, img]: _writes)
-		img->setWrittenState({});
+	for (auto &color: _deps->_colorAttachments)
+		prepareWriteImage(color);
+	if (_deps->_depthAttachment)
+		prepareWriteImage(*_deps->_depthAttachment);
+	if (_deps->_stencilAttachment)
+		prepareWriteImage(*_deps->_stencilAttachment);
+
+	for (auto &read: _deps->_shaderReads)
+		prepareReadImage(read);
+
+	for (auto &color: _deps->_colorAttachments)
+		color.image->setWrittenState({});
+	if (_deps->_depthAttachment)
+		(*_deps->_depthAttachment).image->setWrittenState({});
+	if (_deps->_stencilAttachment)
+		(*_deps->_stencilAttachment).image->setWrittenState({});
 
 	vkCmdBeginRendering(_commandBuffer, &renderingInfo);
 	setViewport();
