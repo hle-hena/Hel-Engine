@@ -2,10 +2,13 @@
 build/
 .cache/
 .clangd
-usr/editor/assets/models/sponza
+
 vcpkg/installed/
 vcpkg/buildtrees/
 vcpkg/downloads/
 vcpkg/packages/
 
 engine/rhi/generated/
+
+usr/editor/assets/models/sponza
+usr/editor/systems_json

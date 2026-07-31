@@ -60,7 +60,38 @@ file(GLOB_RECURSE USR_SOURCES CONFIGURE_DEPENDS
 	"${HEL_TARGET_DIR}/main.cpp"
 )
 
-list(APPEND HEL_SOURCES ${EXTERNAL_SOURCES} ${USR_SOURCES})
+# ── System JSON + registration cpp generation ─────────────────────────────────
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
+set(SYSTEMS_JSON_SCRIPT "${CMAKE_SOURCE_DIR}/scripts/generate_systems_json.py")
+set(SYSTEMS_JSON_SOURCE_DIR "${HEL_TARGET_DIR}/systems_json")
+set(SYSTEMS_JSON_DEST_DIR "${CMAKE_BINARY_DIR}/systems_json")
+set(GENERATED_SYSTEMS_CPP "${CMAKE_BINARY_DIR}/generated/generated_systems.cpp")
+
+file(GLOB_RECURSE SYSTEM_HEADERS CONFIGURE_DEPENDS
+	"${HEL_TARGET_DIR}/systems/*.hpp"
+	"${HEL_TARGET_DIR}/systems/*.h"
+)
+
+add_custom_command(
+	OUTPUT ${GENERATED_SYSTEMS_CPP}
+	COMMAND ${Python3_EXECUTABLE} ${SYSTEMS_JSON_SCRIPT} ${HEL_TARGET}
+		--json-output-dir ${SYSTEMS_JSON_SOURCE_DIR}
+		--cpp-output ${GENERATED_SYSTEMS_CPP}
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+	DEPENDS ${SYSTEM_HEADERS} ${SYSTEMS_JSON_SCRIPT}
+	COMMENT "Generating system JSON + registration cpp for ${HEL_TARGET}"
+	VERBATIM
+)
+
+add_custom_target(copy_systems_json ALL
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${SYSTEMS_JSON_DEST_DIR}
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${SYSTEMS_JSON_SOURCE_DIR} ${SYSTEMS_JSON_DEST_DIR}
+	DEPENDS ${GENERATED_SYSTEMS_CPP}
+	COMMENT "Copying system JSON descriptors to build directory"
+)
+
+list(APPEND HEL_SOURCES ${EXTERNAL_SOURCES} ${USR_SOURCES} ${GENERATED_SYSTEMS_CPP})
 list(REMOVE_DUPLICATES HEL_SOURCES)
 
 # ── Executable ────────────────────────────────────────────────────────────────
@@ -73,6 +104,8 @@ target_include_directories(hel PRIVATE
 target_include_directories(hel SYSTEM PRIVATE
 	${CMAKE_SOURCE_DIR}/external
 )
+
+add_dependencies(hel copy_systems_json)
 
 # ── Compile definitions ───────────────────────────────────────────────────────
 target_compile_definitions(hel PRIVATE
