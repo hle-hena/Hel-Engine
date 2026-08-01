@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/02/16 14:44:05 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/31 17:39:35                                        */
+/*  Last Modified: 2026/08/01 16:03:17                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -20,6 +20,9 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <utils/json.hpp>
+
+#include "utils/Expected.hpp"
 
 #include "core/scheduler/CycleEntry.hpp"
 #include "rhi/render/PipelineMap.hpp"
@@ -87,8 +90,21 @@ class	ISystem {
 		ImagePool									*_imagePool;
 
 	private:
-		void	loadCycleEntry(std::string_view jsonFilepath,
+		expected<void>		validateCycleEntry(nlohmann::json &entry,
+												std::string_view entryType,
+												size_t entryIndex) const;
+		expected<void>		validateSystem(nlohmann::json &sys) const;
+		expected<std::optional<size_t>>	findSystemIndex(const nlohmann::json &src) const;
+
+		expected<void>	loadCycleEntry(std::string_view jsonFilepath,
 							const std::string &systemName);
+		void			saveCycleEntry(void) const;
+
+		nlohmann::json	serialize(void) const;
+		void			deserialize(const nlohmann::json &src);
+
+		std::string	_systemName;
+		std::string	_jsonFilepath;
 
 		std::vector<std::unique_ptr<PipelineMap>>	_pipelines;
 

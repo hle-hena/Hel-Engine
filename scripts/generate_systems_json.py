@@ -3,7 +3,8 @@
 generate_system_json.py
 
 Generates:
-	1) one JSON file per ISystem-derived class found under usr/<target>/systems/
+	1) one JSON file per header file found under usr/<target>/systems/
+		containing all ISystem-derived classes discovered inside it.
 	2) a single generated_systems.cpp that includes every system header and
 		registers each class with the engine.
 
@@ -16,6 +17,7 @@ import argparse
 import json
 import re
 import sys
+from collections import defaultdict
 from pathlib import Path
 
 SYSTEM_PATTERN = re.compile(
@@ -44,58 +46,83 @@ namespace\thel {{
 
 
 def find_systems(systems_dir: Path):
-	"""Returns list of (class_name, header_path) tuples, headers only."""
-	results = []
+	"""Returns a dict mapping Path(header_path) to a list of class_names."""
+	file_to_systems = defaultdict(list)
+	seen_classes = set()
+
 	for pattern in HEADER_EXTENSIONS:
 		for path in systems_dir.rglob(pattern):
 			text = path.read_text(encoding="utf-8", errors="ignore")
 			for match in SYSTEM_PATTERN.finditer(text):
-				results.append((match.group(1), path))
-	return results
+				class_name = match.group(1)
+				if class_name not in seen_classes:
+					seen_classes.add(class_name)
+					file_to_systems[path].append(class_name)
+					
+	return file_to_systems
 
 
-def write_json(systems, systems_dir: Path, output_dir: Path):
+def write_json(file_to_systems, systems_dir: Path, output_dir: Path):
 	output_dir.mkdir(parents=True, exist_ok=True)
 	for stale in output_dir.rglob("*.json"):
 		stale.unlink()
 
-	seen = set()
-	for name, path in systems:
-		if name in seen:
-			continue
-		seen.add(name)
+	# Maps class_name -> absolute path of the JSON file it lives in
+	class_to_json_path = {}
 
+	for path, names in file_to_systems.items():
 		rel_path = path.relative_to(systems_dir)
-		data = {"name": name, "source": rel_path.as_posix()}
+		
+		# Build an array containing templates for all systems found in this file
+		json_data = []
+		for name in names:
+			json_data.append({
+				"name": name,
+				"render_entry": [
+					{
+						"entry_name": "",
+						"require_entry": [],
+						"block_entry": [],
+						"active_layer": []
+					}
+				],
+				"update_entry": [
+					{
+						"entry_name": "",
+						"require_entry": [],
+						"block_entry": [],
+						"active_layer": []
+					}
+				]
+			})
 
 		out_subdir = output_dir / rel_path.parent
 		out_subdir.mkdir(parents=True, exist_ok=True)
 
-		out_file = out_subdir / f"{name}.json"
+		# Name the JSON file after the header file (e.g., systems/Physics.hpp -> systems_json/Physics.json)
+		out_file = out_subdir / f"{path.stem}.json"
+		
 		with out_file.open("w", encoding="utf-8") as f:
-			json.dump(data, f, indent=4)
-		print(f"generated: {out_file}")
+			json.dump(json_data, f, indent=4)
 
-	return seen
+		# Track where each class ended up so the C++ generator can reference it
+		for name in names:
+			class_to_json_path[name] = out_file.resolve().as_posix()
+
+	return class_to_json_path
 
 
-def render_cpp(systems, systems_dir: Path, json_output_dir: Path, target: str):
-	seen = set()
+def render_cpp(file_to_systems, class_to_json_path, systems_dir: Path, target: str):
 	include_lines = []
 	registration_lines = []
 
-	for name, path in systems:
-		if name in seen:
-			continue
-		seen.add(name)
-
-		rel_path = path.relative_to(systems_dir)
-		include_lines.append(f'#include "systems/{rel_path.as_posix()}"')
-
-		json_file_path = json_output_dir / rel_path.parent / f"{name}.json"
-		absolute_json_path = json_file_path.resolve().as_posix()
+	for path, names in file_to_systems.items():
+		rel_path = path.relative_to(systems_dir).as_posix()
+		include_lines.append(f'#include "systems/{rel_path}"')
 		
-		registration_lines.append(f'\tSystemRegistrar<sys::{name}> reg_{name}System("{absolute_json_path}");')
+		for name in names:
+			absolute_json_path = class_to_json_path[name]
+			registration_lines.append(f'\tSystemRegistrar<sys::{name}> reg_{name}System("{absolute_json_path}");')
 
 	includes = "\n".join(include_lines)
 	registrations = "\n".join(registration_lines)
@@ -107,16 +134,16 @@ def render_cpp(systems, systems_dir: Path, json_output_dir: Path, target: str):
 	)
 
 
-def write_cpp(systems, systems_dir: Path, json_output_dir: Path, target: str, cpp_output: Path):
+def write_cpp(file_to_systems, class_to_json_path, systems_dir: Path, target: str, cpp_output: Path):
 	cpp_output.parent.mkdir(parents=True, exist_ok=True)
-	content = render_cpp(systems, systems_dir, json_output_dir, target)
+	content = render_cpp(file_to_systems, class_to_json_path, systems_dir, target)
 	cpp_output.write_text(content, encoding="utf-8")
 	print(f"generated: {cpp_output}")
 
 
 def main():
 	parser = argparse.ArgumentParser(
-		description="Generate per-system JSON descriptors and a registration cpp."
+		description="Generate per-header JSON descriptors and a registration cpp."
 	)
 	parser.add_argument("target", help="Target name under usr/ (e.g. editor)")
 	parser.add_argument("--json-output-dir", default=None)
@@ -139,14 +166,14 @@ def main():
 		Path(args.cpp_output) if args.cpp_output else root_dir / "build" / "generated" / "generated_systems.cpp"
 	)
 
-	systems = find_systems(systems_dir)
-	if not systems:
+	file_to_systems = find_systems(systems_dir)
+	if not file_to_systems:
 		print(f"warning: no ISystem classes found in {systems_dir}", file=sys.stderr)
 
-	seen = write_json(systems, systems_dir, json_output_dir)
-	write_cpp(systems, systems_dir, json_output_dir, args.target, cpp_output)
+	class_to_json_path = write_json(file_to_systems, systems_dir, json_output_dir)
+	write_cpp(file_to_systems, class_to_json_path, systems_dir, args.target, cpp_output)
 
-	print(f"Total systems generated: {len(seen)}")
+	print(f"Total unique systems generated: {len(class_to_json_path)}")
 
 
 if __name__ == "__main__":

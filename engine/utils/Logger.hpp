@@ -5,7 +5,7 @@
 /*  Project: Hel Engine                                                       */
 /*  Created: 2026/07/21 18:35:58 by hle-hena                                  */
 /*                                                                            */
-/*  Last Modified: 2026/07/22 14:23:32                                        */
+/*  Last Modified: 2026/08/01 15:54:45                                        */
 /*             By: hle-hena                                                   */
 /*                                                                            */
 /*    -----                                                                   */
@@ -48,6 +48,11 @@ struct	Logger {
 		log(LogLevel::Message, text.fmt, text.loc);
 	}
 
+	static void	warn(Log text)
+	{
+		log(LogLevel::Warning, text.fmt, text.loc);
+	}
+
 	static void	error(Log text)
 	{
 		log(LogLevel::Error, text.fmt, text.loc);
@@ -62,6 +67,14 @@ struct	Logger {
 	static void	messagef(Log text, Args &&...args)
 	{
 		log(LogLevel::Message,
+			std::vformat(text.fmt, std::make_format_args(args...)),
+			text.loc);
+	}
+
+	template <typename... Args>
+	static void	warnf(Log text, Args &&...args)
+	{
+		log(LogLevel::Warning,
 			std::vformat(text.fmt, std::make_format_args(args...)),
 			text.loc);
 	}
@@ -97,23 +110,32 @@ private:
 			case LogLevel::Fatal:	prefix = "[FATAL] "; stream = stderr; break;
 		}
 
-		std::fprintf(stream, "%s %.*s (%s:%u in '%s')\n",
+		std::fprintf(stream, "%s %.*s \n",
 					prefix,
-					static_cast<int>(text.size()), text.data(),
-					loc.file_name(), loc.line(), loc.function_name());
+					static_cast<int>(text.size()), text.data());
 	}
 };
 
 
-#define HEL_FATAL(...)				\
-do {								\
-	Logger::fatalf(__VA_ARGS__);	\
-	std::abort();					\
+#define HEL_FATAL(...)					\
+do {									\
+	hel::Logger::fatalf(__VA_ARGS__);	\
+	std::abort();						\
 } while (0)
 
-#define HEL_ERROR(...)				\
-do {								\
-	Logger::errorf(__VA_ARGS__);	\
+#define HEL_ERROR(...)					\
+do {									\
+	hel::Logger::errorf(__VA_ARGS__);	\
+} while (0)
+
+#define HEL_WARN(...)					\
+do {									\
+	hel::Logger::warnf(__VA_ARGS__);	\
+} while (0)
+
+#define HEL_MESS(...)					\
+do {									\
+	hel::Logger::messagef(__VA_ARGS__);	\
 } while (0)
 
 }
